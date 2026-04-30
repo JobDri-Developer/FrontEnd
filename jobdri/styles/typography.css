@@ -1,0 +1,99 @@
+@font-face {
+  font-family: "Pretendard-Variable";
+  src: url("../fonts/PretendardVariable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@layer base {
+  body {
+    font-family: "Pretendard-Variable", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  /* Headline 28 */
+  .text-h28-bold {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 130%;
+    letter-spacing: -0.02em;
+  }
+  .text-h28-med {
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 130%;
+    letter-spacing: -0.02em;
+  }
+
+  /* Headline 24 */
+  .text-h24-bold {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 130%;
+    letter-spacing: -0.02em;
+  }
+  .text-h24-med {
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 130%;
+    letter-spacing: -0.02em;
+  }
+
+  /* Title 20 */
+  .text-t20-semibold {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 140%;
+    letter-spacing: -0.02em;
+  }
+  .text-t20-reg {
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.02em;
+  }
+
+  /* Body 16 */
+  .text-b16-bold {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 140%;
+    letter-spacing: -0.02em;
+  }
+  .text-b16-med {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 160%; /* 가이드에 따라 160% 적용 */
+    letter-spacing: -0.02em;
+  }
+  .text-b16-reg {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 160%;
+    letter-spacing: -0.02em;
+  }
+
+  /* Button & Label 14 */
+  .text-btn16-semibold {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 140%;
+    letter-spacing: -0.02em;
+  }
+  .text-label14-med {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 150%;
+    letter-spacing: -0.02em;
+  }
+
+  /* Caption 12 */
+  .text-cap12-semibold {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 140%;
+    letter-spacing: -0.02em;
+  }
+}
