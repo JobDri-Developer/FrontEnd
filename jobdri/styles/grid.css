@@ -1,0 +1,45 @@
+/* styles/grid.css */
+:root {
+  /* 공통 거터 */
+  --grid-gutter: 12px;
+
+  /* 1. WEB_Default (사이드바 없을 때) */
+  /* (82px * 12) + (12px * 11) = 1116px */
+  --width-default: 1116px;
+
+  /* 2. WEB_LNB (사이드바 있을 때) */
+  /* (69px * 12) + (12px * 11) = 960px */
+  --width-lnb: 960px;
+
+  /* 모바일 */
+  --mobile-margin: 16px;
+  --mobile-gutter: 8px;
+}
+
+/* 기본 그리드 컨테이너 */
+.grid-base {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--grid-gutter);
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* 케이스 A: 사이드바 없는 페이지 */
+.container-default {
+  max-width: var(--width-default);
+}
+
+/* 케이스 B: 사이드바 있는 페이지의 콘텐츠 영역 */
+.container-lnb {
+  max-width: var(--width-lnb);
+}
+
+/* 모바일 대응 */
+@media (max-width: 767px) {
+  .grid-base {
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: var(--mobile-gutter);
+    padding: 0 var(--mobile-margin);
+  }
+}
