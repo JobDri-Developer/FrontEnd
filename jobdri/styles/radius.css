@@ -1,0 +1,39 @@
+:root {
+  /* [1] Primitive Tokens: 기본 수치 (변하지 않는 값) */
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-16: 16px;
+  --radius-full: 999px;
+
+  /* [2] Semantic Tokens: 용도별 참조 (기본 수치를 연결) */
+
+  /* 카드 & 모달 */
+  --radius-card: var(--radius-16);
+  --radius-modal: var(--radius-16);
+
+  /* 토스트 */
+  --radius-toast-l: var(--radius-12);
+  --radius-toast-s: var(--radius-8);
+
+  /* 칩 (Chips) */
+  --radius-chip-l: var(--radius-12);
+  --radius-chip-m: var(--radius-8);
+  --radius-chip-s: var(--radius-6);
+  --radius-chip-round: var(--radius-full);
+
+  /* 아이콘 & 마커 */
+  --radius-icon: var(--radius-12);
+  --radius-icon-round: var(--radius-full);
+  --radius-marker: var(--radius-8);
+  --radius-badge-round: var(--radius-full);
+
+  /* 버튼 (CTA) */
+  --radius-cta-l: var(--radius-12);
+  --radius-cta-s: var(--radius-10);
+
+  /* 탭 (Tabs) */
+  --radius-tap-hug: var(--radius-12);
+  --radius-tap-contents: var(--radius-8);
+}
