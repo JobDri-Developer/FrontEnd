@@ -13,7 +13,7 @@ export default function IconBox({ type }: IconBoxProps) {
   return type === "TRASH" ? (
     <div
       className={clsx(
-        "p-1 bg-gray-100 hover:bg-red-100 rounded-cta-s",
+        "p-1 bg-gray-100 hover:bg-red-100 rounded-cta-s cursor-pointer",
         isSelected && "bg-red-400",
       )}
       onClick={() => setIsSelected(!isSelected)}
@@ -21,7 +21,7 @@ export default function IconBox({ type }: IconBoxProps) {
       <Icon type="TRASH" />
     </div>
   ) : (
-    <div className=" p-2 bg-gray-95 hover:bg-white rounded-cta-s">
+    <div className=" p-2 bg-gray-95 hover:bg-white rounded-cta-s cursor-pointer">
       <Icon type={type} />
     </div>
   );

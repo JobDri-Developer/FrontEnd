@@ -16,7 +16,7 @@ export default function CheckBox({ type }: CheckBoxProps) {
   return (
     <div
       className={clsx(
-        "p-0.5 bg-gray-200 hover:bg-gray-300",
+        "p-0.5 bg-gray-200 hover:bg-gray-300 cursor-pointer",
         isRadio ? "rounded-full" : "rounded-chip-s",
         isSelected && "bg-gray-800",
       )}
