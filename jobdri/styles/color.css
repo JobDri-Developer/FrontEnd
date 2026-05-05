@@ -27,6 +27,7 @@
   --color-white: #ffffff;
 
   /* Grayscale */
+  --color-gray-95: #f9f9fb;
   --color-gray-100: #f6f6f9;
   --color-gray-200: #eaeaee;
   --color-gray-300: #c5c5c9;
@@ -38,13 +39,14 @@
   --color-gray-900: #212128;
 
   /* 변수를 직접 등록하거나, 클래스 사용 시 /10%를 붙여서 쓸 수 있습니다 */
-  --color-gray-alpha-10: color-mix(in srgb, #212128 10%, transparent);
-  --color-gray-alpha-20: color-mix(in srgb, #212128 20%, transparent);
-  --color-gray-alpha-30: color-mix(in srgb, #212128 30%, transparent);
-  --color-gray-alpha-40: color-mix(in srgb, #212128 40%, transparent);
-  --color-gray-alpha-50: color-mix(in srgb, #212128 50%, transparent);
-  --color-gray-alpha-60: color-mix(in srgb, #212128 60%, transparent);
-  --color-gray-alpha-70: color-mix(in srgb, #212128 70%, transparent);
-  --color-gray-alpha-80: color-mix(in srgb, #212128 80%, transparent);
-  --color-gray-alpha-90: color-mix(in srgb, #212128 90%, transparent);
+  --color-gray-alpha-50: color-mix(in srgb, #212128 5%, transparent);
+  --color-gray-alpha-100: color-mix(in srgb, #212128 10%, transparent);
+  --color-gray-alpha-200: color-mix(in srgb, #212128 20%, transparent);
+  --color-gray-alpha-300: color-mix(in srgb, #212128 30%, transparent);
+  --color-gray-alpha-400: color-mix(in srgb, #212128 40%, transparent);
+  --color-gray-alpha-500: color-mix(in srgb, #212128 50%, transparent);
+  --color-gray-alpha-600: color-mix(in srgb, #212128 60%, transparent);
+  --color-gray-alpha-700: color-mix(in srgb, #212128 70%, transparent);
+  --color-gray-alpha-800: color-mix(in srgb, #212128 80%, transparent);
+  --color-gray-alpha-900: color-mix(in srgb, #212128 90%, transparent);
 }

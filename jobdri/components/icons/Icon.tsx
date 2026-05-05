@@ -58,8 +58,10 @@ const iconMap = {
   LIGHTBULB: IC_LIGHTBULB,
 } as const;
 
+export type IconType = keyof typeof iconMap;
+
 interface IconProps {
-  type: keyof typeof iconMap;
+  type: IconType;
   className?: string;
 }
 
