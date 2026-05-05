@@ -88,11 +88,23 @@
     line-height: 150%;
     letter-spacing: -0.02em;
   }
+  .text-label14-semibold {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 150%;
+    letter-spacing: -0.02em;
+  }
 
   /* Caption 12 */
-  .text-cap12-semibold {
+  .text-cap12-med {
     font-size: 12px;
     font-weight: 500;
+    line-height: 140%;
+    letter-spacing: -0.024em;
+  }
+  .text-cap12-semibold {
+    font-size: 12px;
+    font-weight: 600;
     line-height: 140%;
     letter-spacing: -0.02em;
   }
