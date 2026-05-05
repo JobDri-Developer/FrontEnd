@@ -1,4 +1,5 @@
 // app/page.tsx
+import Icon from "@/components/icons/Icon";
 import Image from "next/image";
 
 export default function Home() {
