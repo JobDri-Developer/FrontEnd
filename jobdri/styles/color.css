@@ -67,7 +67,7 @@
   --color-fill-disabled: var(--color-gray-200);
 
   --color-fill-fail-strong: var(--color-red-400);
-  --color-fill-fail: var(--color-red-100);
+  --color-fill-fail-default: var(--color-red-100);
   --color-fill-fail-hover: var(--color-red-200);
 
   /* Text */
@@ -101,22 +101,22 @@
   --color-line-primary-assistive: var(--color-blue-400);
 
   --color-line-neutral-strong: var(--color-gray-300);
-  --color-line-neutral: var(--color-gray-200);
+  --color-line-neutral-default: var(--color-gray-200);
 
-  --color-line-fail: var(--color-red-400);
+  --color-line-fail-default: var(--color-red-400);
   --color-line-fail-assistive: var(--color-red-300);
 
-  --color-line-complete: var(--color-green-600);
+  --color-line-complete-default: var(--color-green-600);
   --color-line-complete-assistive: var(--color-green-100);
 
   /* Background */
-  --color-bg: var(--color-gray-100);
+  --color-bg-default: var(--color-gray-100);
   --color-bg-white: var(--color-white);
 
-  --color-bg-contents: var(--color-white);
+  --color-bg-contents-default: var(--color-white);
   --color-bg-contents-assistive: var(--color-gray-95);
 
   --color-bg-shadow-strong: var(--color-gray-alpha-100);
-  --color-bg-shadow: var(--color-gray-alpha-50);
-  --color-bg-lightbox: var(--color-gray-alpha-500);
+  --color-bg-shadow-default: var(--color-gray-alpha-50);
+  --color-bg-lightbox-default: var(--color-gray-alpha-500);
 }
