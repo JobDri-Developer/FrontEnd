@@ -1,6 +1,7 @@
 // app/page.tsx
 import Icon from "@/components/icons/Icon";
 import Image from "next/image";
+import IconBox from "@/components/icons/IconBox";
 
 export default function Home() {
   return (
@@ -14,6 +15,9 @@ export default function Home() {
           버튼 텍스트(16px, semibold)
         </button>
       </main>
+
+      <IconBox type="TRASH" />
+      <IconBox type="HOME_M" />
     </div>
   );
 }
