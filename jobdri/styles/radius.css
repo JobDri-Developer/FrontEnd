@@ -1,5 +1,5 @@
-:root {
-  /* [1] Primitive Tokens: 기본 수치 (변하지 않는 값) */
+@theme {
+  /* [1] Primitive Tokens */
   --radius-6: 6px;
   --radius-8: 8px;
   --radius-10: 10px;
@@ -7,7 +7,7 @@
   --radius-16: 16px;
   --radius-full: 999px;
 
-  /* [2] Semantic Tokens: 용도별 참조 (기본 수치를 연결) */
+  /* [2] Semantic Tokens */
 
   /* 카드 & 모달 */
   --radius-card: var(--radius-16);

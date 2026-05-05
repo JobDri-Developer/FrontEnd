@@ -26,6 +26,7 @@ import IC_TOKEN from "@/assets/ic_Token.svg";
 import IC_SPARKLE from "@/assets/ic_Sparkles.svg";
 import IC_SEARCH from "@/assets/ic_Search.svg";
 import IC_LIGHTBULB from "@/assets/ic_Lightbulb.svg";
+import IC_CHECK_M from "@/assets/ic_Check_M.svg";
 
 const iconMap = {
   EX_L: IC_EX_L,
@@ -56,6 +57,7 @@ const iconMap = {
   SPARKLE: IC_SPARKLE,
   SEARCH: IC_SEARCH,
   LIGHTBULB: IC_LIGHTBULB,
+  CHECK_M: IC_CHECK_M,
 } as const;
 
 export type IconType = keyof typeof iconMap;

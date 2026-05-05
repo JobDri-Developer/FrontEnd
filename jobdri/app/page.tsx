@@ -1,6 +1,8 @@
 // app/page.tsx
 import Icon from "@/components/icons/Icon";
 import Image from "next/image";
+import IconBox from "@/components/icons/IconBox";
+import CheckBox from "@/components/icons/CheckBox";
 
 export default function Home() {
   return (
@@ -14,6 +16,12 @@ export default function Home() {
           버튼 텍스트(16px, semibold)
         </button>
       </main>
+
+      <IconBox type="TRASH" />
+      <IconBox type="HOME_M" />
+      <CheckBox type="DEFAULT" />
+      <CheckBox type="RADIO_L" />
+      <CheckBox type="RADIO_M" />
     </div>
   );
 }
