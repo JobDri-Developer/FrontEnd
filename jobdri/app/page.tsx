@@ -1,5 +1,6 @@
 import IconBox from "@/components/icons/IconBox";
 import CheckBox from "@/components/icons/CheckBox";
+import Header from "@/components/header/Header";
 import {
   ChipMain,
   ChipRound,
@@ -25,6 +26,12 @@ function Section({
 export default function Home() {
   return (
     <div className="p-10 flex flex-col gap-10 bg-neutral-50">
+      <Section title="Header">
+        <div className="w-full">
+          <Header />
+        </div>
+      </Section>
+
       <Section title="IconBox">
         <IconBox type="TRASH" />
         <IconBox type="HOME_M" />
