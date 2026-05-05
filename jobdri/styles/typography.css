@@ -58,8 +58,8 @@
   /* Body 16 */
   .text-b16-bold {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 140%;
+    font-weight: 600;
+    line-height: 160%;
     letter-spacing: -0.02em;
   }
   .text-b16-med {
@@ -92,7 +92,7 @@
   /* Caption 12 */
   .text-cap12-semibold {
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 140%;
     letter-spacing: -0.02em;
   }
