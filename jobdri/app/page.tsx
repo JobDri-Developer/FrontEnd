@@ -1,6 +1,7 @@
 import IconBox from "@/components/icons/IconBox";
 import CheckBox from "@/components/icons/CheckBox";
 import Header from "@/components/header/Header";
+import { Lnb } from "@/components/lnb";
 import {
   ChipMain,
   ChipRound,
@@ -30,6 +31,10 @@ export default function Home() {
         <div className="w-full">
           <Header />
         </div>
+      </Section>
+
+      <Section title="LNB">
+        <Lnb />
       </Section>
 
       <Section title="IconBox">
