@@ -20,7 +20,7 @@ const activeStyles: Record<ChipMainColor, Record<ChipMainSize, string>> = {
     small: "bg-fill-primary-assistive text-text-primary-strong",
   },
   tertiary: {
-    mid: "bg-fill-tertiary text-text-neutral-white",
+    mid: "bg-fill-tertiary-default text-text-neutral-white",
     small:
       "bg-fill-quaternary text-text-neutral-caption border border-line-neutral",
   },

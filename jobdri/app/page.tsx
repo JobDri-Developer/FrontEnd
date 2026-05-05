@@ -24,7 +24,7 @@ function Section({
 
 export default function Home() {
   return (
-    <div className="p-10 flex flex-col gap-10">
+    <div className="p-10 flex flex-col gap-10 bg-neutral-50">
       <Section title="IconBox">
         <IconBox type="TRASH" />
         <IconBox type="HOME_M" />
@@ -66,10 +66,8 @@ export default function Home() {
       </Section>
 
       <Section title="ChipRoundSelected">
-        <ChipRoundSelected label="mid" size="mid" />
-        <ChipRoundSelected label="mid selected" size="mid" selected />
-        <ChipRoundSelected label="large" size="large" />
-        <ChipRoundSelected label="large selected" size="large" selected />
+        <ChipRoundSelected label="mid" />
+        <ChipRoundSelected label="mid selected" selected />
       </Section>
 
       <Section title="ChipQnumber">
