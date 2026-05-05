@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" className="h-full antialiased grid-base container-default">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col col-span-full">{children}</body>
     </html>
   );
 }
