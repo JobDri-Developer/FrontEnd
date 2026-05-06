@@ -2,7 +2,6 @@ import IconBox from "@/components/icons/IconBox";
 import CheckBox from "@/components/icons/CheckBox";
 import Header from "@/components/header/Header";
 import { Lnb } from "@/components/lnb";
-import { Toast, ToastFrame } from "@/components/toast";
 import {
   ChipMain,
   ChipRound,
@@ -36,19 +35,6 @@ export default function Home() {
 
       <Section title="LNB">
         <Lnb />
-      </Section>
-
-      <Section title="Toast">
-        <div className="flex w-full max-w-[594px] flex-col gap-5">
-          <Toast />
-          <Toast variant="check" />
-          <Toast variant="warning" />
-          <Toast variant="dark" />
-        </div>
-      </Section>
-
-      <Section title="Toast/Frame">
-        <ToastFrame />
       </Section>
 
       <Section title="IconBox">
