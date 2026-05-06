@@ -1,5 +1,6 @@
 import IconBox from "@/components/icons/IconBox";
 import CheckBox from "@/components/icons/CheckBox";
+import { SearchBar } from "@/components/searchbar";
 import Header from "@/components/header/Header";
 import { Lnb } from "@/components/lnb";
 import {
@@ -264,6 +265,12 @@ export default function Home() {
         <ChipQnumber number={1} showComplete selected />
         <ChipQnumber number={2} />
         <ChipQnumber number={2} selected />
+      </Section>
+
+      <Section title="SearchBar">
+        <div className="w-[500px]">
+          <SearchBar />
+        </div>
       </Section>
     </div>
   );
