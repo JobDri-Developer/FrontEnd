@@ -33,13 +33,13 @@ export function ListQCart({
     >
       <span
         className={clsx(
-          "text-b13-reg flex-1 min-w-0",
+          "text-sub14-med flex-1 min-w-0",
           selected ? "text-text-primary" : "text-text-title",
         )}
       >
         {question}
       </span>
-      <IconBox type="TRASH" />{" "}
+      <IconBox type="TRASH" />
     </button>
   );
 }
