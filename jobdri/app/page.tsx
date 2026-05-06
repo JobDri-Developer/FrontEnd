@@ -19,6 +19,7 @@ import {
 } from "@/components/chips";
 import { CompleteBadge } from "@/components/badges";
 import { Tooltip, TooltipModify } from "@/components/tooltip";
+import { TabMenuThree, TabMenuTwo } from "@/components/tabs";
 
 function Section({
   title,
@@ -303,6 +304,21 @@ export default function Home() {
 
       <Section title="Tooltip/Modify">
         <TooltipModify />
+      </Section>
+
+      <Section title="Tab Menu 2">
+        <div className="flex flex-col gap-7">
+          <TabMenuTwo activeTab="overview" />
+          <TabMenuTwo activeTab="detail" />
+        </div>
+      </Section>
+
+      <Section title="Tab Menu 3">
+        <div className="flex flex-col gap-7">
+          <TabMenuThree activeTab="competency" />
+          <TabMenuThree activeTab="readability" />
+          <TabMenuThree activeTab="trust" />
+        </div>
       </Section>
     </div>
   );
