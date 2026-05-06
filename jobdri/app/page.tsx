@@ -8,6 +8,17 @@ import {
 } from "@/components/chips";
 import { ListRole, ListQ, ListQCart } from "@/components/list";
 import PannelItem from "@/components/progress/PannelItem";
+import Header from "@/components/header/Header";
+import { Lnb } from "@/components/lnb";
+import {
+  Button,
+  ButtonCta,
+  ButtonCtaModal,
+  IconButton,
+  IconOnlyButton,
+  TextButton,
+} from "@/components/buttons";
+import { Toast, ToastFrame } from "@/components/toast";
 
 function Section({
   title,
@@ -27,6 +38,184 @@ function Section({
 export default function Home() {
   return (
     <div className="p-10 flex flex-col gap-10 bg-neutral-50">
+      <Section title="Header">
+        <div className="w-full">
+          <Header />
+        </div>
+      </Section>
+
+      <Section title="Toast">
+        <div className="flex w-full max-w-[594px] flex-col gap-5">
+          <Toast />
+          <Toast variant="check" />
+          <Toast variant="warning" />
+          <Toast variant="dark" />
+        </div>
+      </Section>
+
+      <Section title="Toast/Frame">
+        <ToastFrame />
+      </Section>
+
+      <Section title="Button — Primary">
+        <div className="flex items-center gap-4">
+          <Button label="기업 선택하기" iconType="HOME_S" size="large" />
+          <Button label="기업 선택하기" iconType="HOME_S" size="medium" />
+          <Button label="기업 선택하기" iconType="HOME_S" size="small" />
+        </div>
+      </Section>
+
+      <Section title="Button — Secondary">
+        <div className="flex items-center gap-4">
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="large"
+            styleType="secondary"
+          />
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="medium"
+            styleType="secondary"
+          />
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="small"
+            styleType="secondary"
+          />
+        </div>
+      </Section>
+
+      <Section title="Button — Tertiary">
+        <div className="flex items-center gap-4">
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="large"
+            styleType="tertiary"
+          />
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="medium"
+            styleType="tertiary"
+          />
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="small"
+            styleType="tertiary"
+          />
+          <Button
+            label="기업 선택하기"
+            iconType="SPARKLE"
+            size="xsmall"
+            styleType="tertiary"
+          />
+        </div>
+      </Section>
+
+      <Section title="Button — Quaternary">
+        <div className="flex items-center gap-4">
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="large"
+            styleType="quaternary"
+          />
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="medium"
+            styleType="quaternary"
+          />
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="small"
+            styleType="quaternary"
+          />
+        </div>
+      </Section>
+
+      <Section title="Button — Inactive">
+        <div className="flex items-center gap-4">
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="large"
+            active={false}
+          />
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="medium"
+            styleType="secondary"
+            active={false}
+          />
+          <Button
+            label="기업 선택하기"
+            iconType="HOME_S"
+            size="small"
+            styleType="quaternary"
+            active={false}
+          />
+          <Button
+            label="기업 선택하기"
+            iconType="SPARKLE"
+            size="xsmall"
+            styleType="tertiary"
+            active={false}
+          />
+        </div>
+      </Section>
+
+      <Section title="IconContainer Arrow">
+        <div className="flex items-center gap-6">
+          <IconButton direction="left" />
+          <IconButton direction="right" />
+          <IconButton direction="left" active />
+          <IconButton direction="right" active />
+        </div>
+      </Section>
+
+      <Section title="Button/Icon">
+        <div className="flex items-center gap-6">
+          <IconOnlyButton tone="light" />
+          <IconOnlyButton tone="dark" />
+        </div>
+      </Section>
+
+      <Section title="CTA">
+        <div className="flex flex-wrap items-start gap-8">
+          <ButtonCta className="w-[456px]" />
+          <ButtonCta variant="gradient_dark" className="w-[456px]" />
+          <ButtonCta variant="empty_white" className="w-[456px]" />
+          <ButtonCta variant="empty_dark" className="w-[456px]" />
+        </div>
+      </Section>
+
+      <Section title="Button/CTA/ModalButton">
+        <div className="flex w-[480px] flex-col gap-8">
+          <ButtonCtaModal />
+          <ButtonCtaModal stack="stack2_horizontal" />
+          <ButtonCtaModal stack="stack3_vertical" />
+        </div>
+      </Section>
+
+      <Section title="Button/Text">
+        <div className="flex items-center gap-8">
+          <TextButton size="small" styleType="primary" />
+          <TextButton size="large" styleType="primary" />
+          <TextButton size="small" styleType="secondary" />
+          <TextButton size="large" styleType="secondary" />
+          <TextButton size="large" styleType="primary" iconPosition="left" />
+          <TextButton size="large" styleType="secondary" iconPosition="left" />
+        </div>
+      </Section>
+
       <Section title="IconBox">
         <IconBox type="TRASH" />
         <IconBox type="HOME_M" />
