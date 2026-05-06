@@ -1,7 +1,13 @@
 import IconBox from "@/components/icons/IconBox";
 import CheckBox from "@/components/icons/CheckBox";
-import { ChipMain, ChipRound, ChipRoundSelected, ChipQnumber } from "@/components/chips";
+import {
+  ChipMain,
+  ChipRound,
+  ChipRoundSelected,
+  ChipQnumber,
+} from "@/components/chips";
 import { ListRole, ListQ, ListQCart } from "@/components/list";
+import PannelItem from "@/components/progress/PannelItem";
 
 function Section({
   title,
@@ -108,7 +114,18 @@ export default function Home() {
         <h2 className="text-h28-bold">ListQCart</h2>
         <div className="flex flex-col gap-3 w-64">
           <ListQCart question="데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요." />
-          <ListQCart question="데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요." selected />
+          <ListQCart
+            question="데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요."
+            selected
+          />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-h28-bold">PannelItem</h2>
+        <div className="flex flex-col gap-3 w-64">
+          <PannelItem step={1} label="Step 1" status="inProgress" />
+          <PannelItem step={2} label="Step 2" status="idle" />
         </div>
       </section>
     </div>

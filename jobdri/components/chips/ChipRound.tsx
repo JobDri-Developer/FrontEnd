@@ -12,7 +12,7 @@ const variantStyles: Record<ChipRoundVariant, string> = {
   normal:
     "bg-fill-primary-assistive text-text-primary-default border border-1 border-line-primary-default",
   assistive:
-    "bg-fill-quaternary-default text-text-neutral-description border border-line-neutral-default",
+    "bg-fill-quaternary-default text-text-neutral-description border-1 border-line-neutral-default",
 };
 
 export function ChipRound({ label, variant = "normal" }: ChipRoundProps) {
