@@ -17,6 +17,8 @@ import {
   ChipRoundSelected,
   ChipQnumber,
 } from "@/components/chips";
+import { CompleteBadge } from "@/components/badges";
+import { Tooltip, TooltipModify } from "@/components/tooltip";
 
 function Section({
   title,
@@ -40,6 +42,10 @@ export default function Home() {
         <div className="w-full">
           <Header />
         </div>
+      </Section>
+
+      <Section title="LNB">
+        <Lnb initialActiveItem="home" />
       </Section>
 
       <Section title="Toast">
@@ -264,6 +270,39 @@ export default function Home() {
         <ChipQnumber number={1} showComplete selected />
         <ChipQnumber number={2} />
         <ChipQnumber number={2} selected />
+      </Section>
+
+      <Section title="Complete">
+        <CompleteBadge />
+      </Section>
+
+      <Section title="Tooltip">
+        <div className="grid w-full grid-cols-3 items-start gap-x-0 gap-y-6">
+          <div className="flex flex-col items-start gap-8">
+            <Tooltip placement="right_mid" />
+            <Tooltip placement="left_mid" />
+            <Tooltip
+              placement="left_up"
+              lines={["1회 크레딧 무료 증정", "1회 크레딧 무료 증정"]}
+            />
+          </div>
+
+          <div className="flex flex-col items-start gap-8">
+            <Tooltip placement="up_mid" />
+            <Tooltip placement="up_left" />
+            <Tooltip placement="up_right" />
+          </div>
+
+          <div className="flex flex-col items-start gap-8">
+            <Tooltip placement="down_left" />
+            <Tooltip placement="down_mid" />
+            <Tooltip placement="down_right" />
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Tooltip/Modify">
+        <TooltipModify />
       </Section>
     </div>
   );
