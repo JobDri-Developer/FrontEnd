@@ -1,6 +1,7 @@
 import IC_EX_L from "@/assets/ic_Ex_L.svg";
 import IC_APPLY_L from "@/assets/ic_Apply_L.svg";
 import IC_UPLOAD from "@/assets/ic_Upload.svg";
+import IC_UPLOAD_M from "@/assets/ic_Upload_M.svg";
 import IC_HOME_M from "@/assets/ic_Home_M.svg";
 import IC_ARROW_R from "@/assets/ic_Arrow_RIght.svg";
 import IC_ARROW_L from "@/assets/ic_Arrow_left.svg";
@@ -27,11 +28,14 @@ import IC_SPARKLE from "@/assets/ic_Sparkles.svg";
 import IC_SEARCH from "@/assets/ic_Search.svg";
 import IC_LIGHTBULB from "@/assets/ic_Lightbulb.svg";
 import IC_CHECK_M from "@/assets/ic_Check_M.svg";
+import IC_EDIT from "@/assets/ic_Edit.svg";
+import IC_LINK from "@/assets/ic_Link.svg";
 
 const iconMap = {
   EX_L: IC_EX_L,
   APPLY_L: IC_APPLY_L,
   UPLOAD: IC_UPLOAD,
+  UPLOAD_M: IC_UPLOAD_M,
   HOME_M: IC_HOME_M,
   ARROW_R: IC_ARROW_R,
   ARROW_L: IC_ARROW_L,
@@ -58,6 +62,8 @@ const iconMap = {
   SEARCH: IC_SEARCH,
   LIGHTBULB: IC_LIGHTBULB,
   CHECK_M: IC_CHECK_M,
+  EDIT: IC_EDIT,
+  LINK: IC_LINK,
 } as const;
 
 export type IconType = keyof typeof iconMap;
