@@ -10,8 +10,9 @@ interface ChipRoundProps {
 const variantStyles: Record<ChipRoundVariant, string> = {
   strong: "bg-fill-primary-default text-text-neutral-white",
   normal:
-    "bg-fill-primary-assistive text-text-primary-default border border-[1.5px] border-line-primary-default",
-  assistive: "bg-fill-quaternary-default text-text-neutral-description",
+    "bg-fill-primary-assistive text-text-primary-default border border-1 border-line-primary-default",
+  assistive:
+    "bg-fill-quaternary-default text-text-neutral-description border border-line-neutral-default",
 };
 
 export function ChipRound({ label, variant = "normal" }: ChipRoundProps) {
