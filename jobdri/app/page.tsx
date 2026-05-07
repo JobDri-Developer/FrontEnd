@@ -31,6 +31,7 @@ import {
 import { CompleteBadge } from "@/components/badges";
 import { Tooltip, TooltipModify } from "@/components/tooltip";
 import { TabMenuThree, TabMenuTwo } from "@/components/tabs";
+import { CreditHeader, CreditRow } from "@/components/credit";
 
 function Section({
   title,
@@ -418,6 +419,17 @@ export default function Home() {
               <TabMenuThree activeTab="trust" />
             </div>
           </Section>
+        </div>
+      </Section>
+
+      <Section title="CreditHeader">
+        <CreditHeader />
+      </Section>
+
+      <Section title="CreditRow">
+        <div className="flex flex-col gap-8">
+          <CreditRow />
+          <CreditRow variant="assistive" dateTime="2026.04.07 오후 10:02" />
         </div>
       </Section>
     </div>
