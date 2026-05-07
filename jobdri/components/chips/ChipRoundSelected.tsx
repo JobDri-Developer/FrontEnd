@@ -29,7 +29,7 @@ export function ChipRoundSelected({
         "rounded-chip-round px-3.5 py-1.5 text-cap12-semibold",
         selected
           ? "bg-fill-tertiary-default text-text-neutral-white"
-          : "bg-fill-quaternary-default text-text-neutral-title border border-line-neutral",
+          : "bg-fill-quaternary-default text-text-neutral-title border border-line-neutral-default",
       )}
     >
       {label}

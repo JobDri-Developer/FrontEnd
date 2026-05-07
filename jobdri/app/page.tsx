@@ -1,5 +1,13 @@
 import IconBox from "@/components/icons/IconBox";
 import CheckBox from "@/components/icons/CheckBox";
+import {
+  ChipMain,
+  ChipRound,
+  ChipRoundSelected,
+  ChipQnumber,
+} from "@/components/chips";
+import { ListRole, ListQ, ListQCart } from "@/components/list";
+import PannelItem from "@/components/progress/PannelItem";
 import Header from "@/components/header/Header";
 import { Lnb } from "@/components/lnb";
 import {
@@ -11,12 +19,6 @@ import {
   TextButton,
 } from "@/components/buttons";
 import { Toast, ToastFrame } from "@/components/toast";
-import {
-  ChipMain,
-  ChipRound,
-  ChipRoundSelected,
-  ChipQnumber,
-} from "@/components/chips";
 
 function Section({
   title,
@@ -265,6 +267,56 @@ export default function Home() {
         <ChipQnumber number={2} />
         <ChipQnumber number={2} selected />
       </Section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-h28-bold">ListRole</h2>
+        <div className="flex flex-col gap-3 w-80">
+          <ListRole label="소프트웨어 개발" />
+          <ListRole label="데이터 분석" selected />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-h28-bold">ListQ</h2>
+        <div className="flex flex-col gap-3 w-96">
+          <ListQ
+            chips={[
+              { label: "매칭률 높음", color: "primary" },
+              { label: "데이터분석", color: "secondary" },
+              { label: "성과측정", color: "secondary" },
+            ]}
+            question="데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요."
+          />
+          <ListQ
+            chips={[
+              { label: "매칭률 높음", color: "primary" },
+              { label: "데이터분석", color: "secondary" },
+              { label: "성과측정", color: "secondary" },
+            ]}
+            question="데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요."
+            selected
+          />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-h28-bold">ListQCart</h2>
+        <div className="flex flex-col gap-3 w-64">
+          <ListQCart question="데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요." />
+          <ListQCart
+            question="데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요."
+            selected
+          />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-h28-bold">PannelItem</h2>
+        <div className="flex flex-col gap-3 w-64">
+          <PannelItem step={1} label="Step 1" status="inProgress" />
+          <PannelItem step={2} label="Step 2" status="idle" />
+        </div>
+      </section>
     </div>
   );
 }

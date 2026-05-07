@@ -11,6 +11,7 @@
 
   /* 카드 & 모달 */
   --radius-card: var(--radius-16);
+  --radius-card-s: var(--radius-12);
   --radius-modal: var(--radius-16);
 
   /* 토스트 */
