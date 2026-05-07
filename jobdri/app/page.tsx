@@ -7,6 +7,7 @@ import {
   InputMultiLine,
   InputMultiLine1000,
   InputAutoGrow,
+  InputFile,
 } from "@/components/input";
 import Header from "@/components/header/Header";
 import { Lnb } from "@/components/lnb";
@@ -335,6 +336,12 @@ export default function Home() {
       <Section title="InputAutoGrow">
         <div className="flex flex-col gap-4 w-[360px]">
           <InputAutoGrow placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputFile">
+        <div className="w-[480px]">
+          <InputFile />
         </div>
       </Section>
     </div>

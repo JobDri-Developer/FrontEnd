@@ -24,7 +24,7 @@ const bgStyles: Record<IconBoxState, Record<IconBoxBackground, string>> = {
     white: "bg-fill-quaternary-default",
   },
   secondary: {
-    default: "bg-fill-neutral-weak",
+    default: "bg-icon-neutral-weak",
     white: "bg-fill-neutral-white",
   },
 };
