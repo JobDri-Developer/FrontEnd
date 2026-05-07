@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import clsx from "clsx";
 import { getWrapperClass, getFieldClass, scrollbarClass } from "./inputStyles";
 
@@ -38,9 +38,9 @@ export function InputAutoGrow({
     onChange?.(next);
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = "1px";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [value]);
@@ -53,7 +53,7 @@ export function InputAutoGrow({
           className={clsx(
             "max-h-[168px]",
             getFieldClass(disabled),
-            "resize-none overflow-y-auto",
+            "block resize-none overflow-y-auto py-0",
             scrollbarClass,
           )}
           style={maxHeight ? { maxHeight: `${maxHeight}px` } : undefined}
