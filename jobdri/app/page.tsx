@@ -222,10 +222,18 @@ export default function Home() {
         </div>
       </Section>
 
-      <Section title="IconBox">
-        <IconBox type="TRASH" />
-        <IconBox type="HOME_M" />
-        <IconBox type="SPARKLE" />
+      <Section title="IconBox — primary / large">
+        <IconBox type="EDIT" size="large" state="primary" background="default" />
+        <IconBox type="EDIT" size="large" state="primary" background="white" />
+        <IconBox type="LINK" size="mid" state="primary" background="default" />
+        <IconBox type="LINK" size="mid" state="primary" background="white" />
+      </Section>
+
+      <Section title="IconBox — secondary / large">
+        <IconBox type="EDIT" size="large" state="secondary" background="default" />
+        <IconBox type="EDIT" size="large" state="secondary" background="white" />
+        <IconBox type="LINK" size="mid" state="secondary" background="default" />
+        <IconBox type="LINK" size="mid" state="secondary" background="white" />
       </Section>
 
       <Section title="CheckBox">

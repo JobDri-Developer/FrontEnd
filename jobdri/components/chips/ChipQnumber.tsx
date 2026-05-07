@@ -30,7 +30,7 @@ export function ChipQnumber({
       {showComplete && (
         <div className=" absolute -top-1 -left-4">
           <div className="p-0.5 bg-fill-secondary-default rounded-full w-6 h-6">
-            <Icon type="CHECK_M" className="text-icon-heavy" />
+            <Icon type="CHECK_M" className="text-icon-neutral-heavy" />
           </div>
         </div>
       )}

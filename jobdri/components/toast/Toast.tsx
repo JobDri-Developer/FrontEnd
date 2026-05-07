@@ -49,7 +49,7 @@ export default function Toast({
         aria-label="토스트 닫기"
         className={clsx(
           "flex h-[30px] w-[30px] shrink-0 items-center justify-center p-[3px]",
-          isDark ? "text-icon-default" : "text-icon-assistive",
+          isDark ? "text-icon-neutral-default" : "text-icon-neutral-assistive",
         )}
         onClick={onClose}
       >

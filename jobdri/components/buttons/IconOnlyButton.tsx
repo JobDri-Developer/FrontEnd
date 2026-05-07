@@ -10,9 +10,9 @@ interface IconOnlyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const toneStyles: Record<IconOnlyButtonTone, string> = {
-  light: "text-icon-assistive hover:bg-fill-hover hover:text-icon-default",
+  light: "text-icon-neutral-assistive hover:bg-fill-hover hover:text-icon-neutral-default",
   dark:
-    "text-icon-default hover:bg-[rgba(255,255,255,0.05)] hover:text-icon-assistive",
+    "text-icon-neutral-default hover:bg-[rgba(255,255,255,0.05)] hover:text-icon-neutral-assistive",
 };
 
 export default function IconOnlyButton({

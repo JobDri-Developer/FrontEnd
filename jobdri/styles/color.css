@@ -92,12 +92,12 @@
   --color-icon-primary-strong: var(--color-blue-700);
   --color-icon-primary-default: var(--color-blue-600);
 
-  --color-icon-heavy: var(--color-gray-800);
-  --color-icon-strong: var(--color-gray-700);
-  --color-icon-default: var(--color-gray-500);
-  --color-icon-assistive: var(--color-gray-300);
-  --color-icon-weak: var(--color-gray-200);
-  --color-icon-white: var(--color-white);
+  --color-icon-neutral-heavy: var(--color-gray-800);
+  --color-icon-neutral-strong: var(--color-gray-700);
+  --color-icon-neutral-default: var(--color-gray-500);
+  --color-icon-neutral-assistive: var(--color-gray-300);
+  --color-icon-neutral-weak: var(--color-gray-200);
+  --color-icon-neutral-white: var(--color-white);
 
   /* Line */
   --color-line-primary-strong: var(--color-blue-700);

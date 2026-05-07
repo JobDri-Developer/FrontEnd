@@ -48,7 +48,7 @@ export function InputMain({
       <div className={getWrapperClass(focused, disabled, !!error)}>
         <div className="flex items-center gap-2">
           {disabled && (
-            <Icon type="PASSWORD" className="text-icon-assistive shrink-0" />
+            <Icon type="PASSWORD" className="text-icon-neutral-assistive shrink-0" />
           )}
           <input
             className={clsx(
