@@ -95,6 +95,20 @@
     letter-spacing: -0.02em;
   }
 
+  /* SubBody 14 */
+  .text-sub14-med {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 150%;
+    letter-spacing: -0.02em;
+  }
+  .text-sub14-reg {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 150%;
+    letter-spacing: -0.02em;
+  }
+
   /* Caption 12 */
   .text-cap12-med {
     font-size: 12px;
