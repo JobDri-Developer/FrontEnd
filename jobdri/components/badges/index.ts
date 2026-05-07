@@ -1,0 +1,1 @@
+export { CompleteBadge } from "./CompleteBadge";
