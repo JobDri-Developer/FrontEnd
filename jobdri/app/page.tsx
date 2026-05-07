@@ -1,6 +1,13 @@
 import IconBox from "@/components/icons/IconBox";
 import CheckBox from "@/components/icons/CheckBox";
 import { SearchBar } from "@/components/searchbar";
+import {
+  InputMain,
+  InputSingleLine,
+  InputMultiLine,
+  InputMultiLine1000,
+  InputAutoGrow,
+} from "@/components/input";
 import Header from "@/components/header/Header";
 import { Lnb } from "@/components/lnb";
 import {
@@ -270,6 +277,56 @@ export default function Home() {
       <Section title="SearchBar">
         <div className="w-[500px]">
           <SearchBar />
+        </div>
+      </Section>
+
+      <Section title="InputMain">
+        <div className="flex flex-col gap-4 ">
+          <InputMain
+            label="라벨"
+            required
+            placeholder="내용을 입력해주세요."
+            disabled
+            rightContent="최대 20자"
+          />
+          <InputMain
+            label="라벨"
+            required
+            placeholder="내용을 입력해주세요."
+            rightContent="최대 20자"
+          />
+          <InputMain
+            label="라벨"
+            required
+            value="한 개수기"
+            rightContent="최대 20자"
+            error="에러 메시지가 들어갑니다."
+          />
+        </div>
+      </Section>
+
+      <Section title="InputSingleLine">
+        <div className="flex flex-col gap-4 ">
+          <InputSingleLine placeholder="내용을 입력해주세요." disabled />
+          <InputSingleLine placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputMultiLine">
+        <div className="flex flex-col gap-4 w-[360px]">
+          <InputMultiLine placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputMultiLine1000">
+        <div className="flex flex-col gap-4 w-[360px]">
+          <InputMultiLine1000 placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputAutoGrow">
+        <div className="flex flex-col gap-4 w-[360px]">
+          <InputAutoGrow placeholder="내용을 입력해주세요." />
         </div>
       </Section>
     </div>
