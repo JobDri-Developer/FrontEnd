@@ -58,7 +58,7 @@ export default function Lnb({
           <button
             type="button"
             aria-label={isFold ? "LNB 펼치기" : "LNB 접기"}
-            className="flex h-5 w-5 items-center justify-center text-icon-default"
+            className="flex h-5 w-5 items-center justify-center text-icon-neutral-default"
             onClick={() => setIsFold((prevIsFold) => !prevIsFold)}
           >
             <Icon type="SIDEBAR" className="h-5 w-5" />
@@ -87,7 +87,7 @@ export default function Lnb({
                 <Icon
                   type={item.iconType}
                   className={`h-5 w-5 shrink-0 ${
-                    isActive ? "text-icon-primary-strong" : "text-icon-default"
+                    isActive ? "text-icon-primary-strong" : "text-icon-neutral-default"
                   }`}
                 />
                 {!isFold && <span>{item.label}</span>}
@@ -103,11 +103,11 @@ export default function Lnb({
             <div className="flex w-full items-center justify-between px-2 py-2">
               <div className="flex items-center gap-[3px] text-label14-med text-gray-500 [font-feature-settings:'liga'_off,'clig'_off]">
                 <span>크레딧</span>
-                <Icon type="EX_LINK" className="h-4 w-4 text-icon-assistive" />
+                <Icon type="EX_LINK" className="h-4 w-4 text-icon-neutral-assistive" />
               </div>
 
               <div className="flex h-[21px] items-center justify-end gap-1">
-                <Icon type="TOKEN" className="h-4 w-4 text-icon-default" />
+                <Icon type="TOKEN" className="h-4 w-4 text-icon-neutral-default" />
                 <span className="text-cap12-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
                   {creditCount}회
                 </span>
