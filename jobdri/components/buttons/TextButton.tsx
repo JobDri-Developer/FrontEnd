@@ -14,7 +14,7 @@ interface TextButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const sizeStyles: Record<TextButtonSize, string> = {
-  small: "h-[21px] w-[76px] pl-2 text-label14-med",
+  small: "pl-2 text-label14-med",
   large: "py-1 pr-0.5 pl-3 text-b16-med",
 };
 
@@ -62,9 +62,9 @@ export default function TextButton({
       className={clsx(
         "inline-flex items-center rounded-toast-s [font-feature-settings:'liga'_off,'clig'_off] hover:bg-fill-hover",
         isLeftLarge
-          ? "h-[38px] w-[107px] gap-2 py-1.5 pr-3 pl-2 text-b16-med"
+          ? "gap-2 py-1.5 pr-3 pl-2 text-b16-med"
           : isRightLarge
-            ? "h-[34px] w-[93px] py-1 pr-0.5 pl-3 text-b16-med"
+            ? "py-1 pr-0.5 pl-3 text-b16-med"
           : sizeStyles[size],
         styleTypeStyles[styleType],
         styleType === "secondary" && size === "small" && "font-normal",
@@ -73,7 +73,7 @@ export default function TextButton({
       {...buttonProps}
     >
       {iconPosition === "left" && icon}
-      <span>{label}</span>
+      <span className="whitespace-nowrap">{label}</span>
       {iconPosition === "right" && icon}
     </button>
   );

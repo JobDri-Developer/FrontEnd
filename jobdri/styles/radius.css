@@ -5,6 +5,7 @@
   --radius-10: 10px;
   --radius-12: 12px;
   --radius-16: 16px;
+  --radius-20: 20px;
   --radius-full: 999px;
 
   /* [2] Semantic Tokens */
@@ -12,6 +13,8 @@
   /* 카드 & 모달 */
   --radius-card: var(--radius-16);
   --radius-card-s: var(--radius-12);
+  --radius-card-l: var(--radius-20);
+  --radius-card-result: var(--radius-8);
   --radius-modal: var(--radius-16);
 
   /* 토스트 */
@@ -26,6 +29,7 @@
 
   /* 아이콘 & 마커 */
   --radius-icon: var(--radius-12);
+  --radius-icon-default: var(--radius-10);
   --radius-icon-round: var(--radius-full);
   --radius-marker: var(--radius-8);
   --radius-badge-round: var(--radius-full);

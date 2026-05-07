@@ -42,10 +42,6 @@ const arrowIconStyles: Partial<Record<TooltipPlacement, string>> = {
   down_right: "rotate-90",
 };
 
-const textStyles: Partial<Record<TooltipPlacement, string>> = {
-  left_up: "w-[111px]",
-};
-
 export function Tooltip({
   placement = "up_mid",
   message = "1회 크레딧 무료 증정",
@@ -58,7 +54,7 @@ export function Tooltip({
     <div
       role="tooltip"
       className={clsx(
-        "relative inline-flex items-center justify-center gap-0.5 rounded-[8px] bg-fill-tertiary-default px-3 py-2 text-text-neutral-white shadow-[0_0_24px_0_var(--color-bg-shadow-default)]",
+        "relative inline-flex max-w-[240px] items-center justify-center gap-0.5 rounded-[8px] bg-fill-tertiary-default px-3 py-2 text-text-neutral-white shadow-[0_0_24px_0_var(--color-bg-shadow-default)]",
         className,
       )}
     >
@@ -78,12 +74,12 @@ export function Tooltip({
         />
       </span>
 
-      <span className="flex items-center gap-0.5 whitespace-nowrap text-label14-med [font-feature-settings:'liga'_off,'clig'_off]">
-        <span className="flex flex-col gap-0.5">
+      <span className="flex min-w-0 items-center gap-0.5 text-label14-med [font-feature-settings:'liga'_off,'clig'_off]">
+        <span className="flex min-w-0 flex-col gap-0.5">
           {contentLines.map((line, index) => (
             <span
               key={`${line}-${index}`}
-              className={clsx(textStyles[placement])}
+              className="break-keep [overflow-wrap:anywhere]"
             >
               {line}
             </span>
