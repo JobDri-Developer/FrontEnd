@@ -19,12 +19,6 @@ import {
   TextButton,
 } from "@/components/buttons";
 import { Toast, ToastFrame } from "@/components/toast";
-import {
-  ChipMain,
-  ChipRound,
-  ChipRoundSelected,
-  ChipQnumber,
-} from "@/components/chips";
 import { CompleteBadge } from "@/components/badges";
 import { Tooltip, TooltipModify } from "@/components/tooltip";
 import { TabMenuThree, TabMenuTwo } from "@/components/tabs";

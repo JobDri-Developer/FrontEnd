@@ -22,7 +22,7 @@ export function TooltipModify({
     <div
       role="tooltip"
       className={clsx(
-        "relative flex w-[480px] flex-col items-start gap-3 rounded-[15px] bg-fill-tertiary-default px-5 py-[18px]",
+        "relative flex w-full max-w-[480px] flex-col items-start gap-3 rounded-[15px] bg-fill-tertiary-default px-5 py-[18px]",
         className,
       )}
     >
