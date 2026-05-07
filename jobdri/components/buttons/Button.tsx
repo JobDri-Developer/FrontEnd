@@ -14,11 +14,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
-  large: "flex h-12 w-[137px] p-3 text-btn16-semibold",
-  medium: "inline-flex h-10 w-[129px] p-2 text-btn16-semibold",
+  large: "flex h-12 min-w-[137px] p-3 text-btn16-semibold",
+  medium: "inline-flex h-10 min-w-[129px] p-2 text-btn16-semibold",
   small:
-    "inline-flex h-9 w-[115px] p-2 text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-justify",
-  xsmall: "inline-flex h-[25px] w-24 px-1.5 py-1 text-cap12-med",
+    "inline-flex h-9 min-w-[115px] p-2 text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-justify",
+  xsmall: "inline-flex=0 h-[25px] min-w-24 px-1.5 py-1 text-cap12-med",
 };
 
 const radiusStyles: Record<ButtonSize, string> = {
@@ -50,10 +50,10 @@ const inactiveStyle =
   "bg-fill-disabled text-text-neutral-disabled hover:bg-fill-disabled";
 
 const iconColorStyles: Record<ButtonStyle, string> = {
-  primary: "text-icon-white",
-  secondary: "text-icon-white",
-  tertiary: "text-icon-default",
-  quaternary: "text-icon-default",
+  primary: "text-icon-neutral-white",
+  secondary: "text-icon-neutral-white",
+  tertiary: "text-icon-neutral-default",
+  quaternary: "text-icon-neutral-default",
 };
 
 export default function Button({
@@ -89,7 +89,7 @@ export default function Button({
             "aspect-square shrink-0",
             iconSizeStyles[size],
             isInactive
-              ? "text-icon-assistive"
+              ? "text-icon-neutral-assistive"
               : iconColorStyles[resolvedStyleType],
           )}
         />

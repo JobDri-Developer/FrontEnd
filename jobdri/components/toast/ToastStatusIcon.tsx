@@ -15,7 +15,7 @@ const statusIconStyles: Record<ToastStatusIconVariant, string> = {
 function CheckIcon() {
   return (
     <span className="flex aspect-square h-5 w-5 shrink-0 items-center justify-center p-[1.666px]">
-      <span className="flex aspect-square h-[16.667px] w-[16.667px] shrink-0 items-center justify-center rounded-full bg-fill-secondary-default text-icon-white">
+      <span className="flex aspect-square h-[16.667px] w-[16.667px] shrink-0 items-center justify-center rounded-full bg-fill-secondary-default text-icon-neutral-white">
         <svg
           width="15"
           height="15"

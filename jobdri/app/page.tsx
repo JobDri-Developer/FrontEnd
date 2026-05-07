@@ -1,11 +1,14 @@
 import IconBox from "@/components/icons/IconBox";
 import CheckBox from "@/components/icons/CheckBox";
+import { SearchBar } from "@/components/searchbar";
 import {
-  ChipMain,
-  ChipRound,
-  ChipRoundSelected,
-  ChipQnumber,
-} from "@/components/chips";
+  InputMain,
+  InputSingleLine,
+  InputMultiLine,
+  InputMultiLine1000,
+  InputAutoGrow,
+  InputFile,
+} from "@/components/input";
 import { ListRole, ListQ, ListQCart } from "@/components/list";
 import PannelItem from "@/components/progress/PannelItem";
 import Header from "@/components/header/Header";
@@ -235,10 +238,38 @@ export default function Home() {
         </div>
       </Section>
 
-      <Section title="IconBox">
-        <IconBox type="TRASH" />
-        <IconBox type="HOME_M" />
-        <IconBox type="SPARKLE" />
+      <Section title="IconBox — primary / large">
+        <IconBox
+          type="EDIT"
+          size="large"
+          state="primary"
+          background="default"
+        />
+        <IconBox type="EDIT" size="large" state="primary" background="white" />
+        <IconBox type="LINK" size="mid" state="primary" background="default" />
+        <IconBox type="LINK" size="mid" state="primary" background="white" />
+      </Section>
+
+      <Section title="IconBox — secondary / large">
+        <IconBox
+          type="EDIT"
+          size="large"
+          state="secondary"
+          background="default"
+        />
+        <IconBox
+          type="EDIT"
+          size="large"
+          state="secondary"
+          background="white"
+        />
+        <IconBox
+          type="LINK"
+          size="mid"
+          state="secondary"
+          background="default"
+        />
+        <IconBox type="LINK" size="mid" state="secondary" background="white" />
       </Section>
 
       <Section title="CheckBox">
@@ -287,51 +318,112 @@ export default function Home() {
         <ChipQnumber number={2} selected />
       </Section>
 
-      <Section title="Complete">
-        <CompleteBadge />
-      </Section>
-
-      <Section title="Tooltip">
-        <div className="grid w-full grid-cols-3 items-start gap-x-0 gap-y-6">
-          <div className="flex flex-col items-start gap-8">
-            <Tooltip placement="right_mid" />
-            <Tooltip placement="left_mid" />
-            <Tooltip
-              placement="left_up"
-              lines={["1회 크레딧 무료 증정", "1회 크레딧 무료 증정"]}
-            />
-          </div>
-
-          <div className="flex flex-col items-start gap-8">
-            <Tooltip placement="up_mid" />
-            <Tooltip placement="up_left" />
-            <Tooltip placement="up_right" />
-          </div>
-
-          <div className="flex flex-col items-start gap-8">
-            <Tooltip placement="down_left" />
-            <Tooltip placement="down_mid" />
-            <Tooltip placement="down_right" />
-          </div>
+      <Section title="SearchBar">
+        <div className="w-[500px]">
+          <SearchBar />
         </div>
       </Section>
 
-      <Section title="Tooltip/Modify">
-        <TooltipModify />
-      </Section>
-
-      <Section title="Tab Menu 2">
-        <div className="flex flex-col gap-7">
-          <TabMenuTwo activeTab="overview" />
-          <TabMenuTwo activeTab="detail" />
+      <Section title="InputMain">
+        <div className="flex flex-col gap-4 ">
+          <InputMain
+            label="라벨"
+            required
+            placeholder="내용을 입력해주세요."
+            disabled
+            rightContent="최대 20자"
+          />
+          <InputMain
+            label="라벨"
+            required
+            placeholder="내용을 입력해주세요."
+            rightContent="최대 20자"
+          />
+          <InputMain
+            label="라벨"
+            required
+            value="한 개수기"
+            rightContent="최대 20자"
+            error="에러 메시지가 들어갑니다."
+          />
         </div>
       </Section>
 
-      <Section title="Tab Menu 3">
-        <div className="flex flex-col gap-7">
-          <TabMenuThree activeTab="competency" />
-          <TabMenuThree activeTab="readability" />
-          <TabMenuThree activeTab="trust" />
+      <Section title="InputSingleLine">
+        <div className="flex flex-col gap-4 ">
+          <InputSingleLine placeholder="내용을 입력해주세요." disabled />
+          <InputSingleLine placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputMultiLine">
+        <div className="flex flex-col gap-4 w-[360px]">
+          <InputMultiLine placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputMultiLine1000">
+        <div className="flex flex-col gap-4 w-[360px]">
+          <InputMultiLine1000 placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputAutoGrow">
+        <div className="flex flex-col gap-4 w-[360px]">
+          <InputAutoGrow placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputFile">
+        <div className="w-[480px]">
+          <InputFile />
+          <Section title="Complete">
+            <CompleteBadge />
+          </Section>
+
+          <Section title="Tooltip">
+            <div className="grid w-full grid-cols-3 items-start gap-x-0 gap-y-6">
+              <div className="flex flex-col items-start gap-8">
+                <Tooltip placement="right_mid" />
+                <Tooltip placement="left_mid" />
+                <Tooltip
+                  placement="left_up"
+                  lines={["1회 크레딧 무료 증정", "1회 크레딧 무료 증정"]}
+                />
+              </div>
+
+              <div className="flex flex-col items-start gap-8">
+                <Tooltip placement="up_mid" />
+                <Tooltip placement="up_left" />
+                <Tooltip placement="up_right" />
+              </div>
+
+              <div className="flex flex-col items-start gap-8">
+                <Tooltip placement="down_left" />
+                <Tooltip placement="down_mid" />
+                <Tooltip placement="down_right" />
+              </div>
+            </div>
+          </Section>
+
+          <Section title="Tooltip/Modify">
+            <TooltipModify />
+          </Section>
+
+          <Section title="Tab Menu 2">
+            <div className="flex flex-col gap-7">
+              <TabMenuTwo activeTab="overview" />
+              <TabMenuTwo activeTab="detail" />
+            </div>
+          </Section>
+
+          <Section title="Tab Menu 3">
+            <div className="flex flex-col gap-7">
+              <TabMenuThree activeTab="competency" />
+              <TabMenuThree activeTab="readability" />
+              <TabMenuThree activeTab="trust" />
+            </div>
+          </Section>
         </div>
       </Section>
 

@@ -30,7 +30,7 @@ const styleTypeStyles: Record<TextButtonStyle, string> = {
 
 const iconColorStyles: Record<TextButtonStyle, string> = {
   primary: "text-icon-primary-default",
-  secondary: "text-icon-assistive",
+  secondary: "text-icon-neutral-assistive",
 };
 
 export default function TextButton({

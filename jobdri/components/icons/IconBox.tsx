@@ -1,28 +1,65 @@
-"use client";
-import { useState } from "react";
 import clsx from "clsx";
 import Icon, { IconType } from "./Icon";
 
+type IconBoxSize = "large" | "mid";
+type IconBoxState = "primary" | "secondary";
+type IconBoxBackground = "default" | "white";
+
 interface IconBoxProps {
   type: IconType;
+  size?: IconBoxSize;
+  state?: IconBoxState;
+  background?: IconBoxBackground;
+  className?: string;
 }
 
-export default function IconBox({ type }: IconBoxProps) {
-  const [isSelected, setIsSelected] = useState(false);
+// const sizeStyles: Record<IconBoxSize, string> = {
+//   large: "w-9 h-9 ",
+//   mid: "w-8 h-8",
+// };
 
-  return type === "TRASH" ? (
+const bgStyles: Record<IconBoxState, Record<IconBoxBackground, string>> = {
+  primary: {
+    default: "bg-fill-primary-assistive",
+    white: "bg-fill-quaternary-default",
+  },
+  secondary: {
+    default: "bg-icon-neutral-weak",
+    white: "bg-fill-neutral-white",
+  },
+};
+
+const iconColorStyles: Record<
+  IconBoxState,
+  Record<IconBoxBackground, string>
+> = {
+  primary: {
+    default: "text-icon-primary-default",
+    white: "text-icon-primary-default",
+  },
+  secondary: {
+    default: "text-icon-neutral-default",
+    white: "text-icon-neutral-assistive",
+  },
+};
+
+export default function IconBox({
+  type,
+  size = "large",
+  state = "primary",
+  background = "default",
+  className,
+}: IconBoxProps) {
+  return (
     <div
       className={clsx(
-        "p-1 bg-gray-100 hover:bg-red-100 rounded-cta-s cursor-pointer",
-        isSelected && "bg-red-400",
+        "flex items-center justify-center rounded-icon p-2",
+        // sizeStyles[size],
+        bgStyles[state][background],
+        className,
       )}
-      onClick={() => setIsSelected(!isSelected)}
     >
-      <Icon type="TRASH" />
-    </div>
-  ) : (
-    <div className=" p-2 bg-gray-95 hover:bg-white rounded-cta-s cursor-pointer">
-      <Icon type={type} />
+      <Icon type={type} className={iconColorStyles[state][background]} />
     </div>
   );
 }

@@ -31,7 +31,7 @@ export default function ToastFrame({
       <button
         type="button"
         aria-label="토스트 닫기"
-        className="flex h-[30px] w-[30px] shrink-0 items-center justify-center p-[3px] text-icon-assistive"
+        className="flex h-[30px] w-[30px] shrink-0 items-center justify-center p-[3px] text-icon-neutral-assistive"
         onClick={onClose}
       >
         <Icon type="CLOSE" className="h-6 w-6" />

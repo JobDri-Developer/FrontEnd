@@ -6,7 +6,6 @@
 
 @layer base {
   body {
-    /* typography.css에서 정의한 폰트 적용 */
     font-family: "Pretendard-Variable", sans-serif;
   }
 }
