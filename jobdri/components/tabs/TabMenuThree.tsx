@@ -24,7 +24,7 @@ export function TabMenuThree({
   return (
     <div
       className={clsx(
-        "flex w-[496px] items-center justify-between rounded-tap-hug bg-bg-white p-1 shadow-[0_0_24px_0_var(--color-bg-shadow-default)]",
+        "inline-flex min-w-[496px] items-center justify-between rounded-tap-hug bg-bg-white p-1 shadow-[0_0_24px_0_var(--color-bg-shadow-default)]",
         className,
       )}
       role="tablist"
