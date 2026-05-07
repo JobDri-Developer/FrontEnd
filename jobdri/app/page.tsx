@@ -9,12 +9,6 @@ import {
   InputAutoGrow,
   InputFile,
 } from "@/components/input";
-import {
-  ChipMain,
-  ChipRound,
-  ChipRoundSelected,
-  ChipQnumber,
-} from "@/components/chips";
 import { ListRole, ListQ, ListQCart } from "@/components/list";
 import PannelItem from "@/components/progress/PannelItem";
 import Header from "@/components/header/Header";
@@ -239,16 +233,36 @@ export default function Home() {
       </Section>
 
       <Section title="IconBox — primary / large">
-        <IconBox type="EDIT" size="large" state="primary" background="default" />
+        <IconBox
+          type="EDIT"
+          size="large"
+          state="primary"
+          background="default"
+        />
         <IconBox type="EDIT" size="large" state="primary" background="white" />
         <IconBox type="LINK" size="mid" state="primary" background="default" />
         <IconBox type="LINK" size="mid" state="primary" background="white" />
       </Section>
 
       <Section title="IconBox — secondary / large">
-        <IconBox type="EDIT" size="large" state="secondary" background="default" />
-        <IconBox type="EDIT" size="large" state="secondary" background="white" />
-        <IconBox type="LINK" size="mid" state="secondary" background="default" />
+        <IconBox
+          type="EDIT"
+          size="large"
+          state="secondary"
+          background="default"
+        />
+        <IconBox
+          type="EDIT"
+          size="large"
+          state="secondary"
+          background="white"
+        />
+        <IconBox
+          type="LINK"
+          size="mid"
+          state="secondary"
+          background="default"
+        />
         <IconBox type="LINK" size="mid" state="secondary" background="white" />
       </Section>
 
@@ -357,51 +371,53 @@ export default function Home() {
       <Section title="InputFile">
         <div className="w-[480px]">
           <InputFile />
-      <Section title="Complete">
-        <CompleteBadge />
-      </Section>
+          <Section title="Complete">
+            <CompleteBadge />
+          </Section>
 
-      <Section title="Tooltip">
-        <div className="grid w-full grid-cols-3 items-start gap-x-0 gap-y-6">
-          <div className="flex flex-col items-start gap-8">
-            <Tooltip placement="right_mid" />
-            <Tooltip placement="left_mid" />
-            <Tooltip
-              placement="left_up"
-              lines={["1회 크레딧 무료 증정", "1회 크레딧 무료 증정"]}
-            />
-          </div>
+          <Section title="Tooltip">
+            <div className="grid w-full grid-cols-3 items-start gap-x-0 gap-y-6">
+              <div className="flex flex-col items-start gap-8">
+                <Tooltip placement="right_mid" />
+                <Tooltip placement="left_mid" />
+                <Tooltip
+                  placement="left_up"
+                  lines={["1회 크레딧 무료 증정", "1회 크레딧 무료 증정"]}
+                />
+              </div>
 
-          <div className="flex flex-col items-start gap-8">
-            <Tooltip placement="up_mid" />
-            <Tooltip placement="up_left" />
-            <Tooltip placement="up_right" />
-          </div>
+              <div className="flex flex-col items-start gap-8">
+                <Tooltip placement="up_mid" />
+                <Tooltip placement="up_left" />
+                <Tooltip placement="up_right" />
+              </div>
 
-          <div className="flex flex-col items-start gap-8">
-            <Tooltip placement="down_left" />
-            <Tooltip placement="down_mid" />
-            <Tooltip placement="down_right" />
-          </div>
-        </div>
-      </Section>
+              <div className="flex flex-col items-start gap-8">
+                <Tooltip placement="down_left" />
+                <Tooltip placement="down_mid" />
+                <Tooltip placement="down_right" />
+              </div>
+            </div>
+          </Section>
 
-      <Section title="Tooltip/Modify">
-        <TooltipModify />
-      </Section>
+          <Section title="Tooltip/Modify">
+            <TooltipModify />
+          </Section>
 
-      <Section title="Tab Menu 2">
-        <div className="flex flex-col gap-7">
-          <TabMenuTwo activeTab="overview" />
-          <TabMenuTwo activeTab="detail" />
-        </div>
-      </Section>
+          <Section title="Tab Menu 2">
+            <div className="flex flex-col gap-7">
+              <TabMenuTwo activeTab="overview" />
+              <TabMenuTwo activeTab="detail" />
+            </div>
+          </Section>
 
-      <Section title="Tab Menu 3">
-        <div className="flex flex-col gap-7">
-          <TabMenuThree activeTab="competency" />
-          <TabMenuThree activeTab="readability" />
-          <TabMenuThree activeTab="trust" />
+          <Section title="Tab Menu 3">
+            <div className="flex flex-col gap-7">
+              <TabMenuThree activeTab="competency" />
+              <TabMenuThree activeTab="readability" />
+              <TabMenuThree activeTab="trust" />
+            </div>
+          </Section>
         </div>
       </Section>
     </div>
