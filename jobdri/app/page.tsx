@@ -22,6 +22,18 @@ import { Toast, ToastFrame } from "@/components/toast";
 import { CompleteBadge } from "@/components/badges";
 import { Tooltip, TooltipModify } from "@/components/tooltip";
 import { TabMenuThree, TabMenuTwo } from "@/components/tabs";
+import { Highlight } from "@/components/highlight";
+import { ResultTitle } from "@/components/result";
+import {
+  ApplyCard,
+  ApplyOptionCard,
+  ComCard,
+  CreditCard,
+  Method1Card,
+  Method2Card,
+  ResultScore,
+  ResultSummaryCard,
+} from "@/components/cards";
 
 function Section({
   title,
@@ -320,6 +332,56 @@ export default function Home() {
           <TabMenuThree activeTab="competency" />
           <TabMenuThree activeTab="readability" />
           <TabMenuThree activeTab="trust" />
+        </div>
+      </Section>
+
+      <Section title="Apply Card">
+        <ApplyCard className="max-w-[960px]" />
+      </Section>
+
+      <Section title="Com Card">
+        <ComCard />
+      </Section>
+
+      <Section title="Credit Card">
+        <CreditCard className="max-w-[312px]" />
+      </Section>
+
+      <Section title="Apply">
+        <ApplyOptionCard />
+      </Section>
+
+      <Section title="Method 1">
+        <Method1Card />
+      </Section>
+
+      <Section title="Method 2">
+        <Method2Card />
+      </Section>
+
+      <Section title="Card/result_summary">
+        <div className="flex flex-col gap-7">
+          <ResultSummaryCard />
+          <ResultSummaryCard title="성과 구체성" score={51} variant="low" />
+        </div>
+      </Section>
+
+      <Section title="Result_Score">
+        <ResultScore />
+      </Section>
+
+      <Section title="Highlight">
+        <div className="flex w-[188px] flex-col gap-10">
+          <Highlight />
+          <Highlight variant="selected" />
+          <Highlight variant="modified" />
+        </div>
+      </Section>
+
+      <Section title="Result_Title">
+        <div className="flex flex-col gap-8">
+          <ResultTitle />
+          <ResultTitle variant="good" />
         </div>
       </Section>
     </div>
