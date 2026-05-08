@@ -357,18 +357,11 @@ export default function Home() {
           </Section>
 
           <Section title="Tab Menu 2">
-            <div className="flex flex-col gap-7">
-              <TabMenuTwo activeTab="overview" />
-              <TabMenuTwo activeTab="detail" />
-            </div>
+            <TabMenuTwo />
           </Section>
 
           <Section title="Tab Menu 3">
-            <div className="flex flex-col gap-7">
-              <TabMenuThree activeTab="competency" />
-              <TabMenuThree activeTab="readability" />
-              <TabMenuThree activeTab="trust" />
-            </div>
+            <TabMenuThree />
           </Section>
         </div>
       </Section>

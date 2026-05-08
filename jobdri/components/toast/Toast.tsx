@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import Icon from "@/components/icons/Icon";
+import { IconOnlyButton } from "@/components/buttons";
 import ToastStatusIcon from "./ToastStatusIcon";
 
 export type ToastVariant = "normal" | "check" | "warning" | "dark";
@@ -44,17 +44,12 @@ export default function Toast({
         </span>
       </div>
 
-      <button
-        type="button"
+      <IconOnlyButton
         aria-label="토스트 닫기"
-        className={clsx(
-          "flex h-[30px] w-[30px] shrink-0 items-center justify-center p-[3px]",
-          isDark ? "text-icon-neutral-default" : "text-icon-neutral-assistive",
-        )}
+        tone={isDark ? "dark" : "light"}
+        className="shrink-0"
         onClick={onClose}
-      >
-        <Icon type="CLOSE" className="h-6 w-6" />
-      </button>
+      />
     </div>
   );
 }

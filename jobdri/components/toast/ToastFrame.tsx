@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import Icon from "@/components/icons/Icon";
+import { IconOnlyButton } from "@/components/buttons";
 import ToastStatusIcon from "./ToastStatusIcon";
 
 interface ToastFrameProps {
@@ -28,14 +28,11 @@ export default function ToastFrame({
         </span>
       </div>
 
-      <button
-        type="button"
+      <IconOnlyButton
         aria-label="토스트 닫기"
-        className="flex h-[30px] w-[30px] shrink-0 items-center justify-center p-[3px] text-icon-neutral-assistive"
+        className="shrink-0"
         onClick={onClose}
-      >
-        <Icon type="CLOSE" className="h-6 w-6" />
-      </button>
+      />
     </div>
   );
 }
