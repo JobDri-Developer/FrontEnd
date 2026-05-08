@@ -14,8 +14,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
-  large: "inline-flex p-3 text-btn16-semibold",
-  medium: "inline-flex p-2 text-btn16-semibold",
+  large: "inline-flex px-4 py-3 text-btn16-semibold",
+  medium: "inline-flex px-3 py-2 text-btn16-semibold",
   small:
     "inline-flex px-2 py-1.5 text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-justify",
   xsmall:
