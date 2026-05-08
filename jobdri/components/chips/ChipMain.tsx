@@ -26,7 +26,8 @@ const activeStyles: Record<ChipMainColor, Record<ChipMainSize, string>> = {
   },
   quaternary: {
     mid: "bg-fill-quaternary text-text-neutral-title",
-    small: "bg-fill-secondary-assistive text-text-neutral-description",
+    small:
+      "border border-line-neutral-default bg-fill-quaternary-default text-text-neutral-description",
   },
 };
 
@@ -36,8 +37,9 @@ const inactiveStyle = (color: ChipMainColor) =>
     : "bg-fill-quaternary-default text-text-neutral-caption";
 
 const sizeStyles: Record<ChipMainSize, string> = {
-  mid: "px-3 py-1 text-label14-med rounded-chip-m",
-  small: "px-1.5 py-1 text-cap12-med rounded-chip-s",
+  mid: "inline-flex items-center justify-center gap-2.5 px-3 py-1 text-label14-med rounded-chip-m",
+  small:
+    "inline-flex items-center justify-center gap-2.5 px-1.5 py-1 text-cap12-med rounded-chip-s",
 };
 
 export function ChipMain({
