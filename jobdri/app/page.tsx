@@ -11,12 +11,8 @@ import {
   TextButton,
 } from "@/components/buttons";
 import { Toast, ToastFrame } from "@/components/toast";
-import {
-  ChipMain,
-  ChipRound,
-  ChipRoundSelected,
-  ChipQnumber,
-} from "@/components/chips";
+import { ChipRound, ChipRoundSelected, ChipQnumber } from "@/components/chips";
+import ChipMainDemo from "@/components/chips/ChipMainDemo";
 import ModalLinkInputDemo from "@/components/modal/ModalLinkInputDemo";
 import { CompleteBadge } from "@/components/badges";
 import { Tooltip, TooltipModify } from "@/components/tooltip";
@@ -226,24 +222,7 @@ export default function Home() {
         <CheckBox type="RADIO_M" />
       </Section>
       <Section title="ChipMain — Mid">
-        <ChipMain label="primary" color="primary" />
-        <ChipMain label="primary inactive" color="primary" active={false} />
-        <ChipMain label="secondary" color="secondary" />
-        <ChipMain label="secondary inactive" color="secondary" active={false} />
-        <ChipMain label="tertiary" color="tertiary" />
-        <ChipMain label="tertiary inactive" color="tertiary" active={false} />
-        <ChipMain label="quaternary" color="quaternary" />
-        <ChipMain
-          label="quaternary inactive"
-          color="quaternary"
-          active={false}
-        />
-      </Section>
-      <Section title="ChipMain — Small">
-        <ChipMain label="primary" color="primary" size="small" />
-        <ChipMain label="secondary" color="secondary" size="small" />
-        <ChipMain label="tertiary" color="tertiary" size="small" />
-        <ChipMain label="quaternary" color="quaternary" size="small" />
+        <ChipMainDemo />
       </Section>
       <Section title="ChipRound">
         <ChipRound label="strong" variant="strong" />
@@ -263,13 +242,11 @@ export default function Home() {
       <Section title="Modal — LinkInput">
         <ModalLinkInputDemo />
       </Section>{" "}
-
       <Section title="SearchBar">
         <div className="w-[500px]">
           <SearchBar />
         </div>
       </Section>
-
       <Section title="InputMain">
         <div className="flex flex-col gap-4 ">
           <InputMain
@@ -294,32 +271,27 @@ export default function Home() {
           />
         </div>
       </Section>
-
       <Section title="InputSingleLine">
         <div className="flex flex-col gap-4 ">
           <InputSingleLine placeholder="내용을 입력해주세요." disabled />
           <InputSingleLine placeholder="내용을 입력해주세요." />
         </div>
       </Section>
-
       <Section title="InputMultiLine">
         <div className="flex flex-col gap-4 w-[360px]">
           <InputMultiLine placeholder="내용을 입력해주세요." />
         </div>
       </Section>
-
       <Section title="InputMultiLine1000">
         <div className="flex flex-col gap-4 w-[360px]">
           <InputMultiLine1000 placeholder="내용을 입력해주세요." />
         </div>
       </Section>
-
       <Section title="InputAutoGrow">
         <div className="flex flex-col gap-4 w-[360px]">
           <InputAutoGrow placeholder="내용을 입력해주세요." />
         </div>
       </Section>
-
       <Section title="InputFile">
         <div className="w-[480px]">
           <InputFile />
@@ -372,11 +344,9 @@ export default function Home() {
           </Section>
         </div>
       </Section>
-
       <Section title="CreditHeader">
         <CreditHeader />
       </Section>
-
       <Section title="CreditRow">
         <div className="flex flex-col gap-8">
           <CreditRow />

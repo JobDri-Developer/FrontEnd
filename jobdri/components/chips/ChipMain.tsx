@@ -1,58 +1,56 @@
 import clsx from "clsx";
 
 type ChipMainColor = "primary" | "secondary" | "tertiary" | "quaternary";
-type ChipMainSize = "mid" | "small";
 
 interface ChipMainProps {
   label: string;
   color: ChipMainColor;
-  size?: ChipMainSize;
-  active?: boolean;
+  selected?: boolean;
+  onClick?: () => void;
+  className?: string;
 }
 
-const activeStyles: Record<ChipMainColor, Record<ChipMainSize, string>> = {
+const styles: Record<ChipMainColor, { default: string; selected: string }> = {
   primary: {
-    mid: "bg-fill-primary-default text-text-neutral-white",
-    small: "bg-fill-primary-default text-text-neutral-white",
+    default:
+      "bg-fill-quaternary-default text-text-neutral-caption hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)]",
+    selected:
+      "bg-fill-primary-default text-text-neutral-white hover:bg-fill-primary-default hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)] hover:ring-inset hover:ring-1 hover:ring-line-primary-strong",
   },
   secondary: {
-    mid: "bg-fill-primary-assistive text-text-primary-strong",
-    small: "bg-fill-primary-assistive text-text-primary-strong",
+    default:
+      "bg-fill-quaternary-default text-text-neutral-caption hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)]",
+    selected:
+      "bg-fill-primary-assistive text-text-primary-strong hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)] hover:ring-inset hover:ring-1 hover:ring-line-primary-assistive",
   },
   tertiary: {
-    mid: "bg-fill-tertiary-default text-text-neutral-white",
-    small:
-      "bg-fill-quaternary text-text-neutral-caption border border-line-neutral",
+    default:
+      "bg-fill-quaternary-default text-text-neutral-caption hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)]",
+    selected:
+      "bg-fill-quaternary-default text-text-neutral-title hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)]",
   },
   quaternary: {
-    mid: "bg-fill-quaternary text-text-neutral-title",
-    small:
-      "border border-line-neutral-default bg-fill-quaternary-default text-text-neutral-description",
+    default:
+      "bg-transparent text-text-neutral-disabled hover:text-text-neutral-caption",
+    selected:
+      "bg-fill-tertiary-default text-text-neutral-white hover:bg-fill-tertiary-hover-default hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)] ",
   },
-};
-
-const inactiveStyle = (color: ChipMainColor) =>
-  color === "quaternary"
-    ? "bg-transparent text-text-neutral-caption"
-    : "bg-fill-quaternary-default text-text-neutral-caption";
-
-const sizeStyles: Record<ChipMainSize, string> = {
-  mid: "inline-flex items-center justify-center gap-2.5 px-3 py-1 text-label14-med rounded-chip-m",
-  small:
-    "inline-flex items-center justify-center gap-2.5 px-1.5 py-1 text-cap12-med rounded-chip-s",
 };
 
 export function ChipMain({
   label,
   color,
-  size = "mid",
-  active = true,
+  selected = false,
+  onClick,
+  className,
 }: ChipMainProps) {
   return (
     <span
+      onClick={onClick}
       className={clsx(
-        sizeStyles[size],
-        active ? activeStyles[color][size] : inactiveStyle(color),
+        "inline-flex items-center justify-center px-3 py-1 text-label14-med rounded-chip-m cursor-pointer transition-colors",
+        selected ? styles[color].selected : styles[color].default,
+        className,
       )}
     >
       {label}
