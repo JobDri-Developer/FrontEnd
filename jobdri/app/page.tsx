@@ -18,6 +18,10 @@ import {
   ChipQnumber,
 } from "@/components/chips";
 import ModalLinkInputDemo from "@/components/modal/ModalLinkInputDemo";
+import { CompleteBadge } from "@/components/badges";
+import { Tooltip, TooltipModify } from "@/components/tooltip";
+import { TabMenuThree, TabMenuTwo } from "@/components/tabs";
+import { CreditHeader, CreditRow } from "@/components/credit";
 
 function Section({
   title,
@@ -250,6 +254,126 @@ export default function Home() {
       <Section title="Modal — LinkInput">
         <ModalLinkInputDemo />
       </Section>{" "}
+
+      <Section title="SearchBar">
+        <div className="w-[500px]">
+          <SearchBar />
+        </div>
+      </Section>
+
+      <Section title="InputMain">
+        <div className="flex flex-col gap-4 ">
+          <InputMain
+            label="라벨"
+            required
+            placeholder="내용을 입력해주세요."
+            disabled
+            rightContent="최대 20자"
+          />
+          <InputMain
+            label="라벨"
+            required
+            placeholder="내용을 입력해주세요."
+            rightContent="최대 20자"
+          />
+          <InputMain
+            label="라벨"
+            required
+            value="한 개수기"
+            rightContent="최대 20자"
+            error="에러 메시지가 들어갑니다."
+          />
+        </div>
+      </Section>
+
+      <Section title="InputSingleLine">
+        <div className="flex flex-col gap-4 ">
+          <InputSingleLine placeholder="내용을 입력해주세요." disabled />
+          <InputSingleLine placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputMultiLine">
+        <div className="flex flex-col gap-4 w-[360px]">
+          <InputMultiLine placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputMultiLine1000">
+        <div className="flex flex-col gap-4 w-[360px]">
+          <InputMultiLine1000 placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputAutoGrow">
+        <div className="flex flex-col gap-4 w-[360px]">
+          <InputAutoGrow placeholder="내용을 입력해주세요." />
+        </div>
+      </Section>
+
+      <Section title="InputFile">
+        <div className="w-[480px]">
+          <InputFile />
+          <Section title="Complete">
+            <CompleteBadge />
+          </Section>
+
+          <Section title="Tooltip">
+            <div className="grid w-full grid-cols-3 items-start gap-x-0 gap-y-6">
+              <div className="flex flex-col items-start gap-8">
+                <Tooltip placement="right_mid" />
+                <Tooltip placement="left_mid" />
+                <Tooltip
+                  placement="left_up"
+                  lines={["1회 크레딧 무료 증정", "1회 크레딧 무료 증정"]}
+                />
+              </div>
+
+              <div className="flex flex-col items-start gap-8">
+                <Tooltip placement="up_mid" />
+                <Tooltip placement="up_left" />
+                <Tooltip placement="up_right" />
+              </div>
+
+              <div className="flex flex-col items-start gap-8">
+                <Tooltip placement="down_left" />
+                <Tooltip placement="down_mid" />
+                <Tooltip placement="down_right" />
+              </div>
+            </div>
+          </Section>
+
+          <Section title="Tooltip/Modify">
+            <TooltipModify />
+          </Section>
+
+          <Section title="Tab Menu 2">
+            <div className="flex flex-col gap-7">
+              <TabMenuTwo activeTab="overview" />
+              <TabMenuTwo activeTab="detail" />
+            </div>
+          </Section>
+
+          <Section title="Tab Menu 3">
+            <div className="flex flex-col gap-7">
+              <TabMenuThree activeTab="competency" />
+              <TabMenuThree activeTab="readability" />
+              <TabMenuThree activeTab="trust" />
+            </div>
+          </Section>
+        </div>
+      </Section>
+
+      <Section title="CreditHeader">
+        <CreditHeader />
+      </Section>
+
+      <Section title="CreditRow">
+        <div className="flex flex-col gap-8">
+          <CreditRow />
+          <CreditRow variant="assistive" dateTime="2026.04.07 오후 10:02" />
+        </div>
+      </Section>
     </div>
   );
 }
