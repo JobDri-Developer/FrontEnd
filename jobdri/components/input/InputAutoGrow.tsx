@@ -46,7 +46,7 @@ export function InputAutoGrow({
   }, [value]);
 
   return (
-    <div className={clsx("flex flex-col gap-1.5 w-148", className)}>
+    <div className={clsx("flex flex-col gap-1.5 min-w-148", className)}>
       <div className={getWrapperClass(focused, disabled, !!error)}>
         <textarea
           ref={textareaRef}
