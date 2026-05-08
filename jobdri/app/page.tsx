@@ -22,6 +22,15 @@ import { CompleteBadge } from "@/components/badges";
 import { Tooltip, TooltipModify } from "@/components/tooltip";
 import { TabMenuThree, TabMenuTwo } from "@/components/tabs";
 import { CreditHeader, CreditRow } from "@/components/credit";
+import { SearchBar } from "@/components/searchbar";
+import {
+  InputAutoGrow,
+  InputFile,
+  InputMain,
+  InputMultiLine,
+  InputMultiLine1000,
+  InputSingleLine,
+} from "@/components/input";
 
 function Section({
   title,

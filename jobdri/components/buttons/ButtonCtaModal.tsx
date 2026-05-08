@@ -35,7 +35,7 @@ function ModalIconButton({ label, iconType }: Stack3Item) {
         type={iconType}
         className="h-6 w-6 shrink-0 text-icon-neutral-default"
       />
-      <span className="flex h-6 items-center justify-center gap-2.5 px-0.5">
+      <span className="flex h-[22px] items-center justify-center gap-2.5 px-0.5">
         {label}
       </span>
     </button>

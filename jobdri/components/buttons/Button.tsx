@@ -14,11 +14,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
-  large: "flex h-12 min-w-[137px] p-3 text-btn16-semibold",
-  medium: "inline-flex h-10 min-w-[129px] p-2 text-btn16-semibold",
+  large: "inline-flex p-3 text-btn16-semibold",
+  medium: "inline-flex p-2 text-btn16-semibold",
   small:
-    "inline-flex h-9 min-w-[115px] p-2 text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-justify",
-  xsmall: "inline-flex=0 h-[25px] min-w-24 px-1.5 py-1 text-cap12-med",
+    "inline-flex px-2 py-1.5 text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-justify",
+  xsmall:
+    "inline-flex px-1.5 py-1 text-[12px] font-bold leading-[140%] tracking-[-0.24px]",
 };
 
 const radiusStyles: Record<ButtonSize, string> = {
@@ -37,13 +38,13 @@ const iconSizeStyles: Record<ButtonSize, string> = {
 
 const styleTypeStyles: Record<ButtonStyle, string> = {
   primary:
-    "bg-fill-primary-default text-text-neutral-white hover:bg-fill-primary-hover-default",
+    "bg-fill-primary-default text-text-neutral-white hover:bg-fill-primary-hover-default hover:shadow-[0_1px_40px_0_var(--color-bg-shadow-primary)] active:bg-fill-primary-pressed-default active:shadow-[0_1px_40px_0_var(--color-bg-shadow-primary)]",
   secondary:
-    "bg-fill-tertiary-default text-text-neutral-white hover:bg-fill-tertiary-hover-default",
+    "bg-fill-tertiary-default text-text-neutral-white hover:bg-[linear-gradient(146deg,var(--color-fill-tertiary-default)_42.48%,var(--color-fill-tertiary-pressed-default)_55.31%)] active:bg-fill-tertiary-pressed-default active:bg-none",
   tertiary:
-    "border border-line-neutral-default bg-fill-quaternary-default text-text-neutral-description hover:border-line-neutral-strong hover:bg-fill-quaternary-hover-default",
+    "border border-line-neutral-default bg-fill-quaternary-default text-text-neutral-description hover:border-line-neutral-default hover:bg-fill-quaternary-default hover:shadow-[0_1px_40px_0_var(--color-bg-shadow-strong)] active:border-line-neutral-strong active:bg-fill-quaternary-assistive active:shadow-[0_1px_40px_0_var(--color-bg-shadow-strong)]",
   quaternary:
-    "bg-fill-quaternary-assistive text-text-neutral-description hover:bg-fill-quaternary-hover-assistive",
+    "bg-fill-quaternary-assistive text-text-neutral-description hover:bg-fill-quaternary-hover-assistive active:bg-fill-quaternary-pressed-assistive",
 };
 
 const inactiveStyle =
@@ -73,7 +74,10 @@ export default function Button({
     <button
       type={type}
       className={clsx(
-        "items-center justify-center gap-0.5 text-center [font-feature-settings:'liga'_off,'clig'_off]",
+        "items-center justify-center text-center [font-feature-settings:'liga'_off,'clig'_off]",
+        size === "xsmall" && (resolvedStyleType === "tertiary" || isInactive)
+          ? "gap-0"
+          : "gap-1",
         sizeStyles[size],
         radiusStyles[size],
         isInactive ? inactiveStyle : styleTypeStyles[resolvedStyleType],
@@ -96,10 +100,9 @@ export default function Button({
       )}
       <span
         className={clsx(
-          "whitespace-nowrap",
-          size === "xsmall"
-            ? "flex self-stretch items-center justify-center gap-2.5 px-0.5"
-            : "px-px",
+          "flex items-center justify-center gap-2.5 px-0.5 whitespace-nowrap",
+          size !== "xsmall" && "h-[22px]",
+          size === "xsmall" && "translate-y-px",
         )}
       >
         {label}
