@@ -17,15 +17,15 @@ export default function LoadMotion({ className }: LoadMotionProps) {
     return () => clearInterval(interval);
   }, []);
   return (
-    <div className={clsx("flex items-center gap-1", className)}>
+    <div className={clsx("flex items-end gap-2 h-4", className)}>
       {[0, 1, 2].map((i) => (
         <div
           key={i}
           className={clsx(
-            "rounded-full transition-all duration-300",
+            "w-2 h-2 rounded-full transition-all duration-300",
             active === i
-              ? "w-1 h-1 bg-icon-heavy -translate-y-0.5"
-              : "w-1 h-1 bg-icon-assistive translate-y-0",
+              ? "bg-icon-neutral-heavy -translate-y-1"
+              : "bg-icon-neutral-assistive translate-y-0",
           )}
         />
       ))}

@@ -1,0 +1,113 @@
+"use client";
+
+import clsx from "clsx";
+import Icon from "@/components/icons/Icon";
+import Button from "@/components/buttons/Button";
+import { InputMain, InputSingleLine } from "@/components/input";
+import LoadMotion from "@/components/common/LoadMotion";
+
+type ModalVariant = "action" | "alort";
+
+interface ModalInputProps {
+  variant?: ModalVariant;
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  onCancel?: () => void;
+  onClose?: () => void;
+  className?: string;
+  announce?: string;
+  description?: string;
+  error?: string;
+}
+
+export default function ModaInput({
+  variant = "action",
+  value,
+  onChange,
+  onSubmit,
+  onCancel,
+  onClose,
+  className,
+  announce,
+  description,
+  error,
+}: ModalInputProps) {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+      <div
+        className={clsx(
+          "flex flex-col bg-white rounded-card w-120 overflow-hidden",
+          className,
+        )}
+      >
+        {/* 헤더: X 버튼 */}
+        <div className="flex justify-end px-7 pt-6">
+          {variant === "action" ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-icon-neutral-assistive hover:text-icon-neutral-default transition-colors"
+            >
+              <Icon type="CLOSE_M" className="w-5 h-5" />
+            </button>
+          ) : (
+            <div className="w-5 h-5" />
+          )}
+        </div>
+
+        {/* 바디 */}
+        <div className="flex flex-col items-center gap-5 px-8 pb-6 pt-3">
+          <LoadMotion />
+
+          {/* 텍스트 */}
+          <div className="flex flex-col items-center gap-2 text-center">
+            <span className="text-t20-semibold text-text-neutral-title">
+              {announce}
+            </span>
+            <span className="text-sub14-med text-text-neutral-caption">
+              {description}
+            </span>
+          </div>
+
+          {/* 인풋 */}
+          <InputMain
+            placeholder="https://www.com"
+            value={value}
+            onChange={onChange}
+            className="w-full"
+            error={error}
+          />
+
+          {/* 버튼 */}
+          {variant === "action" ? (
+            <Button
+              label="입력하기"
+              styleType="secondary"
+              size="large"
+              onClick={onSubmit}
+              className="w-full"
+            />
+          ) : (
+            <div className="flex gap-2 w-full">
+              <Button
+                label="취소하기"
+                size="large"
+                styleType="tertiary"
+                onClick={onCancel}
+                className="flex-1"
+              />
+              <Button
+                label="다시 입력하기"
+                size="large"
+                styleType="secondary"
+                onClick={onSubmit}
+                className="flex-1"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
