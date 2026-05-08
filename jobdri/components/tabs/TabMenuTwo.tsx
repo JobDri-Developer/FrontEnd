@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import clsx from "clsx";
 
 export type TabMenuTwoValue = "overview" | "detail";
@@ -16,10 +17,19 @@ const tabs: Array<{ value: TabMenuTwoValue; label: string }> = [
 ];
 
 export function TabMenuTwo({
-  activeTab = "overview",
+  activeTab,
   onChange,
   className,
 }: TabMenuTwoProps) {
+  const [internalActiveTab, setInternalActiveTab] =
+    useState<TabMenuTwoValue>("overview");
+  const selectedTab = activeTab ?? internalActiveTab;
+
+  const handleChange = (value: TabMenuTwoValue) => {
+    setInternalActiveTab(value);
+    onChange?.(value);
+  };
+
   return (
     <div
       className={clsx(
@@ -30,7 +40,7 @@ export function TabMenuTwo({
       aria-label="탭 메뉴"
     >
       {tabs.map((tab) => {
-        const isActive = tab.value === activeTab;
+        const isActive = tab.value === selectedTab;
 
         return (
           <button
@@ -44,7 +54,7 @@ export function TabMenuTwo({
                 ? "bg-fill-tertiary-default text-text-neutral-white"
                 : "text-text-neutral-description",
             )}
-            onClick={() => onChange?.(tab.value)}
+            onClick={() => handleChange(tab.value)}
           >
             {tab.label}
           </button>

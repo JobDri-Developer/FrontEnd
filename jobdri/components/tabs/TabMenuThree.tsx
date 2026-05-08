@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import clsx from "clsx";
 
 export type TabMenuThreeValue = "competency" | "readability" | "trust";
@@ -17,10 +18,19 @@ const tabs: Array<{ value: TabMenuThreeValue; label: string; count: number }> = 
 ];
 
 export function TabMenuThree({
-  activeTab = "competency",
+  activeTab,
   onChange,
   className,
 }: TabMenuThreeProps) {
+  const [internalActiveTab, setInternalActiveTab] =
+    useState<TabMenuThreeValue>("competency");
+  const selectedTab = activeTab ?? internalActiveTab;
+
+  const handleChange = (value: TabMenuThreeValue) => {
+    setInternalActiveTab(value);
+    onChange?.(value);
+  };
+
   return (
     <div
       className={clsx(
@@ -31,7 +41,7 @@ export function TabMenuThree({
       aria-label="분석 탭 메뉴"
     >
       {tabs.map((tab) => {
-        const isActive = tab.value === activeTab;
+        const isActive = tab.value === selectedTab;
 
         return (
           <button
@@ -43,7 +53,7 @@ export function TabMenuThree({
               "flex flex-1 flex-col items-center justify-center gap-[-2px] rounded-tap-contents py-3 text-center [font-feature-settings:'liga'_off,'clig'_off]",
               isActive && "bg-fill-tertiary-default",
             )}
-            onClick={() => onChange?.(tab.value)}
+            onClick={() => handleChange(tab.value)}
           >
             <span
               className={clsx(
