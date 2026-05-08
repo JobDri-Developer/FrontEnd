@@ -53,6 +53,7 @@
   /* Fill */
   --color-fill-primary-default: var(--color-blue-600);
   --color-fill-primary-hover-default: var(--color-blue-700);
+  --color-fill-primary-pressed-default: var(--color-blue-800);
   --color-fill-primary-assistive: var(--color-blue-100);
 
   --color-fill-secondary-default: var(--color-green-600);
@@ -60,12 +61,14 @@
 
   --color-fill-tertiary-default: var(--color-gray-800);
   --color-fill-tertiary-hover-default: var(--color-gray-900);
+  --color-fill-tertiary-pressed-default: var(--color-gray-900);
   --color-fill-tertiary-assistive: var(--color-gray-500);
 
   --color-fill-quaternary-default: var(--color-white);
   --color-fill-quaternary-hover-default: var(--color-gray-95);
   --color-fill-quaternary-assistive: var(--color-gray-95);
-  --color-fill-quaternary-hover-assistive: var(--color-gray-100);
+  --color-fill-quaternary-hover-assistive: #f4f4f6;
+  --color-fill-quaternary-pressed-assistive: #ebebef;
 
   --color-fill-hover: var(--color-gray-alpha-50);
   --color-fill-disabled: var(--color-gray-200);
@@ -122,5 +125,6 @@
 
   --color-bg-shadow-strong: var(--color-gray-alpha-100);
   --color-bg-shadow-default: var(--color-gray-alpha-50);
+  --color-bg-shadow-primary: rgba(108, 106, 255, 0.25);
   --color-bg-lightbox-default: var(--color-gray-alpha-500);
 }

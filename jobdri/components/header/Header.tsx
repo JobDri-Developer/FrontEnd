@@ -16,7 +16,7 @@ interface HeaderProps {
 }
 
 const actionClassName =
-  "inline-flex items-center justify-end gap-0.5 rounded-cta-s bg-fill-quaternary-assistive py-1.5 pr-3 pl-2 text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]";
+  "inline-flex items-center justify-end gap-1 rounded-cta-s bg-fill-quaternary-assistive py-1.5 pr-3 pl-2 text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]";
 
 function HeaderAction({
   iconType = "HOME_S",
@@ -34,7 +34,9 @@ function HeaderAction({
         type={iconType}
         className="h-6 w-6 text-fill-tertiary-assistive"
       />
-      <span>{label}</span>
+      <span className="flex h-[22px] items-center justify-center gap-2.5 px-0.5">
+        {label}
+      </span>
     </button>
   );
 }
