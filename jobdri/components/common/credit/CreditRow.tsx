@@ -48,7 +48,7 @@ export default function CreditRow({
   return (
     <article
       className={clsx(
-        "flex w-[960px] flex-col items-start gap-2.5 px-6",
+        "flex w-full flex-col items-start gap-2.5 px-6",
         variantStyles[variant],
         className,
       )}

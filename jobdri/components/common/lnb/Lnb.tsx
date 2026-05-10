@@ -41,7 +41,7 @@ export default function Lnb({
   return (
     <aside
       className={`flex h-screen flex-col justify-between bg-bg-contents-default py-5 ${
-        isFold ? "w-[52px] items-center px-2" : "w-[240px] items-start px-2"
+        isFold ? "w-[52px] items-center px-2" : "w-[20vw] items-start px-2"
       }`}
     >
       <div className="flex w-full flex-col gap-8">

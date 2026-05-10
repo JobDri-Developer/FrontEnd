@@ -22,7 +22,7 @@ export default function CreditHeader({
   return (
     <section
       className={clsx(
-        "flex w-[960px] flex-col items-start gap-2.5 bg-bg-contents-assistive px-6",
+        "flex w-full flex-col items-start gap-2.5 bg-bg-contents-assistive px-6",
         className,
       )}
       {...props}
@@ -31,7 +31,10 @@ export default function CreditHeader({
         {columns.map((column) => (
           <div
             key={column.key}
-            className={clsx("flex min-w-0 items-center gap-2.5", column.className)}
+            className={clsx(
+              "flex min-w-0 items-center gap-2.5",
+              column.className,
+            )}
           >
             <span className="line-clamp-1 min-w-0 overflow-hidden text-ellipsis text-sub14-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
               {column.label}
