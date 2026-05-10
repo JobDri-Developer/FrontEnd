@@ -2,6 +2,7 @@ import clsx from "clsx";
 import type { HTMLAttributes } from "react";
 
 import { ChipMain } from "@/components/common/chips";
+import ChipTag from "../chips/ChipTag";
 
 type CreditRowVariant = "white" | "assistive";
 
@@ -70,7 +71,7 @@ export default function CreditRow({
             columnStyles.type,
           )}
         >
-          <ChipMain label={typeLabel} color="quaternary" />
+          <ChipTag label={typeLabel} />
         </div>
 
         <div
