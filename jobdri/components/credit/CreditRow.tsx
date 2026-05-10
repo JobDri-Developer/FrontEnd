@@ -60,7 +60,7 @@ export default function CreditRow({
         </div>
 
         <div className={clsx("flex min-w-0 items-center gap-2.5", columnStyles.type)}>
-          <ChipMain label={typeLabel} color="quaternary" size="small" />
+          <ChipMain label={typeLabel} color="quaternary" />
         </div>
 
         <div className={clsx("flex min-w-0 items-center gap-2.5", columnStyles.content)}>

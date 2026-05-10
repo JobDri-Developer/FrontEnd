@@ -15,6 +15,7 @@ interface InputMainProps {
   error?: string;
   rightContent?: React.ReactNode;
   className?: string;
+  type?: "ID" | "PASSWORD";
 }
 
 export function InputMain({
@@ -27,6 +28,7 @@ export function InputMain({
   error,
   rightContent,
   className,
+  type,
 }: InputMainProps) {
   const [internalValue, setInternalValue] = useState("");
   const [focused, setFocused] = useState(false);
@@ -42,17 +44,24 @@ export function InputMain({
     <div className={clsx("flex flex-col gap-1.5", className)}>
       <span className="text-label14-semibold text-text-neutral-title">
         {label}
-        {required && <span className="text-text-fail ml-0.5">*</span>}
+        {required && <span className="text-text-system-fail ml-0.5">•</span>}
       </span>
 
       <div className={getWrapperClass(focused, disabled, !!error)}>
-        <div className="flex items-center gap-2">
-          {disabled && (
-            <Icon
-              type="PASSWORD"
-              className="text-icon-neutral-assistive shrink-0"
-            />
-          )}
+        <div className={clsx("flex items-center gap-2")}>
+          {!focused &&
+            !value &&
+            (disabled && type === "PASSWORD" ? (
+              <Icon
+                type="PASSWORD"
+                className="text-icon-neutral-assistive shrink-0"
+              />
+            ) : (
+              <Icon
+                type="PROFILE"
+                className="text-icon-neutral-assistive shrink-0"
+              />
+            ))}
           <input
             className={clsx(
               getFieldClass(disabled),
@@ -69,7 +78,7 @@ export function InputMain({
             <div
               className={clsx(
                 "shrink-0 text-cap12-med",
-                error ? "text-text-fail" : "text-text-neutral-caption",
+                error ? "text-text-system-fail" : "text-text-neutral-caption",
               )}
             >
               {rightContent}
@@ -79,7 +88,7 @@ export function InputMain({
       </div>
 
       {error && (
-        <span className="text-cap12-med text-right text-text-fail">
+        <span className="text-cap12-med text-right text-text-system-fail">
           {error}
         </span>
       )}

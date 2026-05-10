@@ -10,6 +10,7 @@ type ButtonCtaVariant =
 interface ButtonCtaProps {
   label?: string;
   variant?: ButtonCtaVariant;
+  onClick?: () => void;
   className?: string;
 }
 
@@ -28,6 +29,7 @@ const darkButtonVariants: ButtonCtaVariant[] = ["gradient_dark", "empty_dark"];
 export default function ButtonCta({
   label = "기업 선택하기",
   variant = "gradient_white",
+  onClick,
   className,
 }: ButtonCtaProps) {
   return (
@@ -43,6 +45,7 @@ export default function ButtonCta({
         size="large"
         styleType="secondary"
         active={darkButtonVariants.includes(variant)}
+        onClick={onClick}
         className="h-[46px] w-full"
       />
     </div>

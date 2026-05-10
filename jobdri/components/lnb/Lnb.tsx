@@ -51,7 +51,7 @@ export default function Lnb({
           }`}
         >
           {!isFold && (
-            <strong className="flex h-[22px] w-[50px] items-center justify-center text-[16px] font-bold leading-[140%] text-gray-900">
+            <strong className="flex h-[22px] w-[50px] items-center justify-center text-[16px] font-bold leading-[140%] text-text-neutral-title">
               JobDri
             </strong>
           )}
@@ -101,7 +101,7 @@ export default function Lnb({
         {!isFold && (
           <>
             <div className="flex w-full items-center justify-between px-2 py-2">
-              <div className="flex items-center gap-[3px] text-label14-med text-gray-500 [font-feature-settings:'liga'_off,'clig'_off]">
+              <div className="flex items-center gap-[3px] text-label14-med text-icon-neutral-default [font-feature-settings:'liga'_off,'clig'_off]">
                 <span>크레딧</span>
                 <Icon type="EX_LINK" className="h-4 w-4 text-icon-neutral-assistive" />
               </div>
@@ -123,11 +123,11 @@ export default function Lnb({
             isFold ? "justify-center px-0" : ""
           }`}
         >
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-400 text-[14px] font-medium leading-[140%] text-text-neutral-white">
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-text-neutral-caption text-[14px] font-medium leading-[140%] text-text-neutral-white">
             J
           </div>
           {!isFold && (
-            <span className="truncate text-cap12-med text-gray-400">
+            <span className="truncate text-cap12-med text-text-neutral-caption">
               {email}
             </span>
           )}

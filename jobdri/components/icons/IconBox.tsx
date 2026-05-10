@@ -2,7 +2,7 @@ import clsx from "clsx";
 import Icon, { IconType } from "./Icon";
 
 type IconBoxSize = "large" | "mid";
-type IconBoxState = "primary" | "secondary";
+type IconBoxState = "primary" | "secondary" | "danger";
 type IconBoxBackground = "default" | "white";
 
 interface IconBoxProps {
@@ -10,6 +10,7 @@ interface IconBoxProps {
   size?: IconBoxSize;
   state?: IconBoxState;
   background?: IconBoxBackground;
+  selected?: boolean;
   className?: string;
 }
 
@@ -18,19 +19,22 @@ interface IconBoxProps {
 //   mid: "w-8 h-8",
 // };
 
-const bgStyles: Record<IconBoxState, Record<IconBoxBackground, string>> = {
+const bgStyles: Record<
+  "primary" | "secondary",
+  Record<IconBoxBackground, string>
+> = {
   primary: {
     default: "bg-fill-primary-assistive",
     white: "bg-fill-quaternary-default",
   },
   secondary: {
     default: "bg-icon-neutral-weak",
-    white: "bg-fill-neutral-white",
+    white: "bg-fill-quaternary-default",
   },
 };
 
 const iconColorStyles: Record<
-  IconBoxState,
+  "primary" | "secondary",
   Record<IconBoxBackground, string>
 > = {
   primary: {
@@ -48,18 +52,35 @@ export default function IconBox({
   size = "large",
   state = "primary",
   background = "default",
+  selected = false,
   className,
 }: IconBoxProps) {
+  if (type === "TRASH") {
+    return (
+      <div
+        className={clsx(
+          "flex items-center justify-center rounded-icon p-2 transition-colors",
+          selected
+            ? "bg-fill-system-fail-strong"
+            : "bg-icon-neutral-weak hover:bg-fill-system-fail-hover",
+          className,
+        )}
+      >
+        <Icon type={type} className="text-text-neutral-white" />
+      </div>
+    );
+  }
+
   return (
     <div
       className={clsx(
         "flex items-center justify-center rounded-icon p-2",
         // sizeStyles[size],
-        bgStyles[state][background],
+        bgStyles[state as "primary" | "secondary"][background],
         className,
       )}
     >
-      <Icon type={type} className={iconColorStyles[state][background]} />
+      <Icon type={type} className={iconColorStyles[state as "primary" | "secondary"][background]} />
     </div>
   );
 }

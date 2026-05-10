@@ -8,8 +8,8 @@ interface ToastStatusIconProps {
 }
 
 const statusIconStyles: Record<ToastStatusIconVariant, string> = {
-  check: "bg-fill-secondary-assistive text-text-complete",
-  warning: "bg-fill-fail-hover text-text-fail",
+  check: "bg-fill-secondary-assistive text-text-system-complete",
+  warning: "bg-fill-fail-hover text-text-system-fail",
 };
 
 function CheckIcon() {
