@@ -1,7 +1,7 @@
-import IconBox from "@/components/icons/IconBox";
-import CheckBox from "@/components/icons/CheckBox";
-import Header from "@/components/header/Header";
-import { Lnb } from "@/components/lnb";
+import IconBox from "@/components/common/icons/IconBox";
+import CheckBox from "@/components/common/icons/CheckBox";
+import Header from "@/components/common/header/Header";
+import { Lnb } from "@/components/common/lnb";
 import {
   Button,
   ButtonCta,
@@ -9,16 +9,16 @@ import {
   IconButton,
   IconOnlyButton,
   TextButton,
-} from "@/components/buttons";
-import { Toast, ToastFrame } from "@/components/toast";
-import { ChipRound, ChipRoundSelected, ChipQnumber } from "@/components/chips";
-import ChipMainDemo from "@/components/chips/ChipMainDemo";
-import ModalLinkInputDemo from "@/components/modal/ModalLinkInputDemo";
-import { CompleteBadge } from "@/components/badges";
-import { Tooltip, TooltipModify } from "@/components/tooltip";
-import { TabMenuThree, TabMenuTwo } from "@/components/tabs";
-import { CreditHeader, CreditRow } from "@/components/credit";
-import { SearchBar } from "@/components/searchbar";
+} from "@/components/common/buttons";
+import { Toast, ToastFrame } from "@/components/common/toast";
+import { ChipRound, ChipRoundSelected, ChipQnumber } from "@/components/common/chips";
+import ChipMainDemo from "@/components/common/chips/ChipMainDemo";
+import ModalLinkInputDemo from "@/components/common/modal/ModalLinkInputDemo";
+import { CompleteBadge } from "@/components/common/badges";
+import { Tooltip, TooltipModify } from "@/components/common/tooltip";
+import { TabMenuThree, TabMenuTwo } from "@/components/common/tabs";
+import { CreditHeader, CreditRow } from "@/components/common/credit";
+import { SearchBar } from "@/components/common/searchbar";
 import {
   InputAutoGrow,
   InputFile,
@@ -26,7 +26,7 @@ import {
   InputMultiLine,
   InputMultiLine1000,
   InputSingleLine,
-} from "@/components/input";
+} from "@/components/common/input";
 
 function Section({
   title,
