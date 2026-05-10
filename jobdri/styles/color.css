@@ -49,47 +49,51 @@
   --color-gray-alpha-700: color-mix(in srgb, #212128 70%, transparent);
   --color-gray-alpha-800: color-mix(in srgb, #212128 80%, transparent);
   --color-gray-alpha-900: color-mix(in srgb, #212128 90%, transparent);
+  --color-blue-alpha: color-mix(in srgb, #6c6aff 25%, transparent);
 
   /* Fill */
   --color-fill-primary-default: var(--color-blue-600);
-  --color-fill-primary-hover-default: var(--color-blue-700);
   --color-fill-primary-pressed-default: var(--color-blue-800);
   --color-fill-primary-assistive: var(--color-blue-100);
+  --color-fill-primary-default-hover: var(--color-blue-700);
+  --color-fill-primary-default-pressed: var(--color-blue-700);
 
   --color-fill-secondary-default: var(--color-green-600);
   --color-fill-secondary-assistive: var(--color-green-200);
 
   --color-fill-tertiary-default: var(--color-gray-800);
-  --color-fill-tertiary-hover-default: var(--color-gray-900);
-  --color-fill-tertiary-pressed-default: var(--color-gray-900);
+  --color-fill-tertiary-default-hover: var(--color-gray-900);
+  --color-fill-tertiary-default-pressed: var(--color-gray-900);
   --color-fill-tertiary-assistive: var(--color-gray-500);
 
   --color-fill-quaternary-default: var(--color-white);
-  --color-fill-quaternary-hover-default: var(--color-gray-95);
+  --color-fill-quaternary-default-hover: var(--color-gray-95);
+  --color-fill-quaternary-default-pressed: var(--color-gray-100);
+
   --color-fill-quaternary-assistive: var(--color-gray-95);
-  --color-fill-quaternary-hover-assistive: #f4f4f6;
-  --color-fill-quaternary-pressed-assistive: #ebebef;
+  --color-fill-quaternary-assistive-hover: var(--color-gray-100);
+  --color-fill-quaternary-assistive-pressed: var(--color-gray-200);
 
   --color-fill-hover: var(--color-gray-alpha-50);
   --color-fill-disabled: var(--color-gray-200);
 
-  --color-fill-fail-strong: var(--color-red-400);
-  --color-fill-fail-default: var(--color-red-100);
-  --color-fill-fail-hover: var(--color-red-200);
+  --color-fill-system-fail-strong: var(--color-red-400);
+  --color-fill-system-fail-default: var(--color-red-100);
+  --color-fill-system-fail-hover: var(--color-red-200);
 
   /* Text */
   --color-text-neutral-title: var(--color-gray-800);
   --color-text-neutral-description: var(--color-gray-600);
   --color-text-neutral-caption: var(--color-gray-400);
-  --color-text-neutral-disabled: var(--color-gray-300);
+  --color-text-neutral-disabled: var(--color-gray-400);
   --color-text-neutral-white: var(--color-white);
 
   --color-text-primary-strong: var(--color-blue-700);
   --color-text-primary-default: var(--color-blue-600);
   --color-text-primary-assistive: var(--color-blue-400);
 
-  --color-text-fail: var(--color-red-400);
-  --color-text-complete: var(--color-green-600);
+  --color-text-system-fail: var(--color-red-400);
+  --color-text-system-complete: var(--color-green-600);
 
   /* Icon */
   --color-icon-primary-strong: var(--color-blue-700);
@@ -109,12 +113,13 @@
 
   --color-line-neutral-strong: var(--color-gray-300);
   --color-line-neutral-default: var(--color-gray-200);
+  --color-line-neutral-assistive: var(--color-gray-100);
 
-  --color-line-fail-default: var(--color-red-400);
-  --color-line-fail-assistive: var(--color-red-300);
+  --color-line-system-fail-default: var(--color-red-400);
+  --color-line-system-fail-assistive: var(--color-red-300);
 
-  --color-line-complete-default: var(--color-green-600);
-  --color-line-complete-assistive: var(--color-green-100);
+  --color-line-system-complete-default: var(--color-green-600);
+  --color-line-system-complete-assistive: var(--color-green-100);
 
   /* Background */
   --color-bg-default: var(--color-gray-100);
@@ -125,6 +130,11 @@
 
   --color-bg-shadow-strong: var(--color-gray-alpha-100);
   --color-bg-shadow-default: var(--color-gray-alpha-50);
-  --color-bg-shadow-primary: rgba(108, 106, 255, 0.25);
+  --color-bg-shadow-primary: var(--color-blue-alpha);
   --color-bg-lightbox-default: var(--color-gray-alpha-500);
+  --color-bg-lightbox-light: color-mix(
+    in srgb,
+    var(--color-white) 30%,
+    transparent
+  );
 }

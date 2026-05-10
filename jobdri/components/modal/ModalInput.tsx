@@ -34,10 +34,10 @@ export default function ModaInput({
   error,
 }: ModalInputProps) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-bg-lightbox-default z-50">
       <div
         className={clsx(
-          "flex flex-col bg-white rounded-card w-120 overflow-hidden",
+          "flex flex-col bg-fill-quaternary-default rounded-card w-120 overflow-hidden",
           className,
         )}
       >

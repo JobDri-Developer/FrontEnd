@@ -34,8 +34,8 @@ export default function CheckBox({
         "p-0.5 cursor-pointer border group",
         isRadio ? "rounded-full" : "rounded-chip-s",
         isSelected
-          ? "bg-gray-800 border-gray-800"
-          : "bg-transparent border-gray-300 hover:border-transparent hover:bg-icon-assistive",
+          ? "bg-fill-tertiary-default border-fill-tertiary-default"
+          : "bg-transparent border-line-neutral-strong hover:border-transparent hover:bg-icon-neutral-assistive",
         className,
       )}
       onClick={handleClick}
@@ -45,10 +45,10 @@ export default function CheckBox({
         className={clsx(
           "group-hover:text-text-neutral-white",
           isSelected
-            ? "text-white"
+            ? "text-text-neutral-white"
             : isRadio
-              ? "text-transparent  "
-              : "text-gray-300 group-hover:text-gray-400 ",
+              ? "text-transparent"
+              : "text-icon-neutral-assistive group-hover:text-text-neutral-caption",
         )}
       />
     </div>

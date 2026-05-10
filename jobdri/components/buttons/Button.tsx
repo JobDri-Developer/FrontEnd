@@ -40,11 +40,11 @@ const styleTypeStyles: Record<ButtonStyle, string> = {
   primary:
     "bg-fill-primary-default text-text-neutral-white hover:bg-fill-primary-hover-default hover:shadow-[0_1px_40px_0_var(--color-bg-shadow-primary)] active:bg-fill-primary-pressed-default active:shadow-[0_1px_40px_0_var(--color-bg-shadow-primary)]",
   secondary:
-    "bg-fill-tertiary-default text-text-neutral-white hover:bg-[linear-gradient(146deg,var(--color-fill-tertiary-default)_42.48%,var(--color-fill-tertiary-pressed-default)_55.31%)] active:bg-fill-tertiary-pressed-default active:bg-none",
+    "bg-fill-tertiary-default text-text-neutral-white hover:bg-[linear-gradient(146deg,var(--color-fill-tertiary-default)_42.48%,var(--color-fill-tertiary-default-pressed)_55.31%)] active:bg-fill-tertiary-default-pressed active:bg-none",
   tertiary:
     "border border-line-neutral-default bg-fill-quaternary-default text-text-neutral-description hover:border-line-neutral-default hover:bg-fill-quaternary-default hover:shadow-[0_1px_40px_0_var(--color-bg-shadow-strong)] active:border-line-neutral-strong active:bg-fill-quaternary-assistive active:shadow-[0_1px_40px_0_var(--color-bg-shadow-strong)]",
   quaternary:
-    "bg-fill-quaternary-assistive text-text-neutral-description hover:bg-fill-quaternary-hover-assistive active:bg-fill-quaternary-pressed-assistive",
+    "bg-fill-quaternary-assistive text-text-neutral-description hover:bg-fill-quaternary-hover-assistive active:bg-fill-quaternary-assistive-pressed",
 };
 
 const inactiveStyle =
