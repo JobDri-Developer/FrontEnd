@@ -67,7 +67,7 @@ export default function ComCard({
         </span>
       </div>
 
-      <ChipMain label={chipLabel} color="secondary" size="small" />
+      <ChipMain label={chipLabel} color="secondary" />
     </button>
   );
 }

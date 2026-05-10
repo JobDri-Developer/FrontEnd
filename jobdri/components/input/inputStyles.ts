@@ -12,7 +12,7 @@ export function getWrapperClass(
     disabled
       ? "bg-transparent border-line-neutral-default"
       : isError
-        ? "bg-white border-line-fail-default"
+        ? "bg-white border-line-system-fail-default"
         : focused
           ? `bg-white ${focusedBorder}`
           : "bg-white border-line-neutral-default",

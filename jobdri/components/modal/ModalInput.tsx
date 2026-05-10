@@ -5,6 +5,8 @@ import Icon from "@/components/icons/Icon";
 import Button from "@/components/buttons/Button";
 import { InputMain, InputSingleLine } from "@/components/input";
 import LoadMotion from "@/components/common/LoadMotion";
+import ButtonCta from "@/components/buttons/ButtonCta";
+import { ButtonCtaModal } from "../buttons";
 
 type ModalVariant = "action" | "alort";
 
@@ -81,30 +83,21 @@ export default function ModaInput({
 
           {/* 버튼 */}
           {variant === "action" ? (
-            <Button
+            <ButtonCta
               label="입력하기"
-              styleType="secondary"
-              size="large"
               onClick={onSubmit}
-              className="w-full"
+              className="w-full px-0 pb-0 pt-0"
+              variant={value ? "empty_dark" : "gradient_white"}
             />
           ) : (
-            <div className="flex gap-2 w-full">
-              <Button
-                label="취소하기"
-                size="large"
-                styleType="tertiary"
-                onClick={onCancel}
-                className="flex-1"
-              />
-              <Button
-                label="다시 입력하기"
-                size="large"
-                styleType="secondary"
-                onClick={onSubmit}
-                className="flex-1"
-              />
-            </div>
+            <ButtonCtaModal
+              stack="stack2_horizontal"
+              label="다시 입력하기"
+              cancelLabel="취소하기"
+              onSubmit={onSubmit}
+              onCancel={onCancel}
+              className="w-full !px-0 !pb-0"
+            />
           )}
         </div>
       </div>

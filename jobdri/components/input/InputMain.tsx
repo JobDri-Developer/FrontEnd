@@ -42,7 +42,7 @@ export function InputMain({
     <div className={clsx("flex flex-col gap-1.5", className)}>
       <span className="text-label14-semibold text-text-neutral-title">
         {label}
-        {required && <span className="text-text-fail ml-0.5">*</span>}
+        {required && <span className="text-text-system-fail ml-0.5">*</span>}
       </span>
 
       <div className={getWrapperClass(focused, disabled, !!error)}>
@@ -69,7 +69,7 @@ export function InputMain({
             <div
               className={clsx(
                 "shrink-0 text-cap12-med",
-                error ? "text-text-fail" : "text-text-neutral-caption",
+                error ? "text-text-system-fail" : "text-text-neutral-caption",
               )}
             >
               {rightContent}
@@ -79,7 +79,7 @@ export function InputMain({
       </div>
 
       {error && (
-        <span className="text-cap12-med text-right text-text-fail">
+        <span className="text-cap12-med text-right text-text-system-fail">
           {error}
         </span>
       )}

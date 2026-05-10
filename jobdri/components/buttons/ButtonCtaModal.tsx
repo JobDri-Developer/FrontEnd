@@ -11,6 +11,8 @@ interface ButtonCtaModalProps {
   label?: string;
   cancelLabel?: string;
   stack?: ButtonCtaModalStack;
+  onSubmit?: () => void;
+  onCancel?: () => void;
   className?: string;
 }
 
@@ -46,12 +48,14 @@ export default function ButtonCtaModal({
   label = "입력하기",
   cancelLabel = "취소하기",
   stack = "stack1_horizontal",
+  onSubmit,
+  onCancel,
   className,
 }: ButtonCtaModalProps) {
   return (
     <div
       className={clsx(
-        "flex flex-col items-start gap-2.5 self-stretch px-8 pb-8",
+        "flex flex-col items-start gap-2.5 self-stretch pb-8",
         className,
       )}
     >
@@ -60,6 +64,7 @@ export default function ButtonCtaModal({
           label={label}
           size="large"
           styleType="secondary"
+          onClick={onSubmit}
           className="h-[46px] w-full"
         />
       ) : stack === "stack2_horizontal" ? (
@@ -68,13 +73,15 @@ export default function ButtonCtaModal({
             label={cancelLabel}
             size="large"
             styleType="quaternary"
-            className="h-[46px] flex-1"
+            onClick={onCancel}
+            className="h-[46px] flex-1 "
           />
           <Button
             label={label}
             size="large"
             styleType="secondary"
-            className="h-[46px] flex-1"
+            onClick={onSubmit}
+            className="h-[46px] flex-1 "
           />
         </div>
       ) : (
