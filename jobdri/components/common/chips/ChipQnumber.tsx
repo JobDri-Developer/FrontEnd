@@ -3,6 +3,8 @@
 import clsx from "clsx";
 import { useState } from "react";
 import Icon from "@/components/common/icons/Icon";
+import ToastStatusIcon from "../toast/ToastStatusIcon";
+import { CompleteBadge } from "../badges";
 
 interface ChipQnumberProps {
   number: number;
@@ -28,10 +30,8 @@ export function ChipQnumber({
   return (
     <button onClick={handleClick} className="relative flex items-center ">
       {showComplete && (
-        <div className=" absolute -top-1 -left-4">
-          <div className="p-0.5 bg-fill-secondary-default rounded-full w-6 h-6">
-            <Icon type="CHECK_M" className="text-icon-neutral-heavy" />
-          </div>
+        <div className=" absolute -top-[1.25px] -left-3">
+          <CompleteBadge />
         </div>
       )}
       <div
