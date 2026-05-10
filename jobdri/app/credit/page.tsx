@@ -1,11 +1,19 @@
+import { CreditCard } from "@/components/common/cards";
 import Lnb from "@/components/common/lnb/Lnb";
+import PageHeader from "@/components/common/PageHeader";
 
 export default function CreditPage() {
   return (
     <div className="flex flex-row">
       <Lnb />
-      <div className="flex py-11 px-10 bg-line-neutral-default w-full h-screen">
-        <h1>크레딧</h1>
+      <div className="flex flex-col py-11 px-10 bg-line-neutral-default w-full h-screen">
+        <PageHeader />
+        <section className="flex flex-row gap-4">
+          {" "}
+          <CreditCard />
+          <CreditCard />
+          <CreditCard />
+        </section>
       </div>
     </div>
   );
