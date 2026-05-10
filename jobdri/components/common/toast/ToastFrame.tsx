@@ -17,7 +17,7 @@ export default function ToastFrame({
     <div
       role="status"
       className={clsx(
-        "flex w-full max-w-[360px] items-center justify-between rounded-toast-l bg-fill-quaternary-default py-3 pr-4 pl-[14px] shadow-[0_0_40px_0_var(--color-bg-shadow-strong)]",
+        "flex w-full max-w-[360px] items-center justify-between rounded-toast-l bg-fill-quaternary-default py-3 pr-4 pl-[14px] shadow-hover",
         className,
       )}
     >

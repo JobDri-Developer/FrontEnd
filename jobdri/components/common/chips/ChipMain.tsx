@@ -13,27 +13,27 @@ interface ChipMainProps {
 const styles: Record<ChipMainColor, { default: string; selected: string }> = {
   primary: {
     default:
-      "bg-fill-quaternary-default text-text-neutral-caption hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)]",
+      "bg-fill-quaternary-default text-text-neutral-caption hover:shadow-chip",
     selected:
-      "bg-fill-primary-default text-text-neutral-white hover:bg-fill-primary-default hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)] hover:ring-inset hover:ring-1 hover:ring-line-primary-strong",
+      "bg-fill-primary-default text-text-neutral-white hover:bg-fill-primary-default hover:shadow-chip hover:ring-inset hover:ring-1 hover:ring-line-primary-strong",
   },
   secondary: {
     default:
-      "bg-fill-quaternary-default text-text-neutral-caption hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)]",
+      "bg-fill-quaternary-default text-text-neutral-caption hover:shadow-chip",
     selected:
-      "bg-fill-primary-assistive text-text-primary-strong hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)] hover:ring-inset hover:ring-1 hover:ring-line-primary-assistive",
+      "bg-fill-primary-assistive text-text-primary-strong hover:shadow-chip hover:ring-inset hover:ring-1 hover:ring-line-primary-assistive",
   },
   tertiary: {
     default:
-      "bg-fill-quaternary-default text-text-neutral-caption hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)]",
+      "bg-fill-quaternary-default text-text-neutral-caption hover:shadow-chip",
     selected:
-      "bg-fill-quaternary-default text-text-neutral-title hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)]",
+      "bg-fill-quaternary-default text-text-neutral-title hover:shadow-chip",
   },
   quaternary: {
     default:
       "bg-transparent text-text-neutral-disabled hover:text-text-neutral-caption",
     selected:
-      "bg-fill-tertiary-default text-text-neutral-white hover:bg-fill-tertiary-hover-default hover:shadow-[0_2px_8px_0_var(--color-bg-shadow-strong)] ",
+      "bg-fill-tertiary-default text-text-neutral-white hover:bg-fill-tertiary-hover-default hover:shadow-chip ",
   },
 };
 

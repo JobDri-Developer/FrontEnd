@@ -18,8 +18,8 @@ interface ApplyOptionCardProps
   onSelectedChange?: (selected: boolean) => void;
 }
 
-const hoverShadow = "shadow-[0_0_40px_0_var(--color-bg-shadow-strong)]";
-const cardShadow = "shadow-[0_0_24px_0_var(--color-bg-shadow-default)]";
+const hoverShadow = "shadow-hover";
+const cardShadow = "shadow-card";
 const defaultStyle = "border-transparent bg-fill-quaternary-default";
 const disabledStyle = clsx(
   "cursor-not-allowed border-transparent bg-fill-quaternary-assistive",
@@ -27,7 +27,7 @@ const disabledStyle = clsx(
 );
 const hoverableStyle = clsx(
   defaultStyle,
-  "hover:shadow-[0_0_40px_0_var(--color-bg-shadow-strong)]",
+  "hover:shadow-hover",
 );
 const selectedStyle = clsx(
   "border-line-primary-default bg-fill-quaternary-default",

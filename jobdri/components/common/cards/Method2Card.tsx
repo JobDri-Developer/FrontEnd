@@ -11,12 +11,12 @@ interface Method2CardProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   onSelectedChange?: (selected: boolean) => void;
 }
 
-const cardShadow = "shadow-[0_0_24px_0_var(--color-bg-shadow-default)]";
-const hoverShadow = "shadow-[0_0_40px_0_var(--color-bg-shadow-strong)]";
+const cardShadow = "shadow-card";
+const hoverShadow = "shadow-hover";
 const defaultStyle = clsx(
   "border-transparent bg-fill-quaternary-default",
   cardShadow,
-  "hover:shadow-[0_0_40px_0_var(--color-bg-shadow-strong)]",
+  "hover:shadow-hover",
 );
 const disabledStyle = clsx(
   "cursor-not-allowed border-transparent bg-fill-quaternary-assistive",

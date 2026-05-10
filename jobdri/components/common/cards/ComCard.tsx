@@ -13,7 +13,7 @@ interface ComCardProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   onSelectedChange?: (selected: boolean) => void;
 }
 
-const hoverShadow = "shadow-[0_0_40px_0_var(--color-bg-shadow-strong)]";
+const hoverShadow = "shadow-hover";
 
 export default function ComCard({
   company = "현대자동차",
@@ -53,7 +53,7 @@ export default function ComCard({
             )
           : clsx(
               "border-line-neutral-default bg-fill-quaternary-assistive hover:bg-fill-quaternary-default",
-              "hover:shadow-[0_0_40px_0_var(--color-bg-shadow-strong)]",
+              "hover:shadow-hover",
             ),
         className,
       )}

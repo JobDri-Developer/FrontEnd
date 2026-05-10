@@ -33,7 +33,7 @@ export function TabMenuTwo({
   return (
     <div
       className={clsx(
-        "inline-flex min-w-[560px] items-center justify-between rounded-tap-hug bg-fill-quaternary-default p-1 shadow-[0_0_24px_0_var(--color-bg-shadow-default)]",
+        "inline-flex min-w-[560px] items-center justify-between rounded-tap-hug bg-fill-quaternary-default p-1 shadow-card",
         className,
       )}
       role="tablist"

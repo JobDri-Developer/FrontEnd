@@ -24,7 +24,7 @@ export default function Toast({
     <div
       role="status"
       className={clsx(
-        "flex h-14 items-center justify-between self-stretch rounded-toast-l px-4 py-3 pl-5 shadow-[0_0_40px_0_var(--color-bg-shadow-strong)]",
+        "flex h-14 items-center justify-between self-stretch rounded-toast-l px-4 py-3 pl-5 shadow-hover",
         isDark ? "bg-fill-tertiary-default" : "bg-fill-quaternary-default",
         className,
       )}
