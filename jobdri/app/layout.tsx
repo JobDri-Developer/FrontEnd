@@ -12,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" className="h-full antialiased grid-base container-default">
-      <body className="min-h-full flex flex-col col-span-full">{children}</body>
+    <html lang="ko" className="h-full antialiased">
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
