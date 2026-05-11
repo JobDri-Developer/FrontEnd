@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import "./globals.css"; // 디자인 시스템과 폰트가 담긴 CSS를 반드시 임포트해야 합니다.
+import "./globals.css";
+import AppShell from "@/components/common/AppShell";
 
 export const metadata: Metadata = {
   title: "JobDri",
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full">
+        <AppShell>{children}</AppShell>
+      </body>
     </html>
   );
 }

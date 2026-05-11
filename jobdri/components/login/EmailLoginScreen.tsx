@@ -2,9 +2,9 @@
 
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { useEffect, useState } from "react";
-import { Button, TextOnlyButton } from "@/components/buttons";
-import { InputMain } from "@/components/input";
-import { Tooltip } from "@/components/tooltip";
+import { Button, TextOnlyButton } from "@/components/common/buttons";
+import { InputMain } from "@/components/common/input";
+import { Tooltip } from "@/components/common/tooltip";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,20}$/;
