@@ -2,7 +2,7 @@
 
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { useEffect, useState } from "react";
-import { Button, TextButton } from "@/components/buttons";
+import { Button, TextOnlyButton } from "@/components/buttons";
 import { InputMain } from "@/components/input";
 import { Tooltip } from "@/components/tooltip";
 
@@ -147,17 +147,15 @@ export default function EmailLoginScreen() {
             </div>
 
             <footer className="flex items-center justify-center gap-7 self-stretch">
-              <TextButton
+              <TextOnlyButton
                 label="비밀번호 재설정"
                 size="small"
                 styleType="secondary"
-                className="[&>svg]:hidden"
               />
-              <TextButton
+              <TextOnlyButton
                 label="회원가입"
                 size="small"
                 styleType="primary"
-                className="[&>svg]:hidden"
               />
             </footer>
 
