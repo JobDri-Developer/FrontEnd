@@ -62,6 +62,12 @@
     line-height: 160%;
     letter-spacing: -0.02em;
   }
+  .text-b16-semibold {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 160%;
+    letter-spacing: -0.02em;
+  }
   .text-b16-med {
     font-size: 16px;
     font-weight: 500;

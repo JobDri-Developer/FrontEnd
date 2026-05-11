@@ -1,0 +1,22 @@
+@theme {
+  /* CardShadow: x0 y0 blur24 spread0 */
+  --shadow-card: 0 0 24px 0 var(--color-bg-shadow-default);
+
+  /* HoverShadow: x0 y0 blur40 spread0 */
+  --shadow-hover: 0 0 40px 0 var(--color-bg-shadow-strong);
+
+  /* MarkerShadow: x0 y0 blur4 spread0 */
+  --shadow-marker: 0 0 4px 0 var(--color-bg-shadow-default);
+
+  /* ModalShadow: x0 y20 blur25 spread-5 */
+  --shadow-modal: 0 20px 25px -5px var(--color-bg-shadow-strong);
+
+  /* CTA/HoverShadow_Primary: x0 y1 blur40 spread0 */
+  --shadow-cta-primary: 0 1px 40px 0 var(--color-bg-shadow-primary);
+
+  /* CTA/HoverShadow_Secondary: x0 y1 blur40 spread0 */
+  --shadow-cta-secondary: 0 1px 40px 0 var(--color-bg-shadow-strong);
+
+  /* Chip/HoverShadow: x0 y2 blur8 spread0 */
+  --shadow-chip: 0 2px 8px 0 var(--color-bg-shadow-strong);
+}
