@@ -28,6 +28,7 @@ export default function IconButton({
       aria-label={direction === "left" ? "이전" : "다음"}
       className={clsx(
         "flex h-12 w-12 items-center justify-center gap-2.5 rounded-icon-round bg-bg-white p-2.5",
+        buttonProps.disabled ? "cursor-not-allowed" : "cursor-pointer",
         active ? "text-icon-neutral-heavy" : "text-icon-neutral-assistive",
         className,
       )}

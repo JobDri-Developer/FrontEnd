@@ -61,6 +61,7 @@ export default function TextButton({
       type={type}
       className={clsx(
         "inline-flex items-center gap-1 rounded-toast-s [font-feature-settings:'liga'_off,'clig'_off] hover:bg-fill-hover",
+        buttonProps.disabled ? "cursor-not-allowed" : "cursor-pointer",
         isLeftLarge
           ? "py-1.5 pr-3 pl-2 text-b16-med"
           : isRightLarge

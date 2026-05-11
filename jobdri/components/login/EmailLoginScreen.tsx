@@ -7,15 +7,39 @@ import { InputMain } from "@/components/input";
 import { Tooltip } from "@/components/tooltip";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/;
+const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,20}$/;
+const passwordValidationMessage =
+  "영문, 숫자 조합 8자 이상인지 확인해주세요";
+const passwordMaxLengthMessage = "비밀번호는 최대 20자까지만 가능합니다";
+const passwordMismatchMessage = "비밀번호가 일치하지 않습니다";
 
 export default function EmailLoginScreen() {
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [showCreditTooltip, setShowCreditTooltip] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [loginError, setLoginError] = useState(false);
 
   const isLoginReady = email.length > 0 && password.length > 0;
+  const hasSignupEmailValidationError =
+    authMode === "signup" && email.length > 0 && !emailPattern.test(email);
+  const hasPasswordMaxLengthError = password.length > 20;
+  const hasPasswordValidationError =
+    password.length > 0 &&
+    !hasPasswordMaxLengthError &&
+    !passwordPattern.test(password);
+  const passwordError = hasPasswordMaxLengthError
+    ? passwordMaxLengthMessage
+    : hasPasswordValidationError
+      ? passwordValidationMessage
+      : undefined;
+  const hasPasswordMismatchError =
+    passwordConfirm.length > 0 && passwordConfirm !== password;
+  const isSignupReady =
+    emailPattern.test(email) &&
+    passwordPattern.test(password) &&
+    passwordConfirm === password;
 
   useEffect(() => {
     if (!showCreditTooltip) {
@@ -45,14 +69,18 @@ export default function EmailLoginScreen() {
   };
 
   const handlePasswordChange = (value: string) => {
-    if (value.length > 20) {
-      return;
-    }
-
     handleInputChange(value, setPassword);
+
+    if (value.length === 0) {
+      setPasswordConfirm("");
+    }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handlePasswordConfirmChange = (value: string) => {
+    handleInputChange(value, setPasswordConfirm);
+  };
+
+  const handleLoginSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (
@@ -67,6 +95,23 @@ export default function EmailLoginScreen() {
     setLoginError(true);
   };
 
+  const handleSignupSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!isSignupReady || !emailPattern.test(email)) {
+      return;
+    }
+  };
+
+  const handleModeChange = (mode: "login" | "signup") => {
+    setAuthMode(mode);
+    setLoginError(false);
+    setEmail("");
+    setPassword("");
+    setPasswordConfirm("");
+    hideCreditTooltip();
+  };
+
   return (
     <main className="flex min-h-screen w-full flex-col items-start bg-bg-default">
       <section className="flex min-h-screen w-full flex-col items-start self-stretch">
@@ -74,7 +119,9 @@ export default function EmailLoginScreen() {
           <form
             className="relative flex w-[440px] max-w-[calc(100vw-32px)] flex-col items-center justify-center gap-8 rounded-card bg-bg-contents-default p-10 shadow-[0_0_24px_0_var(--color-bg-shadow-default)]"
             noValidate
-            onSubmit={handleSubmit}
+            onSubmit={
+              authMode === "login" ? handleLoginSubmit : handleSignupSubmit
+            }
           >
             <header className="flex flex-col items-center gap-6 self-stretch">
               <h1 className="text-center text-[32px] leading-[130%] font-bold tracking-[-0.02em] text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
@@ -91,75 +138,167 @@ export default function EmailLoginScreen() {
               </div>
             </header>
 
-            <div className="flex flex-col items-center gap-6 self-stretch">
-              <div className="flex flex-col items-start gap-5 self-stretch">
-                <div className="flex flex-col items-start gap-2 self-stretch">
-                  <InputMain
-                    name="email"
-                    type="ID"
-                    inputType="email"
-                    autoComplete="email"
-                    placeholder="내용을 입력해주세요."
-                    value={email}
-                    hasError={loginError}
+            {authMode === "login" ? (
+              <>
+                <div className="flex flex-col items-center gap-6 self-stretch">
+                  <div className="flex flex-col items-start gap-5 self-stretch">
+                    <div className="flex flex-col items-start gap-2 self-stretch">
+                      <InputMain
+                        name="email"
+                        type="ID"
+                        inputType="email"
+                        autoComplete="email"
+                        placeholder="내용을 입력해주세요."
+                        value={email}
+                        hasError={loginError}
+                        className="self-stretch"
+                        onChange={(value) =>
+                          handleInputChange(value, setEmail)
+                        }
+                      />
+                      <InputMain
+                        name="password"
+                        type="PASSWORD"
+                        inputType="password"
+                        autoComplete="current-password"
+                        placeholder="내용을 입력해주세요."
+                        value={password}
+                        error={
+                          loginError
+                            ? "이메일과 비밀번호를 확인해주세요"
+                            : undefined
+                        }
+                        className="self-stretch"
+                        onChange={handlePasswordChange}
+                      />
+                    </div>
+
+                    <Button
+                      label="로그인"
+                      styleType="secondary"
+                      size="large"
+                      active={isLoginReady}
+                      className="self-stretch"
+                      disabled={!isLoginReady}
+                      type="submit"
+                    />
+                  </div>
+
+                  <AuthDivider />
+
+                  <Button
+                    label="Google 계정으로 계속하기"
+                    styleType="quaternary"
+                    size="large"
+                    iconType="GOOGLE"
                     className="self-stretch"
-                    onChange={(value) => handleInputChange(value, setEmail)}
-                  />
-                  <InputMain
-                    name="password"
-                    type="PASSWORD"
-                    inputType="password"
-                    autoComplete="current-password"
-                    placeholder="내용을 입력해주세요."
-                    value={password}
-                    error={loginError ? "이메일과 비밀번호를 확인해주세요" : undefined}
-                    className="self-stretch"
-                    onChange={handlePasswordChange}
                   />
                 </div>
 
-                <Button
-                  label="로그인"
-                  styleType="secondary"
-                  size="large"
-                  active={isLoginReady}
-                  className="self-stretch"
-                  disabled={!isLoginReady}
-                  type="submit"
-                />
-              </div>
+                <footer className="flex items-center justify-center gap-7 self-stretch">
+                  <TextOnlyButton
+                    label="비밀번호 재설정"
+                    size="small"
+                    styleType="secondary"
+                  />
+                  <TextOnlyButton
+                    label="회원가입"
+                    size="small"
+                    styleType="primary"
+                    onClick={() => handleModeChange("signup")}
+                  />
+                </footer>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col items-center gap-6 self-stretch">
+                  <div className="flex flex-col items-start gap-5 self-stretch">
+                    <div className="flex flex-col items-start gap-2 self-stretch">
+                      <InputMain
+                        label="이메일 주소"
+                        name="signup-email"
+                        type="ID"
+                        inputType="email"
+                        autoComplete="email"
+                        placeholder="내용을 입력해주세요."
+                        value={email}
+                        hasError={hasSignupEmailValidationError}
+                        className="self-stretch"
+                        onChange={(value) =>
+                          handleInputChange(value, setEmail)
+                        }
+                      />
+                      <InputMain
+                        label="비밀번호"
+                        name="signup-password"
+                        type="PASSWORD"
+                        inputType="password"
+                        autoComplete="new-password"
+                        placeholder="내용을 입력해주세요."
+                        value={password}
+                        error={passwordError}
+                        className="self-stretch"
+                        onChange={handlePasswordChange}
+                      />
+                      <InputMain
+                        label="비밀번호 확인"
+                        name="signup-password-confirm"
+                        type="PASSWORD"
+                        inputType="password"
+                        autoComplete="new-password"
+                        placeholder="내용을 입력해주세요."
+                        value={passwordConfirm}
+                        disabled={password.length === 0}
+                        error={
+                          hasPasswordMismatchError
+                            ? passwordMismatchMessage
+                            : undefined
+                        }
+                        className="self-stretch"
+                        onChange={handlePasswordConfirmChange}
+                      />
+                    </div>
 
-              <div className="flex items-center justify-center gap-5 self-stretch">
-                <span className="h-[0.75px] flex-1 bg-line-neutral-default" />
-                <span className="flex items-center justify-center gap-2.5 text-label14-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-                  또는
-                </span>
-                <span className="h-[0.75px] flex-1 bg-line-neutral-default" />
-              </div>
+                    <Button
+                      label="회원가입"
+                      styleType="secondary"
+                      size="large"
+                      active={isSignupReady}
+                      className="self-stretch"
+                      disabled={!isSignupReady}
+                      type="submit"
+                    />
+                  </div>
 
-              <Button
-                label="Google 계정으로 계속하기"
-                styleType="quaternary"
-                size="large"
-                iconType="GOOGLE"
-                className="self-stretch"
-              />
-            </div>
+                  <AuthDivider />
 
-            <footer className="flex items-center justify-center gap-7 self-stretch">
-              <TextOnlyButton
-                label="비밀번호 재설정"
-                size="small"
-                styleType="secondary"
-              />
-              <TextOnlyButton
-                label="회원가입"
-                size="small"
-                styleType="primary"
-              />
-            </footer>
+                  <Button
+                    label="Google 계정으로 계속하기"
+                    styleType="quaternary"
+                    size="large"
+                    iconType="GOOGLE"
+                    className="self-stretch"
+                  />
+                </div>
 
-            {showCreditTooltip && (
+                <footer className="flex items-center justify-center gap-3 self-stretch">
+                  <TextOnlyButton
+                    label="이미 계정이 있으신가요?"
+                    size="small"
+                    styleType="secondary"
+                    onClick={() => handleModeChange("login")}
+                  />
+                  <TextOnlyButton
+                    label="로그인"
+                    size="small"
+                    styleType="primary"
+                    onClick={() => handleModeChange("login")}
+                  />
+                </footer>
+              </>
+            )}
+
+            {authMode === "login" && showCreditTooltip && (
               <div className="pointer-events-none absolute right-[86px] bottom-[-16px]">
                 <Tooltip placement="up_mid" />
               </div>
@@ -168,5 +307,17 @@ export default function EmailLoginScreen() {
         </div>
       </section>
     </main>
+  );
+}
+
+function AuthDivider() {
+  return (
+    <div className="flex items-center justify-center gap-5 self-stretch">
+      <span className="h-[0.75px] flex-1 bg-line-neutral-default" />
+      <span className="flex items-center justify-center gap-2.5 text-label14-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+        또는
+      </span>
+      <span className="h-[0.75px] flex-1 bg-line-neutral-default" />
+    </div>
   );
 }

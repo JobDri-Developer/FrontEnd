@@ -31,7 +31,7 @@ function ModalIconButton({ label, iconType }: Stack3Item) {
   return (
     <button
       type="button"
-      className="flex h-[46px] w-full items-center justify-center gap-1 self-stretch rounded-cta-s bg-fill-quaternary-assistive p-3 text-btn16-semibold text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]"
+      className="flex h-[46px] w-full cursor-pointer items-center justify-center gap-1 self-stretch rounded-cta-s bg-fill-quaternary-assistive p-3 text-btn16-semibold text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]"
     >
       <Icon
         type={iconType}

@@ -43,6 +43,7 @@ export default function TextOnlyButton({
       type={type}
       className={clsx(
         "inline-flex items-center rounded-toast-s [font-feature-settings:'liga'_off,'clig'_off] transition-colors",
+        buttonProps.disabled ? "cursor-not-allowed" : "cursor-pointer",
         typographyStyles[size][styleType],
         colorStyles[styleType],
         className,
