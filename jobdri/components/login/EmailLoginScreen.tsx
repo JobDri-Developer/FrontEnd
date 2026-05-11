@@ -1,9 +1,21 @@
 "use client";
 
-import type { Dispatch, FormEvent, SetStateAction } from "react";
-import { useEffect, useState } from "react";
-import { Button, TextOnlyButton } from "@/components/common/buttons";
-import { InputMain } from "@/components/common/input";
+import type {
+  ClipboardEvent,
+  Dispatch,
+  FormEvent,
+  KeyboardEvent,
+  MutableRefObject,
+  SetStateAction,
+} from "react";
+import { useEffect, useRef, useState } from "react";
+import clsx from "clsx";
+import {
+  Button,
+  IconOnlyButton,
+  TextOnlyButton,
+} from "@/components/common/buttons";
+import { InputMain, InputSingleLine } from "@/components/common/input";
 import { Tooltip } from "@/components/common/tooltip";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -12,14 +24,25 @@ const passwordValidationMessage =
   "영문, 숫자 조합 8자 이상인지 확인해주세요";
 const passwordMaxLengthMessage = "비밀번호는 최대 20자까지만 가능합니다";
 const passwordMismatchMessage = "비밀번호가 일치하지 않습니다";
+const verificationCodeLength = 6;
+const initialVerificationCode = Array(verificationCodeLength).fill("");
+const verificationErrorMessage = "인증번호를 다시 확인해주세요.";
+const mockVerificationSuccessCode = "123456";
 
 export default function EmailLoginScreen() {
-  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [authMode, setAuthMode] = useState<
+    "login" | "signup" | "verify" | "success"
+  >("login");
   const [showCreditTooltip, setShowCreditTooltip] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [verificationCode, setVerificationCode] = useState<string[]>(
+    initialVerificationCode,
+  );
+  const [hasVerificationError, setHasVerificationError] = useState(false);
   const [loginError, setLoginError] = useState(false);
+  const verificationInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const isLoginReady = email.length > 0 && password.length > 0;
   const hasSignupEmailValidationError =
@@ -40,6 +63,9 @@ export default function EmailLoginScreen() {
     emailPattern.test(email) &&
     passwordPattern.test(password) &&
     passwordConfirm === password;
+  const isVerificationReady =
+    !hasVerificationError && verificationCode.every(Boolean);
+  const displayedVerificationEmail = email || "example@gmail.com";
 
   useEffect(() => {
     if (!showCreditTooltip) {
@@ -80,6 +106,100 @@ export default function EmailLoginScreen() {
     handleInputChange(value, setPasswordConfirm);
   };
 
+  const focusVerificationInput = (index: number) => {
+    verificationInputRefs.current[index]?.focus();
+  };
+
+  useEffect(() => {
+    if (authMode !== "verify" || hasVerificationError) {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      focusVerificationInput(0);
+    });
+  }, [authMode, hasVerificationError]);
+
+  const resetVerificationToInitial = () => {
+    setVerificationCode([...initialVerificationCode]);
+    setHasVerificationError(false);
+    window.requestAnimationFrame(() => {
+      focusVerificationInput(0);
+    });
+  };
+
+  const fillVerificationCode = (startIndex: number, value: string) => {
+    const digits = value.replace(/\D/g, "");
+
+    if (!digits) {
+      setVerificationCode((prevCode) =>
+        prevCode.map((digit, index) => (index === startIndex ? "" : digit)),
+      );
+      return;
+    }
+
+    const nextCode = [...verificationCode];
+    const slicedDigits = digits.slice(0, verificationCodeLength - startIndex);
+
+    slicedDigits.split("").forEach((digit, offset) => {
+      nextCode[startIndex + offset] = digit;
+    });
+
+    setVerificationCode(nextCode);
+
+    const nextIndex = Math.min(
+      startIndex + slicedDigits.length,
+      verificationCodeLength - 1,
+    );
+    window.requestAnimationFrame(() => {
+      focusVerificationInput(nextIndex);
+    });
+  };
+
+  const handleVerificationCodeChange = (index: number, value: string) => {
+    if (hasVerificationError) {
+      resetVerificationToInitial();
+      return;
+    }
+
+    fillVerificationCode(index, value);
+  };
+
+  const handleVerificationCodeFocus = () => {
+    if (hasVerificationError) {
+      resetVerificationToInitial();
+    }
+  };
+
+  const handleVerificationCodeKeyDown = (
+    index: number,
+    event: KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.key === "Backspace" && !verificationCode[index] && index > 0) {
+      focusVerificationInput(index - 1);
+      return;
+    }
+
+    if (event.key === "ArrowLeft" && index > 0) {
+      event.preventDefault();
+      focusVerificationInput(index - 1);
+      return;
+    }
+
+    if (event.key === "ArrowRight" && index < verificationCodeLength - 1) {
+      event.preventDefault();
+      focusVerificationInput(index + 1);
+    }
+  };
+
+  const handleVerificationCodePaste = (
+    index: number,
+    event: ClipboardEvent<HTMLInputElement>,
+  ) => {
+    event.preventDefault();
+    fillVerificationCode(index, event.clipboardData.getData("text"));
+  };
+
   const handleLoginSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -101,6 +221,31 @@ export default function EmailLoginScreen() {
     if (!isSignupReady || !emailPattern.test(email)) {
       return;
     }
+
+    setVerificationCode([...initialVerificationCode]);
+    setHasVerificationError(false);
+    setAuthMode("verify");
+  };
+
+  const handleVerificationSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!isVerificationReady) {
+      return;
+    }
+
+    if (verificationCode.join("") === mockVerificationSuccessCode) {
+      setAuthMode("success");
+      setVerificationCode([...initialVerificationCode]);
+      setHasVerificationError(false);
+      return;
+    }
+
+    setVerificationCode([...initialVerificationCode]);
+    setHasVerificationError(true);
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   };
 
   const handleModeChange = (mode: "login" | "signup") => {
@@ -109,7 +254,24 @@ export default function EmailLoginScreen() {
     setEmail("");
     setPassword("");
     setPasswordConfirm("");
+    setVerificationCode([...initialVerificationCode]);
+    setHasVerificationError(false);
     hideCreditTooltip();
+  };
+
+  const handleVerificationSuccessConfirm = () => {
+    handleModeChange("login");
+  };
+
+  const handleBackToSignup = () => {
+    setAuthMode("signup");
+    setVerificationCode([...initialVerificationCode]);
+    setHasVerificationError(false);
+    hideCreditTooltip();
+  };
+
+  const handleResendVerificationCode = () => {
+    resetVerificationToInitial();
   };
 
   return (
@@ -117,13 +279,46 @@ export default function EmailLoginScreen() {
       <section className="flex min-h-screen w-full flex-col items-start self-stretch">
         <div className="flex flex-[1_0_0] flex-col items-center gap-20 self-stretch px-20 pt-[10vh] pb-[120px]">
           <form
-            className="relative flex w-[440px] max-w-[calc(100vw-32px)] flex-col items-center justify-center gap-8 rounded-card bg-bg-contents-default p-10 shadow-[0_0_24px_0_var(--color-bg-shadow-default)]"
+            className={clsx(
+              "relative flex w-[440px] max-w-[calc(100vw-32px)] flex-col items-center justify-center rounded-card bg-bg-contents-default shadow-[0_0_24px_0_var(--color-bg-shadow-default)]",
+              authMode === "verify"
+                ? "gap-0 p-0"
+                : authMode === "success"
+                  ? "gap-9 p-10"
+                  : "gap-8 p-10",
+            )}
             noValidate
             onSubmit={
-              authMode === "login" ? handleLoginSubmit : handleSignupSubmit
+              authMode === "login"
+                ? handleLoginSubmit
+                : authMode === "signup"
+                  ? handleSignupSubmit
+                  : authMode === "verify"
+                    ? handleVerificationSubmit
+                    : undefined
             }
           >
-            <header className="flex flex-col items-center gap-6 self-stretch">
+            {authMode === "verify" ? (
+              <EmailVerificationContent
+                email={displayedVerificationEmail}
+                verificationCode={verificationCode}
+                verificationInputRefs={verificationInputRefs}
+                hasVerificationError={hasVerificationError}
+                isVerificationReady={isVerificationReady}
+                onBack={handleBackToSignup}
+                onCodeChange={handleVerificationCodeChange}
+                onCodeFocus={handleVerificationCodeFocus}
+                onCodeKeyDown={handleVerificationCodeKeyDown}
+                onCodePaste={handleVerificationCodePaste}
+                onResend={handleResendVerificationCode}
+              />
+            ) : authMode === "success" ? (
+              <EmailVerificationSuccessContent
+                onConfirm={handleVerificationSuccessConfirm}
+              />
+            ) : (
+              <>
+                <header className="flex flex-col items-center gap-6 self-stretch">
               <h1 className="text-center text-[32px] leading-[130%] font-bold tracking-[-0.02em] text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
                 JobDri
               </h1>
@@ -282,12 +477,9 @@ export default function EmailLoginScreen() {
                 </div>
 
                 <footer className="flex items-center justify-center gap-3 self-stretch">
-                  <TextOnlyButton
-                    label="이미 계정이 있으신가요?"
-                    size="small"
-                    styleType="secondary"
-                    onClick={() => handleModeChange("login")}
-                  />
+                  <span className="text-label14-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+                    이미 계정이 있으신가요?
+                  </span>
                   <TextOnlyButton
                     label="로그인"
                     size="small"
@@ -303,10 +495,174 @@ export default function EmailLoginScreen() {
                 <Tooltip placement="up_mid" />
               </div>
             )}
+              </>
+            )}
           </form>
         </div>
       </section>
     </main>
+  );
+}
+
+interface EmailVerificationContentProps {
+  email: string;
+  verificationCode: string[];
+  verificationInputRefs: MutableRefObject<Array<HTMLInputElement | null>>;
+  hasVerificationError: boolean;
+  isVerificationReady: boolean;
+  onBack: () => void;
+  onCodeChange: (index: number, value: string) => void;
+  onCodeFocus: () => void;
+  onCodeKeyDown: (
+    index: number,
+    event: KeyboardEvent<HTMLInputElement>,
+  ) => void;
+  onCodePaste: (
+    index: number,
+    event: ClipboardEvent<HTMLInputElement>,
+  ) => void;
+  onResend: () => void;
+}
+
+function EmailVerificationContent({
+  email,
+  verificationCode,
+  verificationInputRefs,
+  hasVerificationError,
+  isVerificationReady,
+  onBack,
+  onCodeChange,
+  onCodeFocus,
+  onCodeKeyDown,
+  onCodePaste,
+  onResend,
+}: EmailVerificationContentProps) {
+  return (
+    <>
+      <div className="flex items-start gap-2.5 self-stretch px-7 pt-6">
+        <IconOnlyButton
+          iconType="ARROW_L"
+          aria-label="회원가입 화면으로 돌아가기"
+          onClick={onBack}
+        />
+      </div>
+
+      <div className="flex flex-col items-start gap-9 self-stretch px-10 pb-10">
+        <header className="flex flex-col items-center gap-6 self-stretch">
+          <h1 className="text-center text-[32px] leading-[130%] font-bold tracking-[-0.02em] text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+            JobDri
+          </h1>
+
+          <div className="flex flex-col items-center gap-2 self-stretch">
+            <p className="text-t20-semibold text-center text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+              이메일 인증하기
+            </p>
+            <div className="flex flex-col items-center">
+              <p className="text-sub14-med text-center text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+                {email}
+              </p>
+              <p className="text-sub14-med text-center text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+                (으)로 전송한 6자리 코드를 입력해주세요
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex flex-col items-center gap-6 self-stretch">
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex items-start justify-center gap-3">
+              {verificationCode.map((digit, index) => (
+                <InputSingleLine
+                  key={index}
+                  ref={(input) => {
+                    verificationInputRefs.current[index] = input;
+                  }}
+                  value={digit}
+                  onChange={(value) => onCodeChange(index, value)}
+                  onFocus={onCodeFocus}
+                  onKeyDown={(event) => onCodeKeyDown(index, event)}
+                  onPaste={(event) => onCodePaste(index, event)}
+                  inputMode="numeric"
+                  autoComplete={index === 0 ? "one-time-code" : "off"}
+                  maxLength={1}
+                  aria-label={`인증번호 ${index + 1}번째 자리`}
+                  className="!w-[47px] gap-0"
+                  wrapperClassName="h-[63px] w-[47px]"
+                  inputClassName="h-full text-center !text-[24px] !leading-[130%] !font-medium !tracking-[-0.02em] !text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]"
+                  paddingClass="p-0"
+                  radiusClass="rounded-card-s"
+                  focusedBorder="border-line-primary-default"
+                  hasError={hasVerificationError}
+                />
+              ))}
+            </div>
+
+            {hasVerificationError && (
+              <p className="text-cap12-med text-center text-text-system-fail [font-feature-settings:'liga'_off,'clig'_off]">
+                {verificationErrorMessage}
+              </p>
+            )}
+          </div>
+
+          <div
+            className={clsx(
+              "flex items-center justify-center gap-1 self-stretch",
+              hasVerificationError && "hidden",
+            )}
+          >
+            <span className="text-sub14-reg text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+              인증코드가 오지 않았나요?
+            </span>
+            <TextOnlyButton
+              label="다시 보내기"
+              size="small"
+              styleType="primary"
+              onClick={onResend}
+            />
+          </div>
+        </div>
+
+        <Button
+          label="회원가입"
+          styleType="secondary"
+          size="large"
+          active={isVerificationReady}
+          disabled={!isVerificationReady}
+          className="self-stretch"
+          type="submit"
+        />
+      </div>
+    </>
+  );
+}
+
+interface EmailVerificationSuccessContentProps {
+  onConfirm: () => void;
+}
+
+function EmailVerificationSuccessContent({
+  onConfirm,
+}: EmailVerificationSuccessContentProps) {
+  return (
+    <>
+      <header className="flex flex-col items-center gap-6 self-stretch">
+        <h1 className="text-center text-[32px] leading-[130%] font-bold tracking-[-0.02em] text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+          JobDri
+        </h1>
+
+        <p className="text-t20-semibold text-center whitespace-pre-line text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+          {"환영합니다.\n회원가입이 완료되었습니다!"}
+        </p>
+      </header>
+
+      <Button
+        label="확인"
+        styleType="primary"
+        size="large"
+        className="self-stretch"
+        onClick={onConfirm}
+      />
+    </>
   );
 }
 
