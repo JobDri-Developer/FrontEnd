@@ -104,6 +104,7 @@ export default function SelectQuestion() {
                   key={q.id}
                   question={q.question}
                   selected={selectedIds.includes(q.id)}
+                  maxReached={selectedIds.length >= MAX_SELECT}
                   onChange={(isSelected) => handleChange(q.id, isSelected)}
                 />
               ))}

@@ -7,11 +7,20 @@ import CheckBox from "@/components/common/icons/CheckBox";
 interface ListQProps {
   question: string;
   selected?: boolean;
+  maxReached?: boolean;
   onChange?: (selected: boolean) => void;
 }
 
-export function ListQ({ question, selected = false, onChange }: ListQProps) {
+export function ListQ({
+  question,
+  selected = false,
+  maxReached = false,
+  onChange,
+}: ListQProps) {
+  const isDisabled = maxReached && !selected;
+
   const handleClick = () => {
+    if (isDisabled) return;
     onChange?.(!selected);
   };
 
@@ -19,10 +28,12 @@ export function ListQ({ question, selected = false, onChange }: ListQProps) {
     <button
       onClick={handleClick}
       className={clsx(
-        "group min-w-[577px] flex items-start justify-between border gap-6 py-4 hover:bg-fill-quaternary-default px-6 rounded-chip-l transition-colors text-left",
+        "group min-w-[577px] flex items-start justify-between border gap-6 py-4 px-6 rounded-chip-l transition-colors text-left",
         selected
-          ? "border border-line-primary-default bg-fill-quaternary-default"
-          : "border-line-neutral-default bg-fill-quaternary-assistive ",
+          ? "border-line-primary-default bg-fill-quaternary-default"
+          : isDisabled
+            ? "border-line-neutral-default bg-fill-quaternary-assistive cursor-not-allowed opacity-40"
+            : "border-line-neutral-default bg-fill-quaternary-assistive hover:bg-fill-quaternary-default",
       )}
     >
       <div className="flex flex-col gap-2 flex-1 min-w-0">
@@ -37,7 +48,11 @@ export function ListQ({ question, selected = false, onChange }: ListQProps) {
         <CheckBox
           type="DEFAULT"
           selected={selected}
-          className="group-hover:bg-icon-assistive group-hover:border-transparent"
+          className={
+            isDisabled
+              ? ""
+              : "group-hover:bg-icon-assistive group-hover:border-transparent"
+          }
         />
       </div>
     </button>
