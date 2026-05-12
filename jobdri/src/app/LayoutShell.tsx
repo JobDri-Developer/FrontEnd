@@ -11,7 +11,7 @@ export default function LayoutShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const showLayout = LAYOUT_ROUTES;
+  const showLayout = LAYOUT_ROUTES.includes(pathname);
 
   if (!showLayout) {
     return <>{children}</>;

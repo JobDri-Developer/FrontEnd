@@ -8,6 +8,7 @@ import IC_ARROW_L from "@/assets/ic_Arrow_left.svg";
 import IC_GOOGLE from "@/assets/ic_GoogleAsset.svg";
 import IC_GOOD from "@/assets/ic_Good.svg";
 import IC_ADD from "@/assets/ic_Add.svg";
+import IC_ADD_S from "@/assets/ic_Add_S.svg";
 import IC_TRASH from "@/assets/ic_Trash.svg";
 import IC_WARN from "@/assets/ic_Warning.svg";
 import IC_CHECK from "@/assets/ic_Check.svg";
@@ -46,6 +47,7 @@ const iconMap = {
   GOOGLE: IC_GOOGLE,
   GOOD: IC_GOOD,
   ADD: IC_ADD,
+  ADD_S: IC_ADD_S,
   TRASH: IC_TRASH,
   WARN: IC_WARN,
   CHECK: IC_CHECK,

@@ -20,7 +20,7 @@ export function getWrapperClass(
 }
 
 export const scrollbarClass =
-  "[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track-piece]:bg-fill-quaternary-assistive [&::-webkit-scrollbar-thumb]:bg-fill-tertiary-assistive [&::-webkit-scrollbar-thumb]:rounded-full";
+  "[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track-piece]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-icon-neutral-weak [&::-webkit-scrollbar-thumb]:rounded-full";
 
 export function getFieldClass(disabled: boolean) {
   return clsx(

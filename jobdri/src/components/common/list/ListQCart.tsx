@@ -28,7 +28,7 @@ export function ListQCart({
     <button
       onClick={handleClick}
       className={clsx(
-        "group min-w-[364px] flex items-center justify-between gap-3 px-3.5 py-3 rounded-card-s bg-fill-quaternary-default border-line-neutral-default transition-colors text-left",
+        "group w-full flex items-center justify-between gap-3 px-3.5 py-3 rounded-card-s bg-fill-quaternary-default border-line-neutral-default transition-colors text-left",
       )}
     >
       <span

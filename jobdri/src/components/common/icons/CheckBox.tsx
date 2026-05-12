@@ -31,11 +31,12 @@ export default function CheckBox({
   return (
     <div
       className={clsx(
-        "p-0.5 cursor-pointer border group",
-        isRadio ? "rounded-full" : "rounded-chip-s",
-        isSelected
-          ? "bg-fill-tertiary-default border-fill-tertiary-default"
-          : "bg-transparent border-line-neutral-strong hover:border-transparent hover:bg-icon-neutral-assistive",
+        "p-0.5 cursor-pointer group",
+        isRadio
+          ? "rounded-full bg-transparent border border-line-neutral-strong"
+          : isSelected
+            ? "rounded-chip-s bg-fill-tertiary-default border-fill-tertiary-default"
+            : "rounded-chip-s bg-icon-neutral-weak group-hover:border-transparent group-hover:bg-icon-neutral-assistive",
         className,
       )}
       onClick={handleClick}

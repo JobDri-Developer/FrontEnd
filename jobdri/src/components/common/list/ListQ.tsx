@@ -1,34 +1,18 @@
 "use client";
 
 import clsx from "clsx";
-import { useState } from "react";
-import { ChipMain, ChipRound } from "@/components/common/chips";
+import { ChipRound } from "@/components/common/chips";
 import CheckBox from "@/components/common/icons/CheckBox";
 
-type ChipItem = {
-  label: string;
-  color: "primary" | "secondary" | "tertiary" | "quaternary";
-};
-
 interface ListQProps {
-  chips: ChipItem[];
   question: string;
   selected?: boolean;
   onChange?: (selected: boolean) => void;
 }
 
-export function ListQ({
-  chips,
-  question,
-  selected: initialSelected = false,
-  onChange,
-}: ListQProps) {
-  const [selected, setSelected] = useState(initialSelected);
-
+export function ListQ({ question, selected = false, onChange }: ListQProps) {
   const handleClick = () => {
-    const next = !selected;
-    setSelected(next);
-    onChange?.(next);
+    onChange?.(!selected);
   };
 
   return (
