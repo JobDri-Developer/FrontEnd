@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import { Button } from "../common/buttons";
 import { ListQ, ListQCart } from "../common/list";
 import { scrollbarClass } from "../common/input/inputStyles";
-import ToastFrame from "../common/toast/ToastFrame";
 import { Toast } from "../common/toast";
 
 const MAX_SELECT = 5;
@@ -97,7 +96,7 @@ export default function SelectQuestion() {
               />
             </div>
             <div
-              className={`flex flex-col gap-2 overflow-y-auto flex-1 min-h-0 pr-6 ${scrollbarClass}`}
+              className={`flex flex-col gap-2 -m-8 px-8 mt-1 mr-[1.5px] mb-[1.8px] overflow-y-auto flex-1 min-h-0 ${scrollbarClass} overflow-visible`}
             >
               {QUESTIONS.map((q) => (
                 <ListQ

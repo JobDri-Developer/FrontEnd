@@ -4,6 +4,7 @@ export const ROUTES = {
   SIGNIN: "/signin",
   APPLY: "/apply",
   CREDIT: "/credit",
+  APPLY_VIRTUAL:"/apply/virtual"
 } as const;
 
 // LNB + Header를 표시할 경로 목록

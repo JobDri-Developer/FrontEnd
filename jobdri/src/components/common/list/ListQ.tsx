@@ -30,7 +30,7 @@ export function ListQ({
       className={clsx(
         "group min-w-[577px] flex items-start justify-between border gap-6 py-4 px-6 rounded-chip-l transition-colors text-left",
         selected
-          ? "border-line-primary-default bg-fill-quaternary-default"
+          ? "border-line-primary-default bg-fill-quaternary-default shadow-hover"
           : isDisabled
             ? "border-line-neutral-default bg-fill-quaternary-assistive cursor-not-allowed opacity-40"
             : "border-line-neutral-default bg-fill-quaternary-assistive hover:bg-fill-quaternary-default",
