@@ -13,7 +13,12 @@ import {
   TextButton,
 } from "@/components/common/buttons";
 import { Toast, ToastFrame } from "@/components/common/toast";
-import { ChipRound, ChipRoundSelected, ChipQnumber } from "@/components/common/chips";
+import {
+  ChipQnumber,
+  ChipRound,
+  ChipRoundSelected,
+  ChipTag,
+} from "@/components/common/chips";
 import ChipMainDemo from "@/components/common/chips/ChipMainDemo";
 import ModalLinkInputDemo from "@/components/common/modal/ModalLinkInputDemo";
 import { ModalNotice } from "@/components/common/modal";
@@ -246,6 +251,9 @@ export default function Home() {
       <Section title="ChipRoundSelected">
         <ChipRoundSelected label="mid" />
         <ChipRoundSelected label="mid selected" selected />
+      </Section>
+      <Section title="ChipTag">
+        <ChipTag label="데이터분석" />
       </Section>
       <Section title="ChipQnumber">
         <ChipQnumber number={1} showComplete />
