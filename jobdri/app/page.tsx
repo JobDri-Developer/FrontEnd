@@ -2,6 +2,7 @@ import IconBox from "@/components/common/icons/IconBox";
 import CheckBox from "@/components/common/icons/CheckBox";
 import Header from "@/components/common/header/Header";
 import { Footer } from "@/components/common/footer";
+import { DropDown } from "@/components/common/dropdown";
 import { Lnb } from "@/components/common/lnb";
 import {
   Button,
@@ -57,6 +58,11 @@ export default function Home() {
       <Section title="Footer">
         <div className="w-full">
           <Footer />
+        </div>
+      </Section>
+      <Section title="DropDown">
+        <div className="flex items-start gap-8">
+          <DropDown />
         </div>
       </Section>
       <Section title="Toast">
