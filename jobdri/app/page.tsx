@@ -15,6 +15,7 @@ import { Toast, ToastFrame } from "@/components/common/toast";
 import { ChipRound, ChipRoundSelected, ChipQnumber } from "@/components/common/chips";
 import ChipMainDemo from "@/components/common/chips/ChipMainDemo";
 import ModalLinkInputDemo from "@/components/common/modal/ModalLinkInputDemo";
+import { ModalNotice } from "@/components/common/modal";
 import { CompleteBadge } from "@/components/common/badges";
 import { Tooltip, TooltipModify } from "@/components/common/tooltip";
 import { TabMenuThree, TabMenuTwo } from "@/components/common/tabs";
@@ -249,6 +250,12 @@ export default function Home() {
       <Section title="Modal — LinkInput">
         <ModalLinkInputDemo />
       </Section>{" "}
+      <Section title="Modal — Notice">
+        <div className="flex flex-wrap items-start gap-9">
+          <ModalNotice />
+          <ModalNotice variant="double" />
+        </div>
+      </Section>
       <Section title="SearchBar">
         <div className="w-[500px]">
           <SearchBar />
