@@ -23,6 +23,7 @@ import ChipMainDemo from "@/components/common/chips/ChipMainDemo";
 import ModalLinkInputDemo from "@/components/common/modal/ModalLinkInputDemo";
 import { ModalNotice } from "@/components/common/modal";
 import { CompleteBadge } from "@/components/common/badges";
+import { ProgressSidebar } from "@/components/common/progress";
 import { Tooltip, TooltipModify } from "@/components/common/tooltip";
 import { TabMenuThree, TabMenuTwo } from "@/components/common/tabs";
 import { CreditHeader, CreditRow } from "@/components/common/credit";
@@ -69,6 +70,9 @@ export default function Home() {
         <div className="flex items-start gap-8">
           <DropDown />
         </div>
+      </Section>
+      <Section title="Progress — Sidebar">
+        <ProgressSidebar />
       </Section>
       <Section title="Toast">
         <div className="flex w-full max-w-[594px] flex-col gap-5">
