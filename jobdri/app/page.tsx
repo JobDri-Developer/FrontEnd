@@ -1,6 +1,7 @@
 import IconBox from "@/components/common/icons/IconBox";
 import CheckBox from "@/components/common/icons/CheckBox";
 import Header from "@/components/common/header/Header";
+import { Footer } from "@/components/common/footer";
 import { Lnb } from "@/components/common/lnb";
 import {
   Button,
@@ -49,6 +50,11 @@ export default function Home() {
       <Section title="Header">
         <div className="w-full">
           <Header />
+        </div>
+      </Section>
+      <Section title="Footer">
+        <div className="w-full">
+          <Footer />
         </div>
       </Section>
       <Section title="Toast">
