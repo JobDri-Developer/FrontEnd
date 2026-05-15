@@ -2,8 +2,7 @@
 
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
-import Button from "@/components/common/buttons/Button";
-import { InputMain, InputSingleLine } from "@/components/common/input";
+import { InputModalQuestion } from "@/components/common/input";
 import LoadMotion from "@/components/common/LoadMotion";
 import ButtonCta from "@/components/common/buttons/ButtonCta";
 import { ButtonCtaModal } from "../buttons";
@@ -73,11 +72,9 @@ export default function ModaInput({
           </div>
 
           {/* 인풋 */}
-          <InputMain
-            placeholder="https://www.com"
+          <InputModalQuestion
             value={value}
             onChange={onChange}
-            className="w-full"
             error={error}
           />
 

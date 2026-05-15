@@ -24,6 +24,7 @@ import {
   InputAutoGrow,
   InputFile,
   InputMain,
+  InputModalQuestion,
   InputMultiLine,
   InputMultiLine1000,
   InputSingleLine,
@@ -282,6 +283,9 @@ export default function Home() {
           <InputSingleLine placeholder="내용을 입력해주세요." disabled />
           <InputSingleLine placeholder="내용을 입력해주세요." />
         </div>
+      </Section>
+      <Section title="InputModalQuestion">
+        <InputModalQuestion />
       </Section>
       <Section title="InputMultiLine">
         <div className="flex flex-col gap-4 w-[360px]">
