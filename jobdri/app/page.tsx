@@ -23,7 +23,10 @@ import ChipMainDemo from "@/components/common/chips/ChipMainDemo";
 import ModalLinkInputDemo from "@/components/common/modal/ModalLinkInputDemo";
 import { ModalNotice } from "@/components/common/modal";
 import { CompleteBadge } from "@/components/common/badges";
-import { ProgressSidebar } from "@/components/common/progress";
+import {
+  ProgressPanelRow,
+  ProgressSidebar,
+} from "@/components/common/progress";
 import { Tooltip, TooltipModify } from "@/components/common/tooltip";
 import { TabMenuThree, TabMenuTwo } from "@/components/common/tabs";
 import { CreditHeader, CreditRow } from "@/components/common/credit";
@@ -69,6 +72,18 @@ export default function Home() {
       <Section title="DropDown">
         <div className="flex items-start gap-8">
           <DropDown />
+        </div>
+      </Section>
+      <Section title="Progress — PanelRow">
+        <div className="flex flex-col gap-5 rounded-card-s bg-bg-default p-8">
+          <div className="flex items-start gap-8">
+            <span className="w-6 shrink-0 text-h28-bold">3</span>
+            <ProgressPanelRow itemCount={3} />
+          </div>
+          <div className="flex items-start gap-8">
+            <span className="w-6 shrink-0 text-h28-bold">4</span>
+            <ProgressPanelRow itemCount={4} />
+          </div>
         </div>
       </Section>
       <Section title="Progress — Sidebar">
