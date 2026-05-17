@@ -1,1 +1,5 @@
-export * from "@/components/common/input/inputStyles";
+export {
+  getFieldClass,
+  getWrapperClass,
+  scrollbarClass,
+} from "@/components/common/input/inputStyles";

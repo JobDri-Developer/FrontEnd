@@ -1,6 +1,9 @@
 import IconBox from "@/components/common/icons/IconBox";
 import CheckBox from "@/components/common/icons/CheckBox";
 import Header from "@/components/common/header/Header";
+import { Footer } from "@/components/common/footer";
+import { DropDown } from "@/components/common/dropdown";
+import { Lnb } from "@/components/common/lnb";
 import {
   Button,
   ButtonCta,
@@ -12,13 +15,19 @@ import {
 } from "@/components/common/buttons";
 import { Toast, ToastFrame } from "@/components/common/toast";
 import {
+  ChipQnumber,
   ChipRound,
   ChipRoundSelected,
-  ChipQnumber,
+  ChipTag,
 } from "@/components/common/chips";
 import ChipMainDemo from "@/components/common/chips/ChipMainDemo";
 import ModalLinkInputDemo from "@/components/common/modal/ModalLinkInputDemo";
+import { ModalNotice } from "@/components/common/modal";
 import { CompleteBadge } from "@/components/common/badges";
+import {
+  ProgressPanelRow,
+  ProgressSidebar,
+} from "@/components/common/progress";
 import { Tooltip, TooltipModify } from "@/components/common/tooltip";
 import { TabMenuThree, TabMenuTwo } from "@/components/common/tabs";
 import { CreditHeader, CreditRow } from "@/components/common/credit";
@@ -27,6 +36,7 @@ import {
   InputAutoGrow,
   InputFile,
   InputMain,
+  InputModalQuestion,
   InputMultiLine,
   InputMultiLine1000,
   InputSingleLine,
@@ -54,6 +64,31 @@ export default function Home() {
         <div className="w-full">
           <Header />
         </div>
+      </Section>
+      <Section title="Footer">
+        <div className="w-full">
+          <Footer />
+        </div>
+      </Section>
+      <Section title="DropDown">
+        <div className="flex items-start gap-8">
+          <DropDown />
+        </div>
+      </Section>
+      <Section title="Progress — PanelRow">
+        <div className="flex flex-col gap-5 rounded-card-s bg-bg-default p-8">
+          <div className="flex items-start gap-8">
+            <span className="w-6 shrink-0 text-h28-bold">3</span>
+            <ProgressPanelRow itemCount={3} />
+          </div>
+          <div className="flex items-start gap-8">
+            <span className="w-6 shrink-0 text-h28-bold">4</span>
+            <ProgressPanelRow itemCount={4} />
+          </div>
+        </div>
+      </Section>
+      <Section title="Progress — Sidebar">
+        <ProgressSidebar />
       </Section>
       <Section title="Toast">
         <div className="flex w-full max-w-[594px] flex-col gap-5">
@@ -245,6 +280,9 @@ export default function Home() {
         <ChipRoundSelected label="mid" />
         <ChipRoundSelected label="mid selected" selected />
       </Section>
+      <Section title="ChipTag">
+        <ChipTag label="데이터분석" />
+      </Section>
       <Section title="ChipQnumber">
         <ChipQnumber number={1} showComplete />
         <ChipQnumber number={1} showComplete selected />
@@ -254,6 +292,12 @@ export default function Home() {
       <Section title="Modal — LinkInput">
         <ModalLinkInputDemo />
       </Section>{" "}
+      <Section title="Modal — Notice">
+        <div className="flex flex-wrap items-start gap-9">
+          <ModalNotice />
+          <ModalNotice variant="double" />
+        </div>
+      </Section>
       <Section title="SearchBar">
         <div className="w-[500px]">
           <SearchBar />
@@ -288,6 +332,9 @@ export default function Home() {
           <InputSingleLine placeholder="내용을 입력해주세요." disabled />
           <InputSingleLine placeholder="내용을 입력해주세요." />
         </div>
+      </Section>
+      <Section title="InputModalQuestion">
+        <InputModalQuestion />
       </Section>
       <Section title="InputMultiLine">
         <div className="flex flex-col gap-4 w-[360px]">

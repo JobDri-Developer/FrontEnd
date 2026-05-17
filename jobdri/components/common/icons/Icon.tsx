@@ -5,6 +5,8 @@ import IC_UPLOAD_M from "@/assets/ic_Upload_M.svg";
 import IC_HOME_M from "@/assets/ic_Home_M.svg";
 import IC_ARROW_R from "@/assets/ic_Arrow_RIght.svg";
 import IC_ARROW_L from "@/assets/ic_Arrow_left.svg";
+import IC_ARROW_DOWN_M from "@/assets/ic_Arrow_Down_M.svg";
+import IC_ARROW_UP_M from "@/assets/ic_Arrow_Up_M.svg";
 import IC_GOOGLE from "@/assets/ic_GoogleAsset.svg";
 import IC_GOOD from "@/assets/ic_Good.svg";
 import IC_ADD from "@/assets/ic_Add.svg";
@@ -43,6 +45,8 @@ const iconMap = {
   HOME_M: IC_HOME_M,
   ARROW_R: IC_ARROW_R,
   ARROW_L: IC_ARROW_L,
+  ARROW_DOWN_M: IC_ARROW_DOWN_M,
+  ARROW_UP_M: IC_ARROW_UP_M,
   GOOGLE: IC_GOOGLE,
   GOOD: IC_GOOD,
   ADD: IC_ADD,

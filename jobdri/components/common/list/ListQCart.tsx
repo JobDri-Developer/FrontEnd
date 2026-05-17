@@ -2,8 +2,7 @@
 
 import clsx from "clsx";
 import { useState } from "react";
-import CheckBox from "@/components/common/icons/CheckBox";
-import IconBox from "@/components/common/icons/IconBox";
+import Icon from "@/components/common/icons/Icon";
 
 interface ListQCartProps {
   question: string;
@@ -28,18 +27,22 @@ export function ListQCart({
     <button
       onClick={handleClick}
       className={clsx(
-        "group min-w-[364px] flex items-center justify-between gap-3 px-3.5 py-3 rounded-card-s bg-fill-quaternary-default border-line-neutral-default transition-colors text-left",
+        "group flex w-[364px] items-center gap-6 rounded-card-s border border-line-neutral-default bg-fill-quaternary-default px-5 py-[14px] text-left transition-colors",
       )}
     >
-      <span
-        className={clsx(
-          "text-sub14-med flex-1 min-w-0",
-          selected ? "text-text-primary" : "text-text-title",
-        )}
-      >
-        {question}
+      <div className="flex min-w-0 flex-1 flex-col items-start justify-center gap-3">
+        <span
+          className={clsx(
+            "max-h-[42px] self-stretch overflow-hidden text-sub14-med tracking-normal text-text-neutral-description [display:-webkit-box] [font-feature-settings:'liga'_off,'clig'_off] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]",
+            selected && "text-text-neutral-description",
+          )}
+        >
+          {question}
+        </span>
+      </div>
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center gap-2.5 rounded-icon-default bg-icon-neutral-weak p-2.5">
+        <Icon type="TRASH" className="h-3 w-3 text-text-neutral-white" />
       </span>
-      <IconBox type="TRASH" />
     </button>
   );
 }
