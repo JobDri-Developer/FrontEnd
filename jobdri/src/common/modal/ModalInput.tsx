@@ -2,8 +2,7 @@
 
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
-import Button from "@/components/common/buttons/Button";
-import { InputMain, InputSingleLine } from "@/components/common/input";
+import { InputModalQuestion } from "@/components/common/input";
 import LoadMotion from "@/components/common/LoadMotion";
 import ButtonCta from "@/components/common/buttons/ButtonCta";
 import { ButtonCtaModal } from "../buttons";
@@ -21,8 +20,6 @@ interface ModalInputProps {
   announce?: string;
   description?: string;
   error?: string;
-  placeholder?: string;
-  loading?: boolean;
 }
 
 export default function ModaInput({
@@ -36,8 +33,6 @@ export default function ModaInput({
   announce,
   description,
   error,
-  placeholder = "https://www.com",
-  loading = true,
 }: ModalInputProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-bg-lightbox-default z-50">
@@ -64,7 +59,7 @@ export default function ModaInput({
 
         {/* 바디 */}
         <div className="flex flex-col items-center gap-5 px-8 pb-6 pt-3">
-          {loading && <LoadMotion />}
+          <LoadMotion />
 
           {/* 텍스트 */}
           <div className="flex flex-col items-center gap-2 text-center">
@@ -77,11 +72,9 @@ export default function ModaInput({
           </div>
 
           {/* 인풋 */}
-          <InputSingleLine
-            placeholder={placeholder}
+          <InputModalQuestion
             value={value}
             onChange={onChange}
-            className="w-full"
             error={error}
           />
 

@@ -5,6 +5,7 @@ import { Button } from "../common/buttons";
 import { ListQ, ListQCart } from "../common/list";
 import { scrollbarClass } from "../common/input/inputStyles";
 import { Toast } from "../common/toast";
+import AddQuestion from "./AddQuestion";
 
 const MAX_SELECT = 5;
 
@@ -46,13 +47,28 @@ const QUESTIONS: Question[] = [
   },
 ];
 
-export default function SelectQuestion() {
+interface SelectQuestionProps {
+  onSelectionChange?: (count: number) => void;
+}
+
+export default function SelectQuestion({ onSelectionChange }: SelectQuestionProps) {
+  const [questions, setQuestions] = useState<Question[]>(QUESTIONS);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastVariant, setToastVariant] = useState<
+    "normal" | "check" | "warning" | "dark"
+  >("normal");
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const showToast = () => {
+  const showToast = (
+    message: string,
+    variant: "normal" | "check" | "warning" | "dark" = "normal",
+  ) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToastMessage(message);
+    setToastVariant(variant);
     setToastVisible(true);
     toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
   };
@@ -60,22 +76,42 @@ export default function SelectQuestion() {
   const handleChange = (id: string, isSelected: boolean) => {
     if (isSelected) {
       if (selectedIds.length >= MAX_SELECT) return;
-      setSelectedIds((prev) => [...prev, id]);
+      const next = [...selectedIds, id];
+      setSelectedIds(next);
+      onSelectionChange?.(next.length);
     } else {
-      setSelectedIds((prev) => prev.filter((q) => q !== id));
+      const next = selectedIds.filter((q) => q !== id);
+      setSelectedIds(next);
+      onSelectionChange?.(next.length);
     }
   };
 
   const handleRemove = (id: string) => {
-    setSelectedIds((prev) => prev.filter((q) => q !== id));
-    showToast();
+    const next = selectedIds.filter((q) => q !== id);
+    setSelectedIds(next);
+    onSelectionChange?.(next.length);
+    showToast("문항이 삭제되었습니다.", "normal");
   };
 
-  const selectedQuestions = QUESTIONS.filter((q) => selectedIds.includes(q.id));
+  const handleAdd = (question: string) => {
+    const newId = `custom_${Date.now()}`;
+    setQuestions((prev) => [{ id: newId, question }, ...prev]);
+    if (selectedIds.length < MAX_SELECT) {
+      const next = [...selectedIds, newId];
+      setSelectedIds(next);
+      onSelectionChange?.(next.length);
+    }
+    showToast("문항이 추가되었습니다.", "check");
+  };
+
+  const selectedQuestions = questions.filter((q) => selectedIds.includes(q.id));
 
   return (
     <>
       <main className="max-w-[1116] mx-auto">
+        {isOpen && (
+          <AddQuestion onClose={() => setIsOpen(false)} onAdd={handleAdd} />
+        )}
         <h1 className="text-h24-bold text-center my-8">
           답변할 문항을 5가지 선택해주세요.
         </h1>
@@ -93,17 +129,19 @@ export default function SelectQuestion() {
                 size="small"
                 styleType="secondary"
                 iconType="ADD_S"
+                onClick={() => setIsOpen(true)}
               />
             </div>
             <div
               className={`flex flex-col gap-2 -m-8 px-8 mt-1 mr-[1.5px] mb-[1.8px] overflow-y-auto flex-1 min-h-0 ${scrollbarClass} overflow-visible`}
             >
-              {QUESTIONS.map((q) => (
+              {questions.map((q) => (
                 <ListQ
                   key={q.id}
                   question={q.question}
                   selected={selectedIds.includes(q.id)}
                   maxReached={selectedIds.length >= MAX_SELECT}
+                  isCustom={q.id.startsWith("custom_")}
                   onChange={(isSelected) => handleChange(q.id, isSelected)}
                 />
               ))}
@@ -141,7 +179,8 @@ export default function SelectQuestion() {
       {toastVisible && (
         <div className="fixed bottom-8 right-5 z-50">
           <Toast
-            message="문항이 삭제되었습니다."
+            message={toastMessage}
+            variant={toastVariant}
             onClose={() => setToastVisible(false)}
             className="w-90"
           />

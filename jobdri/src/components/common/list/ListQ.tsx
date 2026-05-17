@@ -8,6 +8,7 @@ interface ListQProps {
   question: string;
   selected?: boolean;
   maxReached?: boolean;
+  isCustom?: boolean;
   onChange?: (selected: boolean) => void;
 }
 
@@ -15,6 +16,7 @@ export function ListQ({
   question,
   selected = false,
   maxReached = false,
+  isCustom = false,
   onChange,
 }: ListQProps) {
   const isDisabled = maxReached && !selected;
@@ -38,9 +40,15 @@ export function ListQ({
     >
       <div className="flex flex-col gap-2 flex-1 min-w-0">
         <div className="flex gap-1.5">
-          <ChipRound label="매칭률 높음" variant="strong" />
-          <ChipRound label="데이터 분석" variant="assistive" />
-          <ChipRound label="성과 측정" variant="assistive" />
+          {isCustom ? (
+            <ChipRound label="직접 추가" variant="strong" />
+          ) : (
+            <>
+              <ChipRound label="매칭률 높음" variant="strong" />
+              <ChipRound label="데이터 분석" variant="assistive" />
+              <ChipRound label="성과 측정" variant="assistive" />
+            </>
+          )}
         </div>
         <span className="text-b16-med">{question}</span>
       </div>
