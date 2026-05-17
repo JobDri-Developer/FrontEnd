@@ -11,6 +11,7 @@ import {
   IconButton,
   IconOnlyButton,
   TextButton,
+  TextOnlyButton,
 } from "@/components/common/buttons";
 import { Toast, ToastFrame } from "@/components/common/toast";
 import {
@@ -247,6 +248,14 @@ export default function Home() {
           <TextButton size="large" styleType="secondary" />
           <TextButton size="large" styleType="primary" iconPosition="left" />
           <TextButton size="large" styleType="secondary" iconPosition="left" />
+        </div>
+      </Section>
+      <Section title="Button/TextOnly">
+        <div className="flex items-center gap-8">
+          <TextOnlyButton size="small" styleType="primary" />
+          <TextOnlyButton size="large" styleType="primary" />
+          <TextOnlyButton size="small" styleType="secondary" />
+          <TextOnlyButton size="large" styleType="secondary" />
         </div>
       </Section>
       <Section title="IconBox">
