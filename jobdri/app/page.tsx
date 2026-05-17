@@ -1,7 +1,6 @@
 import IconBox from "@/components/common/icons/IconBox";
 import CheckBox from "@/components/common/icons/CheckBox";
 import Header from "@/components/common/header/Header";
-import { Lnb } from "@/components/common/lnb";
 import {
   Button,
   ButtonCta,
@@ -9,9 +8,14 @@ import {
   IconButton,
   IconOnlyButton,
   TextButton,
+  TextOnlyButton,
 } from "@/components/common/buttons";
 import { Toast, ToastFrame } from "@/components/common/toast";
-import { ChipRound, ChipRoundSelected, ChipQnumber } from "@/components/common/chips";
+import {
+  ChipRound,
+  ChipRoundSelected,
+  ChipQnumber,
+} from "@/components/common/chips";
 import ChipMainDemo from "@/components/common/chips/ChipMainDemo";
 import ModalLinkInputDemo from "@/components/common/modal/ModalLinkInputDemo";
 import { CompleteBadge } from "@/components/common/badges";
@@ -209,6 +213,14 @@ export default function Home() {
           <TextButton size="large" styleType="secondary" />
           <TextButton size="large" styleType="primary" iconPosition="left" />
           <TextButton size="large" styleType="secondary" iconPosition="left" />
+        </div>
+      </Section>
+      <Section title="Button/TextOnly">
+        <div className="flex items-center gap-8">
+          <TextOnlyButton size="small" styleType="primary" />
+          <TextOnlyButton size="large" styleType="primary" />
+          <TextOnlyButton size="small" styleType="secondary" />
+          <TextOnlyButton size="large" styleType="secondary" />
         </div>
       </Section>
       <Section title="IconBox">

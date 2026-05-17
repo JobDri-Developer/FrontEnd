@@ -8,8 +8,7 @@
   --width-default: 1116px;
 
   /* 2. WEB_LNB (사이드바 있을 때) */
-  /* (69px * 12) + (12px * 11) = 960px */
-  --width-lnb: 960px;
+  --width-lnb: 1060px;
 
   /* 모바일 */
   --mobile-margin: 16px;
@@ -33,6 +32,13 @@
 /* 케이스 B: 사이드바 있는 페이지의 콘텐츠 영역 */
 .container-lnb {
   max-width: var(--width-lnb);
+}
+
+/* LNB가 있는 페이지의 메인 콘텐츠 여백 */
+.main-content-frame {
+  width: 100%;
+  min-width: 0;
+  padding: 44px 40px;
 }
 
 /* 모바일 대응 */

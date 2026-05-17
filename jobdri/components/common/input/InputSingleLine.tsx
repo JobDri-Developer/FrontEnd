@@ -1,26 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import type { FocusEvent, InputHTMLAttributes } from "react";
+import { forwardRef, useState } from "react";
 import clsx from "clsx";
 import { getWrapperClass, getFieldClass } from "./inputStyles";
 
-interface InputSingleLineProps {
+interface InputSingleLineProps
+  extends Omit<
+    InputHTMLAttributes<HTMLInputElement>,
+    "value" | "onChange" | "disabled" | "className"
+  > {
   placeholder?: string;
   value?: string;
   onChange?: (value: string) => void;
   disabled?: boolean;
+  hasError?: boolean;
   error?: string;
   className?: string;
+  wrapperClassName?: string;
+  inputClassName?: string;
+  focusedBorder?: string;
+  paddingClass?: string;
+  radiusClass?: string;
 }
 
-export function InputSingleLine({
+export const InputSingleLine = forwardRef<HTMLInputElement, InputSingleLineProps>(
+  function InputSingleLine(
+  {
   placeholder,
   value: externalValue,
   onChange,
-  disabled = false,
-  error,
-  className,
-}: InputSingleLineProps) {
+    disabled = false,
+    hasError = false,
+    error,
+    className,
+    wrapperClassName,
+  inputClassName,
+  focusedBorder = "border-line-neutral-strong",
+  paddingClass,
+    radiusClass,
+    onFocus,
+    onBlur,
+    ...inputProps
+  },
+  ref,
+) {
   const [internalValue, setInternalValue] = useState("");
   const [focused, setFocused] = useState(false);
 
@@ -31,28 +55,46 @@ export function InputSingleLine({
     onChange?.(e.target.value);
   };
 
+  const handleFocus = (event: FocusEvent<HTMLInputElement>) => {
+    setFocused(true);
+    onFocus?.(event);
+  };
+
+  const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
+    setFocused(false);
+    onBlur?.(event);
+  };
+
   return (
     <div className={clsx("flex flex-col gap-1.5 w-148", className)}>
       <div
-        className={getWrapperClass(
-          focused,
-          disabled,
-          !!error,
-          "border-line-neutral-strong",
+        className={clsx(
+          getWrapperClass(
+            focused,
+            disabled,
+            hasError || !!error,
+            focusedBorder,
+            paddingClass,
+            radiusClass,
+          ),
+          wrapperClassName,
         )}
       >
         <input
-          className={getFieldClass(disabled)}
+          ref={ref}
+          className={clsx(getFieldClass(disabled), inputClassName)}
           placeholder={placeholder}
           value={value}
           onChange={handleChange}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           disabled={disabled}
+          {...inputProps}
         />
       </div>
 
       {error && <span className="text-cap12-med text-text-fail">{error}</span>}
     </div>
   );
-}
+},
+);

@@ -48,7 +48,7 @@ const styleTypeStyles: Record<ButtonStyle, string> = {
 };
 
 const inactiveStyle =
-  "bg-fill-disabled text-text-neutral-disabled hover:bg-fill-disabled";
+  "cursor-not-allowed bg-fill-disabled text-text-neutral-disabled hover:bg-fill-disabled";
 
 const iconColorStyles: Record<ButtonStyle, string> = {
   primary: "text-icon-neutral-white",
@@ -80,7 +80,9 @@ export default function Button({
           : "gap-1",
         sizeStyles[size],
         radiusStyles[size],
-        isInactive ? inactiveStyle : styleTypeStyles[resolvedStyleType],
+        isInactive
+          ? inactiveStyle
+          : clsx("cursor-pointer", styleTypeStyles[resolvedStyleType]),
         className,
       )}
       aria-disabled={isInactive || undefined}

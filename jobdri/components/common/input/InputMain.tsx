@@ -11,7 +11,12 @@ interface InputMainProps {
   placeholder?: string;
   value?: string;
   onChange?: (value: string) => void;
+  inputType?: React.HTMLInputTypeAttribute;
+  name?: string;
+  autoComplete?: string;
+  maxLength?: number;
   disabled?: boolean;
+  hasError?: boolean;
   error?: string;
   rightContent?: React.ReactNode;
   className?: string;
@@ -24,7 +29,12 @@ export function InputMain({
   placeholder,
   value: externalValue,
   onChange,
+  inputType,
+  name,
+  autoComplete,
+  maxLength,
   disabled = false,
+  hasError = false,
   error,
   rightContent,
   className,
@@ -34,6 +44,10 @@ export function InputMain({
   const [focused, setFocused] = useState(false);
 
   const value = externalValue ?? internalValue;
+  const iconType = type === "PASSWORD" ? "PASSWORD" : "PROFILE";
+  const resolvedInputType =
+    inputType ?? (type === "PASSWORD" ? "password" : "text");
+  const isError = hasError || !!error;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInternalValue(e.target.value);
@@ -42,30 +56,30 @@ export function InputMain({
 
   return (
     <div className={clsx("flex flex-col gap-1.5", className)}>
-      <span className="text-label14-semibold text-text-neutral-title">
-        {label}
-        {required && <span className="text-text-system-fail ml-0.5">•</span>}
-      </span>
+      {label && (
+        <span className="text-label14-semibold text-text-neutral-title">
+          {label}
+          {required && <span className="text-text-system-fail ml-0.5">•</span>}
+        </span>
+      )}
 
-      <div className={getWrapperClass(focused, disabled, !!error)}>
+      <div className={getWrapperClass(focused, disabled, isError)}>
         <div className={clsx("flex items-center gap-2")}>
-          {!focused &&
-            !value &&
-            (disabled && type === "PASSWORD" ? (
-              <Icon
-                type="PASSWORD"
-                className="text-icon-neutral-assistive shrink-0"
-              />
-            ) : (
-              <Icon
-                type="PROFILE"
-                className="text-icon-neutral-assistive shrink-0"
-              />
-            ))}
+          {!focused && !value && (
+            <Icon
+              type={iconType}
+              className="text-icon-neutral-assistive shrink-0"
+            />
+          )}
           <input
+            type={resolvedInputType}
+            name={name}
+            autoComplete={autoComplete}
+            maxLength={maxLength}
             className={clsx(
               getFieldClass(disabled),
               "flex-1 min-w-0 text-sub14-reg",
+              type === "PASSWORD" && value && "text-[60px] tracking-[3px]",
             )}
             placeholder={placeholder}
             value={value}
@@ -78,7 +92,7 @@ export function InputMain({
             <div
               className={clsx(
                 "shrink-0 text-cap12-med",
-                error ? "text-text-system-fail" : "text-text-neutral-caption",
+                isError ? "text-text-system-fail" : "text-text-neutral-caption",
               )}
             >
               {rightContent}
