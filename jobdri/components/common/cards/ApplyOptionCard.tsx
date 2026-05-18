@@ -20,7 +20,7 @@ interface ApplyOptionCardProps
 
 const hoverShadow = "shadow-hover";
 const cardShadow = "shadow-card";
-const defaultStyle = "border-transparent bg-fill-quaternary-default";
+const defaultStyle = "border-transparent bg-fill-quaternary-default shadow-card";
 const disabledStyle = clsx(
   "cursor-not-allowed border-transparent bg-fill-quaternary-assistive",
   cardShadow,

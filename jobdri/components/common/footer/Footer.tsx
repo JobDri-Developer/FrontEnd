@@ -11,12 +11,14 @@ interface FooterProps {
   backAction?: FooterActionProps;
   ctaAction?: FooterActionProps;
   className?: string;
+  hideBackAction?: boolean;
 }
 
 export default function Footer({
   backAction = {},
   ctaAction = {},
   className,
+  hideBackAction = false,
 }: FooterProps) {
   const {
     label: backLabel = "뒤로가기",
@@ -37,14 +39,18 @@ export default function Footer({
       )}
     >
       <div className="flex max-w-[1440px] flex-1 items-start justify-between">
-        <Button
-          label={backLabel}
-          styleType="tertiary"
-          size="medium"
-          iconType="ARROW_L"
-          className={backClassName}
-          {...backButtonProps}
-        />
+        {hideBackAction ? (
+          <span aria-hidden="true" className="h-[38px] w-[94px]" />
+        ) : (
+          <Button
+            label={backLabel}
+            styleType="tertiary"
+            size="medium"
+            iconType="ARROW_L"
+            className={backClassName}
+            {...backButtonProps}
+          />
+        )}
         <Button
           label={ctaLabel}
           styleType="primary"
