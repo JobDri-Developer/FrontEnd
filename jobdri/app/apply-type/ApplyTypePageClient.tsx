@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import clsx from "clsx";
 import Header from "@/components/common/header/Header";
 import { Footer } from "@/components/common/footer";
 import { ApplyOptionCard } from "@/components/common/cards";
@@ -28,6 +29,7 @@ const applyTypes: Array<{
 export default function ApplyTypePageClient() {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState<ApplyType | null>(null);
+  const [hoveredType, setHoveredType] = useState<ApplyType | null>(null);
 
   return (
     <div className="min-h-screen bg-line-neutral-assistive px-6 py-6">
@@ -48,16 +50,31 @@ export default function ApplyTypePageClient() {
             </h2>
 
             <div className="flex items-start gap-3 self-stretch">
-              {applyTypes.map((applyType) => (
-                <ApplyOptionCard
-                  key={applyType.id}
-                  title={applyType.title}
-                  description={applyType.description}
-                  selected={selectedType === applyType.id}
-                  onClick={() => setSelectedType(applyType.id)}
-                  className="!w-auto flex-1"
-                />
-              ))}
+              {applyTypes.map((applyType) => {
+                const isSelected = selectedType === applyType.id;
+                const isHovered = hoveredType === applyType.id;
+                const isDisabled =
+                  hoveredType !== null
+                    ? !isHovered
+                    : selectedType !== null && !isSelected;
+
+                return (
+                  <ApplyOptionCard
+                    key={applyType.id}
+                    title={applyType.title}
+                    description={applyType.description}
+                    selected={isSelected}
+                    disabled={isDisabled}
+                    onMouseEnter={() => setHoveredType(applyType.id)}
+                    onMouseLeave={() => setHoveredType(null)}
+                    onClick={() => setSelectedType(applyType.id)}
+                    className={clsx(
+                      "!w-auto flex-1",
+                      isHovered && "bg-fill-quaternary-default shadow-hover",
+                    )}
+                  />
+                );
+              })}
             </div>
           </div>
         </section>
