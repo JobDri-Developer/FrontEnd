@@ -76,7 +76,7 @@ export default function Header({
           <ol className="flex min-w-0 flex-1 flex-nowrap content-center items-center gap-2">
             {steps.map((step, index) => {
               const stepNumber = index + 1;
-              const reached = stepNumber <= currentStep;
+              const isCurrent = stepNumber === currentStep;
 
               return (
                 <li
@@ -87,7 +87,7 @@ export default function Header({
                     className={clsx(
                       "flex aspect-square h-5 w-5 items-center justify-center gap-2.5 rounded-icon-round text-cap12-med [font-feature-settings:'liga'_off,'clig'_off]",
                       "tracking-normal",
-                      reached
+                      isCurrent
                         ? "bg-fill-quaternary-default text-text-neutral-description shadow-cta-primary"
                         : "bg-fill-disabled text-text-neutral-disabled",
                     )}
@@ -98,7 +98,7 @@ export default function Header({
                     className={clsx(
                       "flex items-center justify-center gap-2.5 text-cap12-med [font-feature-settings:'liga'_off,'clig'_off]",
                       "tracking-normal",
-                      reached
+                      isCurrent
                         ? "text-text-neutral-description"
                         : "text-text-neutral-disabled",
                     )}
