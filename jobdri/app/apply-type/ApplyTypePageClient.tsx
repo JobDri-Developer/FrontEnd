@@ -43,7 +43,7 @@ export default function ApplyTypePageClient() {
           }}
         />
 
-        <section className="flex flex-1 flex-col items-center justify-center gap-8 self-stretch bg-bg-default px-[82px] pt-8 pb-20">
+        <section className="flex flex-1 flex-col items-center justify-start gap-8 self-stretch bg-bg-default px-[82px] pt-8 pb-20">
           <div className="flex max-w-[1440px] flex-col items-center gap-8 self-stretch">
             <h2 className="text-center text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
               유형을 선택해주세요.

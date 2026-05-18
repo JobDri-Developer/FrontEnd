@@ -15,7 +15,7 @@ interface ButtonCtaProps {
 }
 
 const gradientWhiteStyle =
-  "bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,var(--color-fill-quaternary-default)_22.37%)]";
+  "bg-[linear-gradient(180deg,var(--color-fill-quaternary-transparent)_0%,var(--color-fill-quaternary-default)_22.37%)]";
 
 const variantStyles: Record<ButtonCtaVariant, string> = {
   gradient_white: gradientWhiteStyle,
