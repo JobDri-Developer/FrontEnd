@@ -40,11 +40,12 @@ export function InputAutoGrow({
 
   useLayoutEffect(() => {
     if (textareaRef.current) {
+      textareaRef.current.style.height = "1px";
+
       const nextHeight = maxHeight
         ? Math.min(textareaRef.current.scrollHeight, maxHeight)
         : textareaRef.current.scrollHeight;
 
-      textareaRef.current.style.height = "1px";
       textareaRef.current.style.height = `${nextHeight}px`;
       textareaRef.current.style.overflowY =
         maxHeight && textareaRef.current.scrollHeight > maxHeight
