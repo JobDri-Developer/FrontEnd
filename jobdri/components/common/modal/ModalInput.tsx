@@ -4,7 +4,7 @@ import { useRef } from "react";
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
 import { InputSingleLine } from "@/components/common/input";
-import LoadMotion from "@/components/common/LoadMotion";
+import LoadMotionModal from "@/components/common/LoadMotionModal";
 import { useOutsideClick } from "@/hooks/useOutsideClick";
 import { Button, ButtonCtaModal } from "../buttons";
 
@@ -93,7 +93,7 @@ export default function ModaInput({
             isAlertModal ? "pt-0" : "pt-3",
           )}
         >
-          {showLoadMotion && <LoadMotion />}
+          {showLoadMotion && <LoadMotionModal />}
 
           <div className="flex flex-col items-center gap-2 self-stretch text-center">
             <span className="self-stretch text-b16-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">

@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
-import LoadMotion from "@/components/common/LoadMotion";
+import ProgressPanelLoadMotion from "./ProgressPanelLoadMotion";
 
 export type ProgressPanelRowItemStatus = "inProgress" | "complete" | "idle";
 
@@ -49,13 +49,7 @@ export default function ProgressPanelRowItem({
         )}
       >
         {isInProgress ? (
-          <LoadMotion
-            className="items-center gap-1 py-1"
-            dotClassName="h-1 w-1"
-            activeDotClassName="bg-icon-neutral-white"
-            inactiveDotClassName="bg-icon-neutral-white"
-            activeMotionClassName="-translate-y-0.5"
-          />
+          <ProgressPanelLoadMotion />
         ) : isComplete ? (
           <span className="flex aspect-square h-5 w-5 items-center justify-center gap-2.5 rounded-icon-round bg-fill-secondary-default">
             <Icon
