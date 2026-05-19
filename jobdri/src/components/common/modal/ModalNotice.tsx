@@ -4,8 +4,10 @@ import { Button } from "@/components/common/buttons";
 
 type ModalNoticeVariant = "single" | "double";
 
-interface ModalNoticeActionProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+interface ModalNoticeActionProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "children"
+> {
   label?: string;
 }
 
@@ -49,14 +51,10 @@ export default function ModalNotice({
     >
       <div className="flex self-stretch flex-col items-center justify-center gap-0 px-8">
         <div className="flex self-stretch flex-col items-center justify-center gap-4 pb-8">
-          <p
-            className="self-stretch text-center text-b16-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]"
-          >
+          <p className="self-stretch text-center text-b16-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
             {title}
           </p>
-          <p
-            className="self-stretch text-center text-sub14-med tracking-normal text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]"
-          >
+          <p className="self-stretch text-center text-sub14-med tracking-normal text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
             {description}
           </p>
         </div>

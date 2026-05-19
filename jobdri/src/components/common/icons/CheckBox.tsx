@@ -31,7 +31,7 @@ export default function CheckBox({
   return (
     <div
       className={clsx(
-        "p-0.5 cursor-pointer border group",
+        "w-6 h-6 shrink-0 flex items-center justify-center p-0.5 cursor-pointer border group",
         isRadio ? "rounded-full" : "rounded-chip-s",
         isSelected
           ? "bg-fill-tertiary-default border-fill-tertiary-default"
@@ -43,7 +43,7 @@ export default function CheckBox({
       <Icon
         type={isM ? "CHECK_M" : "CHECK"}
         className={clsx(
-          "group-hover:text-text-neutral-white",
+          "shrink-0 group-hover:text-text-neutral-white",
           isSelected
             ? "text-text-neutral-white"
             : isRadio

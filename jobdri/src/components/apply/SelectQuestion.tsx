@@ -12,6 +12,7 @@ const MAX_SELECT = 5;
 interface Question {
   id: string;
   question: string;
+  maxLength?: number;
 }
 
 const QUESTIONS: Question[] = [
@@ -51,7 +52,9 @@ interface SelectQuestionProps {
   onSelectionChange?: (count: number) => void;
 }
 
-export default function SelectQuestion({ onSelectionChange }: SelectQuestionProps) {
+export default function SelectQuestion({
+  onSelectionChange,
+}: SelectQuestionProps) {
   const [questions, setQuestions] = useState<Question[]>(QUESTIONS);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [toastVisible, setToastVisible] = useState(false);
@@ -93,9 +96,9 @@ export default function SelectQuestion({ onSelectionChange }: SelectQuestionProp
     showToast("문항이 삭제되었습니다.", "normal");
   };
 
-  const handleAdd = (question: string) => {
+  const handleAdd = (question: string, maxLength: number) => {
     const newId = `custom_${Date.now()}`;
-    setQuestions((prev) => [{ id: newId, question }, ...prev]);
+    setQuestions((prev) => [{ id: newId, question, maxLength }, ...prev]);
     if (selectedIds.length < MAX_SELECT) {
       const next = [...selectedIds, newId];
       setSelectedIds(next);
@@ -133,7 +136,7 @@ export default function SelectQuestion({ onSelectionChange }: SelectQuestionProp
               />
             </div>
             <div
-              className={`flex flex-col gap-2 -m-8 px-8 mt-1 mr-[1.5px] mb-[1.8px] overflow-y-auto flex-1 min-h-0 ${scrollbarClass} overflow-visible`}
+              className={`flex flex-col gap-2 -m-8 px-8 mt-1 mr-[1.5px] mb-[1.5px] overflow-y-auto flex-1 min-h-0 ${scrollbarClass} overflow-visible`}
             >
               {questions.map((q) => (
                 <ListQ
@@ -162,15 +165,21 @@ export default function SelectQuestion({ onSelectionChange }: SelectQuestionProp
               </span>
             </div>
             <div
-              className={`flex flex-col gap-2 overflow-y-auto flex-1 min-h-0 ${scrollbarClass}`}
+              className={`flex flex-col gap-2 overflow-y-auto flex-1 min-h-0 w-full ${scrollbarClass}`}
             >
-              {selectedQuestions.map((q) => (
-                <ListQCart
-                  key={q.id}
-                  question={q.question}
-                  onChange={() => handleRemove(q.id)}
-                />
-              ))}
+              {selectedQuestions.length > 0 ? (
+                selectedQuestions.map((q) => (
+                  <ListQCart
+                    key={q.id}
+                    question={q.question}
+                    onChange={() => handleRemove(q.id)}
+                  />
+                ))
+              ) : (
+                <p className="flex text-text-neutral-disabled text-t20-semibold items-center justify-center mt-20">
+                  선택한 문항이 없습니다.
+                </p>
+              )}
             </div>
           </section>
         </div>

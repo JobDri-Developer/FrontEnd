@@ -4,8 +4,10 @@ import type { InputHTMLAttributes } from "react";
 import { useState } from "react";
 import clsx from "clsx";
 
-interface InputModalQuestionProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> {
+interface InputModalQuestionProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "onChange"
+> {
   label?: string;
   required?: boolean;
   value?: string;
@@ -16,7 +18,7 @@ interface InputModalQuestionProps
 export function InputModalQuestion({
   label = "아이디",
   required = true,
-  placeholder = "메시기를 입력하세요",
+  placeholder = "메시지를 입력하세요",
   value: externalValue,
   onChange,
   disabled = false,
@@ -33,7 +35,9 @@ export function InputModalQuestion({
   };
 
   return (
-    <div className={clsx("flex w-[316px] flex-col items-start gap-3", className)}>
+    <div
+      className={clsx("flex w-[316px] flex-col items-start gap-3", className)}
+    >
       <div className="flex self-stretch items-center gap-2.5 pl-0.5">
         <span className="text-sub14-reg tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
           {label}

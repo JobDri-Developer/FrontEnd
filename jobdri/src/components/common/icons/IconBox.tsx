@@ -80,7 +80,12 @@ export default function IconBox({
         className,
       )}
     >
-      <Icon type={type} className={iconColorStyles[state as "primary" | "secondary"][background]} />
+      <Icon
+        type={type}
+        className={
+          iconColorStyles[state as "primary" | "secondary"][background]
+        }
+      />
     </div>
   );
 }

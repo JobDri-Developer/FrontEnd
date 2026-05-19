@@ -6,9 +6,10 @@ export function getWrapperClass(
   isError: boolean,
   focusedBorder = "border-line-primary-default",
   paddingClass = "px-4 py-3",
+  radiusClass = "rounded-lg",
 ) {
   return clsx(
-    `border rounded-lg ${paddingClass} transition-colors`,
+    `border ${radiusClass} ${paddingClass} transition-colors`,
     disabled
       ? "bg-transparent border-line-neutral-default"
       : isError

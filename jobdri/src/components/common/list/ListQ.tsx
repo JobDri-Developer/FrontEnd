@@ -4,8 +4,20 @@ import clsx from "clsx";
 import { ChipRound } from "@/components/common/chips";
 import CheckBox from "@/components/common/icons/CheckBox";
 
+type ChipItem = {
+  label: string;
+  variant?: "strong" | "normal" | "assistive";
+};
+
+const DEFAULT_CHIPS: ChipItem[] = [
+  { label: "매칭률 높음", variant: "strong" },
+  { label: "데이터 분석", variant: "assistive" },
+  { label: "성과 측정", variant: "assistive" },
+];
+
 interface ListQProps {
   question: string;
+  chips?: ChipItem[];
   selected?: boolean;
   maxReached?: boolean;
   isCustom?: boolean;
@@ -14,6 +26,7 @@ interface ListQProps {
 
 export function ListQ({
   question,
+  chips,
   selected = false,
   maxReached = false,
   isCustom = false,
@@ -25,6 +38,10 @@ export function ListQ({
     if (isDisabled) return;
     onChange?.(!selected);
   };
+
+  const chipList = isCustom
+    ? [{ label: "직접 추가", variant: "normal" as const }]
+    : (chips ?? DEFAULT_CHIPS);
 
   return (
     <button
@@ -40,26 +57,24 @@ export function ListQ({
     >
       <div className="flex flex-col gap-2 flex-1 min-w-0">
         <div className="flex gap-1.5">
-          {isCustom ? (
-            <ChipRound label="직접 추가" variant="strong" />
-          ) : (
-            <>
-              <ChipRound label="매칭률 높음" variant="strong" />
-              <ChipRound label="데이터 분석" variant="assistive" />
-              <ChipRound label="성과 측정" variant="assistive" />
-            </>
-          )}
+          {chipList.map((chip) => (
+            <ChipRound
+              key={chip.label}
+              label={chip.label}
+              variant={chip.variant}
+            />
+          ))}
         </div>
         <span className="text-b16-med">{question}</span>
       </div>
-      <div className="self-center">
+      <div className="self-stretch flex items-center">
         <CheckBox
           type="DEFAULT"
           selected={selected}
           className={
             isDisabled
               ? ""
-              : "group-hover:bg-icon-assistive group-hover:border-transparent"
+              : "group-hover:bg-icon-neutral-assistive group-hover:border-transparent"
           }
         />
       </div>

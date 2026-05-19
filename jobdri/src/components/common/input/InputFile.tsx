@@ -118,7 +118,10 @@ export function InputFile({ onFileSelect, className }: InputFileProps) {
             label="컴퓨터에서 선택하기"
             styleType="tertiary"
             size="xsmall"
-            onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              inputRef.current?.click();
+            }}
           />
         </>
       )}

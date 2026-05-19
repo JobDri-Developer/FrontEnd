@@ -1,45 +1,28 @@
 "use client";
 
 import clsx from "clsx";
-import { useState } from "react";
-import CheckBox from "@/components/common/icons/CheckBox";
-import IconBox from "@/components/common/icons/IconBox";
+import Icon from "@/components/common/icons/Icon";
+import IconBox from "../icons/IconBox";
 
 interface ListQCartProps {
   question: string;
-  selected?: boolean;
-  onChange?: (selected: boolean) => void;
+  onChange?: () => void;
 }
 
-export function ListQCart({
-  question,
-  selected: initialSelected = false,
-  onChange,
-}: ListQCartProps) {
-  const [selected, setSelected] = useState(initialSelected);
-
-  const handleClick = () => {
-    const next = !selected;
-    setSelected(next);
-    onChange?.(next);
-  };
-
+export function ListQCart({ question, onChange }: ListQCartProps) {
   return (
     <button
-      onClick={handleClick}
+      onClick={onChange}
       className={clsx(
-        "group w-full flex items-center justify-between gap-3 px-3.5 py-3 rounded-card-s bg-fill-quaternary-default border-line-neutral-default transition-colors text-left",
+        "group w-full flex items-center justify-between gap-3 px-3.5 py-3 rounded-card-s bg-fill-quaternary-default border border-line-neutral-default transition-colors text-left ",
       )}
     >
-      <span
-        className={clsx(
-          "text-sub14-med flex-1 min-w-0",
-          selected ? "text-text-primary" : "text-text-title",
-        )}
-      >
+      <span className="text-sub14-med flex-1 min-w-0 text-text-neutral-description [-webkit-line-clamp:2] [display:-webkit-box] [-webkit-box-orient:vertical] overflow-hidden">
         {question}
       </span>
-      <IconBox type="TRASH" />
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-icon-default bg-icon-neutral-weak p-2.5">
+        <IconBox type="TRASH" className="text-text-neutral-white" />
+      </span>
     </button>
   );
 }

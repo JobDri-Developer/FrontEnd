@@ -15,24 +15,30 @@ export default function ToastFrame({
 }: ToastFrameProps) {
   return (
     <div
-      role="status"
       className={clsx(
-        "flex w-full max-w-[360px] items-center justify-between rounded-toast-l bg-fill-quaternary-default py-3 pr-4 pl-[14px] shadow-hover",
+        "flex h-[156px] w-[380px] items-start justify-start",
         className,
       )}
     >
-      <div className="flex min-w-0 items-center gap-[14px]">
-        <ToastStatusIcon variant="check" />
-        <span className="truncate text-cap12-semibold text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-          {message}
-        </span>
-      </div>
+      <div className="inline-flex flex-col items-start gap-2.5">
+        <div
+          role="status"
+          className="flex w-[360px] items-center justify-between rounded-toast-l bg-fill-quaternary-default py-3 pr-4 pl-[14px] shadow-hover"
+        >
+          <div className="flex min-w-0 items-center gap-[14px]">
+            <ToastStatusIcon variant="check" />
+            <span className="truncate text-cap12-semibold text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+              {message}
+            </span>
+          </div>
 
-      <IconOnlyButton
-        aria-label="토스트 닫기"
-        className="shrink-0"
-        onClick={onClose}
-      />
+          <IconOnlyButton
+            aria-label="토스트 닫기"
+            className="shrink-0"
+            onClick={onClose}
+          />
+        </div>
+      </div>
     </div>
   );
 }

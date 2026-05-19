@@ -36,7 +36,7 @@ export default function ProgressPanelRow({
   className,
   itemClassName,
 }: ProgressPanelRowProps) {
-  const steps: ProgressPanelRowItemData[] =
+  const steps =
     items ??
     Array.from({ length: itemCount }, (_, index) => ({
       stepNumber: index + 1,
