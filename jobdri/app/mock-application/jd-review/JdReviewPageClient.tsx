@@ -45,6 +45,7 @@ export default function JdReviewPageClient() {
             type="confirmationModal"
             title="공고 내용을 다시 업로드 하시겠습니까?"
             description="기존 정보는 저장되지 않고 삭제됩니다."
+            onClose={closeBackConfirm}
             secondaryAction={{
               label: "다시 업로드",
               onClick: goToJdInput,

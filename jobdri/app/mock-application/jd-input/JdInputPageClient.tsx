@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import { Footer } from "@/components/common/footer";
 import { Method1Card, Method2Card } from "@/components/common/cards";
+import { ModalInput } from "@/components/common/modal";
 
 type JdInputMethod = "link" | "image" | "manual";
 
@@ -13,6 +14,14 @@ export default function JdInputPageClient() {
   const [selectedMethod, setSelectedMethod] = useState<JdInputMethod | null>(
     null,
   );
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [jdLink, setJdLink] = useState("");
+
+  const handleCtaClick = () => {
+    if (selectedMethod === "link") {
+      setIsLinkModalOpen(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-line-neutral-assistive px-6 py-6">
@@ -78,9 +87,26 @@ export default function JdInputPageClient() {
           ctaAction={{
             label: "선택하기",
             disabled: selectedMethod === null,
+            onClick: handleCtaClick,
           }}
         />
       </div>
+
+      {isLinkModalOpen && (
+        <ModalInput
+          type="actionModal"
+          value={jdLink}
+          onChange={setJdLink}
+          onSubmit={() => undefined}
+          onClose={() => setIsLinkModalOpen(false)}
+          title="공고 링크를 입력해주세요."
+          description="링크 내용이 부적절한 경우 제대로 추출되지 않을 수 있습니다."
+          placeholder="https://www.com"
+          showInputField
+          showDescription
+          showLoadMotion={false}
+        />
+      )}
     </div>
   );
 }
