@@ -2,7 +2,11 @@
 
 import type { ButtonHTMLAttributes } from "react";
 import clsx from "clsx";
-import { Button } from "@/components/common/buttons";
+import {
+  Button,
+  type ButtonSize,
+  type ButtonStyle,
+} from "@/components/common/buttons";
 import type { IconType } from "@/components/common/icons/Icon";
 
 interface HeaderActionProps extends Omit<
@@ -11,6 +15,9 @@ interface HeaderActionProps extends Omit<
 > {
   iconType?: IconType;
   label: string;
+  styleType?: ButtonStyle;
+  size?: ButtonSize;
+  active?: boolean;
 }
 
 interface ProgressStep {
@@ -37,15 +44,19 @@ const defaultSteps: ProgressStep[] = [
 function HeaderAction({
   iconType,
   label,
+  styleType = "quaternary",
+  size = "small",
+  active,
   className = "",
   ...buttonProps
 }: HeaderActionProps) {
   return (
     <Button
       label={label}
-      styleType="quaternary"
-      size="small"
+      styleType={styleType}
+      size={size}
       iconType={iconType}
+      active={active}
       className={className}
       {...buttonProps}
     />
@@ -55,7 +66,7 @@ function HeaderAction({
 export default function Header({
   title = "모의 서류 지원",
   leftAction = { label: "돌아가기", iconType: "HOME_S" },
-  rightAction = { label: "저장하기" },
+  rightAction = { label: "저장하기", styleType: "secondary", disabled: true },
   currentStep = 1,
   steps = defaultSteps,
 }: HeaderProps) {

@@ -28,7 +28,7 @@ export default function IconOnlyButton({
       aria-label="아이콘 버튼"
       className={clsx(
         "flex h-[30px] w-[30px] items-center justify-center rounded-[10px] p-[3px]",
-        buttonProps.disabled ? "cursor-not-allowed" : "cursor-pointer",
+        buttonProps.disabled ? "cursor-default" : "cursor-pointer",
         toneStyles[tone],
         className,
       )}

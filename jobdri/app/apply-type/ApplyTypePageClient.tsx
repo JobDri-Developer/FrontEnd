@@ -67,7 +67,13 @@ export default function ApplyTypePageClient() {
                     disabled={isDisabled}
                     onMouseEnter={() => setHoveredType(applyType.id)}
                     onMouseLeave={() => setHoveredType(null)}
-                    onClick={() => setSelectedType(applyType.id)}
+                    onClick={() =>
+                      setSelectedType((prevSelectedType) =>
+                        prevSelectedType === applyType.id
+                          ? null
+                          : applyType.id,
+                      )
+                    }
                     className={clsx(
                       "!w-auto flex-1",
                       isHovered && "bg-fill-quaternary-default shadow-hover",

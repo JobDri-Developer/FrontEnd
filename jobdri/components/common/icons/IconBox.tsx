@@ -12,6 +12,7 @@ interface IconBoxProps {
   background?: IconBoxBackground;
   selected?: boolean;
   className?: string;
+  iconClassName?: string;
 }
 
 // const sizeStyles: Record<IconBoxSize, string> = {
@@ -54,6 +55,7 @@ export default function IconBox({
   background = "default",
   selected = false,
   className,
+  iconClassName,
 }: IconBoxProps) {
   if (type === "TRASH") {
     return (
@@ -66,7 +68,7 @@ export default function IconBox({
           className,
         )}
       >
-        <Icon type={type} className="text-text-neutral-white" />
+        <Icon type={type} className={clsx("text-text-neutral-white", iconClassName)} />
       </div>
     );
   }
@@ -80,7 +82,13 @@ export default function IconBox({
         className,
       )}
     >
-      <Icon type={type} className={iconColorStyles[state as "primary" | "secondary"][background]} />
+      <Icon
+        type={type}
+        className={clsx(
+          iconColorStyles[state as "primary" | "secondary"][background],
+          iconClassName,
+        )}
+      />
     </div>
   );
 }
