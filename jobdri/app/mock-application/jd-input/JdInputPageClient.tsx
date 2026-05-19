@@ -8,7 +8,29 @@ import { Method1Card, Method2Card } from "@/components/common/cards";
 import { ModalInput } from "@/components/common/modal";
 
 type JdInputMethod = "link" | "image" | "manual";
-type LinkModalStep = "input" | "reading";
+type LinkModalStep = "input" | "reading" | "failed";
+
+function isUrlFormat(value: string) {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue || /\s/.test(trimmedValue)) {
+    return false;
+  }
+
+  const valueWithProtocol = /^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(trimmedValue)
+    ? trimmedValue
+    : `https://${trimmedValue}`;
+
+  try {
+    const url = new URL(valueWithProtocol);
+
+    return (
+      ["http:", "https:"].includes(url.protocol) && url.hostname.includes(".")
+    );
+  } catch {
+    return false;
+  }
+}
 
 export default function JdInputPageClient() {
   const router = useRouter();
@@ -18,6 +40,7 @@ export default function JdInputPageClient() {
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkModalStep, setLinkModalStep] = useState<LinkModalStep>("input");
   const [jdLink, setJdLink] = useState("");
+  const hasLinkText = jdLink.trim().length > 0;
 
   const handleCtaClick = () => {
     if (selectedMethod === "link") {
@@ -34,6 +57,32 @@ export default function JdInputPageClient() {
     setIsLinkModalOpen(false);
     setLinkModalStep("input");
     setSelectedMethod(null);
+    setJdLink("");
+  };
+
+  const submitLinkInput = () => {
+    if (!hasLinkText) {
+      return;
+    }
+
+    if (!isUrlFormat(jdLink)) {
+      setLinkModalStep("failed");
+      return;
+    }
+
+    setLinkModalStep("reading");
+  };
+
+  const selectMethodFromFailure = (method: JdInputMethod) => {
+    setSelectedMethod(method);
+    setLinkModalStep(method === "link" ? "input" : "failed");
+
+    if (method === "link") {
+      setJdLink("");
+      return;
+    }
+
+    setIsLinkModalOpen(false);
     setJdLink("");
   };
 
@@ -113,7 +162,7 @@ export default function JdInputPageClient() {
               type="actionModal"
               value={jdLink}
               onChange={setJdLink}
-              onSubmit={() => setLinkModalStep("reading")}
+              onSubmit={submitLinkInput}
               onClose={closeLinkModal}
               title="공고 링크를 입력해주세요."
               description="링크 내용이 부적절한 경우 제대로 추출되지 않을 수 있습니다."
@@ -121,14 +170,15 @@ export default function JdInputPageClient() {
               showInputField
               showDescription
               showLoadMotion={false}
+              submitDisabled={!hasLinkText}
             />
-          ) : (
+          ) : linkModalStep === "reading" ? (
             <ModalInput
               type="actionModal_alert"
               variant="alert"
               value={jdLink}
               onChange={setJdLink}
-              onSubmit={() => undefined}
+              onSubmit={() => setLinkModalStep("input")}
               onCancel={resetToUploadStart}
               onClose={resetToUploadStart}
               title="링크를 읽고 있습니다"
@@ -137,6 +187,37 @@ export default function JdInputPageClient() {
               showInputField
               showDescription
               showLoadMotion
+            />
+          ) : (
+            <ModalInput
+              type="actionModal"
+              value={jdLink}
+              onChange={setJdLink}
+              onSubmit={() => undefined}
+              onClose={resetToUploadStart}
+              title="공고 입력에 실패했습니다"
+              description="다른 방법으로 공고 내용을 입력해주세요"
+              showInputField={false}
+              showDescription
+              showLoadMotion={false}
+              statusIconType="WARN"
+              methodActions={[
+                {
+                  label: "직접 입력하기",
+                  iconType: "EDIT",
+                  onClick: () => selectMethodFromFailure("manual"),
+                },
+                {
+                  label: "링크 붙여넣기",
+                  iconType: "LINK",
+                  onClick: () => selectMethodFromFailure("link"),
+                },
+                {
+                  label: "이미지 업로드",
+                  iconType: "UPLOAD_M",
+                  onClick: () => selectMethodFromFailure("image"),
+                },
+              ]}
             />
           )}
         </>
