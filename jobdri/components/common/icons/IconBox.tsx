@@ -48,6 +48,11 @@ const iconColorStyles: Record<
   },
 };
 
+const sizeStyles: Record<IconBoxSize, string> = {
+  large: "h-10 w-10 p-2",
+  mid: "h-10 w-10 p-2",
+};
+
 export default function IconBox({
   type,
   size = "large",
@@ -61,7 +66,8 @@ export default function IconBox({
     return (
       <div
         className={clsx(
-          "flex items-center justify-center rounded-icon p-2 transition-colors",
+          "flex shrink-0 items-center justify-center gap-2.5 rounded-icon-default transition-colors",
+          sizeStyles[size],
           selected
             ? "bg-fill-system-fail-strong"
             : "bg-icon-neutral-weak hover:bg-fill-system-fail-hover",
@@ -76,8 +82,8 @@ export default function IconBox({
   return (
     <div
       className={clsx(
-        "flex items-center justify-center rounded-icon p-2",
-        // sizeStyles[size],
+        "flex shrink-0 items-center justify-center gap-2.5 rounded-icon-default",
+        sizeStyles[size],
         bgStyles[state as "primary" | "secondary"][background],
         className,
       )}

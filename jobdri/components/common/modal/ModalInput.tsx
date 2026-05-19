@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
 import clsx from "clsx";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
 import { InputSingleLine } from "@/components/common/input";
@@ -37,6 +37,7 @@ interface ModalInputProps {
   submitDisabled?: boolean;
   statusIconType?: IconType;
   methodActions?: ModalMethodAction[];
+  children?: ReactNode;
   error?: string;
 }
 
@@ -89,6 +90,7 @@ export default function ModaInput({
   submitDisabled = false,
   statusIconType,
   methodActions,
+  children,
   error,
 }: ModalInputProps) {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -179,6 +181,8 @@ export default function ModaInput({
               radiusClass="rounded-cta-s"
             />
           )}
+
+          {children}
 
           {methodActions ? (
             <div className="flex flex-col items-start gap-2.5 self-stretch">

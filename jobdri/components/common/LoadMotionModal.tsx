@@ -23,16 +23,22 @@ export default function LoadMotionModal({ className }: LoadMotionModalProps) {
       {[0, 1, 2].map((index) => (
         <div
           key={index}
-          className="flex h-3 w-2 items-end justify-center"
+          className="flex h-3 w-2 shrink-0 items-end justify-center overflow-visible"
         >
-          <span
+          <svg
+            width="8"
+            height="8"
+            viewBox="0 0 8 8"
+            aria-hidden="true"
             className={clsx(
-              "aspect-square h-2 w-2 rounded-full transition-transform duration-300",
+              "block h-2 w-2 shrink-0 overflow-visible transition-transform duration-300",
               active === index
-                ? "-translate-y-1 bg-icon-neutral-heavy"
-                : "translate-y-0 bg-icon-neutral-assistive",
+                ? "-translate-y-1 text-icon-neutral-heavy"
+                : "translate-y-0 text-icon-neutral-assistive",
             )}
-          />
+          >
+            <circle cx="4" cy="4" r="4" fill="currentColor" />
+          </svg>
         </div>
       ))}
     </div>

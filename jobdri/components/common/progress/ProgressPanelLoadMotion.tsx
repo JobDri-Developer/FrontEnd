@@ -3,7 +3,17 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 
-export default function ProgressPanelLoadMotion() {
+interface ProgressPanelLoadMotionProps {
+  className?: string;
+  activeDotClassName?: string;
+  inactiveDotClassName?: string;
+}
+
+export default function ProgressPanelLoadMotion({
+  className,
+  activeDotClassName = "text-icon-neutral-white",
+  inactiveDotClassName = "text-icon-neutral-assistive",
+}: ProgressPanelLoadMotionProps) {
   const [active, setActive] = useState(1);
 
   useEffect(() => {
@@ -15,7 +25,7 @@ export default function ProgressPanelLoadMotion() {
   }, []);
 
   return (
-    <div className="flex items-center gap-1 py-1">
+    <div className={clsx("flex items-center gap-1 py-1", className)}>
       {[0, 1, 2].map((index) => (
         <div
           key={index}
@@ -29,8 +39,8 @@ export default function ProgressPanelLoadMotion() {
             className={clsx(
               "block h-[4px] w-[4px] shrink-0 overflow-visible transition-transform duration-300",
               active === index
-                ? "-translate-y-0.5 text-icon-neutral-white"
-                : "translate-y-0 text-icon-neutral-assistive",
+                ? clsx("-translate-y-0.5", activeDotClassName)
+                : clsx("translate-y-0", inactiveDotClassName),
             )}
           >
             <circle cx="2" cy="2" r="2" fill="currentColor" />

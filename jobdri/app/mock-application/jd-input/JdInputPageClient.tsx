@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import { Footer } from "@/components/common/footer";
 import { Method1Card, Method2Card } from "@/components/common/cards";
-import { ModalInput } from "@/components/common/modal";
+import { InputFileSummary } from "@/components/common/input";
+import { ModalFileUpload, ModalInput } from "@/components/common/modal";
 
 type JdInputMethod = "link" | "image" | "manual";
 type LinkModalStep = "input" | "reading" | "failed";
+type ImageModalStep = "upload" | "reading" | "failed";
 
 function isUrlFormat(value: string) {
   const trimmedValue = value.trim();
@@ -38,14 +40,24 @@ export default function JdInputPageClient() {
     null,
   );
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [linkModalStep, setLinkModalStep] = useState<LinkModalStep>("input");
+  const [imageModalStep, setImageModalStep] = useState<ImageModalStep>("upload");
   const [jdLink, setJdLink] = useState("");
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const hasLinkText = jdLink.trim().length > 0;
 
   const handleCtaClick = () => {
     if (selectedMethod === "link") {
       setLinkModalStep("input");
       setIsLinkModalOpen(true);
+      return;
+    }
+
+    if (selectedMethod === "image") {
+      setSelectedImageFile(null);
+      setImageModalStep("upload");
+      setIsImageModalOpen(true);
     }
   };
 
@@ -53,11 +65,33 @@ export default function JdInputPageClient() {
     setIsLinkModalOpen(false);
   };
 
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+  };
+
   const resetToUploadStart = () => {
     setIsLinkModalOpen(false);
+    setIsImageModalOpen(false);
     setLinkModalStep("input");
+    setImageModalStep("upload");
     setSelectedMethod(null);
     setJdLink("");
+    setSelectedImageFile(null);
+  };
+
+  const returnToUploadedImage = () => {
+    setIsLinkModalOpen(false);
+    setIsImageModalOpen(true);
+    setSelectedMethod("image");
+    setImageModalStep("upload");
+  };
+
+  const restartImageUpload = () => {
+    setIsLinkModalOpen(false);
+    setIsImageModalOpen(true);
+    setSelectedMethod("image");
+    setSelectedImageFile(null);
+    setImageModalStep("upload");
   };
 
   const submitLinkInput = () => {
@@ -75,15 +109,29 @@ export default function JdInputPageClient() {
 
   const selectMethodFromFailure = (method: JdInputMethod) => {
     setSelectedMethod(method);
-    setLinkModalStep(method === "link" ? "input" : "failed");
 
     if (method === "link") {
       setJdLink("");
+      setLinkModalStep("input");
+      setIsImageModalOpen(false);
+      setIsLinkModalOpen(true);
       return;
     }
 
-    setIsLinkModalOpen(false);
+    if (method === "image") {
+      setSelectedImageFile(null);
+      setImageModalStep("upload");
+      setIsLinkModalOpen(false);
+      setIsImageModalOpen(true);
+      return;
+    }
+
     setJdLink("");
+    setSelectedImageFile(null);
+    setLinkModalStep("input");
+    setImageModalStep("upload");
+    setIsLinkModalOpen(false);
+    setIsImageModalOpen(false);
   };
 
   return (
@@ -221,6 +269,68 @@ export default function JdInputPageClient() {
             />
           )}
         </>
+      )}
+
+      {isImageModalOpen && (
+        imageModalStep === "upload" ? (
+          <ModalFileUpload
+            selectedFile={selectedImageFile}
+            onFileSelect={setSelectedImageFile}
+            onSubmit={() => setImageModalStep("reading")}
+            onClose={closeImageModal}
+          />
+        ) : imageModalStep === "reading" ? (
+          <ModalInput
+            type="actionModal_alert"
+            variant="alert"
+            value=""
+            onChange={() => undefined}
+            onSubmit={restartImageUpload}
+            onCancel={returnToUploadedImage}
+            onClose={returnToUploadedImage}
+            title="이미지를 읽고 있습니다"
+            description="이미지가 부적절한 경우 제대로 추출되지 않을 수 있습니다"
+            submitLabel="다시 입력하기"
+            showInputField={false}
+            showDescription
+            showLoadMotion
+          >
+            {selectedImageFile && (
+              <InputFileSummary fileName={selectedImageFile.name} />
+            )}
+          </ModalInput>
+        ) : (
+          <ModalInput
+            type="actionModal"
+            value=""
+            onChange={() => undefined}
+            onSubmit={() => undefined}
+            onClose={resetToUploadStart}
+            title="공고 입력에 실패했습니다"
+            description="다른 방법으로 공고 내용을 입력해주세요"
+            showInputField={false}
+            showDescription
+            showLoadMotion={false}
+            statusIconType="WARN"
+            methodActions={[
+              {
+                label: "직접 입력하기",
+                iconType: "EDIT",
+                onClick: () => selectMethodFromFailure("manual"),
+              },
+              {
+                label: "링크 붙여넣기",
+                iconType: "LINK",
+                onClick: () => selectMethodFromFailure("link"),
+              },
+              {
+                label: "이미지 업로드",
+                iconType: "UPLOAD_M",
+                onClick: () => selectMethodFromFailure("image"),
+              },
+            ]}
+          />
+        )
       )}
     </div>
   );

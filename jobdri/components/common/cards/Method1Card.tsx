@@ -29,7 +29,7 @@ const selectedStyle = clsx(
   "border-line-primary-default bg-fill-quaternary-default",
   hoverShadow,
 );
-const iconDefaultStyle = "bg-icon-weak text-icon-default";
+const iconDefaultStyle = "bg-icon-neutral-weak text-icon-neutral-default";
 const iconActiveStyle = "bg-fill-primary-assistive text-icon-primary-default";
 const iconHoverStyle =
   "group-hover:bg-fill-primary-assistive group-hover:text-icon-primary-default";
