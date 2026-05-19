@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { Button } from "@/components/common/buttons";
 
 type ModalNoticeVariant = "single" | "double";
+type ModalNoticeType = "notice" | "confirmationModal";
 
 interface ModalNoticeActionProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
@@ -10,6 +11,7 @@ interface ModalNoticeActionProps
 }
 
 interface ModalNoticeProps {
+  type?: ModalNoticeType;
   variant?: ModalNoticeVariant;
   title?: string;
   description?: string;
@@ -19,6 +21,7 @@ interface ModalNoticeProps {
 }
 
 export default function ModalNotice({
+  type = "notice",
   variant = "single",
   title = "공고 링크를 입력해주세요.",
   description = "링크 내용이 부적절한 경우 제대로 추출되지 않을 수 있습니다.",
@@ -26,8 +29,9 @@ export default function ModalNotice({
   secondaryAction = {},
   className,
 }: ModalNoticeProps) {
+  const resolvedVariant = type === "confirmationModal" ? "double" : variant;
   const {
-    label: primaryLabel = variant === "single" ? "닫기" : "입력하기",
+    label: primaryLabel = resolvedVariant === "single" ? "닫기" : "입력하기",
     className: primaryClassName,
     ...primaryButtonProps
   } = primaryAction;
@@ -63,7 +67,7 @@ export default function ModalNotice({
       </div>
 
       <div className="flex self-stretch flex-col items-start gap-2.5 px-8 pb-8">
-        {variant === "single" ? (
+        {resolvedVariant === "single" ? (
           <Button
             label={primaryLabel}
             styleType="secondary"

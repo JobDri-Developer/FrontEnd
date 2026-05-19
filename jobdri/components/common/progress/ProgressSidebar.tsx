@@ -53,27 +53,31 @@ export default function ProgressSidebar({
     let animationFrame = 0;
 
     const updateActiveFromScroll = () => {
-      const visibleTitles = itemIds
+      const activationLine = window.innerHeight * 0.3;
+      const sectionPositions = itemIds
         .map((id) => {
           const element = document.getElementById(id);
           if (!element) return null;
 
           const rect = element.getBoundingClientRect();
-          const isVisible = rect.bottom > 0 && rect.top < window.innerHeight;
 
-          return isVisible ? { id, top: rect.top } : null;
+          return {
+            id,
+            top: rect.top,
+          };
         })
         .filter((item): item is { id: string; top: number } => Boolean(item));
 
-      if (visibleTitles.length === 0) return;
+      if (sectionPositions.length === 0) return;
 
-      const topVisibleTitle =
-        visibleTitles
-          .filter((item) => item.top >= 0)
-          .sort((a, b) => a.top - b.top)[0] ??
-        visibleTitles.sort((a, b) => b.top - a.top)[0];
+      const passedSections = sectionPositions.filter(
+        (item) => item.top <= activationLine,
+      );
+      const activeSection =
+        passedSections.sort((a, b) => b.top - a.top)[0] ??
+        sectionPositions.sort((a, b) => a.top - b.top)[0];
 
-      setActive(topVisibleTitle.id);
+      setActive(activeSection.id);
     };
 
     const requestUpdate = () => {

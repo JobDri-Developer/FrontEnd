@@ -41,9 +41,18 @@ export function InputAutoGrow({
   useLayoutEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "1px";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+
+      const nextHeight = maxHeight
+        ? Math.min(textareaRef.current.scrollHeight, maxHeight)
+        : textareaRef.current.scrollHeight;
+
+      textareaRef.current.style.height = `${nextHeight}px`;
+      textareaRef.current.style.overflowY =
+        maxHeight && textareaRef.current.scrollHeight > maxHeight
+          ? "auto"
+          : "hidden";
     }
-  }, [value]);
+  }, [maxHeight, value]);
 
   return (
     <div className={clsx("flex flex-col gap-1.5 min-w-148", className)}>
