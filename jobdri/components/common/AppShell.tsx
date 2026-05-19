@@ -5,7 +5,11 @@ import { usePathname } from "next/navigation";
 import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
 
-const standaloneRoutes = new Set(["/login"]);
+const standaloneRoutes = new Set([
+  "/login",
+  "/mock-application/jd-review",
+  "/mock-application/jd-input",
+]);
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
