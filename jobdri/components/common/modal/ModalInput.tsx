@@ -8,8 +8,8 @@ import LoadMotion from "@/components/common/LoadMotion";
 import { useOutsideClick } from "@/hooks/useOutsideClick";
 import { Button, ButtonCtaModal } from "../buttons";
 
-type ModalVariant = "action" | "alort";
-type ModalType = "actionModal";
+type ModalVariant = "action" | "alert" | "alort";
+type ModalType = "actionModal" | "actionModal_alert";
 
 interface ModalInputProps {
   type?: ModalType;
@@ -51,11 +51,12 @@ export default function ModaInput({
   error,
 }: ModalInputProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const isAlertModal =
+    type === "actionModal_alert" || variant === "alert" || variant === "alort";
   const resolvedTitle = title ?? announce ?? "공고 링크를 입력해주세요.";
   const resolvedDescription =
     description ?? "링크 내용이 부적절한 경우 제대로 추출되지 않을 수 있습니다.";
-  const resolvedSubmitLabel =
-    submitLabel ?? (variant === "action" ? "입력하기" : "다시 입력하기");
+  const resolvedSubmitLabel = submitLabel ?? "입력하기";
 
   useOutsideClick(modalRef, onClose, Boolean(onClose));
 
@@ -69,11 +70,12 @@ export default function ModaInput({
         data-type={type}
         className={clsx(
           "flex w-[480px] shrink-0 flex-col items-center justify-center gap-0 overflow-hidden rounded-card bg-bg-contents-default shadow-modal",
+          isAlertModal && "pt-12",
           className,
         )}
       >
-        <div className="flex self-stretch justify-end px-7 pt-6">
-          {variant === "action" ? (
+        {!isAlertModal && (
+          <div className="flex self-stretch justify-end px-7 pt-6">
             <button
               type="button"
               aria-label="닫기"
@@ -82,12 +84,15 @@ export default function ModaInput({
             >
               <Icon type="CLOSE_M" className="h-5 w-5" />
             </button>
-          ) : (
-            <div className="h-5 w-5" />
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="flex flex-col items-center gap-5 self-stretch px-8 pt-3 pb-6">
+        <div
+          className={clsx(
+            "flex flex-col items-center gap-5 self-stretch px-8 pb-6",
+            isAlertModal ? "pt-0" : "pt-3",
+          )}
+        >
           {showLoadMotion && <LoadMotion />}
 
           <div className="flex flex-col items-center gap-2 self-stretch text-center">
@@ -103,7 +108,7 @@ export default function ModaInput({
 
           {showInputField && (
             <InputSingleLine
-              autoFocus
+              autoFocus={!isAlertModal}
               type="url"
               placeholder={placeholder}
               value={value}
@@ -118,7 +123,7 @@ export default function ModaInput({
             />
           )}
 
-          {variant === "action" ? (
+          {!isAlertModal ? (
             <Button
               label={resolvedSubmitLabel}
               size="large"
