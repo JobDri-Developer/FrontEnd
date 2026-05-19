@@ -96,14 +96,15 @@ export default function Header({
                 >
                   <span
                     className={clsx(
-                      "flex aspect-square h-5 w-5 items-center justify-center gap-2.5 rounded-icon-round text-cap12-med [font-feature-settings:'liga'_off,'clig'_off]",
-                      "tracking-normal",
+                      "flex aspect-square h-5 w-5 items-center justify-center gap-2.5 rounded-icon-round text-[12px] leading-none font-medium tracking-normal [font-feature-settings:'liga'_off,'clig'_off]",
                       isCurrent
                         ? "bg-fill-quaternary-default text-text-neutral-description shadow-cta-primary"
                         : "bg-fill-disabled text-text-neutral-disabled",
                     )}
                   >
-                    {stepNumber}
+                    <span className="block -translate-x-[0.5px] translate-y-px">
+                      {stepNumber}
+                    </span>
                   </span>
                   <span
                     className={clsx(

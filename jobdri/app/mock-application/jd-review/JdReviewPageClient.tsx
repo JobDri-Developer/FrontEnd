@@ -6,10 +6,17 @@ import Header from "@/components/common/header/Header";
 import { Footer } from "@/components/common/footer";
 import { ModalNotice } from "@/components/common/modal";
 import JdReviewMain from "@/components/mock-application/JdReviewMain";
+import type { JdReviewSection } from "@/components/mock-application/jdReviewSections";
 
 const JD_INPUT_PATH = "/mock-application/jd-input";
 
-export default function JdReviewPageClient() {
+interface JdReviewPageClientProps {
+  sections?: JdReviewSection[];
+}
+
+export default function JdReviewPageClient({
+  sections,
+}: JdReviewPageClientProps) {
   const router = useRouter();
   const [showBackConfirm, setShowBackConfirm] = useState(false);
 
@@ -29,7 +36,7 @@ export default function JdReviewPageClient() {
                 공고 내용을 확인하고 수정해주세요
               </h2>
             </div>
-            <JdReviewMain />
+            <JdReviewMain sections={sections} />
           </div>
         </section>
 

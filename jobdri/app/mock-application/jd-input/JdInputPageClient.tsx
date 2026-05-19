@@ -11,6 +11,7 @@ import { ModalFileUpload, ModalInput } from "@/components/common/modal";
 type JdInputMethod = "link" | "image" | "manual";
 type LinkModalStep = "input" | "reading" | "failed";
 type ImageModalStep = "upload" | "reading" | "failed";
+const MANUAL_JD_REVIEW_PATH = "/mock-application/jd-review?mode=manual";
 
 function isUrlFormat(value: string) {
   const trimmedValue = value.trim();
@@ -58,6 +59,11 @@ export default function JdInputPageClient() {
       setSelectedImageFile(null);
       setImageModalStep("upload");
       setIsImageModalOpen(true);
+      return;
+    }
+
+    if (selectedMethod === "manual") {
+      router.push(MANUAL_JD_REVIEW_PATH);
     }
   };
 
@@ -126,12 +132,7 @@ export default function JdInputPageClient() {
       return;
     }
 
-    setJdLink("");
-    setSelectedImageFile(null);
-    setLinkModalStep("input");
-    setImageModalStep("upload");
-    setIsLinkModalOpen(false);
-    setIsImageModalOpen(false);
+    router.push(MANUAL_JD_REVIEW_PATH);
   };
 
   return (
