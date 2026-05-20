@@ -57,7 +57,7 @@ export default function ModalNotice({
       aria-modal="true"
       aria-label={title}
       className={clsx(
-        "flex w-[400px] flex-col items-center justify-center gap-0 overflow-hidden rounded-card-s bg-fill-quaternary-default pt-12 shadow-modal",
+        "flex w-[400px] flex-col items-center justify-center gap-0 overflow-hidden rounded-card bg-fill-quaternary-default pt-12 shadow-modal",
         className,
       )}
     >
@@ -69,7 +69,7 @@ export default function ModalNotice({
             {title}
           </p>
           <p
-            className="self-stretch text-center text-sub14-med tracking-normal text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]"
+            className="self-stretch whitespace-pre-line text-center text-sub14-med tracking-normal text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]"
           >
             {description}
           </p>
