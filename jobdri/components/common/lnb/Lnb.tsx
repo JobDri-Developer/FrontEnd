@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
 
-type LnbItemKey = "home" | "experience" | "apply";
+type LnbItemKey = "experience" | "apply";
 
 interface LnbProps {
   initialActiveItem?: LnbItemKey;
@@ -15,15 +16,18 @@ interface LnbNavItem {
   key: LnbItemKey;
   label: string;
   iconType: IconType;
+  href?: string;
 }
 
 const navItems: LnbNavItem[] = [
-  { key: "home", label: "홈", iconType: "HOME_S" },
+  {
+    key: "apply",
+    label: "모의서류지원",
+    iconType: "APPLY",
+    href: "/mock-application",
+  },
   { key: "experience", label: "경험기록장", iconType: "EX_S" },
-  { key: "apply", label: "모의서류지원", iconType: "APPLY" },
 ];
-
-const hiddenNavItemKeys: LnbItemKey[] = ["experience"];
 
 const navItemBaseClassName =
   "flex h-9 items-center gap-2 rounded-cta-l p-3 text-sub14-med";
@@ -33,10 +37,19 @@ export default function Lnb({
   email = "jobdri@gmail.com",
   creditCount = 32,
 }: LnbProps) {
+  const router = useRouter();
   const [isFold, setIsFold] = useState(false);
   const [activeItem, setActiveItem] = useState<LnbItemKey | undefined>(
     initialActiveItem,
   );
+
+  const handleNavItemClick = (item: LnbNavItem) => {
+    setActiveItem(item.key);
+
+    if (item.href) {
+      router.push(item.href);
+    }
+  };
 
   return (
     <aside
@@ -66,36 +79,34 @@ export default function Lnb({
         </div>
 
         <nav className="flex w-full flex-col items-start gap-1.5">
-          {navItems
-            .filter((item) => !hiddenNavItemKeys.includes(item.key))
-            .map((item) => {
-              const isActive = item.key === activeItem;
+          {navItems.map((item) => {
+            const isActive = item.key === activeItem;
 
-              return (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => setActiveItem(item.key)}
-                  className={`${navItemBaseClassName} ${
-                    isFold ? "w-[30px] justify-center px-0" : "w-full"
-                  } ${
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => handleNavItemClick(item)}
+                className={`${navItemBaseClassName} ${
+                  isFold ? "w-[30px] justify-center px-0" : "w-full"
+                } ${
+                  isActive
+                    ? "bg-fill-primary-assistive text-text-primary-strong"
+                    : "text-text-neutral-description"
+                } ${!isActive ? "hover:bg-fill-hover" : ""}`}
+              >
+                <Icon
+                  type={item.iconType}
+                  className={`h-5 w-5 shrink-0 ${
                     isActive
-                      ? "bg-fill-primary-assistive text-text-primary-strong"
-                      : "text-text-neutral-description"
-                  } ${!isActive ? "hover:bg-fill-hover" : ""}`}
-                >
-                  <Icon
-                    type={item.iconType}
-                    className={`h-5 w-5 shrink-0 ${
-                      isActive
-                        ? "text-icon-primary-strong"
-                        : "text-icon-neutral-default"
-                    }`}
-                  />
-                  {!isFold && <span>{item.label}</span>}
-                </button>
-              );
-            })}
+                      ? "text-icon-primary-strong"
+                      : "text-icon-neutral-default"
+                  }`}
+                />
+                {!isFold && <span>{item.label}</span>}
+              </button>
+            );
+          })}
         </nav>
       </div>
 

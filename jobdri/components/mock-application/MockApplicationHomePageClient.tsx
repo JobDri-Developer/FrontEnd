@@ -199,9 +199,9 @@ export default function MockApplicationHomePageClient() {
         <Lnb initialActiveItem="apply" />
       </div>
 
-      <div className="flex flex-1 flex-col items-center self-stretch">
-        <main className="flex flex-1 flex-col items-start gap-8 self-stretch px-10 py-11">
-          <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-16 self-stretch">
+      <div className="flex min-w-0 flex-1 flex-col items-center self-stretch">
+        <main className="flex min-w-0 flex-1 flex-col items-start gap-8 self-stretch px-10 pt-11 pb-[94px]">
+          <div className="flex w-full min-w-0 flex-col items-center gap-16 self-stretch">
             <section className="flex flex-col items-start gap-7 self-stretch">
               <div className="flex flex-col items-start gap-7 self-stretch md:flex-row md:justify-between">
                 <div className="flex min-w-0 flex-1 flex-col items-start gap-3">

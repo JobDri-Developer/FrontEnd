@@ -15,9 +15,8 @@ const sizeConfigs = {
   },
   small: {
     diameter: 64,
-    strokeWidth: 2,
-    textClassName:
-      "text-[14px] font-semibold leading-[140%] tracking-[-0.28px]",
+    strokeWidth: 4,
+    textClassName: "text-b16-semibold",
   },
 } as const;
 

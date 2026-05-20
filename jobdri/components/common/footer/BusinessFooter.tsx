@@ -11,7 +11,7 @@ export default function BusinessFooter({
       {...footerProps}
     >
       <div className="flex items-start justify-between self-stretch bg-bg-default px-10 py-7">
-        <div className="mx-auto flex w-full max-w-[1060px] flex-1 items-start gap-3">
+        <div className="flex w-full min-w-0 flex-1 items-start gap-3">
           <div className="flex w-[150px] flex-col items-start gap-[34px]">
             <strong className="flex h-6 w-[54.545px] items-center justify-center pr-[2.545px] text-[14px] font-bold leading-[140%] text-text-neutral-title">
               JobDri
@@ -62,7 +62,7 @@ export default function BusinessFooter({
       </div>
 
       <div className="flex flex-col items-center gap-14 self-stretch bg-icon-neutral-strong px-10 py-4">
-        <div className="mx-auto flex w-full max-w-[1060px] items-center justify-between">
+        <div className="flex w-full min-w-0 items-center justify-between">
           <p className="text-cap12-med text-gray-400 [font-feature-settings:'liga'_off,'clig'_off]">
             © 2026 잡드리, All rights reserved.
           </p>

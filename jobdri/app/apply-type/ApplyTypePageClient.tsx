@@ -39,7 +39,7 @@ export default function ApplyTypePageClient() {
           leftAction={{
             label: "돌아가기",
             iconType: "HOME_S",
-            onClick: () => router.push("/"),
+            onClick: () => router.push("/mock-application"),
           }}
         />
 
