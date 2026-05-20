@@ -65,6 +65,11 @@ export default function Home() {
           <Header />
         </div>
       </Section>
+      <Section title="LNB">
+        <div className="overflow-hidden rounded-card-s border border-line-neutral-default">
+          <Lnb initialActiveItem="apply" />
+        </div>
+      </Section>
       <Section title="Footer">
         <div className="w-full">
           <Footer />

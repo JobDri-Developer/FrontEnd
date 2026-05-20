@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useRef } from "react";
 import clsx from "clsx";
-import Icon, { type IconType } from "@/components/common/icons/Icon";
-import { InputSingleLine } from "@/components/common/input";
-import LoadMotionModal from "@/components/common/LoadMotionModal";
-import { useOutsideClick } from "@/hooks/useOutsideClick";
-import { Button, ButtonCtaModal } from "../buttons";
+import Icon from "@/components/common/icons/Icon";
+import { InputModalQuestion } from "@/components/common/input";
+import LoadMotion from "@/components/common/LoadMotion";
+import ButtonCta from "@/components/common/buttons/ButtonCta";
+import { ButtonCtaModal } from "../buttons";
+import useOutsideClick from "@/hooks/useOutsideClick";
 
 type ModalVariant = "action" | "alert" | "alort";
 type ModalType = "actionModal" | "actionModal_alert";
@@ -94,24 +95,13 @@ export default function ModaInput({
   error,
 }: ModalInputProps) {
   const modalRef = useRef<HTMLDivElement>(null);
-  const isAlertModal =
-    type === "actionModal_alert" || variant === "alert" || variant === "alort";
-  const resolvedTitle = title ?? announce ?? "공고 링크를 입력해주세요.";
-  const resolvedDescription =
-    description ?? "링크 내용이 부적절한 경우 제대로 추출되지 않을 수 있습니다.";
-  const resolvedSubmitLabel =
-    submitLabel ?? (isAlertModal ? "다시 입력하기" : "입력하기");
 
-  useOutsideClick(modalRef, onClose, Boolean(onClose));
+  useOutsideClick(modalRef, onClose);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
       <div
         ref={modalRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={resolvedTitle}
-        data-type={type}
         className={clsx(
           "flex w-[480px] shrink-0 flex-col items-center justify-center gap-0 overflow-hidden rounded-card bg-bg-contents-default shadow-modal",
           isAlertModal && "pt-12",

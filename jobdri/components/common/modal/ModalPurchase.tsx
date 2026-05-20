@@ -4,7 +4,7 @@ import { useRef } from "react";
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
 import { ButtonCtaModal } from "@/components/common/buttons";
-import { useOutsideClick } from "@/hooks/useOutsideClick";
+import useOutsideClick from "@/hooks/useOutsideClick";
 
 interface ModalPurchaseProps {
   creditCount?: number;
@@ -25,7 +25,7 @@ export default function ModalPurchase({
 }: ModalPurchaseProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  useOutsideClick(modalRef, onClose, Boolean(onClose));
+  useOutsideClick(modalRef, onClose);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
