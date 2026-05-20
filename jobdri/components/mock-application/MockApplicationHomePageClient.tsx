@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
 import { ResultScore } from "@/components/common/cards";
+import { DropDownMenu } from "@/components/common/dropdown";
 import { BusinessFooter } from "@/components/common/footer";
 import Icon from "@/components/common/icons/Icon";
 import { Lnb } from "@/components/common/lnb";
@@ -98,14 +100,64 @@ const resultRows = Array.from(
 );
 
 function KebabButton({ label }: { label: string }) {
+  const dropdownId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
   return (
-    <button
-      type="button"
-      aria-label={label}
-      className="flex h-6 w-6 shrink-0 items-center justify-center text-icon-neutral-default"
+    <div
+      ref={containerRef}
+      className="relative flex h-6 w-6 shrink-0 items-center justify-center"
     >
-      <Icon type="KABAB" className="h-6 w-6" />
-    </button>
+      <button
+        type="button"
+        aria-label={label}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-controls={open ? dropdownId : undefined}
+        className="flex h-6 w-6 shrink-0 items-center justify-center text-icon-neutral-default"
+        onClick={() => setOpen((currentOpen) => !currentOpen)}
+      >
+        <Icon type="KABAB" className="h-6 w-6" />
+      </button>
+
+      {open && (
+        <DropDownMenu
+          id={dropdownId}
+          className="absolute top-[calc(100%+8px)] right-0 z-30"
+          items={[
+            {
+              label: "삭제하기",
+              onClick: () => setOpen(false),
+            },
+          ]}
+        />
+      )}
+    </div>
   );
 }
 
@@ -153,7 +205,7 @@ function PausedApplicationCard({
   score,
 }: ApplicationCardData) {
   return (
-    <article className="flex items-center self-stretch rounded-card bg-bg-contents-default px-7 py-6">
+    <article className="relative flex items-center self-stretch rounded-card bg-bg-contents-default px-7 py-6">
       <div className="flex min-w-0 flex-1 items-center gap-5">
         <ResultScore size="small" score={score} />
         <ApplicationMeta
@@ -174,7 +226,7 @@ function ResultApplicationCard({
   score,
 }: ApplicationCardData) {
   return (
-    <article className="flex flex-1 flex-col items-start justify-center gap-16 rounded-card bg-bg-contents-default px-6 py-5">
+    <article className="relative flex flex-1 flex-col items-start justify-center gap-16 rounded-card bg-bg-contents-default px-6 py-5">
       <div className="flex items-start justify-between self-stretch">
         <ResultScore size="small" score={score} />
         <KebabButton label={`${company} 모의 서류 결과 메뉴`} />
