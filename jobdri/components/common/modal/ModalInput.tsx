@@ -1,11 +1,13 @@
 "use client";
 
+import { useRef } from "react";
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
 import { InputModalQuestion } from "@/components/common/input";
 import LoadMotion from "@/components/common/LoadMotion";
 import ButtonCta from "@/components/common/buttons/ButtonCta";
 import { ButtonCtaModal } from "../buttons";
+import useOutsideClick from "@/hooks/useOutsideClick";
 
 type ModalVariant = "action" | "alort";
 
@@ -34,9 +36,14 @@ export default function ModaInput({
   description,
   error,
 }: ModalInputProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useOutsideClick(modalRef, onClose);
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-bg-lightbox-default z-50">
       <div
+        ref={modalRef}
         className={clsx(
           "flex flex-col bg-fill-quaternary-default rounded-card w-120 overflow-hidden",
           className,

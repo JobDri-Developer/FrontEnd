@@ -8,6 +8,8 @@ import { DropDownMenu } from "@/components/common/dropdown";
 import { BusinessFooter } from "@/components/common/footer";
 import Icon from "@/components/common/icons/Icon";
 import { Lnb } from "@/components/common/lnb";
+import { ModalNotice } from "@/components/common/modal";
+import { Toast } from "@/components/common/toast";
 
 interface ApplicationCardData {
   company: string;
@@ -99,7 +101,13 @@ const resultRows = Array.from(
   (_, index) => resultApplications.slice(index * 5, index * 5 + 5),
 );
 
-function KebabButton({ label }: { label: string }) {
+function KebabButton({
+  label,
+  onDeleteClick,
+}: {
+  label: string;
+  onDeleteClick: () => void;
+}) {
   const dropdownId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -152,7 +160,10 @@ function KebabButton({ label }: { label: string }) {
           items={[
             {
               label: "삭제하기",
-              onClick: () => setOpen(false),
+              onClick: () => {
+                setOpen(false);
+                onDeleteClick();
+              },
             },
           ]}
         />
@@ -203,7 +214,10 @@ function PausedApplicationCard({
   position,
   createdAt,
   score,
-}: ApplicationCardData) {
+  onDeleteClick,
+}: ApplicationCardData & {
+  onDeleteClick: () => void;
+}) {
   return (
     <article className="relative flex items-center self-stretch rounded-card bg-bg-contents-default px-7 py-6">
       <div className="flex min-w-0 flex-1 items-center gap-5">
@@ -214,7 +228,10 @@ function PausedApplicationCard({
           createdAt={createdAt}
         />
       </div>
-      <KebabButton label={`${company} 모의 지원 메뉴`} />
+      <KebabButton
+        label={`${company} 모의 지원 메뉴`}
+        onDeleteClick={onDeleteClick}
+      />
     </article>
   );
 }
@@ -224,12 +241,18 @@ function ResultApplicationCard({
   position,
   createdAt,
   score,
-}: ApplicationCardData) {
+  onDeleteClick,
+}: ApplicationCardData & {
+  onDeleteClick: () => void;
+}) {
   return (
     <article className="relative flex flex-1 flex-col items-start justify-center gap-16 rounded-card bg-bg-contents-default px-6 py-5">
       <div className="flex items-start justify-between self-stretch">
         <ResultScore size="small" score={score} />
-        <KebabButton label={`${company} 모의 서류 결과 메뉴`} />
+        <KebabButton
+          label={`${company} 모의 서류 결과 메뉴`}
+          onDeleteClick={onDeleteClick}
+        />
       </div>
 
       <ApplicationMeta
@@ -244,6 +267,51 @@ function ResultApplicationCard({
 
 export default function MockApplicationHomePageClient() {
   const router = useRouter();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteToast, setShowDeleteToast] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const openDeleteConfirm = () => setShowDeleteConfirm(true);
+  const closeDeleteConfirm = () => setShowDeleteConfirm(false);
+  const closeDeleteToast = () => setShowDeleteToast(false);
+
+  useEffect(() => {
+    if (!showDeleteToast) return;
+
+    const toastTimer = window.setTimeout(() => {
+      setShowDeleteToast(false);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(toastTimer);
+    };
+  }, [showDeleteToast]);
+
+  const deleteApplicationRecord = async (): Promise<boolean> => {
+    // TODO: API 연결 후 실제 지원 기록 삭제 요청을 여기에 붙입니다.
+    // const response = await fetch("/api/mock-application/records/{id}", {
+    //   method: "DELETE",
+    // });
+    // return response.ok;
+    return true;
+  };
+
+  const handleConfirmDelete = async () => {
+    if (isDeleting) return;
+
+    setIsDeleting(true);
+
+    try {
+      const deleted = await deleteApplicationRecord();
+
+      if (deleted) {
+        closeDeleteConfirm();
+        setShowDeleteToast(true);
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-bg-default">
@@ -290,6 +358,7 @@ export default function MockApplicationHomePageClient() {
                   <PausedApplicationCard
                     key={`${application.company}-${application.score}`}
                     {...application}
+                    onDeleteClick={openDeleteConfirm}
                   />
                 ))}
               </div>
@@ -315,6 +384,7 @@ export default function MockApplicationHomePageClient() {
                       <ResultApplicationCard
                         key={`${application.company}-${rowIndex}-${cardIndex}`}
                         {...application}
+                        onDeleteClick={openDeleteConfirm}
                       />
                     ))}
                   </div>
@@ -326,6 +396,38 @@ export default function MockApplicationHomePageClient() {
 
         <BusinessFooter />
       </div>
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            type="confirmationModal"
+            title="지원 기록을 삭제할까요?"
+            description="삭제된 기록은 복구할 수 없습니다."
+            onClose={closeDeleteConfirm}
+            secondaryAction={{
+              label: "닫기",
+              onClick: closeDeleteConfirm,
+            }}
+            primaryAction={{
+              label: "삭제하기",
+              onClick: handleConfirmDelete,
+              disabled: isDeleting,
+            }}
+          />
+        </div>
+      )}
+
+      {showDeleteToast && (
+        <div className="fixed right-0 bottom-0 z-40 flex h-[156px] w-[380px] items-center justify-end pointer-events-none">
+          <div className="inline-flex h-40 w-[400px] shrink-0 flex-col items-start justify-start gap-2.5">
+            <Toast
+              message="지원 기록이 삭제되었습니다."
+              onClose={closeDeleteToast}
+              className="w-[360px] pointer-events-auto"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
