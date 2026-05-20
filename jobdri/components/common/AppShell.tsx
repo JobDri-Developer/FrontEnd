@@ -6,11 +6,17 @@ import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
 
 const standaloneRoutes = new Set(["/login", "/apply-type"]);
+const standaloneRoutePrefixes = ["/mock-application"];
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  if (standaloneRoutes.has(pathname)) {
+  if (
+    standaloneRoutes.has(pathname) ||
+    standaloneRoutePrefixes.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    )
+  ) {
     return <>{children}</>;
   }
 
