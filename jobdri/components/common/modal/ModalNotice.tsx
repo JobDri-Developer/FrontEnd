@@ -1,6 +1,10 @@
+"use client";
+
 import type { ButtonHTMLAttributes } from "react";
+import { useRef } from "react";
 import clsx from "clsx";
 import { Button } from "@/components/common/buttons";
+import { useOutsideClick } from "@/hooks/useOutsideClick";
 
 type ModalNoticeVariant = "single" | "double";
 type ModalNoticeType = "notice" | "confirmationModal";
@@ -17,6 +21,7 @@ interface ModalNoticeProps {
   description?: string;
   primaryAction?: ModalNoticeActionProps;
   secondaryAction?: ModalNoticeActionProps;
+  onClose?: () => void;
   className?: string;
 }
 
@@ -27,8 +32,10 @@ export default function ModalNotice({
   description = "링크 내용이 부적절한 경우 제대로 추출되지 않을 수 있습니다.",
   primaryAction = {},
   secondaryAction = {},
+  onClose,
   className,
 }: ModalNoticeProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
   const resolvedVariant = type === "confirmationModal" ? "double" : variant;
   const {
     label: primaryLabel = resolvedVariant === "single" ? "닫기" : "입력하기",
@@ -41,8 +48,11 @@ export default function ModalNotice({
     ...secondaryButtonProps
   } = secondaryAction;
 
+  useOutsideClick(modalRef, onClose, Boolean(onClose));
+
   return (
     <div
+      ref={modalRef}
       role="dialog"
       aria-modal="true"
       aria-label={title}

@@ -44,11 +44,11 @@ const styleTypeStyles: Record<ButtonStyle, string> = {
   tertiary:
     "border border-line-neutral-default bg-fill-quaternary-default text-text-neutral-description hover:border-line-neutral-default hover:bg-fill-quaternary-default hover:shadow-cta-secondary active:border-line-neutral-strong active:bg-fill-quaternary-assistive active:shadow-cta-secondary",
   quaternary:
-    "bg-fill-quaternary-assistive text-text-neutral-description hover:bg-fill-quaternary-hover-assistive active:bg-fill-quaternary-assistive-pressed",
+    "bg-fill-quaternary-assistive text-text-neutral-description hover:bg-fill-quaternary-assistive-hover active:bg-fill-quaternary-assistive-pressed",
 };
 
 const inactiveStyle =
-  "cursor-not-allowed bg-fill-disabled text-text-neutral-disabled hover:bg-fill-disabled";
+  "cursor-default bg-fill-disabled text-text-neutral-disabled hover:bg-fill-disabled";
 
 const iconColorStyles: Record<ButtonStyle, string> = {
   primary: "text-icon-neutral-white",

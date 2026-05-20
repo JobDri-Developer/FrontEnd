@@ -27,10 +27,13 @@
 :is(
   button,
   [role="button"],
+  input,
+  textarea,
+  select,
   input[type="button"],
   input[type="submit"],
   input[type="reset"]
 ):disabled,
-[aria-disabled="true"] {
-  cursor: not-allowed !important;
+:is(button, [role="button"])[aria-disabled="true"] {
+  cursor: default !important;
 }

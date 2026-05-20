@@ -26,6 +26,6 @@ export const scrollbarClass =
 export function getFieldClass(disabled: boolean) {
   return clsx(
     "w-full bg-transparent outline-none text-sub14-reg placeholder:text-text-neutral-disabled caret-line-primary-default",
-    disabled && "text-text-neutral-disabled cursor-not-allowed",
+    disabled && "text-text-neutral-disabled",
   );
 }

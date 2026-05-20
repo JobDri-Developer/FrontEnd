@@ -36,6 +36,7 @@ import IC_EDIT from "@/assets/ic_Edit.svg";
 import IC_LINK from "@/assets/ic_Link.svg";
 import IC_POLYGON_1 from "@/assets/ic_Polygon_1.svg";
 import IC_POLYGON_2 from "@/assets/ic_Polygon_2.svg";
+import IC_FILE from "@/assets/ic_file.svg";
 
 const iconMap = {
   EX_L: IC_EX_L,
@@ -76,6 +77,7 @@ const iconMap = {
   LINK: IC_LINK,
   POLYGON_1: IC_POLYGON_1,
   POLYGON_2: IC_POLYGON_2,
+  FILE: IC_FILE,
 } as const;
 
 export type IconType = keyof typeof iconMap;

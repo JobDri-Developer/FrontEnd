@@ -31,6 +31,12 @@ export default function ApplyTypePageClient() {
   const [selectedType, setSelectedType] = useState<ApplyType | null>(null);
   const [hoveredType, setHoveredType] = useState<ApplyType | null>(null);
 
+  const handleSubmit = () => {
+    if (selectedType === "real") {
+      router.push("/mock-application/jd-input");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-line-neutral-assistive px-6 py-6">
       <div className="mx-auto flex min-h-[calc(100vh-48px)] w-[1280px] flex-col">
@@ -67,7 +73,13 @@ export default function ApplyTypePageClient() {
                     disabled={isDisabled}
                     onMouseEnter={() => setHoveredType(applyType.id)}
                     onMouseLeave={() => setHoveredType(null)}
-                    onClick={() => setSelectedType(applyType.id)}
+                    onClick={() =>
+                      setSelectedType((prevSelectedType) =>
+                        prevSelectedType === applyType.id
+                          ? null
+                          : applyType.id,
+                      )
+                    }
                     className={clsx(
                       "!w-auto flex-1",
                       isHovered && "bg-fill-quaternary-default shadow-hover",
@@ -84,6 +96,7 @@ export default function ApplyTypePageClient() {
           ctaAction={{
             label: "선택하기",
             disabled: selectedType === null,
+            onClick: handleSubmit,
           }}
         />
       </div>

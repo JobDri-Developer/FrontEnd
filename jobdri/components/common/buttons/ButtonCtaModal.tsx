@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
-import Button from "./Button";
+import Button, { type ButtonStyle } from "./Button";
 
 type ButtonCtaModalStack =
   | "stack1_horizontal"
@@ -13,6 +13,10 @@ interface ButtonCtaModalProps {
   stack?: ButtonCtaModalStack;
   onSubmit?: () => void;
   onCancel?: () => void;
+  submitStyleType?: ButtonStyle;
+  cancelStyleType?: ButtonStyle;
+  submitClassName?: string;
+  cancelClassName?: string;
   className?: string;
 }
 
@@ -50,6 +54,10 @@ export default function ButtonCtaModal({
   stack = "stack1_horizontal",
   onSubmit,
   onCancel,
+  submitStyleType = "secondary",
+  cancelStyleType = "quaternary",
+  submitClassName,
+  cancelClassName,
   className,
 }: ButtonCtaModalProps) {
   return (
@@ -63,25 +71,25 @@ export default function ButtonCtaModal({
         <Button
           label={label}
           size="large"
-          styleType="secondary"
+          styleType={submitStyleType}
           onClick={onSubmit}
-          className="h-[46px] w-full"
+          className={clsx("h-[46px] w-full", submitClassName)}
         />
       ) : stack === "stack2_horizontal" ? (
         <div className="flex w-full items-start gap-3 self-stretch">
           <Button
             label={cancelLabel}
             size="large"
-            styleType="quaternary"
+            styleType={cancelStyleType}
             onClick={onCancel}
-            className="h-[46px] flex-1 "
+            className={clsx("h-[46px] flex-1", cancelClassName)}
           />
           <Button
             label={label}
             size="large"
-            styleType="secondary"
+            styleType={submitStyleType}
             onClick={onSubmit}
-            className="h-[46px] flex-1 "
+            className={clsx("h-[46px] flex-1", submitClassName)}
           />
         </div>
       ) : (

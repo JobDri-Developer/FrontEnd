@@ -19,7 +19,7 @@ const defaultStyle = clsx(
   "hover:shadow-hover",
 );
 const disabledStyle = clsx(
-  "cursor-not-allowed border-transparent bg-fill-quaternary-assistive",
+  "border-transparent bg-fill-quaternary-assistive",
   cardShadow,
 );
 const selectedStyle = clsx(
