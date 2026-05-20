@@ -3,10 +3,12 @@
 import type { ButtonHTMLAttributes, MouseEvent } from "react";
 import { useState } from "react";
 import clsx from "clsx";
-import Icon from "@/components/common/icons/Icon";
+import IconBox from "@/components/common/icons/IconBox";
+import type { IconType } from "@/components/common/icons/Icon";
 
 interface Method1CardProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label?: string;
+  iconType?: IconType;
   selected?: boolean;
   defaultSelected?: boolean;
   onSelectedChange?: (selected: boolean) => void;
@@ -20,20 +22,21 @@ const defaultStyle = clsx(
   "hover:shadow-hover",
 );
 const disabledStyle = clsx(
-  "cursor-not-allowed border-transparent bg-fill-quaternary-assistive",
+  "border-transparent bg-fill-quaternary-assistive",
   cardShadow,
 );
 const selectedStyle = clsx(
   "border-line-primary-default bg-fill-quaternary-default",
   hoverShadow,
 );
-const iconDefaultStyle = "bg-icon-weak text-icon-default";
+const iconDefaultStyle = "bg-icon-neutral-weak text-icon-neutral-default";
 const iconActiveStyle = "bg-fill-primary-assistive text-icon-primary-default";
 const iconHoverStyle =
   "group-hover:bg-fill-primary-assistive group-hover:text-icon-primary-default";
 
 export default function Method1Card({
   label = "링크 붙여넣기",
+  iconType = "LINK",
   selected,
   defaultSelected = false,
   onSelectedChange,
@@ -76,18 +79,26 @@ export default function Method1Card({
       onClick={handleClick}
       {...buttonProps}
     >
-      <span
+      <IconBox
+        type={iconType}
+        state={isActive ? "primary" : "secondary"}
         className={clsx(
-          "flex items-center gap-2.5 rounded-icon-default p-2 transition-colors",
+          "rounded-icon-default transition-colors",
           disabled
             ? iconDefaultStyle
             : isActive
               ? iconActiveStyle
               : clsx(iconDefaultStyle, iconHoverStyle),
         )}
-      >
-        <Icon type="LINK" className="aspect-square h-6 w-6 shrink-0" />
-      </span>
+        iconClassName={clsx(
+          "aspect-square h-6 w-6 shrink-0 transition-colors",
+          disabled
+            ? "text-icon-neutral-default"
+            : isActive
+              ? "text-icon-primary-default"
+              : "text-icon-neutral-default group-hover:text-icon-primary-default",
+        )}
+      />
 
       <span className="flex-1 text-center text-t20-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
         {label}
