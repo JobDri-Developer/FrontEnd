@@ -19,7 +19,7 @@ export function ChipRound({ label, variant = "normal" }: ChipRoundProps) {
   return (
     <span
       className={clsx(
-        "px-3.5 py-1.5 text-cap12-semibold rounded-chip-round",
+        "px-3.5 pb-1.5 pt-2 text-cap12-semibold rounded-chip-round",
         variantStyles[variant],
       )}
     >

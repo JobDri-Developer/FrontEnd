@@ -5,6 +5,7 @@ import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
 import { Button } from "@/components/common/buttons";
 import DropDown from "@/components/common/dropdown/DropDown";
+import { InputSingleLine } from "../input";
 
 interface ModalAddProps {
   onClose: () => void;
@@ -57,18 +58,17 @@ export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
             <div className="flex flex-col flex-1 min-w-0 gap-1.5">
               <div
                 className={clsx(
-                  "flex h-[46px] items-center rounded-card-result border px-[14px]",
+                  "flex items-center rounded-card-result ",
                   error
                     ? "border-line-system-fail-default bg-fill-quaternary-assistive"
                     : "border-line-neutral-default bg-fill-quaternary-assistive",
                 )}
               >
-                <input
-                  className="flex-1 min-w-0 bg-transparent text-sub14-reg text-text-neutral-title outline-none placeholder:text-text-neutral-disabled"
+                <InputSingleLine
                   placeholder="문항 내용을 입력하세요"
                   value={question}
                   onChange={(e) => {
-                    setQuestion(e.target.value);
+                    setQuestion(e);
                     if (error) setError("");
                   }}
                 />
@@ -81,10 +81,7 @@ export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
             </div>
 
             {/* 글자수 드롭다운 */}
-            <DropDown
-              value={maxLength}
-              onChange={setMaxLength}
-            />
+            <DropDown value={maxLength} onChange={setMaxLength} />
           </div>
 
           {/* 추가 버튼 */}

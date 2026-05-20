@@ -8,7 +8,7 @@ import {
   type FileState,
   type InputFileHandle,
 } from "@/components/common/input";
-import { useOutsideClick } from "@/hooks/useOutsideClick";
+import useOutsideClick from "@/hooks/useOutsideClick";
 
 interface ModalFileUploadProps {
   selectedFile?: File | null;

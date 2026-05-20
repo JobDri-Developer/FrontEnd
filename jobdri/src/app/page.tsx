@@ -18,6 +18,7 @@ import {
   ChipRound,
   ChipRoundSelected,
   ChipQnumber,
+  ChipTag,
 } from "@/components/common/chips";
 import ChipMainDemo from "@/components/common/chips/ChipMainDemo";
 import ModalLinkInputDemo from "@/components/common/modal/ModalLinkInputDemo";
