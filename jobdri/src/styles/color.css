@@ -67,14 +67,24 @@
   --color-fill-tertiary-assistive: var(--color-gray-500);
 
   --color-fill-quaternary-default: var(--color-white);
+  --color-fill-quaternary-transparent: color-mix(
+    in srgb,
+    var(--color-fill-quaternary-default) 0%,
+    transparent
+  );
   --color-fill-quaternary-default-hover: var(--color-gray-95);
   --color-fill-quaternary-default-pressed: var(--color-gray-100);
 
   --color-fill-quaternary-assistive: var(--color-gray-95);
-  --color-fill-quaternary-assistive-hover: var(--color-gray-100);
-  --color-fill-quaternary-assistive-pressed: var(--color-gray-200);
+  --color-fill-quaternary-assistive-hover: #f4f4f6;
+  --color-fill-quaternary-assistive-pressed: #ebebef;
 
   --color-fill-hover: var(--color-gray-alpha-50);
+  --color-fill-inverse-hover: color-mix(
+    in srgb,
+    var(--color-white) 5%,
+    transparent
+  );
   --color-fill-disabled: var(--color-gray-200);
 
   --color-fill-system-fail-strong: var(--color-red-400);

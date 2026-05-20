@@ -18,6 +18,7 @@ import IC_PROFILE from "@/assets/ic_Profile.svg";
 import IC_PASSWORD from "@/assets/ic_Password.svg";
 import IC_ARROW_R_N from "@/assets/ic_Arrow_Right_M.svg";
 import IC_DOTS_M from "@/assets/ic_Dots_M.svg";
+import IC_KABAB from "@/assets/ic_Kabab.svg";
 import IC_CLOSE_M from "@/assets/ic_Close_M.svg";
 import IC_SIDEBAR from "@/assets/ic_SidebarToggle.svg";
 import IC_HOME_S from "@/assets/ic_Home_s.svg";
@@ -37,6 +38,7 @@ import IC_EDIT from "@/assets/ic_Edit.svg";
 import IC_LINK from "@/assets/ic_Link.svg";
 import IC_POLYGON_1 from "@/assets/ic_Polygon_1.svg";
 import IC_POLYGON_2 from "@/assets/ic_Polygon_2.svg";
+import IC_FILE from "@/assets/ic_file.svg";
 
 const iconMap = {
   EX_L: IC_EX_L,
@@ -59,6 +61,7 @@ const iconMap = {
   PASSWORD: IC_PASSWORD,
   ARROW_R_N: IC_ARROW_R_N,
   DOTS_M: IC_DOTS_M,
+  KABAB: IC_KABAB,
   CLOSE_M: IC_CLOSE_M,
   SIDEBAR: IC_SIDEBAR,
   HOME_S: IC_HOME_S,
@@ -78,6 +81,7 @@ const iconMap = {
   LINK: IC_LINK,
   POLYGON_1: IC_POLYGON_1,
   POLYGON_2: IC_POLYGON_2,
+  FILE: IC_FILE,
 } as const;
 
 export type IconType = keyof typeof iconMap;
