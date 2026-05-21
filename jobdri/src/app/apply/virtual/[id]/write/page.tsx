@@ -23,19 +23,17 @@ export default function WritePage({ params }: WritePageProps) {
   const handleSubmit = () => {
     if (inputRef.current?.hasUnderThreshold()) {
       setShowModal(true);
-    } else {
-      router.push(`/apply/virtual/${id}/result`);
+      return;
     }
+
+    router.push(`/apply/virtual/${id}/result`);
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg-default">
+    <div className="flex min-h-screen flex-col bg-bg-default">
       <Header currentStep={5} />
-      <main className="flex-1 max-w-[1116px] w-full mx-auto">
-        <InputSection
-          ref={inputRef}
-          onAllCompleteChange={setAllComplete}
-        />
+      <main className="mx-auto w-full max-w-[1116px] flex-1">
+        <InputSection ref={inputRef} onAllCompleteChange={setAllComplete} />
       </main>
       <Footer
         ctaLabel="제출하기"
@@ -51,7 +49,9 @@ export default function WritePage({ params }: WritePageProps) {
           <ModalNotice
             variant="double"
             title="글자 수가 부족합니다."
-            description={"글자 수가 부족하면 채점 결과에\n부정적인 영향을 줄 수 있습니다."}
+            description={
+              "글자 수가 부족하면 채점 결과에\n부정적인 영향을 줄 수 있습니다."
+            }
             onClose={() => setShowModal(false)}
             secondaryAction={{
               label: "계속 작성하기",

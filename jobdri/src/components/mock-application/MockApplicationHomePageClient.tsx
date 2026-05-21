@@ -339,7 +339,7 @@ export default function MockApplicationHomePageClient() {
                   styleType="secondary"
                   size="large"
                   iconType="ADD"
-                  onClick={() => router.push("/apply/virtual")}
+                  onClick={() => router.push("/apply/apply-type")}
                 />
               </div>
 
