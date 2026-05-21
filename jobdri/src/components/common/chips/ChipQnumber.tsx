@@ -1,7 +1,6 @@
 "use client";
 
 import clsx from "clsx";
-import { useState } from "react";
 import Icon from "@/components/common/icons/Icon";
 import ToastStatusIcon from "../toast/ToastStatusIcon";
 import { CompleteBadge } from "../badges";
@@ -16,15 +15,11 @@ interface ChipQnumberProps {
 export function ChipQnumber({
   number,
   showComplete = false,
-  selected: initialSelected = false,
+  selected = false,
   onChange,
 }: ChipQnumberProps) {
-  const [selected, setSelected] = useState(initialSelected);
-
   const handleClick = () => {
-    const next = !selected;
-    setSelected(next);
-    onChange?.(next);
+    onChange?.(!selected);
   };
 
   return (
