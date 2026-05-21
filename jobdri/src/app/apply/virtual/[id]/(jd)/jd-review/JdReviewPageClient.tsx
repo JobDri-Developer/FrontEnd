@@ -8,13 +8,13 @@ import { ModalNotice } from "@/components/common/modal";
 import JdReviewMain from "@/components/mock-application/JdReviewMain";
 import type { JdReviewSection } from "@/components/mock-application/jdReviewSections";
 
-const JD_INPUT_PATH = "/mock-application/jd-input";
-
 interface JdReviewPageClientProps {
+  id: string;
   sections?: JdReviewSection[];
 }
 
 export default function JdReviewPageClient({
+  id,
   sections,
 }: JdReviewPageClientProps) {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function JdReviewPageClient({
 
   const openBackConfirm = () => setShowBackConfirm(true);
   const closeBackConfirm = () => setShowBackConfirm(false);
-  const goToJdInput = () => router.replace(JD_INPUT_PATH);
+  const goToJdInput = () => router.replace(`/apply/virtual/${id}/jd/jd-input`);
 
   return (
     <div className="min-h-screen bg-line-neutral-assistive px-6 py-6">
@@ -42,7 +42,10 @@ export default function JdReviewPageClient({
 
         <Footer
           backAction={{ onClick: openBackConfirm }}
-          ctaAction={{ label: "확정하기" }}
+          ctaAction={{
+            label: "확정하기",
+            onClick: () => router.push(`/apply/virtual/${id}/questions`),
+          }}
         />
       </div>
 

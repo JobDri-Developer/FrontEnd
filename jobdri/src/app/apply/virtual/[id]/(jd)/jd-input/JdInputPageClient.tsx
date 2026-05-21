@@ -11,7 +11,6 @@ import { ModalFileUpload, ModalInput } from "@/components/common/modal";
 type JdInputMethod = "link" | "image" | "manual";
 type LinkModalStep = "input" | "reading" | "failed";
 type ImageModalStep = "upload" | "reading" | "failed";
-const MANUAL_JD_REVIEW_PATH = "/mock-application/jd-review?mode=manual";
 
 function isUrlFormat(value: string) {
   const trimmedValue = value.trim();
@@ -35,8 +34,13 @@ function isUrlFormat(value: string) {
   }
 }
 
-export default function JdInputPageClient() {
+interface JdInputPageClientProps {
+  id: string;
+}
+
+export default function JdInputPageClient({ id }: JdInputPageClientProps) {
   const router = useRouter();
+  const manualJdReviewPath = `/apply/virtual/${id}/jd/jd-review?mode=manual`;
   const [selectedMethod, setSelectedMethod] = useState<JdInputMethod | null>(
     null,
   );
@@ -63,7 +67,7 @@ export default function JdInputPageClient() {
     }
 
     if (selectedMethod === "manual") {
-      router.push(MANUAL_JD_REVIEW_PATH);
+      router.push(manualJdReviewPath);
     }
   };
 
@@ -132,7 +136,7 @@ export default function JdInputPageClient() {
       return;
     }
 
-    router.push(MANUAL_JD_REVIEW_PATH);
+    router.push(manualJdReviewPath);
   };
 
   return (
@@ -195,7 +199,7 @@ export default function JdInputPageClient() {
         </section>
 
         <Footer
-          backAction={{ onClick: () => router.push("/apply-type") }}
+          backAction={{ onClick: () => router.push("/apply") }}
           ctaAction={{
             label: "선택하기",
             disabled: selectedMethod === null,
