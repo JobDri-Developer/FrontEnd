@@ -7,6 +7,7 @@ export const API_BASE_URL = (
 export const AUTH_STORAGE_KEYS = {
   accessToken: "jobdri.accessToken",
   refreshToken: "jobdri.refreshToken",
+  userEmail: "jobdri.userEmail",
 } as const;
 
 interface ApiResponse<T> {
@@ -157,7 +158,7 @@ export async function signupWithEmail({
   );
 }
 
-export function saveAuthTokens(tokens: AuthTokens) {
+export function saveAuthTokens(tokens: AuthTokens, email?: string) {
   if (typeof window === "undefined") {
     return;
   }
@@ -167,6 +168,57 @@ export function saveAuthTokens(tokens: AuthTokens) {
     AUTH_STORAGE_KEYS.refreshToken,
     tokens.refreshToken,
   );
+
+  if (email) {
+    window.localStorage.setItem(AUTH_STORAGE_KEYS.userEmail, email);
+  }
+}
+
+export function getStoredAuthEmail() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return window.localStorage.getItem(AUTH_STORAGE_KEYS.userEmail);
+}
+
+export function getEmailFromAccessToken(accessToken: string) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const [, payload] = accessToken.split(".");
+
+  if (!payload) {
+    return null;
+  }
+
+  try {
+    const normalizedPayload = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const paddedPayload = normalizedPayload.padEnd(
+      Math.ceil(normalizedPayload.length / 4) * 4,
+      "=",
+    );
+    const decodedPayload = JSON.parse(window.atob(paddedPayload)) as {
+      email?: unknown;
+      sub?: unknown;
+    };
+
+    if (typeof decodedPayload.email === "string") {
+      return decodedPayload.email;
+    }
+
+    if (
+      typeof decodedPayload.sub === "string" &&
+      decodedPayload.sub.includes("@")
+    ) {
+      return decodedPayload.sub;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export function getGoogleAuthorizationUrl() {

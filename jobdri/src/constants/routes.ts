@@ -2,6 +2,7 @@ export const ROUTES = {
   HOME: "/",
   LOGIN: "/login",
   SIGNIN: "/signin",
+  OAUTH_REDIRECT: "/oauth2/redirect",
   APPLY: "/apply",
   CREDIT: "/credit",
   APPLY_VIRTUAL:"/apply/virtual"

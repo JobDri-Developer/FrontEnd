@@ -250,7 +250,7 @@ export default function EmailLoginScreen() {
 
     try {
       const tokens = await loginWithEmail({ email, password });
-      saveAuthTokens(tokens);
+      saveAuthTokens(tokens, email);
       router.push(ROUTES.APPLY);
     } catch (error) {
       setLoginError(true);
