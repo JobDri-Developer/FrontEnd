@@ -19,6 +19,7 @@ interface FooterProps {
   ctaAction?: FooterActionProps;
   className?: string;
   ctaLabel?: string;
+  hideBackAction?: boolean;
 }
 
 export default function Footer({
@@ -26,6 +27,7 @@ export default function Footer({
   ctaAction = {},
   className,
   ctaLabel = "",
+  hideBackAction = false,
 }: FooterProps) {
   const router = useRouter();
 
@@ -62,15 +64,17 @@ export default function Footer({
       )}
     >
       <div className="flex max-w-[1116px] flex-1 items-start justify-between">
-        <Button
-          label={backLabel}
-          styleType="tertiary"
-          size="medium"
-          iconType="ARROW_L"
-          className={backClassName}
-          onClick={handleBack}
-          {...backButtonProps}
-        />
+        {!hideBackAction && (
+          <Button
+            label={backLabel}
+            styleType="tertiary"
+            size="medium"
+            iconType="ARROW_L"
+            className={backClassName}
+            onClick={handleBack}
+            {...backButtonProps}
+          />
+        )}
         <Button
           label={ctaLabel}
           styleType="primary"
