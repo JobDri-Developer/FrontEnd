@@ -136,18 +136,17 @@ export default function JdInputPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-line-neutral-assistive px-6 py-6">
-      <div className="mx-auto flex min-h-[calc(100vh-48px)] w-[1280px] flex-col">
+    <div className="h-dvh overflow-hidden bg-line-neutral-assistive px-6 pt-6">
+      <div className="mx-auto flex h-full w-[1280px] flex-col">
         <Header
           currentStep={2}
           leftAction={{
             label: "돌아가기",
             iconType: "HOME_S",
-            onClick: () => router.push("/"),
           }}
         />
 
-        <section className="flex flex-1 flex-col items-center gap-8 self-stretch bg-bg-default px-[82px] pt-8 pb-20">
+        <section className="flex min-h-0 flex-1 flex-col items-center gap-8 self-stretch overflow-hidden bg-bg-default px-[82px] pt-8 pb-20">
           <div className="flex w-[1116px] max-w-[1440px] flex-col items-center gap-8">
             <div className="flex w-[1116px] flex-col items-start gap-3">
               <div className="flex items-center justify-between self-stretch px-4">

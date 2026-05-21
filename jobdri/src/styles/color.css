@@ -85,7 +85,7 @@
     var(--color-white) 5%,
     transparent
   );
-  --color-fill-disabled: var(--color-gray-200);
+  --color-fill-disabled: #ebebef;
 
   --color-fill-system-fail-strong: var(--color-red-400);
   --color-fill-system-fail-default: var(--color-red-100);

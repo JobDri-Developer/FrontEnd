@@ -2,8 +2,6 @@
 
 import clsx from "clsx";
 import { useState } from "react";
-import Icon from "@/components/common/icons/Icon";
-import ToastStatusIcon from "../toast/ToastStatusIcon";
 import { CompleteBadge } from "../badges";
 
 interface ChipQnumberProps {

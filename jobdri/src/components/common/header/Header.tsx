@@ -1,9 +1,10 @@
 "use client";
 
 import type { ButtonHTMLAttributes } from "react";
+import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { Button } from "@/components/common/buttons";
-import type { IconType } from "@/components/common/icons/Icon";
+import { Button } from "../buttons";
+import type { IconType } from "../icons/Icon";
 
 interface HeaderActionProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -34,6 +35,8 @@ const defaultSteps: ProgressStep[] = [
   { label: "결과 확인" },
 ];
 
+const MOCK_APPLICATION_HOME_PATH = "/mock-application";
+
 function HeaderAction({
   iconType,
   label,
@@ -59,6 +62,20 @@ export default function Header({
   currentStep = 1,
   steps = defaultSteps,
 }: HeaderProps) {
+  const router = useRouter();
+  const rightActionDisabled = currentStep <= 2 || rightAction.disabled;
+  const { onClick: leftActionOnClick, ...leftButtonProps } = leftAction;
+
+  const handleLeftActionClick: ButtonHTMLAttributes<
+    HTMLButtonElement
+  >["onClick"] = (event) => {
+    leftActionOnClick?.(event);
+
+    if (!event.defaultPrevented) {
+      router.push(MOCK_APPLICATION_HOME_PATH);
+    }
+  };
+
   return (
     <header className="flex w-full items-start justify-between bg-[#F4F4F6] px-[82px] pt-10 pb-4">
       <div className="flex max-w-[1116px] flex-1 items-start gap-5 mx-auto">
@@ -76,7 +93,7 @@ export default function Header({
           <ol className="flex min-w-0 flex-1 flex-nowrap content-center items-center gap-2">
             {steps.map((step, index) => {
               const stepNumber = index + 1;
-              const reached = stepNumber <= currentStep;
+              const isCurrent = stepNumber === currentStep;
 
               return (
                 <li
@@ -87,7 +104,7 @@ export default function Header({
                     className={clsx(
                       "flex aspect-square h-5 w-5 items-center justify-center gap-2.5 rounded-icon-round text-cap12-med [font-feature-settings:'liga'_off,'clig'_off]",
                       "tracking-normal",
-                      reached
+                      isCurrent
                         ? "bg-fill-quaternary-default text-text-neutral-description shadow-cta-primary"
                         : "bg-fill-disabled text-text-neutral-disabled",
                     )}
@@ -98,7 +115,7 @@ export default function Header({
                     className={clsx(
                       "flex items-center justify-center gap-2.5 text-cap12-med [font-feature-settings:'liga'_off,'clig'_off]",
                       "tracking-normal",
-                      reached
+                      isCurrent
                         ? "text-text-neutral-description"
                         : "text-text-neutral-disabled",
                     )}
@@ -113,11 +130,13 @@ export default function Header({
 
         <div className="flex shrink-0 items-center justify-end gap-4">
           <HeaderAction
-            {...leftAction}
+            {...leftButtonProps}
+            onClick={handleLeftActionClick}
             className={clsx("tracking-normal", leftAction.className)}
           />
           <HeaderAction
             {...rightAction}
+            disabled={rightActionDisabled}
             className={clsx("tracking-normal", rightAction.className)}
           />
         </div>
