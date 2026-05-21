@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { Footer } from "@/components/common/footer";
 import SelectQuestion from "@/components/apply/SelectQuestion";
 import Header from "@/components/common/header/Header";
 
 interface QuestionsPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function QuestionsPage({ params }: QuestionsPageProps) {
+  const { id } = use(params);
   const [selectedCount, setSelectedCount] = useState(0);
 
   return (
@@ -18,10 +19,10 @@ export default function QuestionsPage({ params }: QuestionsPageProps) {
       <SelectQuestion onSelectionChange={setSelectedCount} />
       <Footer
         ctaLabel="확정하기"
-        backAction={{ href: `/apply/virtual/${params.id}/jd` }}
+        backAction={{ href: `/apply/virtual/${id}/jd` }}
         ctaAction={{
           disabled: selectedCount === 0,
-          href: `/apply/virtual/${params.id}/write`,
+          href: `/apply/virtual/${id}/write`,
         }}
       />
     </>

@@ -1,13 +1,16 @@
 "use client";
 
+import { use } from "react";
 import { Footer } from "@/components/common/footer";
 import Header from "@/components/common/header/Header";
 
 interface JdPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function JdPage({ params }: JdPageProps) {
+  const { id } = use(params);
+
   return (
     <>
       <Header currentStep={2} />
@@ -17,7 +20,7 @@ export default function JdPage({ params }: JdPageProps) {
       <Footer
         ctaLabel="다음"
         backAction={{ href: "/apply" }}
-        ctaAction={{ href: `/apply/virtual/${params.id}/questions` }}
+        ctaAction={{ href: `/apply/virtual/${id}/questions` }}
       />
     </>
   );

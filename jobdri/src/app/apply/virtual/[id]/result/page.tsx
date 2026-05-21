@@ -1,12 +1,15 @@
 "use client";
 
+import { use } from "react";
 import Header from "@/components/common/header/Header";
 
 interface ResultPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function ResultPage({ params }: ResultPageProps) {
+  const { id } = use(params);
+
   return (
     <>
       <Header currentStep={6} />

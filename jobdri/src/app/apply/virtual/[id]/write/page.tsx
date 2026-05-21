@@ -1,13 +1,16 @@
 "use client";
 
+import { use } from "react";
 import { Footer } from "@/components/common/footer";
 import Header from "@/components/common/header/Header";
 
 interface WritePageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function WritePage({ params }: WritePageProps) {
+  const { id } = use(params);
+
   return (
     <>
       <Header currentStep={5} />
@@ -16,8 +19,8 @@ export default function WritePage({ params }: WritePageProps) {
       </main>
       <Footer
         ctaLabel="제출하기"
-        backAction={{ href: `/apply/virtual/${params.id}/questions` }}
-        ctaAction={{ href: `/apply/virtual/${params.id}/result` }}
+        backAction={{ href: `/apply/virtual/${id}/questions` }}
+        ctaAction={{ href: `/apply/virtual/${id}/result` }}
       />
     </>
   );
