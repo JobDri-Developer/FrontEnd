@@ -2,7 +2,7 @@
 
 import { use, useState } from "react";
 import { Footer } from "@/components/common/footer";
-import SelectQuestion from "@/components/apply/SelectQuestion";
+import SelectQuestion, { type Question } from "@/components/apply/SelectQuestion";
 import Header from "@/components/common/header/Header";
 
 interface QuestionsPageProps {
@@ -12,16 +12,25 @@ interface QuestionsPageProps {
 export default function QuestionsPage({ params }: QuestionsPageProps) {
   const { id } = use(params);
   const [selectedCount, setSelectedCount] = useState(0);
+  const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
+
+  const saveSelectedQuestions = () => {
+    sessionStorage.setItem("selectedQuestions", JSON.stringify(selectedQuestions));
+  };
 
   return (
     <>
       <Header currentStep={4} />
-      <SelectQuestion onSelectionChange={setSelectedCount} />
+      <SelectQuestion
+        onSelectionChange={setSelectedCount}
+        onQuestionsChange={setSelectedQuestions}
+      />
       <Footer
         ctaLabel="확정하기"
         backAction={{ href: `/apply/virtual/${id}/jd` }}
         ctaAction={{
           disabled: selectedCount === 0,
+          onClick: saveSelectedQuestions,
           href: `/apply/virtual/${id}/write`,
         }}
       />

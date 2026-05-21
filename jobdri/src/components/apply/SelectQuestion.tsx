@@ -9,7 +9,7 @@ import AddQuestion from "./AddQuestion";
 
 const MAX_SELECT = 5;
 
-interface Question {
+export interface Question {
   id: string;
   question: string;
   maxLength?: number;
@@ -50,10 +50,12 @@ const QUESTIONS: Question[] = [
 
 interface SelectQuestionProps {
   onSelectionChange?: (count: number) => void;
+  onQuestionsChange?: (questions: Question[]) => void;
 }
 
 export default function SelectQuestion({
   onSelectionChange,
+  onQuestionsChange,
 }: SelectQuestionProps) {
   const [questions, setQuestions] = useState<Question[]>(QUESTIONS);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -64,6 +66,18 @@ export default function SelectQuestion({
   >("normal");
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+
+  const syncSelectedQuestions = (
+    nextSelectedIds: string[],
+    nextQuestions = questions,
+  ) => {
+    const nextSelectedQuestions = nextQuestions.filter((question) =>
+      nextSelectedIds.includes(question.id),
+    );
+
+    onSelectionChange?.(nextSelectedQuestions.length);
+    onQuestionsChange?.(nextSelectedQuestions);
+  };
 
   const showToast = (
     message: string,
@@ -81,28 +95,30 @@ export default function SelectQuestion({
       if (selectedIds.length >= MAX_SELECT) return;
       const next = [...selectedIds, id];
       setSelectedIds(next);
-      onSelectionChange?.(next.length);
+      syncSelectedQuestions(next);
     } else {
       const next = selectedIds.filter((q) => q !== id);
       setSelectedIds(next);
-      onSelectionChange?.(next.length);
+      syncSelectedQuestions(next);
     }
   };
 
   const handleRemove = (id: string) => {
     const next = selectedIds.filter((q) => q !== id);
     setSelectedIds(next);
-    onSelectionChange?.(next.length);
+    syncSelectedQuestions(next);
     showToast("문항이 삭제되었습니다.", "normal");
   };
 
   const handleAdd = (question: string, maxLength: number) => {
-    const newId = `custom_${Date.now()}`;
-    setQuestions((prev) => [{ id: newId, question, maxLength }, ...prev]);
+    const newQuestion = { id: `custom_${Date.now()}`, question, maxLength };
+    const nextQuestions = [newQuestion, ...questions];
+
+    setQuestions(nextQuestions);
     if (selectedIds.length < MAX_SELECT) {
-      const next = [...selectedIds, newId];
+      const next = [...selectedIds, newQuestion.id];
       setSelectedIds(next);
-      onSelectionChange?.(next.length);
+      syncSelectedQuestions(next, nextQuestions);
     }
     showToast("문항이 추가되었습니다.", "check");
   };

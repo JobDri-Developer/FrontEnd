@@ -4,7 +4,7 @@ import { useState } from "react";
 import clsx from "clsx";
 import { getWrapperClass, getFieldClass, scrollbarClass } from "./inputStyles";
 
-const MAX_LENGTH = 1000;
+const DEFAULT_MAX_LENGTH = 1000;
 
 interface InputMultiLine1000Props {
   placeholder?: string;
@@ -14,6 +14,7 @@ interface InputMultiLine1000Props {
   error?: string;
   rows?: number;
   className?: string;
+  maxLength?: number;
 }
 
 export function InputMultiLine1000({
@@ -24,6 +25,7 @@ export function InputMultiLine1000({
   error,
   rows = 4,
   className,
+  maxLength = DEFAULT_MAX_LENGTH,
 }: InputMultiLine1000Props) {
   const [internalValue, setInternalValue] = useState("");
   const [focused, setFocused] = useState(false);
@@ -37,7 +39,7 @@ export function InputMultiLine1000({
     onChange?.(next);
   };
 
-  const isError = value.length > MAX_LENGTH || !!error;
+  const isError = value.length > maxLength || !!error;
 
   return (
     <div className={clsx("flex flex-col gap-1.5 w-148", className)}>
@@ -73,7 +75,7 @@ export function InputMultiLine1000({
               isError ? "text-text-fail" : "text-text-neutral-disabled",
             )}
           >
-            {value.length}/{MAX_LENGTH}
+            {value.length}/{maxLength}
           </span>
         </div>
       </div>

@@ -14,14 +14,18 @@ interface ChipQnumberProps {
 export function ChipQnumber({
   number,
   showComplete = false,
-  selected: initialSelected = false,
+  selected: selectedProp,
   onChange,
 }: ChipQnumberProps) {
-  const [selected, setSelected] = useState(initialSelected);
+  const [internalSelected, setInternalSelected] = useState(false);
+  const isControlled = selectedProp !== undefined;
+  const selected = selectedProp ?? internalSelected;
 
   const handleClick = () => {
     const next = !selected;
-    setSelected(next);
+    if (!isControlled) {
+      setInternalSelected(next);
+    }
     onChange?.(next);
   };
 
