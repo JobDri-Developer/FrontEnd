@@ -50,10 +50,12 @@ const QUESTIONS: Question[] = [
 
 interface SelectQuestionProps {
   onSelectionChange?: (count: number) => void;
+  onQuestionsChange?: (questions: Question[]) => void;
 }
 
 export default function SelectQuestion({
   onSelectionChange,
+  onQuestionsChange,
 }: SelectQuestionProps) {
   const [questions, setQuestions] = useState<Question[]>(QUESTIONS);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -76,33 +78,40 @@ export default function SelectQuestion({
     toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
   };
 
+  const notify = (nextIds: string[], currentQuestions: Question[]) => {
+    const selected = currentQuestions.filter((q) => nextIds.includes(q.id));
+    onSelectionChange?.(nextIds.length);
+    onQuestionsChange?.(selected);
+  };
+
   const handleChange = (id: string, isSelected: boolean) => {
     if (isSelected) {
       if (selectedIds.length >= MAX_SELECT) return;
       const next = [...selectedIds, id];
       setSelectedIds(next);
-      onSelectionChange?.(next.length);
+      notify(next, questions);
     } else {
       const next = selectedIds.filter((q) => q !== id);
       setSelectedIds(next);
-      onSelectionChange?.(next.length);
+      notify(next, questions);
     }
   };
 
   const handleRemove = (id: string) => {
     const next = selectedIds.filter((q) => q !== id);
     setSelectedIds(next);
-    onSelectionChange?.(next.length);
+    notify(next, questions);
     showToast("문항이 삭제되었습니다.", "normal");
   };
 
   const handleAdd = (question: string, maxLength: number) => {
     const newId = `custom_${Date.now()}`;
-    setQuestions((prev) => [{ id: newId, question, maxLength }, ...prev]);
+    const nextQuestions = [{ id: newId, question, maxLength }, ...questions];
+    setQuestions(nextQuestions);
     if (selectedIds.length < MAX_SELECT) {
       const next = [...selectedIds, newId];
       setSelectedIds(next);
-      onSelectionChange?.(next.length);
+      notify(next, nextQuestions);
     }
     showToast("문항이 추가되었습니다.", "check");
   };

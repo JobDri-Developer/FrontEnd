@@ -54,7 +54,7 @@ export function InputMultiLine1000({
           className={clsx(
             getFieldClass(disabled),
             clsx(
-              "resize-none h-[347px] overflow-y-auto bg-fill-quaternary-assistive",
+              "resize-none h-[347px] overflow-y-auto bg-bg-contents-assistive",
               scrollbarClass,
             ),
           )}

@@ -59,11 +59,11 @@ export default function Footer({
   return (
     <footer
       className={clsx(
-        "flex w-full shrink-0 fixed bottom-0 items-center justify-center gap-8 border-t border-line-neutral-default bg-bg-contents-assistive mx-auto pt-4 pb-8",
+        "flex w-full shrink-0 fixed bottom-0 items-center justify-center gap-8 border-t border-line-neutral-default bg-bg-contents-assistive  pt-4 pb-8",
         className,
       )}
     >
-      <div className="flex max-w-[1116px] flex-1 items-start justify-between">
+      <div className="flex max-w-[1116px] mx-auto flex-1 items-center justify-between">
         {!hideBackAction && (
           <Button
             label={backLabel}
