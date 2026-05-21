@@ -10,7 +10,6 @@ interface FooterActionProps extends Omit<
   "children"
 > {
   label?: string;
-  /** 클릭 시 이동할 경로. onClick과 함께 쓸 경우 onClick이 먼저 실행됩니다. */
   href?: string;
 }
 
@@ -46,14 +45,16 @@ export default function Footer({
     ...ctaButtonProps
   } = ctaAction;
 
-  const handleBack = (e: React.MouseEvent<HTMLButtonElement>) => {
-    backOnClick?.(e);
-    if (backHref) router.push(backHref);
+  const handleBack = (event: React.MouseEvent<HTMLButtonElement>) => {
+    backOnClick?.(event);
+    if (backHref && !event.defaultPrevented) router.push(backHref);
   };
 
-  const handleCta = (e: React.MouseEvent<HTMLButtonElement>) => {
-    ctaOnClick?.(e);
-    if (ctaHref && !ctaButtonProps.disabled) router.push(ctaHref);
+  const handleCta = (event: React.MouseEvent<HTMLButtonElement>) => {
+    ctaOnClick?.(event);
+    if (ctaHref && !ctaButtonProps.disabled && !event.defaultPrevented) {
+      router.push(ctaHref);
+    }
   };
 
   return (

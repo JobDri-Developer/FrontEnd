@@ -8,6 +8,12 @@ import useOutsideClick from "@/hooks/useOutsideClick";
 
 type ModalNoticeVariant = "single" | "double";
 
+/** develop 호환용 type 값 → variant 매핑 */
+const TYPE_TO_VARIANT: Record<string, ModalNoticeVariant> = {
+  confirmationModal: "double",
+  alertModal: "single",
+};
+
 interface ModalNoticeActionProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
   "children"
@@ -23,14 +29,10 @@ interface ModalNoticeProps {
   description?: string;
   primaryAction?: ModalNoticeActionProps;
   secondaryAction?: ModalNoticeActionProps;
+  /** 모달 외부 클릭 등 닫기 콜백 */
   onClose?: () => void;
   className?: string;
 }
-
-const TYPE_TO_VARIANT: Record<string, ModalNoticeVariant> = {
-  confirmationModal: "double",
-  alertModal: "single",
-};
 
 export default function ModalNotice({
   variant: variantProp,
@@ -73,7 +75,7 @@ export default function ModalNotice({
           <p className="self-stretch text-center text-b16-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
             {title}
           </p>
-          <p className="self-stretch text-center text-sub14-med tracking-normal text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+          <p className="self-stretch text-center text-sub14-med tracking-normal text-text-neutral-caption whitespace-pre-line [font-feature-settings:'liga'_off,'clig'_off]">
             {description}
           </p>
         </div>

@@ -26,7 +26,7 @@ const navItems: LnbNavItem[] = [
     key: "apply",
     label: "모의서류지원",
     iconType: "APPLY",
-    href: "/mock-application",
+    href: "/apply",
   },
   { key: "experience", label: "경험기록장", iconType: "EX_S" },
 ];

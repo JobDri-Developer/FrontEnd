@@ -1,9 +1,13 @@
 "use client";
 
-import { use } from "react";
+import { use, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Footer } from "@/components/common/footer";
 import Header from "@/components/common/header/Header";
-import InputSection from "@/components/apply/InputSection";
+import { ModalNotice } from "@/components/common/modal";
+import InputSection, {
+  type InputSectionHandle,
+} from "@/components/apply/InputSection";
 
 interface WritePageProps {
   params: Promise<{ id: string }>;
@@ -11,18 +15,55 @@ interface WritePageProps {
 
 export default function WritePage({ params }: WritePageProps) {
   const { id } = use(params);
+  const router = useRouter();
+  const inputRef = useRef<InputSectionHandle>(null);
+  const [allComplete, setAllComplete] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleSubmit = () => {
+    if (inputRef.current?.hasUnderThreshold()) {
+      setShowModal(true);
+      return;
+    }
+
+    router.push(`/apply/virtual/${id}/result`);
+  };
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col bg-bg-default">
       <Header currentStep={5} />
-      <main className="max-w-[1116px] mx-auto">
-        <InputSection />
+      <main className="mx-auto w-full max-w-[1116px] flex-1">
+        <InputSection ref={inputRef} onAllCompleteChange={setAllComplete} />
       </main>
       <Footer
         ctaLabel="제출하기"
         backAction={{ href: `/apply/virtual/${id}/questions` }}
-        ctaAction={{ href: `/apply/virtual/${id}/result` }}
+        ctaAction={{
+          disabled: !allComplete,
+          onClick: handleSubmit,
+        }}
       />
-    </>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            variant="double"
+            title="글자 수가 부족합니다."
+            description={
+              "글자 수가 부족하면 채점 결과에\n부정적인 영향을 줄 수 있습니다."
+            }
+            onClose={() => setShowModal(false)}
+            secondaryAction={{
+              label: "계속 작성하기",
+              onClick: () => setShowModal(false),
+            }}
+            primaryAction={{
+              label: "확정하기",
+              onClick: () => router.push(`/apply/virtual/${id}/result`),
+            }}
+          />
+        </div>
+      )}
+    </div>
   );
 }

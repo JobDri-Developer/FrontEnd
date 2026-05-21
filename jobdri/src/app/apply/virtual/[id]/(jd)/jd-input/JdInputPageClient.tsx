@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { forwardRef, useImperativeHandle, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
-import { Footer } from "@/components/common/footer";
 import { Method1Card, Method2Card } from "@/components/common/cards";
 import { InputFileSummary } from "@/components/common/input";
 import { ModalFileUpload, ModalInput } from "@/components/common/modal";
@@ -11,7 +10,6 @@ import { ModalFileUpload, ModalInput } from "@/components/common/modal";
 type JdInputMethod = "link" | "image" | "manual";
 type LinkModalStep = "input" | "reading" | "failed";
 type ImageModalStep = "upload" | "reading" | "failed";
-const MANUAL_JD_REVIEW_PATH = "/mock-application/jd-review?mode=manual";
 
 function isUrlFormat(value: string) {
   const trimmedValue = value.trim();
@@ -35,15 +33,28 @@ function isUrlFormat(value: string) {
   }
 }
 
-export default function JdInputPageClient() {
+export interface JdInputPageClientHandle {
+  handleCtaClick: () => void;
+}
+
+interface JdInputPageClientProps {
+  selectedMethod: JdInputMethod | null;
+  onMethodChange: (method: JdInputMethod | null) => void;
+}
+
+const JdInputPageClient = forwardRef<
+  JdInputPageClientHandle,
+  JdInputPageClientProps
+>(function JdInputPageClient({ selectedMethod, onMethodChange }, ref) {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [selectedMethod, setSelectedMethod] = useState<JdInputMethod | null>(
-    null,
-  );
+  const manualJdReviewPath = `/apply/virtual/${id}/jd-review?mode=manual`;
+
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [linkModalStep, setLinkModalStep] = useState<LinkModalStep>("input");
-  const [imageModalStep, setImageModalStep] = useState<ImageModalStep>("upload");
+  const [imageModalStep, setImageModalStep] =
+    useState<ImageModalStep>("upload");
   const [jdLink, setJdLink] = useState("");
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const hasLinkText = jdLink.trim().length > 0;
@@ -63,9 +74,11 @@ export default function JdInputPageClient() {
     }
 
     if (selectedMethod === "manual") {
-      router.push(MANUAL_JD_REVIEW_PATH);
+      router.push(manualJdReviewPath);
     }
   };
+
+  useImperativeHandle(ref, () => ({ handleCtaClick }));
 
   const closeLinkModal = () => {
     setIsLinkModalOpen(false);
@@ -80,7 +93,7 @@ export default function JdInputPageClient() {
     setIsImageModalOpen(false);
     setLinkModalStep("input");
     setImageModalStep("upload");
-    setSelectedMethod(null);
+    onMethodChange(null);
     setJdLink("");
     setSelectedImageFile(null);
   };
@@ -98,7 +111,7 @@ export default function JdInputPageClient() {
   const restartImageUpload = () => {
     setIsLinkModalOpen(false);
     setIsImageModalOpen(true);
-    setSelectedMethod("image");
+    onMethodChange("image");
     setSelectedImageFile(null);
     setImageModalStep("upload");
   };
@@ -117,7 +130,7 @@ export default function JdInputPageClient() {
   };
 
   const selectMethodFromFailure = (method: JdInputMethod) => {
-    setSelectedMethod(method);
+    onMethodChange(method);
 
     if (method === "link") {
       setJdLink("");
@@ -135,75 +148,60 @@ export default function JdInputPageClient() {
       return;
     }
 
-    router.push(MANUAL_JD_REVIEW_PATH);
+    router.push(manualJdReviewPath);
   };
 
   return (
-    <div className="h-dvh overflow-hidden bg-line-neutral-assistive px-6 pt-6">
-      <div className="mx-auto flex h-full w-[1280px] flex-col">
-        <Header
-          currentStep={2}
-          leftAction={{
-            label: "돌아가기",
-            iconType: "HOME_S",
-          }}
-        />
+    <>
+      <div className="flex-1 bg-line-neutral-assistive px-6 py-6">
+        <div className="mx-auto flex w-[1280px] flex-col">
+          <Header currentStep={2} />
 
-        <section className="flex min-h-0 flex-1 flex-col items-center gap-8 self-stretch overflow-hidden bg-bg-default px-[82px] pt-8 pb-20">
-          <div className="flex w-[1116px] max-w-[1440px] flex-col items-center gap-8">
-            <div className="flex w-[1116px] flex-col items-start gap-3">
-              <div className="flex items-center justify-between self-stretch px-4">
-                <h2 className="w-full text-center text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-                  공고 내용 입력 방식으로 선택해 주세요
-                </h2>
+          <section className="flex flex-1 flex-col items-center gap-8 self-stretch bg-bg-default px-[82px] pt-8 pb-20">
+            <div className="flex w-[1116px] max-w-[1440px] flex-col items-center gap-8">
+              <div className="flex w-[1116px] flex-col items-start gap-3">
+                <div className="flex items-center justify-between self-stretch px-4">
+                  <h2 className="w-full text-center text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+                    공고 내용 입력 방식으로 선택해 주세요
+                  </h2>
+                </div>
               </div>
-            </div>
 
-            <div className="flex w-[1116px] flex-col items-center gap-3">
-              <div className="flex w-[1116px] items-center justify-center gap-3">
-                <Method1Card
-                  label="링크 붙여넣기"
-                  iconType="LINK"
-                  selected={selectedMethod === "link"}
+              <div className="flex w-[1116px] flex-col items-center gap-3">
+                <div className="flex w-[1116px] items-center justify-center gap-3">
+                  <Method1Card
+                    label="링크 붙여넣기"
+                    iconType="LINK"
+                    selected={selectedMethod === "link"}
+                    onClick={() =>
+                      onMethodChange(selectedMethod === "link" ? null : "link")
+                    }
+                  />
+                  <Method1Card
+                    label="이미지 업로드하기"
+                    iconType="UPLOAD"
+                    selected={selectedMethod === "image"}
+                    onClick={() =>
+                      onMethodChange(
+                        selectedMethod === "image" ? null : "image",
+                      )
+                    }
+                  />
+                </div>
+
+                <Method2Card
+                  label="직접 작성하기"
+                  selected={selectedMethod === "manual"}
                   onClick={() =>
-                    setSelectedMethod((prevSelectedMethod) =>
-                      prevSelectedMethod === "link" ? null : "link",
+                    onMethodChange(
+                      selectedMethod === "manual" ? null : "manual",
                     )
                   }
                 />
-                <Method1Card
-                  label="이미지 업로드하기"
-                  iconType="UPLOAD"
-                  selected={selectedMethod === "image"}
-                  onClick={() =>
-                    setSelectedMethod((prevSelectedMethod) =>
-                      prevSelectedMethod === "image" ? null : "image",
-                    )
-                  }
-                />
               </div>
-
-              <Method2Card
-                label="직접 작성하기"
-                selected={selectedMethod === "manual"}
-                onClick={() =>
-                  setSelectedMethod((prevSelectedMethod) =>
-                    prevSelectedMethod === "manual" ? null : "manual",
-                  )
-                }
-              />
             </div>
-          </div>
-        </section>
-
-        <Footer
-          backAction={{ onClick: () => router.push("/apply-type") }}
-          ctaAction={{
-            label: "선택하기",
-            disabled: selectedMethod === null,
-            onClick: handleCtaClick,
-          }}
-        />
+          </section>
+        </div>
       </div>
 
       {isLinkModalOpen && (
@@ -274,8 +272,8 @@ export default function JdInputPageClient() {
         </>
       )}
 
-      {isImageModalOpen && (
-        imageModalStep === "upload" ? (
+      {isImageModalOpen &&
+        (imageModalStep === "upload" ? (
           <ModalFileUpload
             selectedFile={selectedImageFile}
             onFileSelect={setSelectedImageFile}
@@ -333,8 +331,9 @@ export default function JdInputPageClient() {
               },
             ]}
           />
-        )
-      )}
-    </div>
+        ))}
+    </>
   );
-}
+});
+
+export default JdInputPageClient;

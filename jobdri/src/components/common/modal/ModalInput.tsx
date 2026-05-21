@@ -139,9 +139,11 @@ export default function ModalInput({
               {!showLoadingMotion && statusIconType === "WARN" && (
                 <ModalWarningIcon />
               )}
-              {!showLoadingMotion && statusIconType && statusIconType !== "WARN" && (
-                <IconBox type={statusIconType} state="secondary" />
-              )}
+              {!showLoadingMotion &&
+                statusIconType &&
+                statusIconType !== "WARN" && (
+                  <IconBox type={statusIconType} state="secondary" />
+                )}
 
               <div className="flex flex-col items-center gap-2 self-stretch text-center">
                 {modalTitle && (

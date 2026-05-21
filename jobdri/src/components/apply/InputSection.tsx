@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
 import { ChipQnumber } from "@/components/common/chips";
 import { InputMultiLine1000 } from "@/components/common/input";
 
@@ -10,8 +16,14 @@ export interface StoredQuestion {
   maxLength?: number;
 }
 
+export interface InputSectionHandle {
+  isAllComplete: () => boolean;
+  hasUnderThreshold: () => boolean;
+}
+
 interface InputSectionProps {
   storageKey?: string;
+  onAllCompleteChange?: (allComplete: boolean) => void;
 }
 
 const DEFAULT_MAX_LENGTH = 1000;
@@ -56,54 +68,77 @@ function normalizeQuestions(value: string | null): StoredQuestion[] {
   }
 }
 
-export default function InputSection({
-  storageKey = "selectedQuestions",
-}: InputSectionProps) {
-  const [questions, setQuestions] = useState<StoredQuestion[]>(fallbackQuestions);
-  const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
-  const [answersById, setAnswersById] = useState<Record<string, string>>({});
+const InputSection = forwardRef<InputSectionHandle, InputSectionProps>(
+  function InputSection(
+    { storageKey = "selectedQuestions", onAllCompleteChange },
+    ref,
+  ) {
+    const [questions, setQuestions] =
+      useState<StoredQuestion[]>(fallbackQuestions);
+    const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+    const [answersById, setAnswersById] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    setQuestions(normalizeQuestions(sessionStorage.getItem(storageKey)));
-  }, [storageKey]);
+    useEffect(() => {
+      setQuestions(normalizeQuestions(sessionStorage.getItem(storageKey)));
+    }, [storageKey]);
 
-  const activeQuestion = questions[activeQuestionIndex] ?? questions[0];
-  const activeAnswer = activeQuestion ? (answersById[activeQuestion.id] ?? "") : "";
-  const activeMaxLength = activeQuestion?.maxLength ?? DEFAULT_MAX_LENGTH;
+    const activeQuestion = questions[activeQuestionIndex] ?? questions[0];
+    const activeAnswer = activeQuestion
+      ? (answersById[activeQuestion.id] ?? "")
+      : "";
+    const activeMaxLength = activeQuestion?.maxLength ?? DEFAULT_MAX_LENGTH;
 
-  const completedById = useMemo(
-    () =>
-      questions.reduce<Record<string, boolean>>((acc, question) => {
-        const maxLength = question.maxLength ?? DEFAULT_MAX_LENGTH;
-        const answerLength = (answersById[question.id] ?? "").trim().length;
+    const completedById = useMemo(
+      () =>
+        questions.reduce<Record<string, boolean>>((acc, question) => {
+          const maxLength = question.maxLength ?? DEFAULT_MAX_LENGTH;
+          const answerLength = (answersById[question.id] ?? "").trim().length;
 
-        acc[question.id] =
-          answerLength >= Math.ceil(maxLength * 0.5) && answerLength <= maxLength;
-        return acc;
-      }, {}),
-    [answersById, questions],
-  );
+          acc[question.id] =
+            answerLength >= Math.ceil(maxLength * 0.5) &&
+            answerLength <= maxLength;
+          return acc;
+        }, {}),
+      [answersById, questions],
+    );
 
-  const handleAnswerChange = (value: string) => {
-    if (!activeQuestion) {
-      return;
-    }
+    const allComplete =
+      questions.length > 0 &&
+      questions.every((question) => completedById[question.id]);
 
-    setAnswersById((prevAnswers) => ({
-      ...prevAnswers,
-      [activeQuestion.id]: value,
+    useEffect(() => {
+      onAllCompleteChange?.(allComplete);
+    }, [allComplete, onAllCompleteChange]);
+
+    useImperativeHandle(ref, () => ({
+      isAllComplete: () => allComplete,
+      hasUnderThreshold: () =>
+        questions.some((question) => {
+          const maxLength = question.maxLength ?? DEFAULT_MAX_LENGTH;
+          const answerLength = (answersById[question.id] ?? "").trim().length;
+
+          return answerLength < maxLength * 0.8;
+        }),
     }));
-  };
 
-  return (
-    <div className="mx-auto flex w-full max-w-[1116px] flex-col gap-8">
-      <h2 className="text-center text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-        자소서를 입력해주세요.
-      </h2>
+    const handleAnswerChange = (value: string) => {
+      if (!activeQuestion) {
+        return;
+      }
 
-      <div className="flex flex-col gap-4 rounded-card-l bg-fill-quaternary-default px-8 py-7 shadow-card">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+      setAnswersById((prevAnswers) => ({
+        ...prevAnswers,
+        [activeQuestion.id]: value,
+      }));
+    };
+
+    return (
+      <div className="mt-8 mb-20 flex max-w-279 flex-col gap-8">
+        <h1 className="text-center text-h24-bold">
+          자소서 내용을 입력해주세요.
+        </h1>
+        <main className="flex flex-row gap-6">
+          <div aria-label="state selected" className="flex flex-col gap-2">
             {questions.map((question, index) => (
               <ChipQnumber
                 key={question.id}
@@ -114,24 +149,26 @@ export default function InputSection({
               />
             ))}
           </div>
-          <span className="text-sub14-med text-text-neutral-caption">
-            {activeAnswer.length}/{activeMaxLength}
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <p className="text-b16-med text-text-neutral-title">
-            {activeQuestion?.question}
-          </p>
-          <InputMultiLine1000
-            value={activeAnswer}
-            onChange={handleAnswerChange}
-            maxLength={activeMaxLength}
-            placeholder="문항에 대한 답변을 입력해주세요."
-            className="w-full"
-          />
-        </div>
+          <div className="flex w-full flex-col gap-6 rounded-card-l bg-fill-quaternary-default px-8 py-6 shadow-card">
+            <div aria-label="subtitle" className="gap-1">
+              <h2 className="text-b16-semibold">
+                {activeQuestion?.question ?? ""}
+              </h2>
+              <p className="text-cap12-semibold text-text-neutral-caption">
+                {activeMaxLength}자 이내
+              </p>
+            </div>
+            <InputMultiLine1000
+              className="w-full"
+              value={activeAnswer}
+              maxLength={activeMaxLength}
+              onChange={handleAnswerChange}
+            />
+          </div>
+        </main>
       </div>
-    </div>
-  );
-}
+    );
+  },
+);
+
+export default InputSection;

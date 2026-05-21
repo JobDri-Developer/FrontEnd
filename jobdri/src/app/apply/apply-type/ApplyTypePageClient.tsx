@@ -33,7 +33,12 @@ export default function ApplyTypePageClient() {
 
   const handleSubmit = () => {
     if (selectedType === "real") {
-      router.push("/mock-application/jd-input");
+      router.push("/apply/virtual/new/jd-input");
+      return;
+    }
+
+    if (selectedType === "virtual") {
+      router.push("/apply/virtual/new/jd");
     }
   };
 
