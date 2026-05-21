@@ -31,6 +31,7 @@ export default function QuestionsPage({ params }: QuestionsPageProps) {
       <Header currentStep={4} />
       <main className="flex-1 max-w-[1116px] w-full mx-auto">
         <SelectQuestion
+          applyId={id}
           onSelectionChange={() => {}}
           onQuestionsChange={setSelectedQuestions}
         />

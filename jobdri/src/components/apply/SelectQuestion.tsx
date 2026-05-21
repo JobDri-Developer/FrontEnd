@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../common/buttons";
 import { ListQ, ListQCart } from "../common/list";
 import { scrollbarClass } from "../common/input/inputStyles";
 import { Toast } from "../common/toast";
 import AddQuestion from "./AddQuestion";
+import { fetchQuestions } from "@/lib/api/questions";
 
 const MAX_SELECT = 5;
 
@@ -15,49 +16,26 @@ interface Question {
   maxLength?: number;
 }
 
-const QUESTIONS: Question[] = [
-  {
-    id: "q1",
-    question:
-      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
-  },
-  {
-    id: "q2",
-    question:
-      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
-  },
-  {
-    id: "q3",
-    question:
-      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
-  },
-  {
-    id: "q4",
-    question:
-      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
-  },
-  {
-    id: "q5",
-    question:
-      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
-  },
-  {
-    id: "q6",
-    question:
-      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
-  },
-];
-
 interface SelectQuestionProps {
+  applyId: string;
   onSelectionChange?: (count: number) => void;
   onQuestionsChange?: (questions: Question[]) => void;
 }
 
 export default function SelectQuestion({
+  applyId,
   onSelectionChange,
   onQuestionsChange,
 }: SelectQuestionProps) {
-  const [questions, setQuestions] = useState<Question[]>(QUESTIONS);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchQuestions(applyId)
+      .then(setQuestions)
+      .finally(() => setIsLoading(false));
+  }, [applyId]);
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -65,6 +43,7 @@ export default function SelectQuestion({
     "normal" | "check" | "warning" | "dark"
   >("normal");
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const customIdCounterRef = useRef(0);
   const [isOpen, setIsOpen] = useState(false);
 
   const showToast = (
@@ -105,7 +84,7 @@ export default function SelectQuestion({
   };
 
   const handleAdd = (question: string, maxLength: number) => {
-    const newId = `custom_${Date.now()}`;
+    const newId = `custom_${++customIdCounterRef.current}`;
     const nextQuestions = [{ id: newId, question, maxLength }, ...questions];
     setQuestions(nextQuestions);
     if (selectedIds.length < MAX_SELECT) {
@@ -117,6 +96,16 @@ export default function SelectQuestion({
   };
 
   const selectedQuestions = questions.filter((q) => selectedIds.includes(q.id));
+
+  if (isLoading) {
+    return (
+      <main className="max-w-[1116px] mx-auto flex items-center justify-center h-[540px]">
+        <p className="text-text-neutral-disabled text-sub14-med">
+          문항을 불러오는 중...
+        </p>
+      </main>
+    );
+  }
 
   return (
     <>
