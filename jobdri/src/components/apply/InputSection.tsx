@@ -4,10 +4,6 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { ChipQnumber } from "../common/chips";
 import { InputMultiLine1000 } from "../common/input";
 
-const MAX_LENGTH = 1000;
-const COMPLETE_THRESHOLD = MAX_LENGTH * 0.5;
-const SUBMIT_THRESHOLD = MAX_LENGTH * 0.8;
-
 interface Question {
   id: string;
   question: string;
@@ -15,11 +11,16 @@ interface Question {
 }
 
 export interface InputSectionHandle {
+  isAllComplete: () => boolean;
   hasUnderThreshold: () => boolean;
 }
 
-const InputSection = forwardRef<InputSectionHandle>(
-  function InputSection(_, ref) {
+interface InputSectionProps {
+  onAllCompleteChange?: (allComplete: boolean) => void;
+}
+
+const InputSection = forwardRef<InputSectionHandle, InputSectionProps>(
+  function InputSection({ onAllCompleteChange }, ref) {
     const [questions, setQuestions] = useState<Question[]>([]);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [texts, setTexts] = useState<string[]>([]);
@@ -33,20 +34,29 @@ const InputSection = forwardRef<InputSectionHandle>(
       }
     }, []);
 
+    const isComplete = (text: string, maxLength: number) =>
+      text.length >= 1 && text.length <= maxLength;
+
+    const checkAllComplete = (currentTexts: string[]) =>
+      questions.length > 0 &&
+      questions.every((q, i) =>
+        isComplete(currentTexts[i] ?? "", q.maxLength ?? 1000),
+      );
+
     useImperativeHandle(ref, () => ({
+      isAllComplete: () => checkAllComplete(texts),
       hasUnderThreshold: () =>
         questions.some((q, i) => {
-          const limit = q.maxLength ?? MAX_LENGTH;
+          const limit = q.maxLength ?? 1000;
           return (texts[i] ?? "").length < limit * 0.8;
         }),
     }));
 
     const handleTextChange = (value: string) => {
-      setTexts((prev) => prev.map((t, i) => (i === selectedIndex ? value : t)));
+      const nextTexts = texts.map((t, i) => (i === selectedIndex ? value : t));
+      setTexts(nextTexts);
+      onAllCompleteChange?.(checkAllComplete(nextTexts));
     };
-
-    const isComplete = (text: string) =>
-      text.length >= COMPLETE_THRESHOLD && text.length <= MAX_LENGTH;
 
     const currentQuestion = questions[selectedIndex];
 
@@ -57,12 +67,12 @@ const InputSection = forwardRef<InputSectionHandle>(
         </h1>
         <main className="flex flex-row gap-6">
           <div aria-label="state selected" className="flex flex-col gap-2">
-            {questions.map((_, i) => (
+            {questions.map((q, i) => (
               <ChipQnumber
                 key={i}
                 number={i + 1}
                 selected={selectedIndex === i}
-                showComplete={isComplete(texts[i] ?? "")}
+                showComplete={isComplete(texts[i] ?? "", q.maxLength ?? 1000)}
                 onChange={() => setSelectedIndex(i)}
               />
             ))}
@@ -73,7 +83,7 @@ const InputSection = forwardRef<InputSectionHandle>(
                 {currentQuestion?.question ?? ""}
               </h2>
               <p className="text-cap12-semibold text-text-neutral-caption">
-                {currentQuestion?.maxLength ?? MAX_LENGTH}자 이내
+                {currentQuestion?.maxLength ?? 1000}자 이내
               </p>
             </div>
             <InputMultiLine1000
