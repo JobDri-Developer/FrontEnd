@@ -60,7 +60,7 @@ export default function Header({
   steps = defaultSteps,
 }: HeaderProps) {
   return (
-    <header className="flex w-full items-start justify-between bg-[#F4F4F6] px-[82px] pt-10 pb-4">
+    <header className="flex w-full items-start justify-between bg-[#F4F4F6] px-[82px] pt-10 pb-4 bg-bg-default">
       <div className="flex max-w-[1116px] flex-1 items-start gap-5 mx-auto">
         <div className="flex min-w-0 flex-1 items-start gap-5">
           <div className="flex shrink-0 self-stretch items-start justify-center gap-2.5 py-2 pr-2 pl-0">
@@ -77,6 +77,7 @@ export default function Header({
             {steps.map((step, index) => {
               const stepNumber = index + 1;
               const reached = stepNumber <= currentStep;
+              const isCurrent = stepNumber === currentStep;
 
               return (
                 <li
@@ -87,8 +88,8 @@ export default function Header({
                     className={clsx(
                       "flex aspect-square h-5 w-5 items-center justify-center gap-2.5 rounded-icon-round text-cap12-med [font-feature-settings:'liga'_off,'clig'_off]",
                       "tracking-normal",
-                      reached
-                        ? "bg-fill-quaternary-default text-text-neutral-description shadow-cta-primary"
+                      isCurrent
+                        ? "bg-white text-text-neutral-description "
                         : "bg-fill-disabled text-text-neutral-disabled",
                     )}
                   >
