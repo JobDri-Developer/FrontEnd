@@ -4,6 +4,12 @@ import { Button } from "@/components/common/buttons";
 
 type ModalNoticeVariant = "single" | "double";
 
+/** develop 호환용 type 값 → variant 매핑 */
+const TYPE_TO_VARIANT: Record<string, ModalNoticeVariant> = {
+  confirmationModal: "double",
+  alertModal: "single",
+};
+
 interface ModalNoticeActionProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
   "children"
@@ -13,21 +19,28 @@ interface ModalNoticeActionProps extends Omit<
 
 interface ModalNoticeProps {
   variant?: ModalNoticeVariant;
+  /** @deprecated variant를 사용하세요. 하위 호환용 */
+  type?: string;
   title?: string;
   description?: string;
   primaryAction?: ModalNoticeActionProps;
   secondaryAction?: ModalNoticeActionProps;
+  /** 모달 외부 클릭 등 닫기 콜백 */
+  onClose?: () => void;
   className?: string;
 }
 
 export default function ModalNotice({
-  variant = "single",
+  variant: variantProp,
+  type,
+  onClose: _onClose,
   title = "공고 링크를 입력해주세요.",
   description = "링크 내용이 부적절한 경우 제대로 추출되지 않을 수 있습니다.",
   primaryAction = {},
   secondaryAction = {},
   className,
 }: ModalNoticeProps) {
+  const variant = variantProp ?? (type ? (TYPE_TO_VARIANT[type] ?? "single") : "single");
   const {
     label: primaryLabel = variant === "single" ? "닫기" : "입력하기",
     className: primaryClassName,
