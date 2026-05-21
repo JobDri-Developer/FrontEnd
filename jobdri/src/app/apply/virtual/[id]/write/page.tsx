@@ -3,7 +3,6 @@
 import { use } from "react";
 import { Footer } from "@/components/common/footer";
 import Header from "@/components/common/header/Header";
-import { InputMultiLine1000 } from "@/components/common/input";
 import InputSection from "@/components/apply/InputSection";
 
 interface WritePageProps {
@@ -14,9 +13,9 @@ export default function WritePage({ params }: WritePageProps) {
   const { id } = use(params);
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-bg-default">
       <Header currentStep={5} />
-      <main className="max-w-[1116px] mx-auto flex-1">
+      <main className="flex-1 max-w-[1116px] w-full mx-auto">
         <InputSection />
       </main>
       <Footer
@@ -24,6 +23,6 @@ export default function WritePage({ params }: WritePageProps) {
         backAction={{ href: `/apply/virtual/${id}/questions` }}
         ctaAction={{ href: `/apply/virtual/${id}/result` }}
       />
-    </>
+    </div>
   );
 }

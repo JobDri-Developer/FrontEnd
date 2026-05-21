@@ -1,31 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
-import { Footer } from "@/components/common/footer";
-import { ModalNotice } from "@/components/common/modal";
 import JdReviewMain from "@/components/mock-application/JdReviewMain";
 import type { JdReviewSection } from "@/components/mock-application/jdReviewSections";
 
 interface JdReviewPageClientProps {
-  id: string;
   sections?: JdReviewSection[];
 }
 
 export default function JdReviewPageClient({
-  id,
   sections,
 }: JdReviewPageClientProps) {
-  const router = useRouter();
-  const [showBackConfirm, setShowBackConfirm] = useState(false);
-
-  const openBackConfirm = () => setShowBackConfirm(true);
-  const closeBackConfirm = () => setShowBackConfirm(false);
-  const goToJdInput = () => router.replace(`/apply/virtual/${id}/jd/jd-input`);
-
   return (
-    <div className="min-h-screen bg-line-neutral-assistive px-6 py-6">
+    <div className="flex-1 bg-line-neutral-assistive px-6 py-6">
       <div className="mx-auto flex w-[1280px] flex-col">
         <Header currentStep={3} />
 
@@ -39,34 +26,7 @@ export default function JdReviewPageClient({
             <JdReviewMain sections={sections} />
           </div>
         </section>
-
-        <Footer
-          backAction={{ onClick: openBackConfirm }}
-          ctaAction={{
-            label: "확정하기",
-            onClick: () => router.push(`/apply/virtual/${id}/questions`),
-          }}
-        />
       </div>
-
-      {showBackConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
-          <ModalNotice
-            type="confirmationModal"
-            title="공고 내용을 다시 업로드 하시겠습니까?"
-            description="기존 정보는 저장되지 않고 삭제됩니다."
-            onClose={closeBackConfirm}
-            secondaryAction={{
-              label: "다시 업로드",
-              onClick: goToJdInput,
-            }}
-            primaryAction={{
-              label: "계속 작성",
-              onClick: closeBackConfirm,
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }

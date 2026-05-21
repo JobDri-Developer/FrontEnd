@@ -27,12 +27,14 @@ export default function QuestionsPage({ params }: QuestionsPageProps) {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-bg-default">
       <Header currentStep={4} />
-      <SelectQuestion
-        onSelectionChange={() => {}}
-        onQuestionsChange={setSelectedQuestions}
-      />
+      <main className="flex-1 max-w-[1116px] w-full mx-auto">
+        <SelectQuestion
+          onSelectionChange={() => {}}
+          onQuestionsChange={setSelectedQuestions}
+        />
+      </main>
       <Footer
         ctaLabel="확정하기"
         backAction={{ href: `/apply/virtual/${id}/jd` }}
@@ -41,6 +43,6 @@ export default function QuestionsPage({ params }: QuestionsPageProps) {
           onClick: handleConfirm,
         }}
       />
-    </>
+    </div>
   );
 }
