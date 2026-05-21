@@ -3,11 +3,10 @@
 import { useRef, type ReactNode } from "react";
 import type { IconType } from "@/components/common/icons/Icon";
 import clsx from "clsx";
-import Icon from "@/components/common/icons/Icon";
-import { InputMain, InputModalQuestion } from "@/components/common/input";
-import LoadMotion from "@/components/common/LoadMotion";
-import ButtonCta from "@/components/common/buttons/ButtonCta";
-import { ButtonCtaModal } from "../buttons";
+import { Button } from "@/components/common/buttons";
+import IconBox from "@/components/common/icons/IconBox";
+import { InputMain } from "@/components/common/input";
+import LoadMotionModal from "@/components/common/LoadMotionModal";
 import useOutsideClick from "@/hooks/useOutsideClick";
 
 type ModalVariant = "action" | "alert" | "alort";
@@ -44,36 +43,55 @@ interface ModalInputProps {
   loading?: boolean;
 }
 
-function WarningIconLarge() {
+function ModalWarningIcon() {
   return (
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center text-fill-system-fail-strong">
-      <svg
-        width="40"
-        height="33.333"
-        viewBox="0 0 40 33.333"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        className="h-[33.333px] w-10 shrink-0"
-      >
-        <path
-          d="M15.7125 3.81278C17.6545 0.57608 22.3455 0.57608 24.2875 3.81278L35.4565 22.4278C37.4561 25.7605 35.0561 30.0003 31.169 30.0003H8.831C4.94388 30.0003 2.54392 25.7605 4.54348 22.4278L15.7125 3.81278Z"
-          fill="currentColor"
-        />
-        <path
-          d="M18.3335 10.833C18.3335 9.91256 19.0797 9.1665 20.0002 9.1665C20.9207 9.1665 21.6668 9.91256 21.6668 10.833V18.333C21.6668 19.2535 20.9207 19.9995 20.0002 19.9995C19.0797 19.9995 18.3335 19.2535 18.3335 18.333V10.833Z"
-          fill="white"
-        />
-        <path
-          d="M18.3335 22.4995C18.3335 21.579 19.0797 20.833 20.0002 20.833C20.9207 20.833 21.6668 21.579 21.6668 22.4995C21.6668 23.42 20.9207 24.166 20.0002 24.166C19.0797 24.166 18.3335 23.42 18.3335 22.4995Z"
-          fill="white"
-        />
-      </svg>
+    <span
+      className="flex h-10 w-10 shrink-0 items-center justify-center"
+      aria-hidden="true"
+    >
+      <span className="relative flex h-[33.333px] w-10 shrink-0 items-center justify-center">
+        <svg
+          width="40"
+          height="33.333"
+          viewBox="1.52635 2.34545 20.94725 17.65455"
+          preserveAspectRatio="none"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute inset-0"
+        >
+          <path
+            d="M9.42752 4.28747C10.5927 2.34545 13.4073 2.34545 14.5725 4.28747L21.2739 15.4565C22.4736 17.4561 21.0333 20 18.7014 20H5.29857C2.96669 20 1.52635 17.4561 2.72609 15.4565L9.42752 4.28747Z"
+            fill="var(--color-fill-system-fail-strong)"
+          />
+        </svg>
+        <svg
+          width="3.333"
+          height="15"
+          viewBox="0 0 3.333 15"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute left-1/2 top-[10.333px] -translate-x-1/2"
+        >
+          <rect
+            width="3.333"
+            height="10"
+            rx="1.6665"
+            fill="var(--color-icon-neutral-white)"
+          />
+          <rect
+            y="11.667"
+            width="3.333"
+            height="3.333"
+            rx="1.6665"
+            fill="var(--color-icon-neutral-white)"
+          />
+        </svg>
+      </span>
     </span>
   );
 }
 
-export default function ModaInput({
+export default function ModalInput({
   type = "actionModal",
   variant = "action",
   value,
@@ -95,9 +113,13 @@ export default function ModaInput({
   methodActions,
   children,
   error,
-  loading = true,
+  loading = false,
 }: ModalInputProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const isAlertModal = variant !== "action" || type === "actionModal_alert";
+  const modalTitle = title ?? announce;
+  const showLoadingMotion = showLoadMotion || loading;
+  const hasMethodActions = Boolean(methodActions?.length);
 
   useOutsideClick(modalRef, onClose);
 
@@ -106,59 +128,87 @@ export default function ModaInput({
       <div
         ref={modalRef}
         className={clsx(
-          "flex w-[480px] shrink-0 flex-col items-center justify-center gap-0 overflow-hidden rounded-card bg-bg-contents-default shadow-modal",
+          "flex w-[480px] shrink-0 flex-col items-center justify-center gap-0 rounded-modal bg-bg-contents-default pt-12 shadow-modal",
           className,
         )}
       >
-        <div className="flex self-stretch justify-end px-7 pt-6">
-          {variant === "action" ? (
-            <button
-              type="button"
-              aria-label="닫기"
-              onClick={onClose}
-              className="text-icon-neutral-assistive transition-colors hover:text-icon-neutral-default"
-            >
-              <Icon type="CLOSE_M" className="h-5 w-5" />
-            </button>
-          ) : (
-            <div className="w-5 h-5" />
-          )}
+        <div className="flex flex-col items-center justify-center gap-0 self-stretch px-8">
+          <div className="flex flex-col items-center justify-center gap-5 self-stretch pb-6">
+            <div className="flex flex-col items-center gap-4 self-stretch">
+              {showLoadingMotion && <LoadMotionModal />}
+              {!showLoadingMotion && statusIconType === "WARN" && (
+                <ModalWarningIcon />
+              )}
+              {!showLoadingMotion && statusIconType && statusIconType !== "WARN" && (
+                <IconBox type={statusIconType} state="secondary" />
+              )}
+
+              <div className="flex flex-col items-center gap-2 self-stretch text-center">
+                {modalTitle && (
+                  <span className="text-t20-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+                    {modalTitle}
+                  </span>
+                )}
+                {showDescription && description && (
+                  <span className="text-sub14-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+                    {description}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {showInputField && (
+              <InputMain
+                value={value}
+                onChange={onChange}
+                error={error}
+                placeholder={placeholder}
+                className="self-stretch"
+              />
+            )}
+
+            {children}
+          </div>
         </div>
 
-        {/* 바디 */}
-        <div className="flex flex-col items-center gap-5 px-8 pb-6 pt-3">
-          {loading && <LoadMotion />}
-          {/* 텍스트 */}
-          <div className="flex flex-col items-center gap-2 text-center">
-            <span className="text-t20-semibold text-text-neutral-title">
-              {announce}
-            </span>
-            <span className="text-sub14-med text-text-neutral-caption">
-              {description}
-            </span>
-          </div>
-
-          {/* 인풋 */}
-          <InputMain value={value} onChange={onChange} error={error} />
-
-          {children}
-
-          {/* 버튼 */}
-          {variant === "action" ? (
-            <ButtonCta
-              label="입력하기"
-              onClick={onSubmit}
-              className="w-full px-0 pb-0 pt-0"
-              variant={value ? "empty_dark" : "gradient_white"}
-            />
+        <div className="flex flex-col items-start gap-2 self-stretch px-8 pb-8">
+          {hasMethodActions ? (
+            methodActions?.map((action) => (
+              <Button
+                key={action.label}
+                label={action.label}
+                iconType={action.iconType}
+                size="large"
+                styleType="quaternary"
+                onClick={action.onClick}
+                className="h-[46px] w-full"
+              />
+            ))
+          ) : isAlertModal ? (
+            <div className="flex items-start gap-3 self-stretch">
+              <Button
+                label="취소하기"
+                size="large"
+                styleType="quaternary"
+                onClick={onCancel}
+                className="h-[46px] flex-1 !text-text-system-fail"
+              />
+              <Button
+                label={submitLabel ?? "다시 입력하기"}
+                size="large"
+                styleType="quaternary"
+                onClick={onSubmit}
+                className="h-[46px] flex-1"
+              />
+            </div>
           ) : (
-            <ButtonCtaModal
-              stack="stack2_horizontal"
-              label="다시 입력하기"
-              cancelLabel="취소하기"
-              onSubmit={onSubmit}
-              onCancel={onCancel}
-              className="w-full !px-0 !pb-0"
+            <Button
+              label={submitLabel ?? "입력하기"}
+              size="large"
+              styleType="secondary"
+              disabled={submitDisabled}
+              onClick={onSubmit}
+              className="h-[46px] w-full"
             />
           )}
         </div>

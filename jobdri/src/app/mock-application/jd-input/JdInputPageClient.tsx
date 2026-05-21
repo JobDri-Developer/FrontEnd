@@ -85,11 +85,14 @@ export default function JdInputPageClient() {
     setSelectedImageFile(null);
   };
 
-  const returnToUploadedImage = () => {
+  const cancelImageReading = () => {
     setIsLinkModalOpen(false);
-    setIsImageModalOpen(true);
-    setSelectedMethod("image");
+    setIsImageModalOpen(false);
     setImageModalStep("upload");
+
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    }
   };
 
   const restartImageUpload = () => {
@@ -286,8 +289,8 @@ export default function JdInputPageClient() {
             value=""
             onChange={() => undefined}
             onSubmit={restartImageUpload}
-            onCancel={returnToUploadedImage}
-            onClose={returnToUploadedImage}
+            onCancel={cancelImageReading}
+            onClose={cancelImageReading}
             title="이미지를 읽고 있습니다"
             description="이미지가 부적절한 경우 제대로 추출되지 않을 수 있습니다"
             submitLabel="다시 입력하기"

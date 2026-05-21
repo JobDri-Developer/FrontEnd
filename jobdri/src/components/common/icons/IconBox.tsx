@@ -90,9 +90,10 @@ export default function IconBox({
     >
       <Icon
         type={type}
-        className={
-          iconColorStyles[state as "primary" | "secondary"][background]
-        }
+        className={clsx(
+          iconColorStyles[state as "primary" | "secondary"][background],
+          iconClassName,
+        )}
       />
     </div>
   );

@@ -59,34 +59,32 @@ export default function Footer({
   return (
     <footer
       className={clsx(
-        "flex w-full shrink-0 items-center justify-center gap-8 self-stretch border-t border-line-neutral-default bg-bg-contents-assistive pt-4 pb-8",
+        "relative left-1/2 flex w-screen shrink-0 -translate-x-1/2 items-center justify-center gap-8 border-t border-line-neutral-default bg-bg-contents-assistive pt-4 pb-8",
         className,
       )}
     >
-      <div className="grid-base container-default">
-        <div className="col-span-full flex items-start justify-between">
-          {hideBackAction ? (
-            <div aria-hidden="true" className="h-[38px] w-[98px] shrink-0" />
-          ) : (
-            <Button
-              label={backLabel}
-              styleType="tertiary"
-              size="medium"
-              iconType="ARROW_L"
-              className={clsx("!gap-0.5", backClassName)}
-              onClick={handleBack}
-              {...backButtonProps}
-            />
-          )}
+      <div className="mx-auto flex w-full max-w-[var(--width-default)] items-start justify-between">
+        {hideBackAction ? (
+          <div aria-hidden="true" className="h-[38px] w-[98px] shrink-0" />
+        ) : (
           <Button
-            label={ctaLabel}
-            styleType="primary"
+            label={backLabel}
+            styleType="tertiary"
             size="medium"
-            className={ctaClassName}
-            onClick={handleCta}
-            {...ctaButtonProps}
+            iconType="ARROW_L"
+            className={clsx("!gap-0.5", backClassName)}
+            onClick={handleBack}
+            {...backButtonProps}
           />
-        </div>
+        )}
+        <Button
+          label={ctaLabel}
+          styleType="primary"
+          size="medium"
+          className={ctaClassName}
+          onClick={handleCta}
+          {...ctaButtonProps}
+        />
       </div>
     </footer>
   );
