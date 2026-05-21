@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
+import type { IconType } from "@/components/common/icons/Icon";
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
 import { InputMain, InputModalQuestion } from "@/components/common/input";
