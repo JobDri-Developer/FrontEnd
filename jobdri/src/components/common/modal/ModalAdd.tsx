@@ -74,6 +74,7 @@ export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
                 <InputSingleLine
                   placeholder="문항 내용을 입력하세요"
                   value={question}
+                  focusedBorder="border-line-primary-default"
                   onChange={(e) => {
                     setQuestion(e);
                     if (error) setError("");

@@ -111,7 +111,7 @@ export default function SelectQuestion({
 
   return (
     <>
-      <main className="max-w-[1116] mx-auto">
+      <main className="mx-auto w-full max-w-[1116px]">
         {isOpen && (
           <AddQuestion onClose={() => setIsOpen(false)} onAdd={handleAdd} />
         )}

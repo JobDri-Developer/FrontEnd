@@ -9,6 +9,7 @@ import JdReviewMain from "@/components/mock-application/JdReviewMain";
 import type { JdReviewSection } from "@/components/mock-application/jdReviewSections";
 
 const JD_INPUT_PATH = "/mock-application/jd-input";
+const QUESTIONS_PATH = "/mock-application/questions";
 
 interface JdReviewPageClientProps {
   sections?: JdReviewSection[];
@@ -42,7 +43,10 @@ export default function JdReviewPageClient({
 
         <Footer
           backAction={{ onClick: openBackConfirm }}
-          ctaAction={{ label: "확정하기" }}
+          ctaAction={{
+            label: "확정하기",
+            onClick: () => router.push(QUESTIONS_PATH),
+          }}
         />
       </div>
 

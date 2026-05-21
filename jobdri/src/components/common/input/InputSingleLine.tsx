@@ -49,6 +49,7 @@ export const InputSingleLine = forwardRef<HTMLInputElement, InputSingleLineProps
   const [focused, setFocused] = useState(false);
 
   const value = externalValue ?? internalValue;
+  const isActive = focused || value.length > 0;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInternalValue(e.target.value);
@@ -70,7 +71,7 @@ export const InputSingleLine = forwardRef<HTMLInputElement, InputSingleLineProps
       <div
         className={clsx(
           getWrapperClass(
-            focused,
+            isActive,
             disabled,
             hasError || !!error,
             focusedBorder,
