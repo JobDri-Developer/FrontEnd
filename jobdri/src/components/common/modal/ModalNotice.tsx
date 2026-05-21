@@ -67,7 +67,7 @@ export default function ModalNotice({
           <p className="self-stretch text-center text-b16-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
             {title}
           </p>
-          <p className="self-stretch text-center text-sub14-med tracking-normal text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+          <p className="self-stretch text-center text-sub14-med tracking-normal text-text-neutral-caption whitespace-pre-line [font-feature-settings:'liga'_off,'clig'_off]">
             {description}
           </p>
         </div>
