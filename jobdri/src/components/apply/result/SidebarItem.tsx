@@ -12,7 +12,7 @@ interface SidebarItemProps {
 }
 
 const typeStyle: Record<SidebarItemProps["type"], string> = {
-  main: "w-full flex items-center justify-between px-3 py-2 text-label14-med bg-transparent  rounded-chip-m px-4 py-3",
+  main: "w-full flex items-center justify-between px-3 py-2 text-label14-med bg-transparent rounded-chip-m px-4 py-3",
   sub: "w-full flex items-center gap-2 px-2 py-2 text-sub14-med rounded-chip-m",
 };
 
@@ -31,7 +31,7 @@ export default function SidebarItem({
         className={clsx(
           typeStyle.main,
           selected
-            ? "text-text-neutral-title bg-fill-quaternary-default shadow-card"
+            ? " bg-bg-white text-text-neutral-title  shadow-card"
             : "text-text-neutral-caption hover:bg-fill-quaternary-assistive hover:shadow-card",
         )}
       >

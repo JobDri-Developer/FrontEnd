@@ -6,6 +6,7 @@ import Sidebar from "@/components/apply/result/Sidebar";
 import ScoreCircle from "./ScoreCircle";
 import Alret from "./Alret";
 import SummaryCard from "./SummaryCard";
+import Trybar from "./Trybar";
 
 const MOCK_SCORES = [
   { title: "직무 적합도", score: 78 },
@@ -77,6 +78,7 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
 
   return (
     <div className="flex-1 flex flex-row py-8 h-screen">
+      <Trybar applyId={applyId} />
       <Sidebar
         questions={questions}
         activeId={activeId}
