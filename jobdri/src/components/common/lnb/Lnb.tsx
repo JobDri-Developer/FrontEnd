@@ -98,7 +98,7 @@ export default function Lnb({
   return (
     <>
       <aside
-        className={`flex h-screen flex-col justify-between bg-bg-contents-default py-5 px-2 transition-[width] duration-300 ease-in-out overflow-hidden ${
+        className={`flex h-screen flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default py-5 px-2 transition-[width] duration-300 ease-in-out overflow-hidden ${
           isFold ? "w-[52px]" : "w-60"
         }`}
       >
