@@ -3,6 +3,7 @@
 import { type QuestionAnalysis } from "@/lib/api/result";
 import ChipTag from "@/components/common/chips/ChipTag";
 import { type HighlightStatus } from "./highlightStyles";
+import { scrollbarClass } from "@/components/common/input/inputStyles";
 
 const statusLabel: Record<HighlightStatus, string> = {
   proven: "적절함",
@@ -20,7 +21,9 @@ export default function DetailAnnotationPanel({
   answer,
 }: DetailAnnotationPanelProps) {
   return (
-    <div className="flex w-100 shrink-0 flex-col gap-8 overflow-y-auto bg-fill-tertiary-default px-8 py-10">
+    <div
+      className={`flex w-100 shrink-0 flex-col gap-8 overflow-y-auto bg-fill-tertiary-default px-8 py-10  ${scrollbarClass}`}
+    >
       {analyses.map((analysis) => (
         <div key={analysis.questionAnalysisId} className="flex flex-col gap-4">
           {/* 칩 태그 */}

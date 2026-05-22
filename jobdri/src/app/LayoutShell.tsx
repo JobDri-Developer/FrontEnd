@@ -22,7 +22,7 @@ export default function LayoutShell({
       <aside className="h-screen sticky top-0 shrink-0">
         <Lnb />
       </aside>
-      <main className="flex-1 max-w-300 mx-auto mt-12 flex flex-col">
+      <main className="flex-1 h-screen max-w-300 mx-auto mt-12 flex flex-col">
         <PageHeader />
         {children}
       </main>

@@ -11,8 +11,8 @@ export interface ChipTagProps {
 const styles: Record<NonNullable<ChipTagProps["state"]>, string> = {
   default:
     "border border-line-neutral-default bg-fill-quaternary-default text-text-neutral-description",
-  proven: "px-1.5 w-fit bg-text-system-completed text-text-neutral-title",
-  fabricated: "px-1.5 w-fit bg-text-highlight-fabricated text-white ",
+  proven: "px-1.5 w-fit bg-fill-secondary-default text-text-neutral-title",
+  fabricated: "px-1.5 w-fit bg-text-highlight-fabricated text-white",
   mentioned: "px-1.5 w-fit bg-text-highlight-mentioned text-white",
 };
 

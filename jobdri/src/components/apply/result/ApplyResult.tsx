@@ -81,12 +81,10 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
     setActiveId(id);
   };
 
-  const activeAnalysisQuestion = analysis.questions.find(
-    (q) => String(q.questionId) === activeId,
-  );
+  const activeAnalysisQuestion = analysis.questions[Number(activeId)];
 
   return (
-    <div className="flex-1 flex flex-row py-8 h-screen">
+    <div className="flex-1 flex flex-row pt-8 h-full overflow-hidden">
       <Trybar applyId={applyId} />
       <Sidebar
         questions={questions}
