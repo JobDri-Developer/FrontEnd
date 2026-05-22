@@ -37,15 +37,6 @@ export interface AnswerItem {
   answer: string;
 }
 
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    typeof window !== "undefined"
-      ? window.localStorage.getItem(AUTH_STORAGE_KEYS.accessToken)
-      : null;
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 async function parseApiResponse<T>(
   response: Response,
   fallbackMessage: string,
