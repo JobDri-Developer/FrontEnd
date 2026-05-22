@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
 import { ModalNotice } from "@/components/common/modal";
 import { AUTH_STORAGE_KEYS, getStoredAuthEmail } from "@/lib/auth";
 import Logo from "@/assets/ic_LOGO_minimum.svg";
+import { fetchCreditBalance } from "@/lib/api/credit";
 
 type LnbItemKey = "experience" | "apply";
 
 interface LnbProps {
   initialActiveItem?: LnbItemKey;
   email?: string;
-  creditCount?: number;
 }
 
 interface LnbNavItem {
@@ -64,11 +64,7 @@ function getEmailInitial(email: string) {
   return email.trim().charAt(0).toUpperCase() || "J";
 }
 
-export default function Lnb({
-  initialActiveItem,
-  email,
-  creditCount = 32,
-}: LnbProps) {
+export default function Lnb({ initialActiveItem, email }: LnbProps) {
   const router = useRouter();
   const storedEmail = useSyncExternalStore(
     subscribeToStoredEmail,
@@ -77,6 +73,7 @@ export default function Lnb({
   );
   const displayEmail = (email ?? storedEmail) || defaultEmail;
   const emailInitial = getEmailInitial(displayEmail);
+  const [creditCount, setCreditCount] = useState<number>(0);
   const [isFold, setIsFold] = useState(false);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [activeItem, setActiveItem] = useState<LnbItemKey | undefined>(
@@ -94,6 +91,12 @@ export default function Lnb({
   };
 
   const closeComingSoonModal = () => setShowComingSoonModal(false);
+
+  useEffect(() => {
+    fetchCreditBalance()
+      .then(setCreditCount)
+      .catch(() => {});
+  }, []);
 
   return (
     <>
