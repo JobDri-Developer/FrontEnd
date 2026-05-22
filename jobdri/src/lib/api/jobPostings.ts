@@ -198,6 +198,20 @@ export async function saveJobPosting(payload: JobPostingSavePayload) {
   );
 }
 
+export async function fetchMyJobPostings() {
+  const response = await fetch(`${API_BASE_URL}/api/job-postings/me`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+
+  const result = await parseApiResponse<SavedJobPosting[]>(
+    response,
+    "내 지원 데이터를 불러오지 못했습니다.",
+  );
+
+  return result ?? [];
+}
+
 export async function fetchJobPostingIngestStatus(taskId: string) {
   const response = await fetch(
     `${API_BASE_URL}/api/job-postings/ingest/async/${taskId}`,
