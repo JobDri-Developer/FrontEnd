@@ -59,15 +59,12 @@ export default function JdReviewMain({
   }, [initialSections, onSectionsChange]);
 
   const updateSectionValue = (id: string, value: string) => {
-    setSections((currentSections) => {
-      const nextSections = currentSections.map((section) =>
-        section.id === id ? { ...section, value } : section,
-      );
+    const nextSections = sections.map((section) =>
+      section.id === id ? { ...section, value } : section,
+    );
 
-      onSectionsChange?.(nextSections);
-
-      return nextSections;
-    });
+    setSections(nextSections);
+    onSectionsChange?.(nextSections);
   };
 
   return (

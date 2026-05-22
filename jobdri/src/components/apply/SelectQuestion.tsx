@@ -39,7 +39,14 @@ export default function SelectQuestion({
   >("normal");
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const customIdCounterRef = useRef(0);
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  const onQuestionsChangeRef = useRef(onQuestionsChange);
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    onSelectionChangeRef.current = onSelectionChange;
+    onQuestionsChangeRef.current = onQuestionsChange;
+  }, [onQuestionsChange, onSelectionChange]);
 
   const notify = useCallback(
     (nextIds: string[], currentQuestions: Question[]) => {
@@ -47,10 +54,10 @@ export default function SelectQuestion({
         nextIds.includes(question.id),
       );
 
-      onSelectionChange?.(selected.length);
-      onQuestionsChange?.(selected);
+      onSelectionChangeRef.current?.(selected.length);
+      onQuestionsChangeRef.current?.(selected);
     },
-    [onQuestionsChange, onSelectionChange],
+    [],
   );
 
   useEffect(() => {
