@@ -61,3 +61,45 @@ export async function fetchCreditPlans(): Promise<CreditPlan[]> {
   const { result }: ApiResponse<CreditPlan[]> = await response.json();
   return result;
 }
+
+export interface PreparePaymentResult {
+  paymentId: number;
+  orderId: string;
+  orderName: string;
+  amount: number;
+  creditAmount: number;
+  clientKey: string;
+  customerEmail: string;
+}
+
+export async function preparePurchase(
+  planCode: PlanCode,
+): Promise<PreparePaymentResult> {
+  const response = await fetch(`${BASE_URL}/api/payments/prepare`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ planCode }),
+  });
+  if (!response.ok) throw new Error("결제 준비에 실패했습니다.");
+  const { result }: ApiResponse<PreparePaymentResult> = await response.json();
+  return result;
+}
+
+export async function confirmPurchase(
+  paymentKey: string,
+  orderId: string,
+  amount: number,
+): Promise<void> {
+  const response = await fetch(`${BASE_URL}/api/payments/confirm`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ paymentKey, orderId, amount }),
+  });
+  if (!response.ok) throw new Error("결제 승인에 실패했습니다.");
+}

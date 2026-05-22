@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CreditCard } from "@/components/common/cards";
 import Useage from "@/components/common/credit/Useage";
-import { fetchCreditPlans, type CreditPlan } from "@/lib/api/credit";
+import {
+  fetchCreditPlans,
+  confirmPurchase,
+  type CreditPlan,
+} from "@/lib/api/credit";
 
 function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
   const original = basePricePerUnit * plan.creditAmount;
@@ -14,12 +19,23 @@ function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
 
 export default function CreditPage() {
   const [plans, setPlans] = useState<CreditPlan[]>([]);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     fetchCreditPlans()
       .then(setPlans)
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const paymentKey = searchParams.get("paymentKey");
+    const orderId = searchParams.get("orderId");
+    const amount = searchParams.get("amount");
+
+    if (paymentKey && orderId && amount) {
+      confirmPurchase(paymentKey, orderId, Number(amount)).catch(() => {});
+    }
+  }, [searchParams]);
 
   const basePricePerUnit =
     plans.find((p) => p.planCode === "ONE_TIME")?.price ?? 2500;
@@ -32,6 +48,7 @@ export default function CreditPage() {
             key={plan.planCode}
             creditCount={plan.creditAmount}
             price={plan.price.toLocaleString()}
+            planCode={plan.planCode}
             discountRate={calcDiscountRate(plan, basePricePerUnit)}
             discountLabel={
               calcDiscountRate(plan, basePricePerUnit) ? "할인" : ""

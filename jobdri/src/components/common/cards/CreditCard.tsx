@@ -5,6 +5,7 @@ import type { HTMLAttributes } from "react";
 import clsx from "clsx";
 import { Button } from "@/components/common/buttons";
 import ModalPurchase from "@/components/common/modal/ModalPurchase";
+import type { PlanCode } from "@/lib/api/credit";
 
 interface CreditCardProps extends HTMLAttributes<HTMLElement> {
   creditCount?: number;
@@ -14,6 +15,7 @@ interface CreditCardProps extends HTMLAttributes<HTMLElement> {
   discountRate?: string;
   discountLabel?: string;
   buttonLabel?: string;
+  planCode: PlanCode;
   onPurchase?: () => void;
 }
 
@@ -25,6 +27,7 @@ export default function CreditCard({
   discountRate = "21%",
   discountLabel = "할인",
   buttonLabel = "구매하기",
+  planCode,
   onPurchase,
   className,
   ...articleProps
@@ -35,18 +38,13 @@ export default function CreditCard({
     setIsModalOpen(true);
   };
 
-  const handleConfirm = () => {
-    setIsModalOpen(false);
-    onPurchase?.();
-  };
-
   return (
     <>
       {isModalOpen && (
         <ModalPurchase
           creditCount={creditCount}
           price={price}
-          onConfirm={handleConfirm}
+          planCode={planCode}
           onClose={() => setIsModalOpen(false)}
           title="크레딧을 충전할까요?"
         />
