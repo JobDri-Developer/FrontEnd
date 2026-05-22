@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from "react";
 import clsx from "clsx";
+import Logo from "@/assets/ic_LOGO_minimum.svg";
 
 export default function BusinessFooter({
   className,
@@ -10,12 +11,10 @@ export default function BusinessFooter({
       className={clsx("flex self-stretch flex-col", className)}
       {...footerProps}
     >
-      <div className="flex items-start justify-between self-stretch bg-bg-default px-10 py-7">
+      <div className="flex items-start justify-between self-stretch bg-bg-default mx-16 my-7">
         <div className="flex w-full min-w-0 flex-1 items-start gap-3">
           <div className="flex w-[150px] flex-col items-start gap-[34px]">
-            <strong className="flex h-6 w-[54.545px] items-center justify-center pr-[2.545px] text-[14px] font-bold leading-[140%] text-text-neutral-title">
-              JobDri
-            </strong>
+            <Logo />
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col items-start gap-6">
@@ -53,9 +52,9 @@ export default function BusinessFooter({
             </div>
 
             <p className="self-stretch text-[11px] font-medium leading-[160%] tracking-[-0.22px] text-gray-400 [font-feature-settings:'liga'_off,'clig'_off]">
-              본 웹사이트에 명시된 모든 기업의 로고 및 상표에 대한 권리는 각 해당
-              상표권자에게 귀속됩니다. 해당 로고는 합격자 취업 현황 등 단순 정보
-              제공의 목적으로만 사용되며, 상표권 침해 의도는 없습니다.
+              본 웹사이트에 명시된 모든 기업의 로고 및 상표에 대한 권리는 각
+              해당 상표권자에게 귀속됩니다. 해당 로고는 합격자 취업 현황 등 단순
+              정보 제공의 목적으로만 사용되며, 상표권 침해 의도는 없습니다.
             </p>
           </div>
         </div>
