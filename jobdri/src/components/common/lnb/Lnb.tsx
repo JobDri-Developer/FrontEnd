@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
 import { ModalNotice } from "@/components/common/modal";
 import { AUTH_STORAGE_KEYS, getStoredAuthEmail } from "@/lib/auth";
+import Logo from "@/assets/ic_LOGO_minimum.svg";
 
 type LnbItemKey = "experience" | "apply";
 
@@ -33,7 +34,7 @@ const navItems: LnbNavItem[] = [
 ];
 
 const navItemBaseClassName =
-  "flex h-9 items-center gap-2 rounded-cta-l p-3 text-sub14-med";
+  "flex h-9 items-center gap-2 rounded-cta-l py-3 px-2 text-sub14-med";
 
 const defaultEmail = "jobdri@gmail.com";
 
@@ -97,32 +98,24 @@ export default function Lnb({
   return (
     <>
       <aside
-        className={`flex h-screen flex-col justify-between bg-bg-contents-default py-5 ${
-          isFold ? "w-[52px] items-center px-2" : "w-60 items-start px-2"
+        className={`flex h-screen flex-col justify-between bg-bg-contents-default py-5 px-2 transition-[width] duration-300 ease-in-out overflow-hidden ${
+          isFold ? "w-[52px]" : "w-60"
         }`}
       >
         <div className="flex w-full flex-col gap-8">
-          <div
-            className={`flex h-8 w-full items-center ${
-              isFold ? "justify-center px-0" : "justify-between px-3"
-            }`}
-          >
-            {!isFold && (
-              <strong className="flex h-[22px] w-[50px] items-center justify-center text-[16px] font-bold leading-[140%] text-text-neutral-title">
-                JobDri
-              </strong>
-            )}
+          <div className="flex h-8 w-full items-center px-1">
+            {!isFold && <Logo className="flex-1" />}
             <button
               type="button"
               aria-label={isFold ? "LNB 펼치기" : "LNB 접기"}
-              className="flex h-5 w-5 items-center justify-center text-icon-neutral-default"
+              className="flex h-5 w-5 shrink-0 items-center justify-center text-icon-neutral-default mx-auto"
               onClick={() => setIsFold((prevIsFold) => !prevIsFold)}
             >
               <Icon type="SIDEBAR" className="h-5 w-5" />
             </button>
           </div>
 
-          <nav className="flex w-full flex-col items-start gap-1.5">
+          <nav className="flex w-full flex-col gap-1.5">
             {navItems.map((item) => {
               const isActive = item.key === activeItem;
 
@@ -131,8 +124,9 @@ export default function Lnb({
                   key={item.key}
                   type="button"
                   onClick={() => handleNavItemClick(item)}
-                  className={`${navItemBaseClassName} ${
-                    isFold ? "w-[30px] justify-center px-0" : "w-full"
+                  // 변경된 부분: isFold일 때 gap-0을 적용하여 간격 없애기
+                  className={`${navItemBaseClassName} w-full ${
+                    isFold ? "pl-2 gap-0" : ""
                   } ${
                     isActive
                       ? "bg-fill-primary-assistive text-text-primary-strong"
@@ -141,59 +135,65 @@ export default function Lnb({
                 >
                   <Icon
                     type={item.iconType}
-                    className={`h-5 w-5 shrink-0 ${
+                    className={`shrink-0 ${
                       isActive
                         ? "text-icon-primary-strong"
                         : "text-icon-neutral-default"
                     }`}
                   />
-                  {!isFold && <span>{item.label}</span>}
+                  <span
+                    className={`overflow-hidden whitespace-nowrap transition-[opacity,width] duration-150 ${
+                      isFold ? "w-0 opacity-0" : "w-auto opacity-100"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
                 </button>
               );
             })}
           </nav>
         </div>
 
-        <div className="flex w-full flex-col items-start justify-end gap-1">
-          {!isFold && (
-            <>
-              <div className="flex w-full items-center justify-between px-2 py-2">
-                <div className="flex items-center gap-[3px] text-label14-med text-icon-neutral-default [font-feature-settings:'liga'_off,'clig'_off]">
-                  <span>크레딧</span>
-                  <Icon
-                    type="EX_LINK"
-                    className="h-4 w-4 text-icon-neutral-assistive"
-                  />
-                </div>
-
-                <div className="flex h-[21px] items-center justify-end gap-1">
-                  <Icon
-                    type="TOKEN"
-                    className="h-4 w-4 text-icon-neutral-default"
-                  />
-                  <span className="text-cap12-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-                    {creditCount}회
-                  </span>
-                </div>
+        <div className="flex w-full flex-col justify-end gap-1">
+          <div
+            className={`overflow-hidden transition-[opacity,height] duration-150 w-full ${
+              isFold ? "h-0 opacity-0" : "h-auto opacity-100"
+            }`}
+          >
+            <div className="flex w-full items-center justify-between px-2 py-2">
+              <div className="flex items-center gap-[3px] text-label14-med text-icon-neutral-default [font-feature-settings:'liga'_off,'clig'_off]">
+                <span>크레딧</span>
+                <Icon
+                  type="EX_LINK"
+                  className="h-4 w-4 text-icon-neutral-assistive"
+                />
               </div>
-
-              <div className="h-[0.75px] w-full bg-line-neutral-default" />
-            </>
-          )}
+              <div className="flex h-[21px] items-center justify-end gap-1">
+                <Icon
+                  type="TOKEN"
+                  className="h-4 w-4 text-icon-neutral-default"
+                />
+                <span className="text-cap12-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+                  {creditCount}회
+                </span>
+              </div>
+            </div>
+            <div className="h-[0.75px] w-full bg-line-neutral-default" />
+          </div>
 
           <div
-            className={`flex w-full items-center gap-2 px-2 py-1.5 ${
-              isFold ? "justify-center px-0" : ""
-            }`}
+            className={`flex w-full items-center gap-2 py-1.5 ${isFold ? "justify-center px-0" : "px-2"}`}
           >
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-text-neutral-caption text-[14px] font-medium leading-[140%] text-text-neutral-white">
               {emailInitial}
             </div>
-            {!isFold && (
-              <span className="truncate text-cap12-med text-text-neutral-caption">
-                {displayEmail}
-              </span>
-            )}
+            <span
+              className={`truncate text-cap12-med text-text-neutral-caption overflow-hidden whitespace-nowrap transition-[opacity,width] duration-150 ${
+                isFold ? "w-0 opacity-0" : "w-auto opacity-100"
+              }`}
+            >
+              {displayEmail}
+            </span>
           </div>
         </div>
       </aside>
