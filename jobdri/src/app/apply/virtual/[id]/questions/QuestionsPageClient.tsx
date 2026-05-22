@@ -8,6 +8,7 @@ import SelectQuestion, {
 } from "@/components/apply/SelectQuestion";
 import Header from "@/components/common/header/Header";
 import { saveQuestions } from "@/lib/api/questions";
+import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
 
 interface QuestionsPageClientProps {
   id: string;
@@ -19,6 +20,7 @@ export default function QuestionsPageClient({ id }: QuestionsPageClientProps) {
 
   const handleConfirm = async () => {
     await saveQuestions(Number(id), selectedQuestions);
+    updateMockApplyResumeStatus(Number(id), "ANSWER_WRITE");
     router.push(`/apply/virtual/${id}/write`);
   };
 

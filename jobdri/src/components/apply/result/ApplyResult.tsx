@@ -10,6 +10,7 @@ import DetailSection from "./DetailSection";
 
 interface ApplyResultProps {
   applyId: number;
+  onAnalysisError?: () => void;
 }
 
 interface Question {
@@ -38,21 +39,24 @@ const FALLBACK_QUESTIONS: Question[] = [
   },
 ];
 
-const FALLBACK_ANALYSIS: AnalysisResult = {
-  mockApplyId: 0,
-  analysisId: 0,
-  status: "COMPLETED",
-  score: 69,
-  jobFit: 78,
-  impact: 51,
-  completeness: 78,
-  feedback: "경험을 구체적으로 기술했으나 성과에 대한 수치가 부족합니다.",
-  questions: [],
-};
+function ResultLoadingState({ message }: { message: string }) {
+  return (
+    <div className="flex h-full items-center justify-center text-b16-semibold text-text-neutral-caption">
+      {message}
+    </div>
+  );
+}
 
-export default function ApplyResult({ applyId }: ApplyResultProps) {
+export default function ApplyResult({
+  applyId,
+  onAnalysisError,
+}: ApplyResultProps) {
   const [questions, setQuestions] = useState<Question[]>(FALLBACK_QUESTIONS);
-  const [analysis, setAnalysis] = useState<AnalysisResult>(FALLBACK_ANALYSIS);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [analysisError, setAnalysisError] = useState<{
+    applyId: number;
+    message: string;
+  } | null>(null);
   const [isOverview, setIsOverview] = useState(true);
   const [activeId, setActiveId] = useState(FALLBACK_QUESTIONS[0].id);
 
@@ -67,9 +71,21 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
       .catch(() => {});
 
     fetchAnalysis(applyId)
-      .then(setAnalysis)
-      .catch(() => {});
-  }, [applyId]);
+      .then((fetchedAnalysis) => {
+        setAnalysis(fetchedAnalysis);
+        setAnalysisError(null);
+      })
+      .catch((error) => {
+        setAnalysisError({
+          applyId,
+          message:
+            error instanceof Error
+              ? error.message
+              : "분석 결과를 불러오지 못했습니다.",
+        });
+        onAnalysisError?.();
+      });
+  }, [applyId, onAnalysisError]);
 
   const handleOverview = () => {
     setIsOverview(true);
@@ -81,7 +97,12 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
     setActiveId(id);
   };
 
-  const activeAnalysisQuestion = analysis.questions[Number(activeId)];
+  const currentAnalysis = analysis?.mockApplyId === applyId ? analysis : null;
+  const activeAnalysisQuestion = currentAnalysis?.questions[Number(activeId)];
+  const analysisErrorMessage =
+    analysisError?.applyId === applyId ? analysisError.message : "";
+  const loadingMessage =
+    analysisErrorMessage || "분석 결과를 불러오는 중입니다.";
 
   return (
     <div className="flex-1 flex flex-row pt-8 h-full overflow-hidden">
@@ -94,8 +115,10 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
         isOverview={isOverview}
       />
       <section className="flex-1">
-        {isOverview ? (
-          <OverviewSection analysis={analysis} />
+        {!currentAnalysis ? (
+          <ResultLoadingState message={loadingMessage} />
+        ) : isOverview ? (
+          <OverviewSection analysis={currentAnalysis} />
         ) : (
           <DetailSection question={activeAnalysisQuestion} />
         )}

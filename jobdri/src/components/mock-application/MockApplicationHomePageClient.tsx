@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
 import { ResultScore } from "@/components/common/cards";
@@ -10,34 +16,160 @@ import Icon from "@/components/common/icons/Icon";
 import { Lnb } from "@/components/common/lnb";
 import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
+import { fetchMyJobPosting, type SavedJobPosting } from "@/lib/api/jobPostings";
 import {
-  fetchMyJobPostings,
-  type SavedJobPosting,
-} from "@/lib/api/jobPostings";
+  fetchMyMockApplies,
+  getMockApplyResumeRecords,
+  type JobPostingApplyType,
+  type MockApplyHomeItem,
+} from "@/lib/api/mockApplies";
+import {
+  createJdReviewSectionsFromJobPosting,
+  getJdReviewMetadataStorageKey,
+  getJdReviewSavedStorageKey,
+  getJdReviewStorageKey,
+} from "@/components/mock-application/jdReviewSections";
 
 interface ApplicationCardData {
   id: number;
+  jobPostingId: number;
   company: string;
   position: string;
   createdAt: string;
   score?: number;
+  mockApplyId: number;
+  resumePath?: string | null;
+  status?: string;
+  applyType?: JobPostingApplyType;
 }
 
 const EMPTY_APPLICATION_TITLE = "아직 지원 내역이 없어요!";
 const EMPTY_APPLICATION_DESCRIPTION =
   "기업과 직무에 맞춰 자소서를 작성하고 점수를 확인하세요";
+const HOME_APPLICATIONS_STORAGE_KEY = "jobdri.mockApplyHomeApplications";
+const APPLICATION_FETCH_TIMEOUT_MS = 12000;
+const RESUME_ROUTE_SEGMENTS = new Set([
+  "jd-input",
+  "jd-review",
+  "questions",
+  "write",
+  "result",
+]);
 
-function mapJobPostingToApplication({
-  jobPostingId,
-  companyName,
-  detailClassificationName,
-}: SavedJobPosting): ApplicationCardData {
+function formatCreatedAt(createdAt: string) {
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+    .format(date)
+    .replaceAll(". ", ". ")
+    .trim();
+}
+
+function isCompletedStatus(status?: string) {
+  return status === "COMPLETED";
+}
+
+function findLocalResumeStatus(item: MockApplyHomeItem) {
+  const localRecord = getMockApplyResumeRecords().find(
+    (record) =>
+      record.mockApplyId === item.mockApplyId ||
+      record.jobPostingId === item.jobPostingId,
+  );
+
+  return localRecord?.status;
+}
+
+function mapMockApplyToApplication(
+  item: MockApplyHomeItem,
+  section: "inProgress" | "completed",
+): ApplicationCardData {
+  const status =
+    section === "completed"
+      ? "COMPLETED"
+      : findLocalResumeStatus(item) ?? item.status;
+  const score =
+    isCompletedStatus(status) && typeof item.score === "number"
+      ? item.score
+      : undefined;
+
   return {
-    id: jobPostingId,
-    company: companyName || "회사명 미입력",
-    position: detailClassificationName || "직무 미분류",
-    createdAt: "-",
+    id: item.mockApplyId,
+    jobPostingId: item.jobPostingId,
+    company: item.companyName || "회사명 미입력",
+    position: item.detailClassificationName || item.jobTitle || "직무 미분류",
+    createdAt: formatCreatedAt(item.createdAt),
+    score,
+    mockApplyId: item.mockApplyId,
+    resumePath: item.resumePath,
+    status,
+    applyType: item.applyType,
   };
+}
+
+function mergeApplications(applications: ApplicationCardData[]) {
+  const applicationMap = new Map<number, ApplicationCardData>();
+
+  applications.forEach((application) => {
+    const currentApplication = applicationMap.get(application.mockApplyId);
+
+    if (!currentApplication || isCompletedStatus(application.status)) {
+      applicationMap.set(application.mockApplyId, application);
+    }
+  });
+
+  return [...applicationMap.values()];
+}
+
+function isApplicationCardData(value: unknown): value is ApplicationCardData {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const application = value as Partial<ApplicationCardData>;
+
+  return (
+    typeof application.id === "number" &&
+    typeof application.jobPostingId === "number" &&
+    typeof application.mockApplyId === "number" &&
+    typeof application.company === "string" &&
+    typeof application.position === "string" &&
+    typeof application.createdAt === "string"
+  );
+}
+
+function readCachedApplications() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(
+      window.sessionStorage.getItem(HOME_APPLICATIONS_STORAGE_KEY) ?? "[]",
+    );
+
+    return Array.isArray(parsed) ? parsed.filter(isApplicationCardData) : [];
+  } catch {
+    return [];
+  }
+}
+
+function cacheApplications(applications: ApplicationCardData[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.setItem(
+    HOME_APPLICATIONS_STORAGE_KEY,
+    JSON.stringify(applications),
+  );
 }
 
 function createRows<T>(items: T[], size: number) {
@@ -54,6 +186,119 @@ function isEmptyApplicationStateError(message: string) {
     message.includes("NetworkError") ||
     message.includes("Load failed")
   );
+}
+
+function normalizeResumePath(
+  resumePath: string | null | undefined,
+  mockApplyId: number,
+) {
+  if (!resumePath || resumePath === "string") {
+    return "";
+  }
+
+  const trimmedResumePath = resumePath.trim();
+  const resumeStep = trimmedResumePath.replace(/^\/+/, "");
+
+  if (RESUME_ROUTE_SEGMENTS.has(resumeStep)) {
+    return `/apply/virtual/${mockApplyId}/${resumeStep}`;
+  }
+
+  let path = trimmedResumePath;
+
+  if (trimmedResumePath.startsWith("http")) {
+    try {
+      const url = new URL(trimmedResumePath);
+      path = `${url.pathname}${url.search}${url.hash}`;
+    } catch {
+      return "";
+    }
+  }
+
+  path = path.startsWith("/") ? path : `/${path}`;
+
+  const routeMatch = path.match(
+    /^\/apply\/virtual\/[^/]+\/([^/?#]+)([?#].*)?$/,
+  );
+  const routeSegment = routeMatch?.[1];
+
+  if (!routeSegment || !RESUME_ROUTE_SEGMENTS.has(routeSegment)) {
+    return "";
+  }
+
+  return `/apply/virtual/${mockApplyId}/${routeSegment}${routeMatch[2] ?? ""}`;
+}
+
+function getResumePath({
+  mockApplyId,
+  resumePath,
+  status,
+}: Pick<ApplicationCardData, "mockApplyId" | "resumePath" | "status">) {
+  const normalizedResumePath = normalizeResumePath(resumePath, mockApplyId);
+
+  if (normalizedResumePath) {
+    return normalizedResumePath;
+  }
+
+  if (status === "ANSWER_WRITE") {
+    return `/apply/virtual/${mockApplyId}/write`;
+  }
+
+  return `/apply/virtual/${mockApplyId}/questions`;
+}
+
+function getResultPath({ mockApplyId }: Pick<ApplicationCardData, "mockApplyId">) {
+  return `/apply/virtual/${mockApplyId}/result`;
+}
+
+function saveJdReviewSessionFromJobPosting(
+  jobPosting: SavedJobPosting,
+  applyId: number,
+) {
+  const {
+    companyName,
+    companySize,
+    detailClassificationId,
+    detailClassificationName,
+    task,
+    requirement,
+    preferred,
+  } = jobPosting;
+  const storageApplyId = String(applyId);
+  const sections = createJdReviewSectionsFromJobPosting({
+    companyName,
+    jobTitle: detailClassificationName,
+    task,
+    requirements: requirement,
+    preferredQualifications: preferred,
+  });
+
+  window.sessionStorage.setItem(
+    getJdReviewStorageKey(storageApplyId),
+    JSON.stringify(sections),
+  );
+  window.sessionStorage.setItem(
+    getJdReviewSavedStorageKey(storageApplyId),
+    JSON.stringify(jobPosting),
+  );
+  window.sessionStorage.setItem(
+    getJdReviewMetadataStorageKey(storageApplyId),
+    JSON.stringify({
+      companySize,
+      detailClassificationId,
+    }),
+  );
+}
+
+function handleCardKeyDown(
+  event: ReactKeyboardEvent<HTMLElement>,
+  onResumeClick?: () => void,
+) {
+  if (!onResumeClick || (event.key !== "Enter" && event.key !== " ")) {
+    return;
+  }
+
+  event.preventDefault();
+  onResumeClick();
 }
 
 function KebabButton({
@@ -95,6 +340,8 @@ function KebabButton({
     <div
       ref={containerRef}
       className="relative flex h-6 w-6 shrink-0 items-center justify-center"
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
     >
       <button
         type="button"
@@ -164,33 +411,26 @@ function ApplicationMeta({
   );
 }
 
-function ApplicationStateBadge() {
-  return (
-    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-line-neutral-default bg-bg-contents-default">
-      <span className="text-cap12-semibold text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-        작성중
-      </span>
-    </div>
-  );
-}
-
 function PausedApplicationCard({
   company,
   position,
   createdAt,
-  score,
   onDeleteClick,
+  onResumeClick,
 }: ApplicationCardData & {
   onDeleteClick: () => void;
+  onResumeClick?: () => void;
 }) {
   return (
-    <article className="relative flex items-center self-stretch rounded-card bg-bg-contents-default px-7 py-6">
+    <article
+      role="button"
+      tabIndex={0}
+      className="relative flex cursor-pointer items-center self-stretch rounded-card bg-bg-contents-default px-7 py-6"
+      onClick={onResumeClick}
+      onKeyDown={(event) => handleCardKeyDown(event, onResumeClick)}
+    >
       <div className="flex min-w-0 flex-1 items-center gap-5">
-        {typeof score === "number" ? (
-          <ResultScore size="small" score={score} />
-        ) : (
-          <ApplicationStateBadge />
-        )}
+        <ResultScore size="small" displayScore="??" />
         <ApplicationMeta
           company={company}
           position={position}
@@ -211,17 +451,21 @@ function ResultApplicationCard({
   createdAt,
   score,
   onDeleteClick,
+  onResumeClick,
 }: ApplicationCardData & {
   onDeleteClick: () => void;
+  onResumeClick?: () => void;
 }) {
   return (
-    <article className="relative flex flex-1 flex-col items-start justify-center gap-16 rounded-card bg-bg-contents-default px-6 py-5">
+    <article
+      role="button"
+      tabIndex={0}
+      className="relative flex flex-1 cursor-pointer flex-col items-start justify-center gap-16 rounded-card bg-bg-contents-default px-6 py-5"
+      onClick={onResumeClick}
+      onKeyDown={(event) => handleCardKeyDown(event, onResumeClick)}
+    >
       <div className="flex items-start justify-between self-stretch">
-        {typeof score === "number" ? (
-          <ResultScore size="small" score={score} />
-        ) : (
-          <ApplicationStateBadge />
-        )}
+        <ResultScore size="small" score={score} />
         <KebabButton
           label={`${company} 모의 서류 결과 메뉴`}
           onDeleteClick={onDeleteClick}
@@ -253,17 +497,21 @@ function EmptyApplicationState() {
 
 export default function MockApplicationHomePageClient() {
   const router = useRouter();
-  const [applications, setApplications] = useState<ApplicationCardData[]>([]);
-  const [isLoadingApplications, setIsLoadingApplications] = useState(true);
+  const [applications, setApplications] = useState<ApplicationCardData[]>(
+    readCachedApplications,
+  );
+  const [isLoadingApplications, setIsLoadingApplications] = useState(
+    () => readCachedApplications().length === 0,
+  );
   const [applicationsErrorMessage, setApplicationsErrorMessage] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDeleteToast, setShowDeleteToast] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const pausedApplications = applications.filter(
-    ({ score }) => typeof score !== "number",
+    ({ status }) => !isCompletedStatus(status),
   );
   const resultApplications = applications.filter(
-    ({ score }) => typeof score === "number",
+    ({ status }) => isCompletedStatus(status),
   );
   const resultRows = createRows(resultApplications, 5);
   const hasApplicationData =
@@ -275,22 +523,86 @@ export default function MockApplicationHomePageClient() {
   const openDeleteConfirm = () => setShowDeleteConfirm(true);
   const closeDeleteConfirm = () => setShowDeleteConfirm(false);
   const closeDeleteToast = () => setShowDeleteToast(false);
+  const handleResumeApplication = async (application: ApplicationCardData) => {
+    const resumePath = getResumePath(application);
+
+    if (resumePath.includes("/jd-review")) {
+      try {
+        const latestJobPosting = await fetchMyJobPosting(
+          application.jobPostingId,
+        );
+        saveJdReviewSessionFromJobPosting(
+          latestJobPosting,
+          application.mockApplyId,
+        );
+      } catch {}
+    }
+
+    router.push(resumePath);
+  };
+  const handleResultApplication = (application: ApplicationCardData) => {
+    router.push(getResultPath(application));
+  };
 
   useEffect(() => {
-    fetchMyJobPostings()
-      .then((jobPostings) => {
-        setApplications(jobPostings.map(mapJobPostingToApplication));
+    let isActive = true;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => {
+      controller.abort();
+    }, APPLICATION_FETCH_TIMEOUT_MS);
+
+    fetchMyMockApplies({ signal: controller.signal })
+      .then(({ inProgress, completed }) => {
+        const nextApplications = mergeApplications([
+          ...inProgress.map((application) =>
+            mapMockApplyToApplication(application, "inProgress"),
+          ),
+          ...completed.map((application) =>
+            mapMockApplyToApplication(application, "completed"),
+          ),
+        ]);
+
+        if (!isActive) {
+          return;
+        }
+
+        cacheApplications(nextApplications);
+        setApplications(nextApplications);
         setApplicationsErrorMessage("");
       })
       .catch((error) => {
-        setApplications([]);
+        if (!isActive) {
+          return;
+        }
+
+        const cachedApplications = readCachedApplications();
+
+        if (cachedApplications.length > 0) {
+          setApplications(cachedApplications);
+          setApplicationsErrorMessage("");
+          return;
+        }
+
         setApplicationsErrorMessage(
           error instanceof Error
             ? error.message
             : "내 지원 데이터를 불러오지 못했습니다.",
         );
       })
-      .finally(() => setIsLoadingApplications(false));
+      .finally(() => {
+        if (!isActive) {
+          return;
+        }
+
+        window.clearTimeout(timeoutId);
+        setIsLoadingApplications(false);
+      });
+
+    return () => {
+      isActive = false;
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   useEffect(() => {
@@ -383,13 +695,16 @@ export default function MockApplicationHomePageClient() {
                     </header>
 
                     <div className="flex flex-col items-center gap-2 self-stretch">
-                      {pausedApplications.map((application) => (
-                        <PausedApplicationCard
-                          key={application.id}
-                          {...application}
-                          onDeleteClick={openDeleteConfirm}
-                        />
-                      ))}
+	                      {pausedApplications.map((application) => (
+	                        <PausedApplicationCard
+	                          key={application.id}
+	                          {...application}
+	                          onDeleteClick={openDeleteConfirm}
+	                          onResumeClick={() =>
+	                            handleResumeApplication(application)
+	                          }
+	                        />
+	                      ))}
                     </div>
                   </section>
                 )}
@@ -411,13 +726,16 @@ export default function MockApplicationHomePageClient() {
                           key={rowIndex}
                           className="flex flex-col items-start gap-3 self-stretch md:flex-row"
                         >
-                          {row.map((application) => (
-                            <ResultApplicationCard
-                              key={application.id}
-                              {...application}
-                              onDeleteClick={openDeleteConfirm}
-                            />
-                          ))}
+	                          {row.map((application) => (
+	                            <ResultApplicationCard
+	                              key={application.id}
+	                              {...application}
+	                              onDeleteClick={openDeleteConfirm}
+	                              onResumeClick={() =>
+	                                handleResultApplication(application)
+	                              }
+	                            />
+	                          ))}
                         </div>
                       ))}
                     </div>

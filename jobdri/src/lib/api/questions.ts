@@ -1,5 +1,4 @@
-import { getAuthHeaders } from "../auth";
-import { API_BASE_URL, AUTH_STORAGE_KEYS } from "@/lib/auth";
+import { API_BASE_URL, getAuthHeaders } from "@/lib/auth";
 
 export interface QuestionItem {
   id: string;
@@ -16,6 +15,7 @@ interface QuestionApiItem {
   charLimit?: number;
   selected?: boolean;
   questionId?: number;
+  custom?: boolean;
 }
 
 interface ApiResponse<T> {
@@ -72,13 +72,13 @@ export async function fetchQuestions(
   );
 
   return (result ?? []).map(
-    ({ id, content, charLimit, selected, questionId }, index) => ({
+    ({ id, content, charLimit, selected, questionId, custom }, index) => ({
       id: String(index),
       questionId: id ?? questionId,
       question: content,
       maxLength: charLimit,
       selected,
-      custom: false,
+      custom,
     }),
   );
 }
@@ -121,13 +121,13 @@ export async function fetchSelectedQuestions(
   );
 
   return (result?.questions ?? []).map(
-    ({ id, questionId, content, charLimit, selected }, index) => ({
+    ({ id, questionId, content, charLimit, selected, custom }, index) => ({
       id: String(index),
       questionId: id ?? questionId,
       question: content,
       maxLength: charLimit,
       selected,
-      custom: false,
+      custom,
     }),
   );
 }
