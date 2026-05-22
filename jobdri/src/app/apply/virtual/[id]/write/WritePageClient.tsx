@@ -10,6 +10,7 @@ import InputSection, {
 } from "@/components/apply/InputSection";
 import { saveApply } from "@/lib/api/questions";
 import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
+import { runAnalysis } from "@/lib/api/result";
 
 interface WritePageClientProps {
   id: string;
@@ -20,12 +21,24 @@ export default function WritePageClient({ id }: WritePageClientProps) {
   const inputRef = useRef<InputSectionHandle>(null);
   const [allComplete, setAllComplete] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submit = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
     const answers = inputRef.current?.getAnswers() ?? [];
-    await saveApply(Number(id), answers);
-    updateMockApplyResumeStatus(Number(id), "COMPLETED");
-    router.push(`/apply/virtual/${id}/result`);
+
+    try {
+      await saveApply(Number(id), answers);
+      await runAnalysis(Number(id));
+      updateMockApplyResumeStatus(Number(id), "COMPLETED");
+      router.push(`/apply/virtual/${id}/result`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -51,7 +64,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
         ctaLabel="제출하기"
         backAction={{ href: `/apply/virtual/${id}/questions` }}
         ctaAction={{
-          disabled: !allComplete,
+          disabled: !allComplete || isSubmitting,
           onClick: handleSubmit,
         }}
       />
@@ -72,6 +85,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
             primaryAction={{
               label: "확정하기",
               onClick: submit,
+              disabled: isSubmitting,
             }}
           />
         </div>

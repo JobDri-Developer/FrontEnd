@@ -9,6 +9,7 @@ import AddQuestion from "./AddQuestion";
 import { fetchQuestions } from "@/lib/api/questions";
 
 const MAX_SELECT = 5;
+const CUSTOM_QUESTIONS_STORAGE_PREFIX = "jobdri.customQuestions";
 
 const DEFAULT_QUESTIONS: Question[] = [
   {
@@ -40,6 +41,7 @@ const DEFAULT_QUESTIONS: Question[] = [
 
 export interface Question {
   id: string;
+  questionId?: number;
   question: string;
   maxLength?: number;
   selected?: boolean;
@@ -50,6 +52,130 @@ interface SelectQuestionProps {
   applyId: number;
   onSelectionChange?: (count: number) => void;
   onQuestionsChange?: (questions: Question[]) => void;
+}
+
+function isSameQuestion(a: Question, b: Question) {
+  if (a.questionId && b.questionId) {
+    return a.questionId === b.questionId;
+  }
+
+  return normalizeQuestionText(a.question) === normalizeQuestionText(b.question);
+}
+
+function normalizeQuestionText(question: string) {
+  return question.trim().replace(/\s+/g, " ");
+}
+
+function getCustomQuestionsStorageKey(applyId: number) {
+  return `${CUSTOM_QUESTIONS_STORAGE_PREFIX}:${applyId}`;
+}
+
+function createStoredCustomQuestionId(question: Question, index: number) {
+  return `stored_custom_${question.questionId ?? index}_${normalizeQuestionText(
+    question.question,
+  ).slice(0, 24)}`;
+}
+
+function readStoredCustomQuestions(applyId: number): Question[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const rawValue = window.sessionStorage.getItem(
+      getCustomQuestionsStorageKey(applyId),
+    );
+    if (!rawValue) return [];
+
+    const parsed = JSON.parse(rawValue);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter(
+        (question): question is Pick<Question, "question"> &
+          Partial<Question> =>
+          typeof question?.question === "string" &&
+          question.question.trim().length > 0,
+      )
+      .map((question, index) => ({
+        id: createStoredCustomQuestionId(question as Question, index),
+        questionId:
+          typeof question.questionId === "number"
+            ? question.questionId
+            : undefined,
+        question: question.question,
+        maxLength:
+          typeof question.maxLength === "number" ? question.maxLength : 1000,
+        selected: true,
+        custom: true,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredCustomQuestions(applyId: number, questions: Question[]) {
+  if (typeof window === "undefined") return;
+
+  const uniqueQuestions = questions.reduce<Question[]>((acc, question) => {
+    if (!question.custom) return acc;
+    if (acc.some((savedQuestion) => isSameQuestion(savedQuestion, question))) {
+      return acc;
+    }
+
+    return [
+      ...acc,
+      {
+        id: question.id,
+        questionId: question.questionId,
+        question: question.question,
+        maxLength: question.maxLength ?? 1000,
+        custom: true,
+      },
+    ];
+  }, []);
+
+  window.sessionStorage.setItem(
+    getCustomQuestionsStorageKey(applyId),
+    JSON.stringify(uniqueQuestions),
+  );
+}
+
+function mergeStoredCustomQuestions(
+  candidates: Question[],
+  storedCustomQuestions: Question[],
+) {
+  if (storedCustomQuestions.length === 0) {
+    return candidates;
+  }
+
+  const customQuestions = storedCustomQuestions
+    .filter(
+      (storedQuestion) =>
+        !candidates.some((candidate) =>
+          isSameQuestion(candidate, storedQuestion),
+        ),
+    )
+    .map((storedQuestion) => ({
+      ...storedQuestion,
+      selected: true,
+      custom: true,
+    }));
+
+  const mergedCandidates = candidates.map((candidate) => {
+    const storedQuestion = storedCustomQuestions.find((question) =>
+      isSameQuestion(candidate, question),
+    );
+
+    return storedQuestion
+      ? {
+          ...candidate,
+          maxLength: candidate.maxLength ?? storedQuestion.maxLength,
+          selected: true,
+          custom: true,
+        }
+      : candidate;
+  });
+
+  return [...customQuestions, ...mergedCandidates];
 }
 
 export default function SelectQuestion({
@@ -89,33 +215,61 @@ export default function SelectQuestion({
     [],
   );
 
+  const persistSelectedCustomQuestions = useCallback(
+    (nextIds: string[], currentQuestions: Question[]) => {
+      saveStoredCustomQuestions(
+        applyId,
+        currentQuestions.filter(
+          (question) => nextIds.includes(question.id) && question.custom,
+        ),
+      );
+    },
+    [applyId],
+  );
+
   useEffect(() => {
+    let ignore = false;
+
     fetchQuestions(applyId)
-      .then((fetched) => {
+      .then((fetchedQuestions) => {
+        if (ignore) return;
+
         setErrorMessage("");
-        const nextQuestions = fetched.length > 0 ? fetched : DEFAULT_QUESTIONS;
+
+        const storedCustomQuestions = readStoredCustomQuestions(applyId);
+        const baseQuestions =
+          fetchedQuestions.length > 0 ? fetchedQuestions : DEFAULT_QUESTIONS;
+        const nextQuestions = mergeStoredCustomQuestions(
+          baseQuestions,
+          storedCustomQuestions,
+        );
         const preSelected = nextQuestions
           .filter((q) => q.selected)
           .map((q) => q.id);
 
         setQuestions(nextQuestions);
-        if (preSelected.length > 0) {
-          setSelectedIds(preSelected);
-          notify(preSelected, nextQuestions);
-          return;
-        }
-
-        setSelectedIds([]);
-        notify([], nextQuestions);
+        setSelectedIds(preSelected);
+        persistSelectedCustomQuestions(preSelected, nextQuestions);
+        notify(preSelected, nextQuestions);
       })
       .catch(() => {
+        if (ignore) return;
+
         setQuestions(DEFAULT_QUESTIONS);
         setSelectedIds([]);
         notify([], DEFAULT_QUESTIONS);
         setErrorMessage("");
       })
-      .finally(() => setIsLoading(false));
-  }, [applyId, notify]);
+      .finally(() => {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [applyId, notify, persistSelectedCustomQuestions]);
 
   const showToast = (
     message: string,
@@ -133,23 +287,30 @@ export default function SelectQuestion({
       if (selectedIds.length >= MAX_SELECT) return;
       const next = [...selectedIds, id];
       setSelectedIds(next);
+      persistSelectedCustomQuestions(next, questions);
       notify(next, questions);
       return;
     }
 
     const next = selectedIds.filter((questionId) => questionId !== id);
     setSelectedIds(next);
+    persistSelectedCustomQuestions(next, questions);
     notify(next, questions);
   };
 
   const handleRemove = (id: string) => {
     const next = selectedIds.filter((questionId) => questionId !== id);
     setSelectedIds(next);
+    persistSelectedCustomQuestions(next, questions);
     notify(next, questions);
     showToast("문항이 삭제되었습니다.", "normal");
   };
 
   const handleAdd = (question: string, maxLength: number) => {
+    if (selectedIds.length >= MAX_SELECT) {
+      return;
+    }
+
     customIdCounterRef.current += 1;
 
     const newQuestion = {
@@ -164,6 +325,7 @@ export default function SelectQuestion({
 
     setQuestions(nextQuestions);
     setSelectedIds(next);
+    persistSelectedCustomQuestions(next, nextQuestions);
     notify(next, nextQuestions);
     showToast("문항이 추가되었습니다.", "check");
   };
@@ -216,7 +378,7 @@ export default function SelectQuestion({
                     question={question.question}
                     selected={selectedIds.includes(question.id)}
                     maxReached={selectedIds.length >= MAX_SELECT}
-                    isCustom={question.id.startsWith("custom_")}
+                    isCustom={question.custom === true}
                     onChange={(isSelected) =>
                       handleChange(question.id, isSelected)
                     }

@@ -1,6 +1,4 @@
-import { getAuthHeaders } from "../auth";
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { API_BASE_URL, getAuthHeaders } from "@/lib/auth";
 
 export interface SequenceResult {
   jobPostingId: number;
@@ -39,30 +37,65 @@ export interface AnalysisResult {
 }
 
 interface ApiResponse<T> {
-  result: T;
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: T | null;
   error: string | null;
+}
+
+async function parseApiResponse<T>(response: Response, fallbackMessage: string) {
+  let data: ApiResponse<T> | null = null;
+
+  try {
+    data = (await response.json()) as ApiResponse<T>;
+  } catch {
+    throw new Error(`${fallbackMessage} 응답을 확인할 수 없습니다.`);
+  }
+
+  if (!response.ok || !data.isSuccess || !data.result) {
+    throw new Error(data?.error || data?.message || fallbackMessage);
+  }
+
+  return data.result;
 }
 
 export async function fetchSequence(
   mockApplyId: number,
 ): Promise<SequenceResult> {
   const response = await fetch(
-    `${BASE_URL}/api/mock-applies/${mockApplyId}/sequence`,
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/sequence`,
     { headers: getAuthHeaders() },
   );
-  if (!response.ok) throw new Error("순번 조회에 실패했습니다.");
-  const { result }: ApiResponse<SequenceResult> = await response.json();
-  return result;
+
+  return parseApiResponse<SequenceResult>(response, "순번 조회에 실패했습니다.");
 }
 
 export async function fetchAnalysis(
   mockApplyId: number,
 ): Promise<AnalysisResult> {
   const response = await fetch(
-    `${BASE_URL}/api/mock-applies/${mockApplyId}/analysis`,
-    { headers: getAuthHeaders() },
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/analysis`,
+    {
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    },
   );
-  if (!response.ok) throw new Error("자소서 분석에 실패했습니다.");
-  const { result }: ApiResponse<AnalysisResult> = await response.json();
-  return result;
+
+  return parseApiResponse<AnalysisResult>(response, "자소서 분석에 실패했습니다.");
+}
+
+export async function runAnalysis(mockApplyId: number): Promise<AnalysisResult> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/analysis`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+    },
+  );
+
+  return parseApiResponse<AnalysisResult>(
+    response,
+    "자소서 분석 실행에 실패했습니다.",
+  );
 }
