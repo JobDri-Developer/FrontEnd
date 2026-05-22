@@ -97,9 +97,7 @@ const InputSection = forwardRef<InputSectionHandle, InputSectionProps>(
           const maxLength = question.maxLength ?? DEFAULT_MAX_LENGTH;
           const answerLength = (answersById[question.id] ?? "").trim().length;
 
-          acc[question.id] =
-            answerLength >= Math.ceil(maxLength * 0.5) &&
-            answerLength <= maxLength;
+          acc[question.id] = answerLength >= 10 && answerLength <= maxLength;
           return acc;
         }, {}),
       [answersById, questions],
