@@ -2,6 +2,7 @@ import { API_BASE_URL, AUTH_STORAGE_KEYS } from "@/lib/auth";
 
 export interface QuestionItem {
   id: string;
+  questionId?: number;
   question: string;
   maxLength?: number;
   selected?: boolean;
@@ -9,9 +10,11 @@ export interface QuestionItem {
 }
 
 interface QuestionApiItem {
+  id?: number;
   content: string;
   charLimit?: number;
   selected?: boolean;
+  questionId?: number;
 }
 
 interface ApiResponse<T> {
@@ -26,6 +29,11 @@ interface SelectedQuestionsApiResponse {
   mockApplyId: number;
   status: string;
   questions: QuestionApiItem[];
+}
+
+export interface AnswerItem {
+  questionId: number;
+  answer: string;
 }
 
 function getAuthHeaders(): Record<string, string> {
@@ -71,17 +79,16 @@ export async function fetchQuestions(
     "문항 목록을 불러오지 못했습니다.",
   );
 
-  if (!result) {
-    return [];
-  }
-
-  return result.map(({ content, charLimit, selected }, index) => ({
-    id: String(index),
-    question: content,
-    maxLength: charLimit,
-    selected,
-    custom: false,
-  }));
+  return (result ?? []).map(
+    ({ id, content, charLimit, selected, questionId }, index) => ({
+      id: String(index),
+      questionId: id ?? questionId,
+      question: content,
+      maxLength: charLimit,
+      selected,
+      custom: false,
+    }),
+  );
 }
 
 export async function saveQuestions(
@@ -121,11 +128,30 @@ export async function fetchSelectedQuestions(
     "선택 문항 조회에 실패했습니다.",
   );
 
-  return (result?.questions ?? []).map(({ content, charLimit, selected }, index) => ({
-    id: String(index),
-    question: content,
-    maxLength: charLimit,
-    selected,
-    custom: false,
-  }));
+  return (result?.questions ?? []).map(
+    ({ id, questionId, content, charLimit, selected }, index) => ({
+      id: String(index),
+      questionId: id ?? questionId,
+      question: content,
+      maxLength: charLimit,
+      selected,
+      custom: false,
+    }),
+  );
+}
+
+export async function saveApply(
+  mockApplyId: number,
+  answers: AnswerItem[],
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/questions/answers`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      body: JSON.stringify({ answers }),
+    },
+  );
+
+  await parseApiResponse<unknown>(response, "답변 제출에 실패했습니다.");
 }
