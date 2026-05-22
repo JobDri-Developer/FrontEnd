@@ -8,6 +8,7 @@ import { InputFileSummary } from "@/components/common/input";
 import { ModalFileUpload, ModalInput } from "@/components/common/modal";
 import {
   ingestJobPosting,
+  ingestJobPostingImage,
   waitForJobPostingIngest,
   type JobPostingIngestStatus,
 } from "@/lib/api/jobPostings";
@@ -193,7 +194,9 @@ const JdInputPageClient = forwardRef<
     setProcessingErrorMessage("");
 
     try {
-      const accepted = await ingestJobPosting({ sourceUrl, image });
+      const accepted = image
+        ? await ingestJobPostingImage(image)
+        : await ingestJobPosting({ sourceUrl });
       const status = await waitForJobPostingIngest(accepted.taskId);
 
       if (activeRequestIdRef.current !== requestId) {

@@ -7,7 +7,10 @@ import { ModalNotice } from "@/components/common/modal";
 import JdReviewPageClient from "./JdReviewPageClient";
 import QuestionGenerationLoading from "@/components/mock-application/QuestionGenerationLoading";
 import {
+  ingestJobPosting,
   saveJobPosting,
+  waitForJobPostingIngest,
+  type SavedJobPosting,
   type JobPostingSavePayload,
 } from "@/lib/api/jobPostings";
 import {
@@ -92,18 +95,6 @@ function createSavePayload(
   };
 }
 
-function copySessionStorageValue(sourceKey: string, targetKey: string) {
-  if (sourceKey === targetKey) {
-    return;
-  }
-
-  const value = window.sessionStorage.getItem(sourceKey);
-
-  if (value) {
-    window.sessionStorage.setItem(targetKey, value);
-  }
-}
-
 function createQuestionLoadingDurationMs() {
   return 40000 + Math.floor(Math.random() * 20001);
 }
@@ -117,6 +108,63 @@ function delay(ms: number) {
 interface QuestionLoadingInfo {
   companyName: string;
   jobName: string;
+}
+
+function createManualRawText(sections: JdReviewSection[]) {
+  const rawText = sections
+    .map(({ label, value }) => {
+      const trimmedValue = value.trim();
+
+      return trimmedValue ? `${label}\n${trimmedValue}` : "";
+    })
+    .filter(Boolean)
+    .join("\n\n");
+
+  if (!rawText) {
+    throw new Error("공고 내용을 입력해주세요.");
+  }
+
+  return rawText;
+}
+
+async function createSavedJobPostingFromRawText(rawText: string) {
+  const accepted = await ingestJobPosting({ rawText });
+  const status = await waitForJobPostingIngest(accepted.taskId);
+  const savedJobPosting = status.result?.saved;
+
+  if (!savedJobPosting) {
+    throw new Error(
+      status.result?.message || "채용 공고 저장 결과를 확인할 수 없습니다.",
+    );
+  }
+
+  return savedJobPosting;
+}
+
+function saveJdReviewSessionData({
+  applyId,
+  sections,
+  savedJobPosting,
+}: {
+  applyId: string;
+  sections: JdReviewSection[];
+  savedJobPosting: SavedJobPosting;
+}) {
+  window.sessionStorage.setItem(
+    getJdReviewStorageKey(applyId),
+    JSON.stringify(sections),
+  );
+  window.sessionStorage.setItem(
+    getJdReviewSavedStorageKey(applyId),
+    JSON.stringify(savedJobPosting),
+  );
+  window.sessionStorage.setItem(
+    getJdReviewMetadataStorageKey(applyId),
+    JSON.stringify({
+      companySize: savedJobPosting.companySize,
+      detailClassificationId: savedJobPosting.detailClassificationId,
+    }),
+  );
 }
 
 export default function MockApplicationJdReviewPage() {
@@ -160,16 +208,26 @@ export default function MockApplicationJdReviewPage() {
     }
 
     setSaveErrorMessage("");
-    const metadata =
-      mode === "manual"
-        ? undefined
-        : parseStoredMetadata(
-            window.sessionStorage.getItem(getJdReviewMetadataStorageKey(id)),
-          );
-    let savePayload: JobPostingSavePayload;
+    const isManualMode = mode === "manual";
+    let createSavedJobPosting: () => Promise<SavedJobPosting>;
+    let loadingCompanyName = getSectionValue(currentSections, "company");
 
     try {
-      savePayload = createSavePayload(currentSections, metadata);
+      if (isManualMode) {
+        const rawText = createManualRawText(currentSections);
+        createSavedJobPosting = () => createSavedJobPostingFromRawText(rawText);
+      } else {
+        const metadata = parseStoredMetadata(
+          window.sessionStorage.getItem(getJdReviewMetadataStorageKey(id)),
+        );
+        const savePayload: JobPostingSavePayload = createSavePayload(
+          currentSections,
+          metadata,
+        );
+
+        loadingCompanyName = savePayload.companyName;
+        createSavedJobPosting = () => saveJobPosting(savePayload);
+      }
     } catch (error) {
       setSaveErrorMessage(
         error instanceof Error ? error.message : "채용 공고 저장에 실패했습니다.",
@@ -179,7 +237,7 @@ export default function MockApplicationJdReviewPage() {
 
     const loadingDurationMs = createQuestionLoadingDurationMs();
     const nextQuestionLoadingInfo = {
-      companyName: savePayload.companyName,
+      companyName: loadingCompanyName,
       jobName: getSectionValue(currentSections, "job"),
     };
     let shouldKeepLoading = false;
@@ -190,26 +248,23 @@ export default function MockApplicationJdReviewPage() {
 
     try {
       const createNextApplyId = async () => {
-        const savedJobPosting = await saveJobPosting(savePayload);
+        const savedJobPosting = await createSavedJobPosting();
         const createdApply = await createApplyFromJobPosting({
           jobPostingId: savedJobPosting.jobPostingId,
           applyType: getSelectedApplyType(),
         });
         const nextApplyId = String(createdApply.mockApplyId);
 
-        window.sessionStorage.setItem(
-          getJdReviewSavedStorageKey(id),
-          JSON.stringify(savedJobPosting),
-        );
-        window.sessionStorage.setItem(
-          getJdReviewSavedStorageKey(nextApplyId),
-          JSON.stringify(savedJobPosting),
-        );
-        copySessionStorageValue(storageKey, getJdReviewStorageKey(nextApplyId));
-        copySessionStorageValue(
-          getJdReviewMetadataStorageKey(id),
-          getJdReviewMetadataStorageKey(nextApplyId),
-        );
+        saveJdReviewSessionData({
+          applyId: id,
+          sections: currentSections,
+          savedJobPosting,
+        });
+        saveJdReviewSessionData({
+          applyId: nextApplyId,
+          sections: currentSections,
+          savedJobPosting,
+        });
 
         return nextApplyId;
       };
