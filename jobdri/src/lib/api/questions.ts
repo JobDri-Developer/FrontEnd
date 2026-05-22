@@ -1,5 +1,6 @@
 export interface QuestionItem {
   id: string;
+  questionId?: number;
   question: string;
   maxLength?: number;
   selected?: boolean;
@@ -7,9 +8,11 @@ export interface QuestionItem {
 }
 
 interface QuestionApiItem {
+  id?: number;
   content: string;
   charLimit?: number;
   selected?: boolean;
+  questionId?: number;
 }
 
 interface QuestionApiResponse {
@@ -25,6 +28,16 @@ interface SelectedQuestionsApiResponse {
   };
   error: string | null;
 }
+
+export interface AnswerItem {
+  questionId: number;
+  answer: string;
+}
+
+// interface AnswerApiResponse {
+//   result: AnswerItem[];
+//   error: string | null;
+// }
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -45,12 +58,13 @@ export async function fetchQuestions(
   );
   if (!response.ok) throw new Error("문항 목록을 불러오지 못했습니다.");
   const { result }: QuestionApiResponse = await response.json();
-  return result.map(({ content, charLimit, selected }, index) => ({
+  return result.map(({ content, charLimit, selected, questionId }, index) => ({
     id: String(index),
     question: content,
     maxLength: charLimit,
     selected,
     custom: false,
+    questionId: questionId,
   }));
 }
 
@@ -84,11 +98,29 @@ export async function fetchSelectedQuestions(
   );
   if (!response.ok) throw new Error("선택 문항 조회에 실패했습니다.");
   const { result }: SelectedQuestionsApiResponse = await response.json();
-  return result.questions.map(({ content, charLimit, selected }, index) => ({
-    id: String(index),
-    question: content,
-    maxLength: charLimit,
-    selected,
-    custom: false,
-  }));
+  return result.questions.map(
+    ({ id, questionId, content, charLimit, selected }, index) => ({
+      id: String(index),
+      questionId: id ?? questionId,
+      question: content,
+      maxLength: charLimit,
+      selected,
+      custom: false,
+    }),
+  );
+}
+
+export async function saveApply(
+  mockApplyId: number,
+  answers: AnswerItem[],
+): Promise<void> {
+  const response = await fetch(
+    `${BASE_URL}/api/mock-applies/${mockApplyId}/questions/answers`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      body: JSON.stringify({ answers }),
+    },
+  );
+  if (!response.ok) throw new Error("답변 제출에 실패했습니다.");
 }
