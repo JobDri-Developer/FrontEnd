@@ -3,6 +3,19 @@
 import { useEffect, useState } from "react";
 import { fetchSelectedQuestions } from "@/lib/api/questions";
 import Sidebar from "@/components/apply/result/Sidebar";
+import ScoreCircle from "./ScoreCircle";
+import Alret from "./Alret";
+import SummaryCard from "./SummaryCard";
+
+const MOCK_SCORES = [
+  { title: "직무 적합도", score: 78 },
+  { title: "성과 구체성", score: 51 },
+  { title: "완성도", score: 78 },
+];
+
+const averageScore = Math.round(
+  MOCK_SCORES.reduce((sum, s) => sum + s.score, 0) / MOCK_SCORES.length,
+);
 
 interface ApplyResultProps {
   applyId: number;
@@ -36,7 +49,7 @@ const FALLBACK_QUESTIONS: Question[] = [
 
 export default function ApplyResult({ applyId }: ApplyResultProps) {
   const [questions, setQuestions] = useState<Question[]>(FALLBACK_QUESTIONS);
-  const [isOverview, setIsOverview] = useState(false);
+  const [isOverview, setIsOverview] = useState(true);
   const [activeId, setActiveId] = useState(FALLBACK_QUESTIONS[0].id);
 
   useEffect(() => {
@@ -63,7 +76,7 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
   const activeQuestion = questions.find((q) => q.id === activeId);
 
   return (
-    <div className="flex gap-6 py-8">
+    <div className="flex-1 flex flex-row py-8 h-screen">
       <Sidebar
         questions={questions}
         activeId={activeId}
@@ -74,9 +87,16 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
 
       <section className="flex-1">
         {isOverview ? (
-          <div>
-            <h2 className="text-h24-bold">개요</h2>
-            {/* 개요 콘텐츠 */}
+          <div className="flex flex-col bg-bg-white p-10 w-full h-screen">
+            <section className="flex items-center gap-10 py-6 px-6">
+              <ScoreCircle score={averageScore} />
+              <Alret score={averageScore} />
+            </section>
+            <div className="grid grid-cols-3 gap-4">
+              {MOCK_SCORES.map((s) => (
+                <SummaryCard key={s.title} title={s.title} score={s.score} />
+              ))}
+            </div>
           </div>
         ) : (
           <div>

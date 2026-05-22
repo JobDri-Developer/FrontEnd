@@ -42,7 +42,7 @@ export default function Sidebar({
   };
 
   return (
-    <nav className="flex w-50 shrink-0 flex-col gap-y-1 px-3 pt-10">
+    <nav className="flex w-50 shrink-0 flex-col gap-y-1 px-3 pt-10 bg-bg-contents-assistive h-full">
       <SidebarItem
         type="main"
         label="개요"
