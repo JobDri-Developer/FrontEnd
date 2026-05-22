@@ -7,6 +7,7 @@ type IconOnlyButtonTone = "light" | "dark";
 interface IconOnlyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   iconType?: IconType;
   tone?: IconOnlyButtonTone;
+  size?: "default" | "small";
 }
 
 const toneStyles: Record<IconOnlyButtonTone, string> = {
@@ -20,8 +21,10 @@ export default function IconOnlyButton({
   tone = "light",
   className,
   type = "button",
+  size = "default",
   ...buttonProps
 }: IconOnlyButtonProps) {
+  const closeIconType = size === "small" ? "CLOSE_S" : "CLOSE_M";
   return (
     <button
       type={type}
@@ -31,10 +34,16 @@ export default function IconOnlyButton({
         buttonProps.disabled ? "cursor-not-allowed" : "cursor-pointer",
         toneStyles[tone],
         className,
+        size === "small" ? "h-6 w-6" : "h-10 w-10",
       )}
       {...buttonProps}
     >
-      <Icon type={iconType} className="h-6 w-6 shrink-0" />
+      <Icon
+        type={closeIconType}
+        className={
+          (clsx("shrink-0 "), size === "small" ? "h-5 w-5" : "h-6 w-6")
+        }
+      />
     </button>
   );
 }

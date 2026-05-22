@@ -228,6 +228,7 @@ export default function Home() {
         <div className="flex items-center gap-6">
           <IconOnlyButton tone="light" />
           <IconOnlyButton tone="dark" />
+          <IconOnlyButton tone="light" size="small" />
         </div>
       </Section>
       <Section title="CTA">

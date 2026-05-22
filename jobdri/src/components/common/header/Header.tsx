@@ -46,7 +46,7 @@ function HeaderAction({
   return (
     <Button
       label={label}
-      styleType="quaternary"
+      styleType="tertiary"
       size="small"
       iconType={iconType}
       className={className}
@@ -57,7 +57,7 @@ function HeaderAction({
 
 export default function Header({
   title = "모의 서류 지원",
-  leftAction = { label: "돌아가기", iconType: "HOME_S" },
+  leftAction = { label: "메인으로", iconType: "HOME_S" },
   rightAction = { label: "저장하기" },
   currentStep = 1,
   steps = defaultSteps,
@@ -66,15 +66,14 @@ export default function Header({
   const rightActionDisabled = currentStep <= 2 || rightAction.disabled;
   const { onClick: leftActionOnClick, ...leftButtonProps } = leftAction;
 
-  const handleLeftActionClick: ButtonHTMLAttributes<
-    HTMLButtonElement
-  >["onClick"] = (event) => {
-    leftActionOnClick?.(event);
+  const handleLeftActionClick: ButtonHTMLAttributes<HTMLButtonElement>["onClick"] =
+    (event) => {
+      leftActionOnClick?.(event);
 
-    if (!event.defaultPrevented) {
-      router.push(MOCK_APPLICATION_HOME_PATH);
-    }
-  };
+      if (!event.defaultPrevented) {
+        router.push(MOCK_APPLICATION_HOME_PATH);
+      }
+    };
 
   return (
     <header className="flex w-full items-start justify-between bg-bg-default px-[82px] pt-10 pb-4">

@@ -7,6 +7,7 @@ type IconButtonDirection = "left" | "right";
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   direction: IconButtonDirection;
   active?: boolean;
+  size?: "default" | "small";
 }
 
 const directionIconType: Record<IconButtonDirection, "ARROW_L" | "ARROW_R"> = {
@@ -18,6 +19,7 @@ export default function IconButton({
   direction,
   active = false,
   className,
+  size = "default",
   type = "button",
   ...buttonProps
 }: IconButtonProps) {
@@ -26,10 +28,11 @@ export default function IconButton({
       type={type}
       aria-label={direction === "left" ? "이전" : "다음"}
       className={clsx(
-        "flex h-12 w-12 items-center justify-center gap-2.5 rounded-icon-round bg-bg-white p-2.5",
+        "flex items-center justify-center gap-2.5 rounded-icon-round bg-bg-white p-2.5",
         buttonProps.disabled ? "cursor-not-allowed" : "cursor-pointer",
         active ? "text-icon-neutral-heavy" : "text-icon-neutral-assistive",
         className,
+        size === "small" ? "h-6 w-6" : "h-10 w-10",
       )}
       {...buttonProps}
     >

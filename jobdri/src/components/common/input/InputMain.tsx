@@ -20,7 +20,7 @@ interface InputMainProps {
   error?: string;
   rightContent?: React.ReactNode;
   className?: string;
-  type?: "ID" | "PASSWORD";
+  type?: "ID" | "PASSWORD" | "EMAIL";
 }
 
 export function InputMain({
@@ -44,7 +44,13 @@ export function InputMain({
   const [focused, setFocused] = useState(false);
 
   const value = externalValue ?? internalValue;
-  const iconType = type === "PASSWORD" ? "PASSWORD" : "PROFILE";
+
+  const iconMap = {
+    ID: "PROFILE",
+    PASSWORD: "PASSWORD",
+    EMAIL: "EMAIL",
+  } as const;
+
   const resolvedInputType =
     inputType ?? (type === "PASSWORD" ? "password" : "text");
   const isError = hasError || !!error;
@@ -67,7 +73,7 @@ export function InputMain({
         <div className={clsx("flex items-center gap-2")}>
           {!focused && !value && (
             <Icon
-              type={iconType}
+              type={type ? iconMap[type] : "PROFILE"}
               className="text-icon-neutral-assistive shrink-0"
             />
           )}

@@ -20,6 +20,7 @@ import IC_ARROW_R_N from "@/assets/ic_Arrow_Right_M.svg";
 import IC_DOTS_M from "@/assets/ic_Dots_M.svg";
 import IC_KABAB from "@/assets/ic_Kabab.svg";
 import IC_CLOSE_M from "@/assets/ic_Close_M.svg";
+import IC_CLOSE_S from "@/assets/ic_Close_S.svg";
 import IC_SIDEBAR from "@/assets/ic_SidebarToggle.svg";
 import IC_HOME_S from "@/assets/ic_Home_s.svg";
 import IC_APPLY from "@/assets/ic_Apply.svg";
@@ -35,6 +36,7 @@ import IC_LIGHTBULB from "@/assets/ic_Lightbulb.svg";
 import IC_CHECK_M from "@/assets/ic_Check_M.svg";
 import IC_CHECK_COMPLETE from "@/assets/ic_Check_Complete.svg";
 import IC_EDIT from "@/assets/ic_Edit.svg";
+import IC_EMAIL from "@/assets/ic_Email.svg";
 import IC_LINK from "@/assets/ic_Link.svg";
 import IC_POLYGON_1 from "@/assets/ic_Polygon_1.svg";
 import IC_POLYGON_2 from "@/assets/ic_Polygon_2.svg";
@@ -63,13 +65,13 @@ const iconMap = {
   DOTS_M: IC_DOTS_M,
   KABAB: IC_KABAB,
   CLOSE_M: IC_CLOSE_M,
+  CLOSE_S: IC_CLOSE_S,
   SIDEBAR: IC_SIDEBAR,
   HOME_S: IC_HOME_S,
   APPLY: IC_APPLY,
   EX_S: IC_EX_S,
   ARROW_R_N_S: IC_ARROW_R_N_S,
   DOT_S: IC_DOT_S,
-  CLOSE: IC_CLOSE,
   EX_LINK: IC_EX_LINK,
   TOKEN: IC_TOKEN,
   SPARKLE: IC_SPARKLE,
@@ -78,6 +80,7 @@ const iconMap = {
   CHECK_M: IC_CHECK_M,
   CHECK_COMPLETE: IC_CHECK_COMPLETE,
   EDIT: IC_EDIT,
+  EMAIL: IC_EMAIL,
   LINK: IC_LINK,
   POLYGON_1: IC_POLYGON_1,
   POLYGON_2: IC_POLYGON_2,

@@ -69,12 +69,15 @@ export default function IconBox({
           "flex shrink-0 items-center justify-center gap-2.5 rounded-icon-default transition-colors",
           sizeStyles[size],
           selected
-            ? "bg-fill-system-fail-strong"
-            : "bg-icon-neutral-weak hover:bg-fill-system-fail-hover",
+            ? "bg-[#F01818]"
+            : "bg-icon-neutral-weak hover:bg-fill-system-fail-strong",
           className,
         )}
       >
-        <Icon type={type} className={clsx("text-text-neutral-white", iconClassName)} />
+        <Icon
+          type={type}
+          className={clsx("text-text-neutral-white", iconClassName)}
+        />
       </div>
     );
   }
