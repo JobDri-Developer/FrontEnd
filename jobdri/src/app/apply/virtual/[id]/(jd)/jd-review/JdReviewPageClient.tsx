@@ -6,11 +6,17 @@ import type { JdReviewSection } from "@/components/mock-application/jdReviewSect
 
 interface JdReviewPageClientProps {
   sections?: JdReviewSection[];
+  onSectionsChange?: (sections: JdReviewSection[]) => void;
 }
 
 export default function JdReviewPageClient({
   sections,
+  onSectionsChange,
 }: JdReviewPageClientProps) {
+  const sectionsKey = sections
+    ? JSON.stringify(sections.map(({ id, value }) => [id, value]))
+    : "mock";
+
   return (
     <div className="flex-1 bg-line-neutral-assistive px-6 py-6">
       <div className="mx-auto flex w-[1280px] flex-col">
@@ -23,7 +29,11 @@ export default function JdReviewPageClient({
                 공고 내용을 확인하고 수정해주세요
               </h2>
             </div>
-            <JdReviewMain sections={sections} />
+            <JdReviewMain
+              key={sectionsKey}
+              sections={sections}
+              onSectionsChange={onSectionsChange}
+            />
           </div>
         </section>
       </div>

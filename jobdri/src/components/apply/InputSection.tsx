@@ -9,10 +9,11 @@ import {
 } from "react";
 import { ChipQnumber } from "@/components/common/chips";
 import { InputMultiLine1000 } from "@/components/common/input";
-import { fetchSelectedQuestions } from "@/lib/api/questions";
+import { fetchSelectedQuestions, type AnswerItem } from "@/lib/api/questions";
 
 export interface StoredQuestion {
   id: string;
+  questionId?: number;
   question: string;
   maxLength?: number;
 }
@@ -20,6 +21,7 @@ export interface StoredQuestion {
 export interface InputSectionHandle {
   isAllComplete: () => boolean;
   hasUnderThreshold: () => boolean;
+  getAnswers: () => AnswerItem[];
 }
 
 interface InputSectionProps {
@@ -120,6 +122,11 @@ const InputSection = forwardRef<InputSectionHandle, InputSectionProps>(
 
           return answerLength < maxLength * 0.8;
         }),
+      getAnswers: () =>
+        questions.map((question, index) => ({
+          questionId: question.questionId ?? index,
+          answer: answersById[question.id] ?? "",
+        })),
     }));
 
     const handleAnswerChange = (value: string) => {
