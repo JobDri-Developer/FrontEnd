@@ -10,96 +10,51 @@ import Icon from "@/components/common/icons/Icon";
 import { Lnb } from "@/components/common/lnb";
 import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
+import {
+  fetchMyJobPostings,
+  type SavedJobPosting,
+} from "@/lib/api/jobPostings";
 
 interface ApplicationCardData {
+  id: number;
   company: string;
   position: string;
   createdAt: string;
-  score: number;
+  score?: number;
 }
 
-const pausedApplications: ApplicationCardData[] = [
-  {
-    company: "카카오",
-    position: "백엔드 개발자",
-    createdAt: "2022. 09. 03",
-    score: 77,
-  },
-  {
-    company: "현대자동차",
-    position: "백엔드 개발자",
-    createdAt: "2022. 09. 03",
-    score: 77,
-  },
-];
+const EMPTY_APPLICATION_TITLE = "아직 지원 내역이 없어요!";
+const EMPTY_APPLICATION_DESCRIPTION =
+  "기업과 직무에 맞춰 자소서를 작성하고 점수를 확인하세요";
 
-const resultApplications: ApplicationCardData[] = [
-  {
-    company: "카카오",
-    position: "백엔드 개발자",
-    createdAt: "2022. 09. 03",
-    score: 64,
-  },
-  {
-    company: "카카오",
-    position: "백엔드 개발자",
-    createdAt: "2022. 09. 03",
-    score: 71,
-  },
-  {
-    company: "카카오",
-    position: "백엔드 개발자",
-    createdAt: "2022. 09. 03",
-    score: 71,
-  },
-  {
-    company: "카카오",
-    position: "백엔드 개발자",
-    createdAt: "2022. 09. 03",
-    score: 71,
-  },
-  {
-    company: "네이버",
-    position: "프론트엔드 개발자",
-    createdAt: "2022. 09. 04",
-    score: 82,
-  },
-  {
-    company: "토스",
-    position: "서버 개발자",
-    createdAt: "2022. 09. 05",
-    score: 76,
-  },
-  {
-    company: "쿠팡",
-    position: "데이터 엔지니어",
-    createdAt: "2022. 09. 06",
-    score: 69,
-  },
-  {
-    company: "라인",
-    position: "백엔드 개발자",
-    createdAt: "2022. 09. 07",
-    score: 88,
-  },
-  {
-    company: "배달의민족",
-    position: "프로덕트 디자이너",
-    createdAt: "2022. 09. 08",
-    score: 73,
-  },
-  {
-    company: "당근",
-    position: "안드로이드 개발자",
-    createdAt: "2022. 09. 09",
-    score: 79,
-  },
-];
+function mapJobPostingToApplication({
+  jobPostingId,
+  companyName,
+  detailClassificationName,
+}: SavedJobPosting): ApplicationCardData {
+  return {
+    id: jobPostingId,
+    company: companyName || "회사명 미입력",
+    position: detailClassificationName || "직무 미분류",
+    createdAt: "-",
+  };
+}
 
-const resultRows = Array.from(
-  { length: Math.ceil(resultApplications.length / 5) },
-  (_, index) => resultApplications.slice(index * 5, index * 5 + 5),
-);
+function createRows<T>(items: T[], size: number) {
+  return Array.from({ length: Math.ceil(items.length / size) }, (_, index) =>
+    items.slice(index * size, index * size + size),
+  );
+}
+
+function isEmptyApplicationStateError(message: string) {
+  return (
+    message.includes("인증") ||
+    message.includes("Unauthorized") ||
+    message.includes("Failed to fetch") ||
+    message.includes("NetworkError") ||
+    message.includes("Load failed")
+  );
+}
 
 function KebabButton({
   label,
@@ -209,6 +164,16 @@ function ApplicationMeta({
   );
 }
 
+function ApplicationStateBadge() {
+  return (
+    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-line-neutral-default bg-bg-contents-default">
+      <span className="text-cap12-semibold text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+        작성중
+      </span>
+    </div>
+  );
+}
+
 function PausedApplicationCard({
   company,
   position,
@@ -221,7 +186,11 @@ function PausedApplicationCard({
   return (
     <article className="relative flex items-center self-stretch rounded-card bg-bg-contents-default px-7 py-6">
       <div className="flex min-w-0 flex-1 items-center gap-5">
-        <ResultScore size="small" score={score} />
+        {typeof score === "number" ? (
+          <ResultScore size="small" score={score} />
+        ) : (
+          <ApplicationStateBadge />
+        )}
         <ApplicationMeta
           company={company}
           position={position}
@@ -248,7 +217,11 @@ function ResultApplicationCard({
   return (
     <article className="relative flex flex-1 flex-col items-start justify-center gap-16 rounded-card bg-bg-contents-default px-6 py-5">
       <div className="flex items-start justify-between self-stretch">
-        <ResultScore size="small" score={score} />
+        {typeof score === "number" ? (
+          <ResultScore size="small" score={score} />
+        ) : (
+          <ApplicationStateBadge />
+        )}
         <KebabButton
           label={`${company} 모의 서류 결과 메뉴`}
           onDeleteClick={onDeleteClick}
@@ -265,15 +238,60 @@ function ResultApplicationCard({
   );
 }
 
+function EmptyApplicationState() {
+  return (
+    <div className="mt-16 flex flex-col items-center justify-center gap-1 self-stretch">
+      <p className="text-center text-t20-semibold text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+        {EMPTY_APPLICATION_TITLE}
+      </p>
+      <p className="text-center text-b16-reg text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+        {EMPTY_APPLICATION_DESCRIPTION}
+      </p>
+    </div>
+  );
+}
+
 export default function MockApplicationHomePageClient() {
   const router = useRouter();
+  const [applications, setApplications] = useState<ApplicationCardData[]>([]);
+  const [isLoadingApplications, setIsLoadingApplications] = useState(true);
+  const [applicationsErrorMessage, setApplicationsErrorMessage] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDeleteToast, setShowDeleteToast] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const pausedApplications = applications.filter(
+    ({ score }) => typeof score !== "number",
+  );
+  const resultApplications = applications.filter(
+    ({ score }) => typeof score === "number",
+  );
+  const resultRows = createRows(resultApplications, 5);
+  const hasApplicationData =
+    pausedApplications.length > 0 || resultApplications.length > 0;
+  const shouldShowErrorMessage =
+    applicationsErrorMessage &&
+    !isEmptyApplicationStateError(applicationsErrorMessage);
 
   const openDeleteConfirm = () => setShowDeleteConfirm(true);
   const closeDeleteConfirm = () => setShowDeleteConfirm(false);
   const closeDeleteToast = () => setShowDeleteToast(false);
+
+  useEffect(() => {
+    fetchMyJobPostings()
+      .then((jobPostings) => {
+        setApplications(jobPostings.map(mapJobPostingToApplication));
+        setApplicationsErrorMessage("");
+      })
+      .catch((error) => {
+        setApplications([]);
+        setApplicationsErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "내 지원 데이터를 불러오지 못했습니다.",
+        );
+      })
+      .finally(() => setIsLoadingApplications(false));
+  }, []);
 
   useEffect(() => {
     if (!showDeleteToast) return;
@@ -321,7 +339,7 @@ export default function MockApplicationHomePageClient() {
 
       <div className="flex min-w-0 flex-1 flex-col items-center self-stretch">
         <main className="flex min-w-0 flex-1 flex-col items-start gap-8 self-stretch px-10 pt-11 pb-[94px]">
-          <div className="flex w-full min-w-0 flex-col items-center gap-16 self-stretch">
+          <div className="flex w-full min-w-0 flex-col items-center self-stretch">
             <section className="flex flex-col items-start gap-7 self-stretch">
               <div className="flex flex-col items-start gap-7 self-stretch md:flex-row md:justify-between">
                 <div className="flex min-w-0 flex-1 flex-col items-start gap-3">
@@ -346,51 +364,69 @@ export default function MockApplicationHomePageClient() {
               <div className="h-[0.75px] self-stretch bg-line-neutral-strong" />
             </section>
 
-            <section className="flex flex-col items-start gap-6 self-stretch">
-              <header className="flex items-center gap-2.5 self-stretch pl-1">
-                <h2 className="text-t20-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-                  이어서 해볼까요?
-                </h2>
-              </header>
+            {isLoadingApplications ? (
+              <p className="mt-16 flex h-[140px] items-center justify-center self-stretch rounded-card bg-bg-contents-default text-b16-semibold text-text-neutral-caption">
+                내 지원 데이터를 불러오는 중입니다.
+              </p>
+            ) : shouldShowErrorMessage ? (
+              <p className="mt-16 flex h-[140px] items-center justify-center self-stretch rounded-card bg-bg-contents-default text-center text-b16-semibold text-text-neutral-caption">
+                {applicationsErrorMessage}
+              </p>
+            ) : hasApplicationData ? (
+              <div className="mt-16 flex w-full flex-col items-center gap-16 self-stretch">
+                {pausedApplications.length > 0 && (
+                  <section className="flex flex-col items-start gap-6 self-stretch">
+                    <header className="flex items-center gap-2.5 self-stretch pl-1">
+                      <h2 className="text-t20-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+                        이어서 해볼까요?
+                      </h2>
+                    </header>
 
-              <div className="flex flex-col items-center gap-2 self-stretch">
-                {pausedApplications.map((application) => (
-                  <PausedApplicationCard
-                    key={`${application.company}-${application.score}`}
-                    {...application}
-                    onDeleteClick={openDeleteConfirm}
-                  />
-                ))}
+                    <div className="flex flex-col items-center gap-2 self-stretch">
+                      {pausedApplications.map((application) => (
+                        <PausedApplicationCard
+                          key={application.id}
+                          {...application}
+                          onDeleteClick={openDeleteConfirm}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {resultApplications.length > 0 && (
+                  <section className="flex flex-col items-start gap-6 self-stretch">
+                    <header className="flex items-center gap-2 self-stretch">
+                      <h2 className="text-t20-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+                        모의 서류 결과
+                      </h2>
+                      <span className="text-b16-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+                        {resultApplications.length}개
+                      </span>
+                    </header>
+
+                    <div className="flex flex-col items-start gap-3 self-stretch">
+                      {resultRows.map((row, rowIndex) => (
+                        <div
+                          key={rowIndex}
+                          className="flex flex-col items-start gap-3 self-stretch md:flex-row"
+                        >
+                          {row.map((application) => (
+                            <ResultApplicationCard
+                              key={application.id}
+                              {...application}
+                              onDeleteClick={openDeleteConfirm}
+                            />
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
               </div>
-            </section>
-
-            <section className="flex flex-col items-start gap-6 self-stretch">
-              <header className="flex items-center gap-2 self-stretch">
-                <h2 className="text-t20-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-                  모의 서류 결과
-                </h2>
-                <span className="text-b16-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-                  {resultApplications.length}개
-                </span>
-              </header>
-
-              <div className="flex flex-col items-start gap-3 self-stretch">
-                {resultRows.map((row, rowIndex) => (
-                  <div
-                    key={rowIndex}
-                    className="flex flex-col items-start gap-3 self-stretch md:flex-row"
-                  >
-                    {row.map((application, cardIndex) => (
-                      <ResultApplicationCard
-                        key={`${application.company}-${rowIndex}-${cardIndex}`}
-                        {...application}
-                        onDeleteClick={openDeleteConfirm}
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </section>
+            ) : (
+              <EmptyApplicationState />
+            )}
           </div>
         </main>
 

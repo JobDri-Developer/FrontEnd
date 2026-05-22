@@ -6,6 +6,7 @@ import clsx from "clsx";
 import Header from "@/components/common/header/Header";
 import { Footer } from "@/components/common/footer";
 import { ApplyOptionCard } from "@/components/common/cards";
+import { saveSelectedApplyType } from "@/lib/api/mockApplies";
 
 type ApplyType = "real" | "virtual";
 
@@ -13,6 +14,7 @@ const applyTypes: Array<{
   id: ApplyType;
   title: string;
   description: string;
+  disabled?: boolean;
 }> = [
   {
     id: "real",
@@ -22,7 +24,8 @@ const applyTypes: Array<{
   {
     id: "virtual",
     title: "가상 공고 지원",
-    description: "과거 공고를 기반으로\n모의 서류 평가를 제공합니다.",
+    description: "가상 공고 지원은\n아직 준비 중입니다.",
+    disabled: true,
   },
 ];
 
@@ -33,12 +36,13 @@ export default function ApplyTypePageClient() {
 
   const handleSubmit = () => {
     if (selectedType === "real") {
+      saveSelectedApplyType("ACTUAL");
       router.push("/apply/virtual/new/jd-input");
       return;
     }
 
     if (selectedType === "virtual") {
-      router.push("/apply/virtual/new/jd");
+      setSelectedType(null);
     }
   };
 
@@ -63,10 +67,12 @@ export default function ApplyTypePageClient() {
               {applyTypes.map((applyType) => {
                 const isSelected = selectedType === applyType.id;
                 const isHovered = hoveredType === applyType.id;
+                const isUnavailable = applyType.disabled === true;
                 const isDisabled =
-                  hoveredType !== null
+                  isUnavailable ||
+                  (hoveredType !== null
                     ? !isHovered
-                    : selectedType !== null && !isSelected;
+                    : selectedType !== null && !isSelected);
 
                 return (
                   <ApplyOptionCard
@@ -75,9 +81,14 @@ export default function ApplyTypePageClient() {
                     description={applyType.description}
                     selected={isSelected}
                     disabled={isDisabled}
-                    onMouseEnter={() => setHoveredType(applyType.id)}
+                    onMouseEnter={() => {
+                      if (!isUnavailable) {
+                        setHoveredType(applyType.id);
+                      }
+                    }}
                     onMouseLeave={() => setHoveredType(null)}
                     onClick={() =>
+                      !isUnavailable &&
                       setSelectedType((prevSelectedType) =>
                         prevSelectedType === applyType.id
                           ? null

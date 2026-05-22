@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../common/buttons";
 import { ListQ, ListQCart } from "../common/list";
 import { scrollbarClass } from "../common/input/inputStyles";
@@ -30,6 +30,7 @@ export default function SelectQuestion({
 }: SelectQuestionProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -38,20 +39,31 @@ export default function SelectQuestion({
   >("normal");
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const customIdCounterRef = useRef(0);
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  const onQuestionsChangeRef = useRef(onQuestionsChange);
   const [isOpen, setIsOpen] = useState(false);
 
-  const notify = (nextIds: string[], currentQuestions: Question[]) => {
-    const selected = currentQuestions.filter((question) =>
-      nextIds.includes(question.id),
-    );
+  useEffect(() => {
+    onSelectionChangeRef.current = onSelectionChange;
+    onQuestionsChangeRef.current = onQuestionsChange;
+  }, [onQuestionsChange, onSelectionChange]);
 
-    onSelectionChange?.(selected.length);
-    onQuestionsChange?.(selected);
-  };
+  const notify = useCallback(
+    (nextIds: string[], currentQuestions: Question[]) => {
+      const selected = currentQuestions.filter((question) =>
+        nextIds.includes(question.id),
+      );
+
+      onSelectionChangeRef.current?.(selected.length);
+      onQuestionsChangeRef.current?.(selected);
+    },
+    [],
+  );
 
   useEffect(() => {
     fetchQuestions(applyId)
       .then((fetched) => {
+        setErrorMessage("");
         setQuestions(fetched);
         const preSelected = fetched.filter((q) => q.selected).map((q) => q.id);
         if (preSelected.length > 0) {
@@ -59,8 +71,18 @@ export default function SelectQuestion({
           notify(preSelected, fetched);
         }
       })
+      .catch((error) => {
+        setQuestions([]);
+        setSelectedIds([]);
+        notify([], []);
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "문항 목록을 불러오지 못했습니다.",
+        );
+      })
       .finally(() => setIsLoading(false));
-  }, [applyId]);
+  }, [applyId, notify]);
 
   const showToast = (
     message: string,
@@ -95,8 +117,10 @@ export default function SelectQuestion({
   };
 
   const handleAdd = (question: string, maxLength: number) => {
+    customIdCounterRef.current += 1;
+
     const newQuestion = {
-      id: `custom_${Date.now()}`,
+      id: `custom_${customIdCounterRef.current}`,
       question,
       maxLength,
       custom: true,
@@ -144,18 +168,32 @@ export default function SelectQuestion({
             <div
               className={`-m-8 mt-1 mr-[1.5px] mb-[1.5px] flex min-h-0 flex-1 flex-col gap-2 overflow-visible overflow-y-auto px-8 ${scrollbarClass}`}
             >
-              {questions.map((question) => (
-                <ListQ
-                  key={question.id}
-                  question={question.question}
-                  selected={selectedIds.includes(question.id)}
-                  maxReached={selectedIds.length >= MAX_SELECT}
-                  isCustom={question.id.startsWith("custom_")}
-                  onChange={(isSelected) =>
-                    handleChange(question.id, isSelected)
-                  }
-                />
-              ))}
+              {isLoading ? (
+                <p className="mt-20 flex items-center justify-center text-t20-semibold text-text-neutral-disabled">
+                  문항을 불러오는 중입니다.
+                </p>
+              ) : errorMessage ? (
+                <p className="mt-20 flex items-center justify-center text-center text-t20-semibold text-text-neutral-disabled">
+                  {errorMessage}
+                </p>
+              ) : questions.length > 0 ? (
+                questions.map((question) => (
+                  <ListQ
+                    key={question.id}
+                    question={question.question}
+                    selected={selectedIds.includes(question.id)}
+                    maxReached={selectedIds.length >= MAX_SELECT}
+                    isCustom={question.id.startsWith("custom_")}
+                    onChange={(isSelected) =>
+                      handleChange(question.id, isSelected)
+                    }
+                  />
+                ))
+              ) : (
+                <p className="mt-20 flex items-center justify-center text-t20-semibold text-text-neutral-disabled">
+                  불러온 문항이 없습니다.
+                </p>
+              )}
             </div>
           </section>
 
