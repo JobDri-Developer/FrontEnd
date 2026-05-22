@@ -28,6 +28,24 @@ export interface MockApplyResumeRecord {
   updatedAt: string;
 }
 
+export interface MockApplyHomeItem {
+  mockApplyId: number;
+  resumePath?: string | null;
+  jobPostingId: number;
+  status: MockApplyProgressStatus | string;
+  companyName: string;
+  detailClassificationName?: string | null;
+  jobTitle?: string | null;
+  createdAt: string;
+  applyType: JobPostingApplyType;
+  score?: number | null;
+}
+
+export interface MockApplyHomeList {
+  inProgress: MockApplyHomeItem[];
+  completed: MockApplyHomeItem[];
+}
+
 export const APPLY_TYPE_STORAGE_KEY = "jobdri.applyType";
 const MOCK_APPLY_RESUME_STORAGE_KEY = "jobdri.mockApplyResumeRecords";
 
@@ -99,6 +117,24 @@ export function createApplyFromJobPosting({
   return applyType === "MOCK"
     ? createMockApplyFromJobPosting(jobPostingId)
     : createActualApplyFromJobPosting(jobPostingId);
+}
+
+export async function fetchMyMockApplies({ signal }: { signal?: AbortSignal } = {}) {
+  const response = await fetch(`${API_BASE_URL}/api/mock-applies/me`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+    signal,
+  });
+
+  const result = await parseApiResponse<MockApplyHomeList>(
+    response,
+    "내 지원 데이터를 불러오지 못했습니다.",
+  );
+
+  return {
+    inProgress: result.inProgress ?? [],
+    completed: result.completed ?? [],
+  };
 }
 
 export function saveSelectedApplyType(applyType: JobPostingApplyType) {

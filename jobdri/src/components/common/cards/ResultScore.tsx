@@ -3,6 +3,8 @@ import clsx from "clsx";
 
 interface ResultScoreProps extends HTMLAttributes<HTMLDivElement> {
   score?: number;
+  displayScore?: string;
+  progressScore?: number;
   maxScore?: number;
   size?: "large" | "small";
 }
@@ -21,7 +23,9 @@ const sizeConfigs = {
 } as const;
 
 export default function ResultScore({
-  score = 64,
+  score,
+  displayScore,
+  progressScore,
   maxScore = 100,
   size = "large",
   className,
@@ -32,7 +36,10 @@ export default function ResultScore({
   const center = diameter / 2;
   const radius = (diameter - strokeWidth) / 2;
   const progressCircumference = 2 * Math.PI * radius;
-  const normalizedScore = Math.min(Math.max(score, 0), maxScore);
+  const resolvedProgressScore = progressScore ?? score ?? 64;
+  const resolvedDisplayScore =
+    displayScore ?? (typeof score === "number" ? String(score) : "??");
+  const normalizedScore = Math.min(Math.max(resolvedProgressScore, 0), maxScore);
   const progress = maxScore > 0 ? normalizedScore / maxScore : 0;
   const dashOffset = progressCircumference * (1 - progress);
 
@@ -44,7 +51,7 @@ export default function ResultScore({
       )}
       style={{ width: diameter, height: diameter, ...style }}
       role="img"
-      aria-label={`${score}점`}
+      aria-label={`${resolvedDisplayScore}점`}
       {...divProps}
     >
       <svg
@@ -82,7 +89,7 @@ export default function ResultScore({
             textClassName,
           )}
         >
-          {score}
+          {resolvedDisplayScore}
         </span>
         <span
           className={clsx(
