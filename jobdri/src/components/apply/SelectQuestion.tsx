@@ -9,7 +9,6 @@ import AddQuestion from "./AddQuestion";
 import { fetchQuestions, fetchSelectedQuestions } from "@/lib/api/questions";
 
 const MAX_SELECT = 5;
-const CUSTOM_QUESTIONS_STORAGE_PREFIX = "jobdri.customQuestions";
 
 const DEFAULT_QUESTIONS: Question[] = [
   {
@@ -55,7 +54,14 @@ interface SelectQuestionProps {
 }
 
 function isSameQuestion(a: Question, b: Question) {
-  if (a.questionId && b.questionId) {
+  const hasSameQuestionId =
+    typeof a.questionId === "number" &&
+    a.questionId > 0 &&
+    typeof b.questionId === "number" &&
+    b.questionId > 0 &&
+    a.questionId === b.questionId;
+
+  if (hasSameQuestionId) {
     return a.questionId === b.questionId;
   }
 
@@ -66,54 +72,12 @@ function normalizeQuestionText(question: string) {
   return question.trim().replace(/\s+/g, " ");
 }
 
-function getCustomQuestionsStorageKey(applyId: number) {
-  return `${CUSTOM_QUESTIONS_STORAGE_PREFIX}:${applyId}`;
-}
-
-function createMergedQuestionId(
-  prefix: string,
-  question: Question,
-  index: number,
-) {
-  return `${prefix}_${question.questionId ?? index}_${normalizeQuestionText(
-    question.question,
-  ).slice(0, 24)}`;
-}
-
-function readStoredCustomQuestions(applyId: number): Question[] {
-  if (typeof window === "undefined") return [];
-
-  try {
-    const rawValue = window.sessionStorage.getItem(
-      getCustomQuestionsStorageKey(applyId),
-    );
-    if (!rawValue) return [];
-
-    const parsed = JSON.parse(rawValue);
-    if (!Array.isArray(parsed)) return [];
-
-    return parsed
-      .filter(
-        (question): question is Pick<Question, "question"> &
-          Partial<Question> =>
-          typeof question?.question === "string" &&
-          question.question.trim().length > 0,
-      )
-      .map((question, index) => ({
-        id: createMergedQuestionId("stored_custom", question as Question, index),
-        questionId:
-          typeof question.questionId === "number"
-            ? question.questionId
-            : undefined,
-        question: question.question,
-        maxLength:
-          typeof question.maxLength === "number" ? question.maxLength : 1000,
-        selected: true,
-        custom: true,
-      }));
-  } catch {
-    return [];
+function mergeCustomFlag(a?: boolean, b?: boolean) {
+  if (a === false || b === false) {
+    return false;
   }
+
+  return a === true || b === true;
 }
 
 function uniqueQuestionsByContent(questions: Question[]) {
@@ -142,7 +106,7 @@ function mergeDuplicateQuestions(questions: Question[]) {
       questionId: existingQuestion.questionId ?? question.questionId,
       maxLength: existingQuestion.maxLength ?? question.maxLength,
       selected: existingQuestion.selected || question.selected,
-      custom: existingQuestion.custom || question.custom,
+      custom: mergeCustomFlag(existingQuestion.custom, question.custom),
     };
 
     return acc.map((savedQuestion, index) =>
@@ -151,89 +115,19 @@ function mergeDuplicateQuestions(questions: Question[]) {
   }, []);
 }
 
-function saveStoredCustomQuestions(applyId: number, questions: Question[]) {
-  if (typeof window === "undefined") return;
-
-  const uniqueQuestions = questions.reduce<Question[]>((acc, question) => {
-    if (!question.custom) return acc;
-    if (acc.some((savedQuestion) => isSameQuestion(savedQuestion, question))) {
-      return acc;
-    }
-
-    return [
-      ...acc,
-      {
-        id: question.id,
-        questionId: question.questionId,
-        question: question.question,
-        maxLength: question.maxLength ?? 1000,
-        custom: true,
-      },
-    ];
-  }, []);
-
-  window.sessionStorage.setItem(
-    getCustomQuestionsStorageKey(applyId),
-    JSON.stringify(uniqueQuestions),
-  );
-}
-
-function mergeStoredCustomQuestions(
-  candidates: Question[],
-  storedCustomQuestions: Question[],
-) {
-  if (storedCustomQuestions.length === 0) {
-    return candidates;
-  }
-
-  const customQuestions = storedCustomQuestions
-    .filter(
-      (storedQuestion) =>
-        !candidates.some((candidate) =>
-          isSameQuestion(candidate, storedQuestion),
-        ),
-    )
-    .map((storedQuestion) => ({
-      ...storedQuestion,
-      selected: true,
-      custom: true,
-    }));
-
-  const mergedCandidates = candidates.map((candidate) => {
-    const storedQuestion = storedCustomQuestions.find((question) =>
-      isSameQuestion(candidate, question),
-    );
-
-    return storedQuestion
-      ? {
-          ...candidate,
-          maxLength: candidate.maxLength ?? storedQuestion.maxLength,
-          selected: true,
-          custom: true,
-        }
-      : candidate;
-  });
-
-  return [...customQuestions, ...mergedCandidates];
-}
-
 function mergeSelectedQuestions(
   candidates: Question[],
   selectedQuestions: Question[],
-  storedCustomQuestions: Question[],
 ) {
-  const selectedQuestionsWithState = selectedQuestions.map((question) => ({
+  const selectedQuestionsWithState = uniqueQuestionsByContent(
+    selectedQuestions,
+  ).map((question) => ({
     ...question,
     selected: true,
+    custom: question.custom ?? false,
   }));
-  const storedAndSelectedCustomQuestions = uniqueQuestionsByContent([
-    ...selectedQuestionsWithState.filter((question) => question.custom),
-    ...storedCustomQuestions,
-  ]);
-  const mergedCandidates = mergeStoredCustomQuestions(
-    candidates,
-    storedAndSelectedCustomQuestions,
-  ).map((candidate) => {
+
+  const mergedCandidates = candidates.map((candidate) => {
     const selectedQuestion = selectedQuestionsWithState.find((question) =>
       isSameQuestion(candidate, question),
     );
@@ -241,11 +135,19 @@ function mergeSelectedQuestions(
     return selectedQuestion
       ? {
           ...candidate,
-          maxLength: candidate.maxLength ?? selectedQuestion.maxLength,
+          questionId: candidate.questionId ?? selectedQuestion.questionId,
+          maxLength: candidate.maxLength ?? selectedQuestion.maxLength ?? 1000,
           selected: true,
-          custom: candidate.custom || selectedQuestion.custom || false,
+          custom:
+            candidate.custom === undefined
+              ? selectedQuestion.custom === true
+              : candidate.custom === true,
         }
-      : candidate;
+      : {
+          ...candidate,
+          selected: candidate.selected ?? false,
+          custom: candidate.custom === true,
+        };
   });
   const missingSelectedQuestions = selectedQuestionsWithState
     .filter(
@@ -256,10 +158,10 @@ function mergeSelectedQuestions(
     )
     .map((question, index) => ({
       ...question,
-      id: createMergedQuestionId("selected", question, index),
+      id: `selected_${question.questionId ?? index}`,
       maxLength: question.maxLength ?? 1000,
       selected: true,
-      custom: question.custom ?? false,
+      custom: question.custom === true,
     }));
 
   return [...missingSelectedQuestions, ...mergedCandidates];
@@ -302,18 +204,6 @@ export default function SelectQuestion({
     [],
   );
 
-  const persistSelectedCustomQuestions = useCallback(
-    (nextIds: string[], currentQuestions: Question[]) => {
-      saveStoredCustomQuestions(
-        applyId,
-        currentQuestions.filter(
-          (question) => nextIds.includes(question.id) && question.custom,
-        ),
-      );
-    },
-    [applyId],
-  );
-
   useEffect(() => {
     let ignore = false;
 
@@ -332,26 +222,19 @@ export default function SelectQuestion({
           selectedQuestionsResult.status === "fulfilled"
             ? selectedQuestionsResult.value
             : [];
-        const storedCustomQuestions = readStoredCustomQuestions(applyId);
         const baseQuestions =
-          fetchedQuestions.length > 0 ||
-          fetchedSelectedQuestions.length > 0 ||
-          storedCustomQuestions.length > 0
+          fetchedQuestions.length > 0 || fetchedSelectedQuestions.length > 0
             ? fetchedQuestions
             : DEFAULT_QUESTIONS;
         const nextQuestions = mergeSelectedQuestions(
           baseQuestions,
           fetchedSelectedQuestions,
-          storedCustomQuestions,
         );
         const dedupedQuestions = mergeDuplicateQuestions(nextQuestions);
         const selectionSources =
           fetchedSelectedQuestions.length > 0
             ? fetchedSelectedQuestions
-            : [
-                ...storedCustomQuestions,
-                ...dedupedQuestions.filter((question) => question.selected),
-              ];
+            : dedupedQuestions.filter((question) => question.selected);
         const selectedQuestionRefs = uniqueQuestionsByContent(
           selectionSources,
         ).slice(0, MAX_SELECT);
@@ -367,7 +250,6 @@ export default function SelectQuestion({
 
         setQuestions(normalizedQuestions);
         setSelectedIds(preSelected);
-        persistSelectedCustomQuestions(preSelected, normalizedQuestions);
         notify(preSelected, normalizedQuestions);
       })
       .catch(() => {
@@ -387,7 +269,7 @@ export default function SelectQuestion({
     return () => {
       ignore = true;
     };
-  }, [applyId, notify, persistSelectedCustomQuestions]);
+  }, [applyId, notify]);
 
   const showToast = (
     message: string,
@@ -405,21 +287,18 @@ export default function SelectQuestion({
       if (selectedIds.length >= MAX_SELECT) return;
       const next = [...selectedIds, id];
       setSelectedIds(next);
-      persistSelectedCustomQuestions(next, questions);
       notify(next, questions);
       return;
     }
 
     const next = selectedIds.filter((questionId) => questionId !== id);
     setSelectedIds(next);
-    persistSelectedCustomQuestions(next, questions);
     notify(next, questions);
   };
 
   const handleRemove = (id: string) => {
     const next = selectedIds.filter((questionId) => questionId !== id);
     setSelectedIds(next);
-    persistSelectedCustomQuestions(next, questions);
     notify(next, questions);
     showToast("문항이 삭제되었습니다.", "normal");
   };
@@ -443,7 +322,6 @@ export default function SelectQuestion({
 
     setQuestions(nextQuestions);
     setSelectedIds(next);
-    persistSelectedCustomQuestions(next, nextQuestions);
     notify(next, nextQuestions);
     showToast("문항이 추가되었습니다.", "check");
   };

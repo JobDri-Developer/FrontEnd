@@ -78,7 +78,7 @@ export async function fetchQuestions(
       question: content,
       maxLength: charLimit,
       selected,
-      custom: custom ?? false,
+      custom,
     }),
   );
 }
@@ -127,7 +127,7 @@ export async function fetchSelectedQuestions(
       question: content,
       maxLength: charLimit,
       selected,
-      custom: custom ?? false,
+      custom,
     }),
   );
 }
