@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
 import { ResultScore } from "@/components/common/cards";
@@ -11,9 +17,20 @@ import { Lnb } from "@/components/common/lnb";
 import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
 import {
+  fetchMyJobPosting,
   fetchMyJobPostings,
   type SavedJobPosting,
 } from "@/lib/api/jobPostings";
+import {
+  getMockApplyResumeRecord,
+  type MockApplyProgressStatus,
+} from "@/lib/api/mockApplies";
+import {
+  createJdReviewSectionsFromJobPosting,
+  getJdReviewMetadataStorageKey,
+  getJdReviewSavedStorageKey,
+  getJdReviewStorageKey,
+} from "@/components/mock-application/jdReviewSections";
 
 interface ApplicationCardData {
   id: number;
@@ -21,22 +38,29 @@ interface ApplicationCardData {
   position: string;
   createdAt: string;
   score?: number;
+  jobPosting: SavedJobPosting;
+  mockApplyId?: number;
+  status?: MockApplyProgressStatus;
 }
 
 const EMPTY_APPLICATION_TITLE = "아직 지원 내역이 없어요!";
 const EMPTY_APPLICATION_DESCRIPTION =
   "기업과 직무에 맞춰 자소서를 작성하고 점수를 확인하세요";
 
-function mapJobPostingToApplication({
-  jobPostingId,
-  companyName,
-  detailClassificationName,
-}: SavedJobPosting): ApplicationCardData {
+function mapJobPostingToApplication(
+  jobPosting: SavedJobPosting,
+): ApplicationCardData {
+  const { jobPostingId, companyName, detailClassificationName } = jobPosting;
+  const resumeRecord = getMockApplyResumeRecord(jobPostingId);
+
   return {
     id: jobPostingId,
     company: companyName || "회사명 미입력",
     position: detailClassificationName || "직무 미분류",
     createdAt: "-",
+    jobPosting,
+    mockApplyId: resumeRecord?.mockApplyId,
+    status: resumeRecord?.status,
   };
 }
 
@@ -54,6 +78,75 @@ function isEmptyApplicationStateError(message: string) {
     message.includes("NetworkError") ||
     message.includes("Load failed")
   );
+}
+
+function getResumePath({
+  id,
+  mockApplyId,
+  status,
+}: Pick<ApplicationCardData, "id" | "mockApplyId" | "status">) {
+  if (!mockApplyId) {
+    return `/apply/virtual/${id}/jd-review`;
+  }
+
+  if (status === "ANSWER_WRITE") {
+    return `/apply/virtual/${mockApplyId}/write`;
+  }
+
+  if (status === "COMPLETED") {
+    return `/apply/virtual/${mockApplyId}/result`;
+  }
+
+  return `/apply/virtual/${mockApplyId}/questions`;
+}
+
+function saveJdReviewSessionFromJobPosting(jobPosting: SavedJobPosting) {
+  const {
+    jobPostingId,
+    companyName,
+    companySize,
+    detailClassificationId,
+    detailClassificationName,
+    task,
+    requirement,
+    preferred,
+  } = jobPosting;
+  const applyId = String(jobPostingId);
+  const sections = createJdReviewSectionsFromJobPosting({
+    companyName,
+    jobTitle: detailClassificationName,
+    task,
+    requirements: requirement,
+    preferredQualifications: preferred,
+  });
+
+  window.sessionStorage.setItem(
+    getJdReviewStorageKey(applyId),
+    JSON.stringify(sections),
+  );
+  window.sessionStorage.setItem(
+    getJdReviewSavedStorageKey(applyId),
+    JSON.stringify(jobPosting),
+  );
+  window.sessionStorage.setItem(
+    getJdReviewMetadataStorageKey(applyId),
+    JSON.stringify({
+      companySize,
+      detailClassificationId,
+    }),
+  );
+}
+
+function handleCardKeyDown(
+  event: ReactKeyboardEvent<HTMLElement>,
+  onResumeClick?: () => void,
+) {
+  if (!onResumeClick || (event.key !== "Enter" && event.key !== " ")) {
+    return;
+  }
+
+  event.preventDefault();
+  onResumeClick();
 }
 
 function KebabButton({
@@ -95,6 +188,8 @@ function KebabButton({
     <div
       ref={containerRef}
       className="relative flex h-6 w-6 shrink-0 items-center justify-center"
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
     >
       <button
         type="button"
@@ -164,11 +259,15 @@ function ApplicationMeta({
   );
 }
 
-function ApplicationStateBadge() {
+function ApplicationStateBadge({
+  status,
+}: {
+  status?: MockApplyProgressStatus;
+}) {
   return (
     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-line-neutral-default bg-bg-contents-default">
       <span className="text-cap12-semibold text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-        작성중
+        {status === "COMPLETED" ? "완료" : "작성중"}
       </span>
     </div>
   );
@@ -179,17 +278,26 @@ function PausedApplicationCard({
   position,
   createdAt,
   score,
+  status,
   onDeleteClick,
+  onResumeClick,
 }: ApplicationCardData & {
   onDeleteClick: () => void;
+  onResumeClick?: () => void;
 }) {
   return (
-    <article className="relative flex items-center self-stretch rounded-card bg-bg-contents-default px-7 py-6">
+    <article
+      role="button"
+      tabIndex={0}
+      className="relative flex cursor-pointer items-center self-stretch rounded-card bg-bg-contents-default px-7 py-6"
+      onClick={onResumeClick}
+      onKeyDown={(event) => handleCardKeyDown(event, onResumeClick)}
+    >
       <div className="flex min-w-0 flex-1 items-center gap-5">
         {typeof score === "number" ? (
           <ResultScore size="small" score={score} />
         ) : (
-          <ApplicationStateBadge />
+          <ApplicationStateBadge status={status} />
         )}
         <ApplicationMeta
           company={company}
@@ -210,17 +318,26 @@ function ResultApplicationCard({
   position,
   createdAt,
   score,
+  status,
   onDeleteClick,
+  onResumeClick,
 }: ApplicationCardData & {
   onDeleteClick: () => void;
+  onResumeClick?: () => void;
 }) {
   return (
-    <article className="relative flex flex-1 flex-col items-start justify-center gap-16 rounded-card bg-bg-contents-default px-6 py-5">
+    <article
+      role="button"
+      tabIndex={0}
+      className="relative flex flex-1 cursor-pointer flex-col items-start justify-center gap-16 rounded-card bg-bg-contents-default px-6 py-5"
+      onClick={onResumeClick}
+      onKeyDown={(event) => handleCardKeyDown(event, onResumeClick)}
+    >
       <div className="flex items-start justify-between self-stretch">
         {typeof score === "number" ? (
           <ResultScore size="small" score={score} />
         ) : (
-          <ApplicationStateBadge />
+          <ApplicationStateBadge status={status} />
         )}
         <KebabButton
           label={`${company} 모의 서류 결과 메뉴`}
@@ -260,10 +377,10 @@ export default function MockApplicationHomePageClient() {
   const [showDeleteToast, setShowDeleteToast] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const pausedApplications = applications.filter(
-    ({ score }) => typeof score !== "number",
+    ({ score, status }) => typeof score !== "number" && status !== "COMPLETED",
   );
   const resultApplications = applications.filter(
-    ({ score }) => typeof score === "number",
+    ({ score, status }) => typeof score === "number" || status === "COMPLETED",
   );
   const resultRows = createRows(resultApplications, 5);
   const hasApplicationData =
@@ -275,6 +392,18 @@ export default function MockApplicationHomePageClient() {
   const openDeleteConfirm = () => setShowDeleteConfirm(true);
   const closeDeleteConfirm = () => setShowDeleteConfirm(false);
   const closeDeleteToast = () => setShowDeleteToast(false);
+  const handleResumeApplication = async (application: ApplicationCardData) => {
+    if (!application.mockApplyId) {
+      try {
+        const latestJobPosting = await fetchMyJobPosting(application.id);
+        saveJdReviewSessionFromJobPosting(latestJobPosting);
+      } catch {
+        saveJdReviewSessionFromJobPosting(application.jobPosting);
+      }
+    }
+
+    router.push(getResumePath(application));
+  };
 
   useEffect(() => {
     fetchMyJobPostings()
@@ -383,13 +512,16 @@ export default function MockApplicationHomePageClient() {
                     </header>
 
                     <div className="flex flex-col items-center gap-2 self-stretch">
-                      {pausedApplications.map((application) => (
-                        <PausedApplicationCard
-                          key={application.id}
-                          {...application}
-                          onDeleteClick={openDeleteConfirm}
-                        />
-                      ))}
+	                      {pausedApplications.map((application) => (
+	                        <PausedApplicationCard
+	                          key={application.id}
+	                          {...application}
+	                          onDeleteClick={openDeleteConfirm}
+	                          onResumeClick={() =>
+	                            handleResumeApplication(application)
+	                          }
+	                        />
+	                      ))}
                     </div>
                   </section>
                 )}
@@ -411,13 +543,16 @@ export default function MockApplicationHomePageClient() {
                           key={rowIndex}
                           className="flex flex-col items-start gap-3 self-stretch md:flex-row"
                         >
-                          {row.map((application) => (
-                            <ResultApplicationCard
-                              key={application.id}
-                              {...application}
-                              onDeleteClick={openDeleteConfirm}
-                            />
-                          ))}
+	                          {row.map((application) => (
+	                            <ResultApplicationCard
+	                              key={application.id}
+	                              {...application}
+	                              onDeleteClick={openDeleteConfirm}
+	                              onResumeClick={() =>
+	                                handleResumeApplication(application)
+	                              }
+	                            />
+	                          ))}
                         </div>
                       ))}
                     </div>

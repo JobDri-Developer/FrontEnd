@@ -16,6 +16,7 @@ import {
 import {
   createApplyFromJobPosting,
   getSelectedApplyType,
+  saveMockApplyResumeRecord,
 } from "@/lib/api/mockApplies";
 import {
   emptyJdSections,
@@ -254,6 +255,12 @@ export default function MockApplicationJdReviewPage() {
           applyType: getSelectedApplyType(),
         });
         const nextApplyId = String(createdApply.mockApplyId);
+
+        saveMockApplyResumeRecord({
+          jobPostingId: savedJobPosting.jobPostingId,
+          mockApplyId: createdApply.mockApplyId,
+          status: "APPLICATION_CREATED",
+        });
 
         saveJdReviewSessionData({
           applyId: id,

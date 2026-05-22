@@ -344,6 +344,21 @@ export async function fetchMyJobPostings() {
   return result ?? [];
 }
 
+export async function fetchMyJobPosting(jobPostingId: number) {
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/api/job-postings/me/${jobPostingId}`,
+    {
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    },
+  );
+
+  return parseApiResponse<SavedJobPosting>(
+    response,
+    "내 지원 데이터를 불러오지 못했습니다.",
+  );
+}
+
 export async function fetchJobPostingIngestStatus(taskId: string) {
   const response = await fetchWithTimeout(
     `${API_BASE_URL}/api/job-postings/ingest/async/${taskId}`,

@@ -9,6 +9,7 @@ import InputSection, {
   type InputSectionHandle,
 } from "@/components/apply/InputSection";
 import { saveApply } from "@/lib/api/questions";
+import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
 
 interface WritePageClientProps {
   id: string;
@@ -23,6 +24,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
   const submit = async () => {
     const answers = inputRef.current?.getAnswers() ?? [];
     await saveApply(Number(id), answers);
+    updateMockApplyResumeStatus(Number(id), "COMPLETED");
     router.push(`/apply/virtual/${id}/result`);
   };
 

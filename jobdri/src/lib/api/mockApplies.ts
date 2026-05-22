@@ -9,6 +9,11 @@ interface ApiResponse<T> {
 }
 
 export type JobPostingApplyType = "MOCK" | "ACTUAL";
+export type MockApplyProgressStatus =
+  | "APPLICATION_CREATED"
+  | "QUESTION_SELECT"
+  | "ANSWER_WRITE"
+  | "COMPLETED";
 
 export interface MockApplyFromJobPosting {
   jobPostingId: number;
@@ -16,7 +21,15 @@ export interface MockApplyFromJobPosting {
   applyType: JobPostingApplyType;
 }
 
+export interface MockApplyResumeRecord {
+  jobPostingId: number;
+  mockApplyId: number;
+  status: MockApplyProgressStatus;
+  updatedAt: string;
+}
+
 export const APPLY_TYPE_STORAGE_KEY = "jobdri.applyType";
+const MOCK_APPLY_RESUME_STORAGE_KEY = "jobdri.mockApplyResumeRecords";
 
 function getAuthHeaders(): Record<string, string> {
   const token =
@@ -104,4 +117,100 @@ export function getSelectedApplyType(): JobPostingApplyType {
   return window.sessionStorage.getItem(APPLY_TYPE_STORAGE_KEY) === "MOCK"
     ? "MOCK"
     : "ACTUAL";
+}
+
+function isResumeRecord(value: unknown): value is MockApplyResumeRecord {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const record = value as Partial<MockApplyResumeRecord>;
+
+  return (
+    typeof record.jobPostingId === "number" &&
+    typeof record.mockApplyId === "number" &&
+    typeof record.status === "string"
+  );
+}
+
+export function getMockApplyResumeRecords(): MockApplyResumeRecord[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(
+      window.localStorage.getItem(MOCK_APPLY_RESUME_STORAGE_KEY) ?? "[]",
+    );
+
+    return Array.isArray(parsed) ? parsed.filter(isResumeRecord) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function getMockApplyResumeRecord(jobPostingId: number) {
+  return getMockApplyResumeRecords().find(
+    (record) => record.jobPostingId === jobPostingId,
+  );
+}
+
+export function saveMockApplyResumeRecord({
+  jobPostingId,
+  mockApplyId,
+  status,
+  updatedAt = new Date().toISOString(),
+}: {
+  jobPostingId: number;
+  mockApplyId: number;
+  status: MockApplyProgressStatus;
+  updatedAt?: string;
+}) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const records = getMockApplyResumeRecords();
+  const nextRecord: MockApplyResumeRecord = {
+    jobPostingId,
+    mockApplyId,
+    status,
+    updatedAt,
+  };
+  const nextRecords = [
+    nextRecord,
+    ...records.filter(
+      (record) =>
+        record.jobPostingId !== jobPostingId &&
+        record.mockApplyId !== mockApplyId,
+    ),
+  ];
+
+  window.localStorage.setItem(
+    MOCK_APPLY_RESUME_STORAGE_KEY,
+    JSON.stringify(nextRecords),
+  );
+}
+
+export function updateMockApplyResumeStatus(
+  mockApplyId: number,
+  status: MockApplyProgressStatus,
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const records = getMockApplyResumeRecords();
+  const targetRecord = records.find(
+    (record) => record.mockApplyId === mockApplyId,
+  );
+
+  if (!targetRecord) {
+    return;
+  }
+
+  saveMockApplyResumeRecord({
+    ...targetRecord,
+    status,
+  });
 }
