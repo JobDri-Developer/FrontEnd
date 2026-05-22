@@ -70,15 +70,22 @@ function createSavePayload(
   metadata?: JdReviewMetadata,
 ): JobPostingSavePayload {
   const companyName = getSectionValue(sections, "company");
+  const detailClassificationId = metadata?.detailClassificationId;
 
   if (!companyName) {
     throw new Error("회사명을 입력해주세요.");
   }
 
+  if (!detailClassificationId || detailClassificationId <= 0) {
+    throw new Error(
+      "직무 분류 정보가 없어 저장할 수 없습니다. 링크 또는 이미지로 공고를 입력하거나, 직접 작성용 소분류 선택 기능이 필요합니다.",
+    );
+  }
+
   return {
     companyName,
     companySize: metadata?.companySize?.trim() || "STARTUP",
-    detailClassificationId: metadata?.detailClassificationId ?? 0,
+    detailClassificationId,
     task: getSectionValue(sections, "main-task"),
     requirement: getSectionValue(sections, "qualification"),
     preferred: getSectionValue(sections, "preference"),

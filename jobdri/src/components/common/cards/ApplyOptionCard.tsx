@@ -52,6 +52,10 @@ export default function ApplyOptionCard({
   const isSelected = selected ?? internalSelected;
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+    if (disabled) {
+      return;
+    }
+
     const nextSelected = !isSelected;
 
     if (!isControlled) {
@@ -65,8 +69,9 @@ export default function ApplyOptionCard({
   return (
     <button
       type={type}
+      disabled={disabled}
       className={clsx(
-        "flex w-[552px] flex-col items-center justify-center gap-8 rounded-card-l border-[1.5px] text-center transition-[background-color,border-color,box-shadow]",
+        "flex w-[552px] flex-col items-center justify-center gap-8 rounded-card-l border-[1.5px] text-center transition-[background-color,border-color,box-shadow] disabled:cursor-not-allowed",
         disabled ? disabledStyle : isSelected ? selectedStyle : hoverableStyle,
         className,
       )}
