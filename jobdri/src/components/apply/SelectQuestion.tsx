@@ -14,41 +14,11 @@ export interface Question {
   id: string;
   question: string;
   maxLength?: number;
+  custom?: boolean;
 }
 
-const QUESTIONS: Question[] = [
-  {
-    id: "q1",
-    question:
-      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
-  },
-  {
-    id: "q2",
-    question: "사용자의 의견을 반영하여 디자인을 개선한 사례를 설명해 주세요.",
-  },
-  {
-    id: "q3",
-    question:
-      "프로젝트에서 마주친 기술적 문제를 어떻게 해결했는지 서술해 주세요.",
-  },
-  {
-    id: "q4",
-    question:
-      "시장 조사를 통해 새로운 기회를 발견한 경험에 대해 이야기해 주세요.",
-  },
-  {
-    id: "q5",
-    question: "협업 과정에서 갈등을 해결하고 성과를 낸 경험을 작성해 주세요.",
-  },
-  {
-    id: "q6",
-    question:
-      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
-  },
-];
-
 interface SelectQuestionProps {
-  applyId: string;
+  applyId: number;
   onSelectionChange?: (count: number) => void;
   onQuestionsChange?: (questions: Question[]) => void;
 }
@@ -60,13 +30,6 @@ export default function SelectQuestion({
 }: SelectQuestionProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchQuestions(applyId)
-      .then(setQuestions)
-      .finally(() => setIsLoading(false));
-  }, [applyId]);
-
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -77,6 +40,28 @@ export default function SelectQuestion({
   const customIdCounterRef = useRef(0);
   const [isOpen, setIsOpen] = useState(false);
 
+  const notify = (nextIds: string[], currentQuestions: Question[]) => {
+    const selected = currentQuestions.filter((question) =>
+      nextIds.includes(question.id),
+    );
+
+    onSelectionChange?.(selected.length);
+    onQuestionsChange?.(selected);
+  };
+
+  useEffect(() => {
+    fetchQuestions(applyId)
+      .then((fetched) => {
+        setQuestions(fetched);
+        const preSelected = fetched.filter((q) => q.selected).map((q) => q.id);
+        if (preSelected.length > 0) {
+          setSelectedIds(preSelected);
+          notify(preSelected, fetched);
+        }
+      })
+      .finally(() => setIsLoading(false));
+  }, [applyId]);
+
   const showToast = (
     message: string,
     variant: "normal" | "check" | "warning" | "dark" = "normal",
@@ -86,15 +71,6 @@ export default function SelectQuestion({
     setToastVariant(variant);
     setToastVisible(true);
     toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
-  };
-
-  const notify = (nextIds: string[], currentQuestions: Question[]) => {
-    const selected = currentQuestions.filter((question) =>
-      nextIds.includes(question.id),
-    );
-
-    onSelectionChange?.(selected.length);
-    onQuestionsChange?.(selected);
   };
 
   const handleChange = (id: string, isSelected: boolean) => {
@@ -119,7 +95,12 @@ export default function SelectQuestion({
   };
 
   const handleAdd = (question: string, maxLength: number) => {
-    const newQuestion = { id: `custom_${Date.now()}`, question, maxLength };
+    const newQuestion = {
+      id: `custom_${Date.now()}`,
+      question,
+      maxLength,
+      custom: true,
+    };
     const nextQuestions = [newQuestion, ...questions];
 
     setQuestions(nextQuestions);

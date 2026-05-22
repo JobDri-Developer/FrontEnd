@@ -9,6 +9,7 @@ import {
 } from "react";
 import { ChipQnumber } from "@/components/common/chips";
 import { InputMultiLine1000 } from "@/components/common/input";
+import { fetchSelectedQuestions } from "@/lib/api/questions";
 
 export interface StoredQuestion {
   id: string;
@@ -22,7 +23,7 @@ export interface InputSectionHandle {
 }
 
 interface InputSectionProps {
-  storageKey?: string;
+  applyId: number;
   onAllCompleteChange?: (allComplete: boolean) => void;
 }
 
@@ -69,18 +70,20 @@ function normalizeQuestions(value: string | null): StoredQuestion[] {
 }
 
 const InputSection = forwardRef<InputSectionHandle, InputSectionProps>(
-  function InputSection(
-    { storageKey = "selectedQuestions", onAllCompleteChange },
-    ref,
-  ) {
+  function InputSection({ applyId, onAllCompleteChange }, ref) {
     const [questions, setQuestions] =
       useState<StoredQuestion[]>(fallbackQuestions);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
     const [answersById, setAnswersById] = useState<Record<string, string>>({});
 
     useEffect(() => {
-      setQuestions(normalizeQuestions(sessionStorage.getItem(storageKey)));
-    }, [storageKey]);
+      fetchSelectedQuestions(applyId)
+        .then((fetched) => {
+          const normalized = normalizeQuestions(JSON.stringify(fetched));
+          setQuestions(normalized);
+        })
+        .catch(() => setQuestions(fallbackQuestions));
+    }, [applyId]);
 
     const activeQuestion = questions[activeQuestionIndex] ?? questions[0];
     const activeAnswer = activeQuestion
