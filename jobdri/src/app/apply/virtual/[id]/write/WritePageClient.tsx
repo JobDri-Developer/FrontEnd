@@ -8,6 +8,7 @@ import { ModalNotice } from "@/components/common/modal";
 import InputSection, {
   type InputSectionHandle,
 } from "@/components/apply/InputSection";
+import { saveApply } from "@/lib/api/questions";
 
 interface WritePageClientProps {
   id: string;
@@ -19,13 +20,19 @@ export default function WritePageClient({ id }: WritePageClientProps) {
   const [allComplete, setAllComplete] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
+  const submit = async () => {
+    const answers = inputRef.current?.getAnswers() ?? [];
+    await saveApply(Number(id), answers);
+    router.push(`/apply/virtual/${id}/result`);
+  };
+
   const handleSubmit = () => {
     if (inputRef.current?.hasUnderThreshold()) {
       setShowModal(true);
       return;
     }
 
-    router.push(`/apply/virtual/${id}/result`);
+    submit();
   };
 
   return (
@@ -62,7 +69,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
             }}
             primaryAction={{
               label: "확정하기",
-              onClick: () => router.push(`/apply/virtual/${id}/result`),
+              onClick: submit,
             }}
           />
         </div>
