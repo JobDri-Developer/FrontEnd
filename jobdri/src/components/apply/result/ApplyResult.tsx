@@ -1,0 +1,105 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { fetchSelectedQuestions } from "@/lib/api/questions";
+import { fetchAnalysis, type AnalysisResult } from "@/lib/api/result";
+import Sidebar from "@/components/apply/result/Sidebar";
+import Trybar from "./Trybar";
+import OverviewSection from "./OverviewSection";
+import DetailSection from "./DetailSection";
+
+interface ApplyResultProps {
+  applyId: number;
+}
+
+interface Question {
+  id: string;
+  question: string;
+}
+
+const FALLBACK_QUESTIONS: Question[] = [
+  { id: "f0", question: "지원 동기를 500자 이내로 작성해주세요." },
+  {
+    id: "f1",
+    question:
+      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
+  },
+  {
+    id: "f2",
+    question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요.",
+  },
+  {
+    id: "f3",
+    question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요.",
+  },
+  {
+    id: "f4",
+    question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요.",
+  },
+];
+
+const FALLBACK_ANALYSIS: AnalysisResult = {
+  mockApplyId: 0,
+  analysisId: 0,
+  status: "COMPLETED",
+  score: 69,
+  jobFit: 78,
+  impact: 51,
+  completeness: 78,
+  feedback: "경험을 구체적으로 기술했으나 성과에 대한 수치가 부족합니다.",
+  questions: [],
+};
+
+export default function ApplyResult({ applyId }: ApplyResultProps) {
+  const [questions, setQuestions] = useState<Question[]>(FALLBACK_QUESTIONS);
+  const [analysis, setAnalysis] = useState<AnalysisResult>(FALLBACK_ANALYSIS);
+  const [isOverview, setIsOverview] = useState(true);
+  const [activeId, setActiveId] = useState(FALLBACK_QUESTIONS[0].id);
+
+  useEffect(() => {
+    fetchSelectedQuestions(applyId)
+      .then((fetched) => {
+        if (fetched.length > 0) {
+          setQuestions(fetched);
+          setActiveId(fetched[0].id);
+        }
+      })
+      .catch(() => {});
+
+    fetchAnalysis(applyId)
+      .then(setAnalysis)
+      .catch(() => {});
+  }, [applyId]);
+
+  const handleOverview = () => {
+    setIsOverview(true);
+    setActiveId("");
+  };
+
+  const handleSelect = (id: string) => {
+    setIsOverview(false);
+    setActiveId(id);
+  };
+
+  const activeAnalysisQuestion = analysis.questions[Number(activeId)];
+
+  return (
+    <div className="flex-1 flex flex-row pt-8 h-full overflow-hidden">
+      <Trybar applyId={applyId} />
+      <Sidebar
+        questions={questions}
+        activeId={activeId}
+        onSelect={handleSelect}
+        onOverview={handleOverview}
+        isOverview={isOverview}
+      />
+      <section className="flex-1">
+        {isOverview ? (
+          <OverviewSection analysis={analysis} />
+        ) : (
+          <DetailSection question={activeAnalysisQuestion} />
+        )}
+      </section>
+    </div>
+  );
+}

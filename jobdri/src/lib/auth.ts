@@ -95,11 +95,14 @@ async function postAuth<T>(
   }
 
   if (!response.ok || !data.isSuccess) {
-    throw new AuthApiError(data.message || `${fallbackAction}에 실패했습니다.`, {
-      status: response.status,
-      code: data.code,
-      error: data.error,
-    });
+    throw new AuthApiError(
+      data.message || `${fallbackAction}에 실패했습니다.`,
+      {
+        status: response.status,
+        code: data.code,
+        error: data.error,
+      },
+    );
   }
 
   return data;
@@ -163,7 +166,10 @@ export function saveAuthTokens(tokens: AuthTokens, email?: string) {
     return;
   }
 
-  window.localStorage.setItem(AUTH_STORAGE_KEYS.accessToken, tokens.accessToken);
+  window.localStorage.setItem(
+    AUTH_STORAGE_KEYS.accessToken,
+    tokens.accessToken,
+  );
   window.localStorage.setItem(
     AUTH_STORAGE_KEYS.refreshToken,
     tokens.refreshToken,
@@ -223,4 +229,12 @@ export function getEmailFromAccessToken(accessToken: string) {
 
 export function getGoogleAuthorizationUrl() {
   return `${API_BASE_URL}/oauth2/authorization/google`;
+}
+
+export function getAuthHeaders(): Record<string, string> {
+  const token =
+    typeof window !== "undefined"
+      ? window.localStorage.getItem("jobdri.accessToken")
+      : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }

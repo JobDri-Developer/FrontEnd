@@ -1,3 +1,4 @@
+import { getAuthHeaders } from "../auth";
 import { API_BASE_URL, AUTH_STORAGE_KEYS } from "@/lib/auth";
 
 export interface QuestionItem {
