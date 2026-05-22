@@ -5,6 +5,7 @@ import type { HTMLAttributes } from "react";
 import clsx from "clsx";
 import { Button } from "@/components/common/buttons";
 import ModalPurchase from "@/components/common/modal/ModalPurchase";
+import type { PlanCode } from "@/lib/api/credit";
 
 interface CreditCardProps extends HTMLAttributes<HTMLElement> {
   creditCount?: number;
@@ -14,6 +15,7 @@ interface CreditCardProps extends HTMLAttributes<HTMLElement> {
   discountRate?: string;
   discountLabel?: string;
   buttonLabel?: string;
+  planCode: PlanCode;
   onPurchase?: () => void;
 }
 
@@ -25,6 +27,7 @@ export default function CreditCard({
   discountRate = "21%",
   discountLabel = "할인",
   buttonLabel = "구매하기",
+  planCode,
   onPurchase,
   className,
   ...articleProps
@@ -35,31 +38,26 @@ export default function CreditCard({
     setIsModalOpen(true);
   };
 
-  const handleConfirm = () => {
-    setIsModalOpen(false);
-    onPurchase?.();
-  };
-
   return (
     <>
       {isModalOpen && (
         <ModalPurchase
           creditCount={creditCount}
           price={price}
-          onConfirm={handleConfirm}
+          planCode={planCode}
           onClose={() => setIsModalOpen(false)}
           title="크레딧을 충전할까요?"
         />
       )}
       <article
         className={clsx(
-          "flex w-full flex-col items-center justify-center gap-10 self-stretch rounded-card bg-bg-contents-default px-8 pt-8 pb-7 shadow-card",
+          "flex w-full flex-col items-center h-full rounded-card bg-bg-contents-default px-8 pt-8 pb-7 shadow-card",
           className,
         )}
         {...articleProps}
       >
-        <div className="flex flex-col items-center justify-center gap-8 self-stretch">
-          <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-1 flex-col justify-between gap-8 w-full">
+          <div className="flex flex-col  items-center gap-4">
             <div className="flex items-end justify-center gap-1">
               <span className="text-center text-[32px] font-bold leading-[130%] text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
                 {creditCount}
@@ -79,7 +77,9 @@ export default function CreditCard({
                 </span>
               </div>
 
-              <div className="flex items-start">
+              <div
+                className={`flex items-start ${!discountRate ? "invisible" : ""}`}
+              >
                 <span className="text-center text-b16-med text-text-primary-strong [font-feature-settings:'liga'_off,'clig'_off]">
                   {discountRate}
                 </span>
@@ -94,7 +94,7 @@ export default function CreditCard({
             label={buttonLabel}
             size="large"
             styleType="secondary"
-            className="h-[46px] w-full px-4"
+            className="mt-auto h-[46px] items-end  w-full px-4"
             onClick={handlePurchaseClick}
           />
         </div>
