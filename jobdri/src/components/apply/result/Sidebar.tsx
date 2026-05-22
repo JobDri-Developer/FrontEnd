@@ -23,7 +23,7 @@ export default function Sidebar({
   onOverview,
   isOverview,
 }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleDetailClick = () => {
     if (isOverview) {

@@ -2,21 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { fetchSelectedQuestions } from "@/lib/api/questions";
+import { fetchAnalysis, type AnalysisResult } from "@/lib/api/result";
 import Sidebar from "@/components/apply/result/Sidebar";
 import ScoreCircle from "./ScoreCircle";
 import Alret from "./Alret";
 import SummaryCard from "./SummaryCard";
 import Trybar from "./Trybar";
-
-const MOCK_SCORES = [
-  { title: "직무 적합도", score: 78 },
-  { title: "성과 구체성", score: 51 },
-  { title: "완성도", score: 78 },
-];
-
-const averageScore = Math.round(
-  MOCK_SCORES.reduce((sum, s) => sum + s.score, 0) / MOCK_SCORES.length,
-);
 
 interface ApplyResultProps {
   applyId: number;
@@ -29,27 +20,27 @@ interface Question {
 
 const FALLBACK_QUESTIONS: Question[] = [
   { id: "f0", question: "지원 동기를 500자 이내로 작성해주세요." },
-  {
-    id: "f1",
-    question:
-      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
-  },
-  {
-    id: "f2",
-    question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요.",
-  },
-  {
-    id: "f3",
-    question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요.",
-  },
-  {
-    id: "f4",
-    question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요.",
-  },
+  { id: "f1", question: "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요." },
+  { id: "f2", question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요." },
+  { id: "f3", question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요." },
+  { id: "f4", question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요." },
 ];
+
+const FALLBACK_ANALYSIS: AnalysisResult = {
+  mockApplyId: 0,
+  analysisId: 0,
+  status: "COMPLETED",
+  score: 69,
+  jobFit: 78,
+  impact: 51,
+  completeness: 78,
+  feedback: "경험을 구체적으로 기술했으나 성과에 대한 수치가 부족합니다.",
+  questions: [],
+};
 
 export default function ApplyResult({ applyId }: ApplyResultProps) {
   const [questions, setQuestions] = useState<Question[]>(FALLBACK_QUESTIONS);
+  const [analysis, setAnalysis] = useState<AnalysisResult>(FALLBACK_ANALYSIS);
   const [isOverview, setIsOverview] = useState(true);
   const [activeId, setActiveId] = useState(FALLBACK_QUESTIONS[0].id);
 
@@ -61,6 +52,10 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
           setActiveId(fetched[0].id);
         }
       })
+      .catch(() => {});
+
+    fetchAnalysis(applyId)
+      .then(setAnalysis)
       .catch(() => {});
   }, [applyId]);
 
@@ -91,13 +86,18 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
         {isOverview ? (
           <div className="flex flex-col bg-bg-white p-10 w-full h-screen">
             <section className="flex items-center gap-10 py-6 px-6">
-              <ScoreCircle score={averageScore} />
-              <Alret score={averageScore} />
+              <ScoreCircle score={analysis.score} />
+              <div className="flex flex-col gap-2">
+                <Alret score={analysis.score} />
+                <p className="text-b16-med text-text-neutral-description">
+                  {analysis.feedback}
+                </p>
+              </div>
             </section>
             <div className="grid grid-cols-3 gap-4">
-              {MOCK_SCORES.map((s) => (
-                <SummaryCard key={s.title} title={s.title} score={s.score} />
-              ))}
+              <SummaryCard title="직무 적합도" score={analysis.jobFit} />
+              <SummaryCard title="성과 구체성" score={analysis.impact} />
+              <SummaryCard title="완성도" score={analysis.completeness} />
             </div>
           </div>
         ) : (

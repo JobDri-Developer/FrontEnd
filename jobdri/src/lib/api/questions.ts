@@ -1,3 +1,5 @@
+import { getAuthHeaders } from "../auth";
+
 export interface QuestionItem {
   id: string;
   question: string;
@@ -27,14 +29,6 @@ interface SelectedQuestionsApiResponse {
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    typeof window !== "undefined"
-      ? window.localStorage.getItem("jobdri.accessToken")
-      : null;
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 export async function fetchQuestions(
   mockApplyId: number,

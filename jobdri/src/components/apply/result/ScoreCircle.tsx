@@ -17,7 +17,7 @@ export default function ScoreCircle({
   const offset = CIRCUMFERENCE * (1 - progress);
 
   return (
-    <div className="relative flex h-30 w-30 items-center justify-center">
+    <div className="relative flex h-30 w-30 shrink-0 items-center justify-center">
       <svg
         viewBox="0 0 100 100"
         className="-rotate-90 absolute inset-0 h-full w-full"
