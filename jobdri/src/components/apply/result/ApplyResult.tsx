@@ -10,6 +10,7 @@ import DetailSection from "./DetailSection";
 
 interface ApplyResultProps {
   applyId: number;
+  onAnalysisError?: () => void;
 }
 
 interface Question {
@@ -46,7 +47,10 @@ function ResultLoadingState({ message }: { message: string }) {
   );
 }
 
-export default function ApplyResult({ applyId }: ApplyResultProps) {
+export default function ApplyResult({
+  applyId,
+  onAnalysisError,
+}: ApplyResultProps) {
   const [questions, setQuestions] = useState<Question[]>(FALLBACK_QUESTIONS);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<{
@@ -79,8 +83,9 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
               ? error.message
               : "분석 결과를 불러오지 못했습니다.",
         });
+        onAnalysisError?.();
       });
-  }, [applyId]);
+  }, [applyId, onAnalysisError]);
 
   const handleOverview = () => {
     setIsOverview(true);

@@ -6,7 +6,7 @@ import { ListQ, ListQCart } from "../common/list";
 import { scrollbarClass } from "../common/input/inputStyles";
 import { Toast } from "../common/toast";
 import AddQuestion from "./AddQuestion";
-import { fetchQuestions } from "@/lib/api/questions";
+import { fetchQuestions, fetchSelectedQuestions } from "@/lib/api/questions";
 
 const MAX_SELECT = 5;
 const CUSTOM_QUESTIONS_STORAGE_PREFIX = "jobdri.customQuestions";
@@ -70,8 +70,12 @@ function getCustomQuestionsStorageKey(applyId: number) {
   return `${CUSTOM_QUESTIONS_STORAGE_PREFIX}:${applyId}`;
 }
 
-function createStoredCustomQuestionId(question: Question, index: number) {
-  return `stored_custom_${question.questionId ?? index}_${normalizeQuestionText(
+function createMergedQuestionId(
+  prefix: string,
+  question: Question,
+  index: number,
+) {
+  return `${prefix}_${question.questionId ?? index}_${normalizeQuestionText(
     question.question,
   ).slice(0, 24)}`;
 }
@@ -96,7 +100,7 @@ function readStoredCustomQuestions(applyId: number): Question[] {
           question.question.trim().length > 0,
       )
       .map((question, index) => ({
-        id: createStoredCustomQuestionId(question as Question, index),
+        id: createMergedQuestionId("stored_custom", question as Question, index),
         questionId:
           typeof question.questionId === "number"
             ? question.questionId
@@ -110,6 +114,41 @@ function readStoredCustomQuestions(applyId: number): Question[] {
   } catch {
     return [];
   }
+}
+
+function uniqueQuestionsByContent(questions: Question[]) {
+  return questions.reduce<Question[]>((acc, question) => {
+    if (acc.some((savedQuestion) => isSameQuestion(savedQuestion, question))) {
+      return acc;
+    }
+
+    return [...acc, question];
+  }, []);
+}
+
+function mergeDuplicateQuestions(questions: Question[]) {
+  return questions.reduce<Question[]>((acc, question) => {
+    const existingIndex = acc.findIndex((savedQuestion) =>
+      isSameQuestion(savedQuestion, question),
+    );
+
+    if (existingIndex === -1) {
+      return [...acc, question];
+    }
+
+    const existingQuestion = acc[existingIndex];
+    const mergedQuestion = {
+      ...existingQuestion,
+      questionId: existingQuestion.questionId ?? question.questionId,
+      maxLength: existingQuestion.maxLength ?? question.maxLength,
+      selected: existingQuestion.selected || question.selected,
+      custom: existingQuestion.custom || question.custom,
+    };
+
+    return acc.map((savedQuestion, index) =>
+      index === existingIndex ? mergedQuestion : savedQuestion,
+    );
+  }, []);
 }
 
 function saveStoredCustomQuestions(applyId: number, questions: Question[]) {
@@ -178,6 +217,54 @@ function mergeStoredCustomQuestions(
   return [...customQuestions, ...mergedCandidates];
 }
 
+function mergeSelectedQuestions(
+  candidates: Question[],
+  selectedQuestions: Question[],
+  storedCustomQuestions: Question[],
+) {
+  const selectedQuestionsWithState = selectedQuestions.map((question) => ({
+    ...question,
+    selected: true,
+  }));
+  const storedAndSelectedCustomQuestions = uniqueQuestionsByContent([
+    ...selectedQuestionsWithState.filter((question) => question.custom),
+    ...storedCustomQuestions,
+  ]);
+  const mergedCandidates = mergeStoredCustomQuestions(
+    candidates,
+    storedAndSelectedCustomQuestions,
+  ).map((candidate) => {
+    const selectedQuestion = selectedQuestionsWithState.find((question) =>
+      isSameQuestion(candidate, question),
+    );
+
+    return selectedQuestion
+      ? {
+          ...candidate,
+          maxLength: candidate.maxLength ?? selectedQuestion.maxLength,
+          selected: true,
+          custom: candidate.custom || selectedQuestion.custom || false,
+        }
+      : candidate;
+  });
+  const missingSelectedQuestions = selectedQuestionsWithState
+    .filter(
+      (selectedQuestion) =>
+        !mergedCandidates.some((candidate) =>
+          isSameQuestion(candidate, selectedQuestion),
+        ),
+    )
+    .map((question, index) => ({
+      ...question,
+      id: createMergedQuestionId("selected", question, index),
+      maxLength: question.maxLength ?? 1000,
+      selected: true,
+      custom: question.custom ?? false,
+    }));
+
+  return [...missingSelectedQuestions, ...mergedCandidates];
+}
+
 export default function SelectQuestion({
   applyId,
   onSelectionChange,
@@ -230,27 +317,58 @@ export default function SelectQuestion({
   useEffect(() => {
     let ignore = false;
 
-    fetchQuestions(applyId)
-      .then((fetchedQuestions) => {
+    Promise.allSettled([
+      fetchQuestions(applyId),
+      fetchSelectedQuestions(applyId),
+    ])
+      .then(([questionsResult, selectedQuestionsResult]) => {
         if (ignore) return;
 
         setErrorMessage("");
 
+        const fetchedQuestions =
+          questionsResult.status === "fulfilled" ? questionsResult.value : [];
+        const fetchedSelectedQuestions =
+          selectedQuestionsResult.status === "fulfilled"
+            ? selectedQuestionsResult.value
+            : [];
         const storedCustomQuestions = readStoredCustomQuestions(applyId);
         const baseQuestions =
-          fetchedQuestions.length > 0 ? fetchedQuestions : DEFAULT_QUESTIONS;
-        const nextQuestions = mergeStoredCustomQuestions(
+          fetchedQuestions.length > 0 ||
+          fetchedSelectedQuestions.length > 0 ||
+          storedCustomQuestions.length > 0
+            ? fetchedQuestions
+            : DEFAULT_QUESTIONS;
+        const nextQuestions = mergeSelectedQuestions(
           baseQuestions,
+          fetchedSelectedQuestions,
           storedCustomQuestions,
         );
-        const preSelected = nextQuestions
+        const dedupedQuestions = mergeDuplicateQuestions(nextQuestions);
+        const selectionSources =
+          fetchedSelectedQuestions.length > 0
+            ? fetchedSelectedQuestions
+            : [
+                ...storedCustomQuestions,
+                ...dedupedQuestions.filter((question) => question.selected),
+              ];
+        const selectedQuestionRefs = uniqueQuestionsByContent(
+          selectionSources,
+        ).slice(0, MAX_SELECT);
+        const normalizedQuestions = dedupedQuestions.map((question) => ({
+          ...question,
+          selected: selectedQuestionRefs.some((selectedQuestion) =>
+            isSameQuestion(question, selectedQuestion),
+          ),
+        }));
+        const preSelected = normalizedQuestions
           .filter((q) => q.selected)
           .map((q) => q.id);
 
-        setQuestions(nextQuestions);
+        setQuestions(normalizedQuestions);
         setSelectedIds(preSelected);
-        persistSelectedCustomQuestions(preSelected, nextQuestions);
-        notify(preSelected, nextQuestions);
+        persistSelectedCustomQuestions(preSelected, normalizedQuestions);
+        notify(preSelected, normalizedQuestions);
       })
       .catch(() => {
         if (ignore) return;
