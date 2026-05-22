@@ -35,6 +35,7 @@ import IC_LIGHTBULB from "@/assets/ic_Lightbulb.svg";
 import IC_CHECK_M from "@/assets/ic_Check_M.svg";
 import IC_CHECK_COMPLETE from "@/assets/ic_Check_Complete.svg";
 import IC_EDIT from "@/assets/ic_Edit.svg";
+import IC_EMAIL from "@/assets/ic_Email.svg";
 import IC_LINK from "@/assets/ic_Link.svg";
 import IC_POLYGON_1 from "@/assets/ic_Polygon_1.svg";
 import IC_POLYGON_2 from "@/assets/ic_Polygon_2.svg";
@@ -78,6 +79,7 @@ const iconMap = {
   CHECK_M: IC_CHECK_M,
   CHECK_COMPLETE: IC_CHECK_COMPLETE,
   EDIT: IC_EDIT,
+  EMAIL: IC_EMAIL,
   LINK: IC_LINK,
   POLYGON_1: IC_POLYGON_1,
   POLYGON_2: IC_POLYGON_2,
