@@ -161,13 +161,17 @@ export default function Lnb({
             }`}
           >
             <div className="flex w-full items-center justify-between px-2 py-2">
-              <div className="flex items-center gap-[3px] text-label14-med text-icon-neutral-default [font-feature-settings:'liga'_off,'clig'_off]">
+              <button
+                type="button"
+                onClick={() => router.push("/credit")}
+                className="flex items-center gap-[3px] text-label14-med text-icon-neutral-default [font-feature-settings:'liga'_off,'clig'_off] hover:text-text-neutral-title"
+              >
                 <span>크레딧</span>
                 <Icon
                   type="EX_LINK"
                   className="h-4 w-4 text-icon-neutral-assistive"
                 />
-              </div>
+              </button>
               <div className="flex h-[21px] items-center justify-end gap-1">
                 <Icon
                   type="TOKEN"
