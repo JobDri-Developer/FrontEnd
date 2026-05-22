@@ -11,11 +11,18 @@
 
   /* GreenScale */
   --color-green-100: #f9fdee;
+  --color-green-150: #f3f9e5;
   --color-green-200: #eefacd;
   --color-green-300: #def69c;
   --color-green-400: #c8f05a;
   --color-green-500: #b9eb30;
   --color-green-600: #a6e007;
+  --color-green-700: #50b100;
+
+  /* PinkScale */
+  --color-pink-100: #ffeffb;
+  --color-pink-200: #ffe1f8;
+  --color-pink-400: #ff29d1;
 
   /* RedScale */
   --color-red-100: #fff2f2;
@@ -104,6 +111,19 @@
 
   --color-text-system-fail: var(--color-red-400);
   --color-text-system-complete: var(--color-green-600);
+
+  /* Highlight */
+  --color-fill-highlight-proven-default: var(--color-green-150);
+  --color-fill-highlight-proven-hober: var(--color-green-300);
+
+  --color-fill-highlight-fabricated-default: var(--color-pink-100);
+  --color-fill-highlight-fabricated-hover: var(--color-pink-200);
+  --color-fill-highlight-mentioned-default: var(--color-red-100);
+  --color-fill-highlight-mentioned-hover: var(--color-fill-system-fail-hover);
+
+  --color-text-highlight-proven: var(--color-green-700);
+  --color-text-highlight-mentioned: var(--color-red-400);
+  --color-text-highlight-fabricated: var(--color-pink-400);
 
   /* Icon */
   --color-icon-primary-strong: var(--color-blue-700);

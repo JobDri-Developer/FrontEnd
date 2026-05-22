@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { fetchSelectedQuestions } from "@/lib/api/questions";
 import { fetchAnalysis, type AnalysisResult } from "@/lib/api/result";
 import Sidebar from "@/components/apply/result/Sidebar";
-import ScoreCircle from "./ScoreCircle";
-import Alret from "./Alret";
-import SummaryCard from "./SummaryCard";
 import Trybar from "./Trybar";
+import OverviewSection from "./OverviewSection";
+import DetailSection from "./DetailSection";
 
 interface ApplyResultProps {
   applyId: number;
@@ -20,10 +19,23 @@ interface Question {
 
 const FALLBACK_QUESTIONS: Question[] = [
   { id: "f0", question: "지원 동기를 500자 이내로 작성해주세요." },
-  { id: "f1", question: "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요." },
-  { id: "f2", question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요." },
-  { id: "f3", question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요." },
-  { id: "f4", question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요." },
+  {
+    id: "f1",
+    question:
+      "데이터를 기반으로 문제점을 파악하고 성과를 개선해 본 경험을 서술해 주세요.",
+  },
+  {
+    id: "f2",
+    question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요.",
+  },
+  {
+    id: "f3",
+    question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요.",
+  },
+  {
+    id: "f4",
+    question: "프로젝트에서 마주친 기술적 어려움과 해결 방법을 설명해주세요.",
+  },
 ];
 
 const FALLBACK_ANALYSIS: AnalysisResult = {
@@ -69,7 +81,9 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
     setActiveId(id);
   };
 
-  const activeQuestion = questions.find((q) => q.id === activeId);
+  const activeAnalysisQuestion = analysis.questions.find(
+    (q) => String(q.questionId) === activeId,
+  );
 
   return (
     <div className="flex-1 flex flex-row py-8 h-screen">
@@ -81,30 +95,11 @@ export default function ApplyResult({ applyId }: ApplyResultProps) {
         onOverview={handleOverview}
         isOverview={isOverview}
       />
-
       <section className="flex-1">
         {isOverview ? (
-          <div className="flex flex-col bg-bg-white p-10 w-full h-screen">
-            <section className="flex items-center gap-10 py-6 px-6">
-              <ScoreCircle score={analysis.score} />
-              <div className="flex flex-col gap-2">
-                <Alret score={analysis.score} />
-                <p className="text-b16-med text-text-neutral-description">
-                  {analysis.feedback}
-                </p>
-              </div>
-            </section>
-            <div className="grid grid-cols-3 gap-4">
-              <SummaryCard title="직무 적합도" score={analysis.jobFit} />
-              <SummaryCard title="성과 구체성" score={analysis.impact} />
-              <SummaryCard title="완성도" score={analysis.completeness} />
-            </div>
-          </div>
+          <OverviewSection analysis={analysis} />
         ) : (
-          <div>
-            <h2 className="text-t20-semibold">{activeQuestion?.question}</h2>
-            {/* 개선안 상세 콘텐츠 */}
-          </div>
+          <DetailSection question={activeAnalysisQuestion} />
         )}
       </section>
     </div>
