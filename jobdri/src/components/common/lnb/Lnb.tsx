@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
 import { ModalNotice } from "@/components/common/modal";
+import { AUTH_STORAGE_KEYS, getStoredAuthEmail } from "@/lib/auth";
 
 type LnbItemKey = "experience" | "apply";
 
@@ -26,7 +27,7 @@ const navItems: LnbNavItem[] = [
     key: "apply",
     label: "모의서류지원",
     iconType: "APPLY",
-    href: "/mock-application",
+    href: "/apply",
   },
   { key: "experience", label: "경험기록장", iconType: "EX_S" },
 ];
@@ -34,12 +35,47 @@ const navItems: LnbNavItem[] = [
 const navItemBaseClassName =
   "flex h-9 items-center gap-2 rounded-cta-l p-3 text-sub14-med";
 
+const defaultEmail = "jobdri@gmail.com";
+
+function subscribeToStoredEmail(onStoreChange: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === AUTH_STORAGE_KEYS.userEmail) {
+      onStoreChange();
+    }
+  };
+
+  window.addEventListener("storage", handleStorage);
+
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+  };
+}
+
+function getStoredEmailSnapshot() {
+  return getStoredAuthEmail() ?? "";
+}
+
+function getServerStoredEmailSnapshot() {
+  return "";
+}
+
+function getEmailInitial(email: string) {
+  return email.trim().charAt(0).toUpperCase() || "J";
+}
+
 export default function Lnb({
   initialActiveItem,
-  email = "jobdri@gmail.com",
+  email,
   creditCount = 32,
 }: LnbProps) {
   const router = useRouter();
+  const storedEmail = useSyncExternalStore(
+    subscribeToStoredEmail,
+    getStoredEmailSnapshot,
+    getServerStoredEmailSnapshot,
+  );
+  const displayEmail = (email ?? storedEmail) || defaultEmail;
+  const emailInitial = getEmailInitial(displayEmail);
   const [isFold, setIsFold] = useState(false);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [activeItem, setActiveItem] = useState<LnbItemKey | undefined>(
@@ -151,11 +187,11 @@ export default function Lnb({
             }`}
           >
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-text-neutral-caption text-[14px] font-medium leading-[140%] text-text-neutral-white">
-              J
+              {emailInitial}
             </div>
             {!isFold && (
               <span className="truncate text-cap12-med text-text-neutral-caption">
-                {email}
+                {displayEmail}
               </span>
             )}
           </div>

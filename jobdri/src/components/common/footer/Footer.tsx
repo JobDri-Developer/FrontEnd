@@ -10,7 +10,6 @@ interface FooterActionProps extends Omit<
   "children"
 > {
   label?: string;
-  /** 클릭 시 이동할 경로. onClick과 함께 쓸 경우 onClick이 먼저 실행됩니다. */
   href?: string;
 }
 
@@ -46,31 +45,35 @@ export default function Footer({
     ...ctaButtonProps
   } = ctaAction;
 
-  const handleBack = (e: React.MouseEvent<HTMLButtonElement>) => {
-    backOnClick?.(e);
-    if (backHref) router.push(backHref);
+  const handleBack = (event: React.MouseEvent<HTMLButtonElement>) => {
+    backOnClick?.(event);
+    if (backHref && !event.defaultPrevented) router.push(backHref);
   };
 
-  const handleCta = (e: React.MouseEvent<HTMLButtonElement>) => {
-    ctaOnClick?.(e);
-    if (ctaHref && !ctaButtonProps.disabled) router.push(ctaHref);
+  const handleCta = (event: React.MouseEvent<HTMLButtonElement>) => {
+    ctaOnClick?.(event);
+    if (ctaHref && !ctaButtonProps.disabled && !event.defaultPrevented) {
+      router.push(ctaHref);
+    }
   };
 
   return (
     <footer
       className={clsx(
-        "flex w-full shrink-0 fixed bottom-0 items-center justify-center gap-8 border-t border-line-neutral-default bg-bg-contents-assistive  pt-4 pb-8",
+        "relative left-1/2 flex w-screen shrink-0 -translate-x-1/2 items-center justify-center gap-8 border-t border-line-neutral-default bg-bg-contents-assistive pt-4 pb-8",
         className,
       )}
     >
-      <div className="flex max-w-[1116px] mx-auto flex-1 items-center justify-between">
-        {!hideBackAction && (
+      <div className="mx-auto flex w-full max-w-[var(--width-default)] items-start justify-between">
+        {hideBackAction ? (
+          <div aria-hidden="true" className="h-[38px] w-[98px] shrink-0" />
+        ) : (
           <Button
             label={backLabel}
             styleType="tertiary"
             size="medium"
             iconType="ARROW_L"
-            className={backClassName}
+            className={clsx("!gap-0.5", backClassName)}
             onClick={handleBack}
             {...backButtonProps}
           />

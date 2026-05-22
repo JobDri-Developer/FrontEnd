@@ -9,6 +9,7 @@ import type {
   SetStateAction,
 } from "react";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import {
   Button,
@@ -17,6 +18,16 @@ import {
 } from "@/components/common/buttons";
 import { InputMain, InputSingleLine } from "@/components/common/input";
 import { Tooltip } from "@/components/common/tooltip";
+import { ROUTES } from "@/constants/routes";
+import {
+  AuthApiError,
+  confirmEmailVerification,
+  getGoogleAuthorizationUrl,
+  loginWithEmail,
+  saveAuthTokens,
+  sendEmailVerification,
+  signupWithEmail,
+} from "@/lib/auth";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,20}$/;
@@ -26,14 +37,16 @@ const passwordMaxLengthMessage = "비밀번호는 최대 20자까지만 가능�
 const passwordMismatchMessage = "비밀번호가 일치하지 않습니다";
 const verificationCodeLength = 6;
 const initialVerificationCode = Array(verificationCodeLength).fill("");
-const verificationErrorMessage = "인증번호를 다시 확인해주세요.";
-const mockVerificationSuccessCode = "123456";
+const defaultVerificationErrorMessage = "인증번호를 다시 확인해주세요.";
+const loginValidationErrorMessage = "이메일과 비밀번호를 확인해주세요";
 
 export default function EmailLoginScreen() {
+  const router = useRouter();
   const [authMode, setAuthMode] = useState<
     "login" | "signup" | "verify" | "success"
   >("login");
   const [showCreditTooltip, setShowCreditTooltip] = useState(true);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -41,7 +54,20 @@ export default function EmailLoginScreen() {
     initialVerificationCode,
   );
   const [hasVerificationError, setHasVerificationError] = useState(false);
+  const [verificationErrorMessage, setVerificationErrorMessage] = useState(
+    defaultVerificationErrorMessage,
+  );
   const [loginError, setLoginError] = useState(false);
+  const [loginErrorMessage, setLoginErrorMessage] = useState(
+    loginValidationErrorMessage,
+  );
+  const [isLoginSubmitting, setIsLoginSubmitting] = useState(false);
+  const [signupErrorMessage, setSignupErrorMessage] = useState("");
+  const [isSignupSubmitting, setIsSignupSubmitting] = useState(false);
+  const [isVerificationSubmitting, setIsVerificationSubmitting] =
+    useState(false);
+  const [isResendingVerificationCode, setIsResendingVerificationCode] =
+    useState(false);
   const verificationInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const isLoginReady = email.length > 0 && password.length > 0;
@@ -60,6 +86,7 @@ export default function EmailLoginScreen() {
   const hasPasswordMismatchError =
     passwordConfirm.length > 0 && passwordConfirm !== password;
   const isSignupReady =
+    name.trim().length > 0 &&
     emailPattern.test(email) &&
     passwordPattern.test(password) &&
     passwordConfirm === password;
@@ -91,6 +118,9 @@ export default function EmailLoginScreen() {
   ) => {
     setter(value);
     setLoginError(false);
+    setLoginErrorMessage(loginValidationErrorMessage);
+    setSignupErrorMessage("");
+    setVerificationErrorMessage(defaultVerificationErrorMessage);
     hideCreditTooltip();
   };
 
@@ -200,57 +230,117 @@ export default function EmailLoginScreen() {
     fillVerificationCode(index, event.clipboardData.getData("text"));
   };
 
-  const handleLoginSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleLoginSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (
+      isLoginSubmitting ||
       !isLoginReady ||
       !emailPattern.test(email) ||
       !passwordPattern.test(password)
     ) {
       setLoginError(true);
+      setLoginErrorMessage(loginValidationErrorMessage);
       return;
     }
 
-    setLoginError(true);
+    setLoginError(false);
+    setIsLoginSubmitting(true);
+    hideCreditTooltip();
+
+    try {
+      const tokens = await loginWithEmail({ email, password });
+      saveAuthTokens(tokens, email);
+      router.push(ROUTES.APPLY);
+    } catch (error) {
+      setLoginError(true);
+      setLoginErrorMessage(
+        error instanceof AuthApiError
+          ? error.errorDetail || error.message
+          : "로그인 중 문제가 발생했습니다.",
+      );
+    } finally {
+      setIsLoginSubmitting(false);
+    }
   };
 
-  const handleSignupSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!isSignupReady || !emailPattern.test(email)) {
-      return;
-    }
-
-    setVerificationCode([...initialVerificationCode]);
-    setHasVerificationError(false);
-    setAuthMode("verify");
+  const handleGoogleLogin = () => {
+    window.location.assign(getGoogleAuthorizationUrl());
   };
 
-  const handleVerificationSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSignupSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!isVerificationReady) {
+    if (isSignupSubmitting || !isSignupReady || !emailPattern.test(email)) {
       return;
     }
 
-    if (verificationCode.join("") === mockVerificationSuccessCode) {
+    setSignupErrorMessage("");
+    setIsSignupSubmitting(true);
+
+    try {
+      await sendEmailVerification({ email });
+      setVerificationCode([...initialVerificationCode]);
+      setHasVerificationError(false);
+      setVerificationErrorMessage(defaultVerificationErrorMessage);
+      setAuthMode("verify");
+    } catch (error) {
+      setSignupErrorMessage(
+        error instanceof AuthApiError
+          ? error.errorDetail || error.message
+          : "인증번호 발송 중 문제가 발생했습니다.",
+      );
+    } finally {
+      setIsSignupSubmitting(false);
+    }
+  };
+
+  const handleVerificationSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (isVerificationSubmitting || !isVerificationReady) {
+      return;
+    }
+
+    setIsVerificationSubmitting(true);
+
+    try {
+      await confirmEmailVerification({
+        email,
+        code: verificationCode.join(""),
+      });
+      await signupWithEmail({
+        name: name.trim(),
+        email,
+        password,
+      });
       setAuthMode("success");
       setVerificationCode([...initialVerificationCode]);
       setHasVerificationError(false);
-      return;
-    }
+      setVerificationErrorMessage(defaultVerificationErrorMessage);
+    } catch (error) {
+      setVerificationCode([...initialVerificationCode]);
+      setHasVerificationError(true);
+      setVerificationErrorMessage(
+        error instanceof AuthApiError
+          ? error.errorDetail || error.message
+          : defaultVerificationErrorMessage,
+      );
 
-    setVerificationCode([...initialVerificationCode]);
-    setHasVerificationError(true);
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    } finally {
+      setIsVerificationSubmitting(false);
     }
   };
 
   const handleModeChange = (mode: "login" | "signup") => {
     setAuthMode(mode);
     setLoginError(false);
+    setSignupErrorMessage("");
+    setVerificationErrorMessage(defaultVerificationErrorMessage);
+    setName("");
     setEmail("");
     setPassword("");
     setPasswordConfirm("");
@@ -267,11 +357,31 @@ export default function EmailLoginScreen() {
     setAuthMode("signup");
     setVerificationCode([...initialVerificationCode]);
     setHasVerificationError(false);
+    setVerificationErrorMessage(defaultVerificationErrorMessage);
     hideCreditTooltip();
   };
 
-  const handleResendVerificationCode = () => {
+  const handleResendVerificationCode = async () => {
+    if (isResendingVerificationCode) {
+      return;
+    }
+
     resetVerificationToInitial();
+    setVerificationErrorMessage(defaultVerificationErrorMessage);
+    setIsResendingVerificationCode(true);
+
+    try {
+      await sendEmailVerification({ email });
+    } catch (error) {
+      setHasVerificationError(true);
+      setVerificationErrorMessage(
+        error instanceof AuthApiError
+          ? error.errorDetail || error.message
+          : "인증번호 재발송 중 문제가 발생했습니다.",
+      );
+    } finally {
+      setIsResendingVerificationCode(false);
+    }
   };
 
   return (
@@ -304,7 +414,10 @@ export default function EmailLoginScreen() {
                 verificationCode={verificationCode}
                 verificationInputRefs={verificationInputRefs}
                 hasVerificationError={hasVerificationError}
+                verificationErrorMessage={verificationErrorMessage}
                 isVerificationReady={isVerificationReady}
+                isSubmitting={isVerificationSubmitting}
+                isResending={isResendingVerificationCode}
                 onBack={handleBackToSignup}
                 onCodeChange={handleVerificationCodeChange}
                 onCodeFocus={handleVerificationCodeFocus}
@@ -345,6 +458,7 @@ export default function EmailLoginScreen() {
                         autoComplete="email"
                         placeholder="내용을 입력해주세요."
                         value={email}
+                        disabled={isLoginSubmitting}
                         hasError={loginError}
                         className="self-stretch"
                         onChange={(value) =>
@@ -358,23 +472,20 @@ export default function EmailLoginScreen() {
                         autoComplete="current-password"
                         placeholder="내용을 입력해주세요."
                         value={password}
-                        error={
-                          loginError
-                            ? "이메일과 비밀번호를 확인해주세요"
-                            : undefined
-                        }
+                        disabled={isLoginSubmitting}
+                        error={loginError ? loginErrorMessage : undefined}
                         className="self-stretch"
                         onChange={handlePasswordChange}
                       />
                     </div>
 
                     <Button
-                      label="로그인"
+                      label={isLoginSubmitting ? "로그인 중" : "로그인"}
                       styleType="secondary"
                       size="large"
                       active={isLoginReady}
                       className="self-stretch"
-                      disabled={!isLoginReady}
+                      disabled={!isLoginReady || isLoginSubmitting}
                       type="submit"
                     />
                   </div>
@@ -387,6 +498,7 @@ export default function EmailLoginScreen() {
                     size="large"
                     iconType="GOOGLE"
                     className="self-stretch"
+                    onClick={handleGoogleLogin}
                   />
                 </div>
 
@@ -410,6 +522,20 @@ export default function EmailLoginScreen() {
                   <div className="flex flex-col items-start gap-5 self-stretch">
                     <div className="flex flex-col items-start gap-2 self-stretch">
                       <InputMain
+                        label="이름"
+                        name="signup-name"
+                        type="ID"
+                        inputType="text"
+                        autoComplete="name"
+                        placeholder="내용을 입력해주세요."
+                        value={name}
+                        disabled={isSignupSubmitting}
+                        className="self-stretch"
+                        onChange={(value) =>
+                          handleInputChange(value, setName)
+                        }
+                      />
+                      <InputMain
                         label="이메일 주소"
                         name="signup-email"
                         type="ID"
@@ -417,7 +543,12 @@ export default function EmailLoginScreen() {
                         autoComplete="email"
                         placeholder="내용을 입력해주세요."
                         value={email}
-                        hasError={hasSignupEmailValidationError}
+                        disabled={isSignupSubmitting}
+                        hasError={
+                          hasSignupEmailValidationError ||
+                          Boolean(signupErrorMessage)
+                        }
+                        error={signupErrorMessage || undefined}
                         className="self-stretch"
                         onChange={(value) =>
                           handleInputChange(value, setEmail)
@@ -431,6 +562,7 @@ export default function EmailLoginScreen() {
                         autoComplete="new-password"
                         placeholder="내용을 입력해주세요."
                         value={password}
+                        disabled={isSignupSubmitting}
                         error={passwordError}
                         className="self-stretch"
                         onChange={handlePasswordChange}
@@ -443,7 +575,7 @@ export default function EmailLoginScreen() {
                         autoComplete="new-password"
                         placeholder="내용을 입력해주세요."
                         value={passwordConfirm}
-                        disabled={password.length === 0}
+                        disabled={password.length === 0 || isSignupSubmitting}
                         error={
                           hasPasswordMismatchError
                             ? passwordMismatchMessage
@@ -455,12 +587,14 @@ export default function EmailLoginScreen() {
                     </div>
 
                     <Button
-                      label="회원가입"
+                      label={
+                        isSignupSubmitting ? "인증번호 발송 중" : "회원가입"
+                      }
                       styleType="secondary"
                       size="large"
                       active={isSignupReady}
                       className="self-stretch"
-                      disabled={!isSignupReady}
+                      disabled={!isSignupReady || isSignupSubmitting}
                       type="submit"
                     />
                   </div>
@@ -473,6 +607,7 @@ export default function EmailLoginScreen() {
                     size="large"
                     iconType="GOOGLE"
                     className="self-stretch"
+                    onClick={handleGoogleLogin}
                   />
                 </div>
 
@@ -509,7 +644,10 @@ interface EmailVerificationContentProps {
   verificationCode: string[];
   verificationInputRefs: MutableRefObject<Array<HTMLInputElement | null>>;
   hasVerificationError: boolean;
+  verificationErrorMessage: string;
   isVerificationReady: boolean;
+  isSubmitting: boolean;
+  isResending: boolean;
   onBack: () => void;
   onCodeChange: (index: number, value: string) => void;
   onCodeFocus: () => void;
@@ -529,7 +667,10 @@ function EmailVerificationContent({
   verificationCode,
   verificationInputRefs,
   hasVerificationError,
+  verificationErrorMessage,
   isVerificationReady,
+  isSubmitting,
+  isResending,
   onBack,
   onCodeChange,
   onCodeFocus,
@@ -585,6 +726,7 @@ function EmailVerificationContent({
                   inputMode="numeric"
                   autoComplete={index === 0 ? "one-time-code" : "off"}
                   maxLength={1}
+                  disabled={isSubmitting}
                   aria-label={`인증번호 ${index + 1}번째 자리`}
                   className="!w-[47px] gap-0"
                   wrapperClassName="h-[63px] w-[47px]"
@@ -614,20 +756,21 @@ function EmailVerificationContent({
               인증코드가 오지 않았나요?
             </span>
             <TextOnlyButton
-              label="다시 보내기"
+              label={isResending ? "보내는 중" : "다시 보내기"}
               size="small"
               styleType="primary"
+              disabled={isResending}
               onClick={onResend}
             />
           </div>
         </div>
 
         <Button
-          label="회원가입"
+          label={isSubmitting ? "처리 중" : "회원가입"}
           styleType="secondary"
           size="large"
           active={isVerificationReady}
-          disabled={!isVerificationReady}
+          disabled={!isVerificationReady || isSubmitting}
           className="self-stretch"
           type="submit"
         />

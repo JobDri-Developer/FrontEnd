@@ -13,12 +13,18 @@ type ImageModalStep = "upload" | "reading" | "failed";
 
 function isUrlFormat(value: string) {
   const trimmedValue = value.trim();
-  if (!trimmedValue || /\s/.test(trimmedValue)) return false;
+
+  if (!trimmedValue || /\s/.test(trimmedValue)) {
+    return false;
+  }
+
   const valueWithProtocol = /^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(trimmedValue)
     ? trimmedValue
     : `https://${trimmedValue}`;
+
   try {
     const url = new URL(valueWithProtocol);
+
     return (
       ["http:", "https:"].includes(url.protocol) && url.hostname.includes(".")
     );
@@ -59,12 +65,14 @@ const JdInputPageClient = forwardRef<
       setIsLinkModalOpen(true);
       return;
     }
+
     if (selectedMethod === "image") {
       setSelectedImageFile(null);
       setImageModalStep("upload");
       setIsImageModalOpen(true);
       return;
     }
+
     if (selectedMethod === "manual") {
       router.push(manualJdReviewPath);
     }
@@ -72,8 +80,13 @@ const JdInputPageClient = forwardRef<
 
   useImperativeHandle(ref, () => ({ handleCtaClick }));
 
-  const closeLinkModal = () => setIsLinkModalOpen(false);
-  const closeImageModal = () => setIsImageModalOpen(false);
+  const closeLinkModal = () => {
+    setIsLinkModalOpen(false);
+  };
+
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+  };
 
   const resetToUploadStart = () => {
     setIsLinkModalOpen(false);
@@ -85,11 +98,14 @@ const JdInputPageClient = forwardRef<
     setSelectedImageFile(null);
   };
 
-  const returnToUploadedImage = () => {
+  const cancelImageReading = () => {
     setIsLinkModalOpen(false);
-    setIsImageModalOpen(true);
-    onMethodChange("image");
+    setIsImageModalOpen(false);
     setImageModalStep("upload");
+
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    }
   };
 
   const restartImageUpload = () => {
@@ -101,16 +117,21 @@ const JdInputPageClient = forwardRef<
   };
 
   const submitLinkInput = () => {
-    if (!hasLinkText) return;
+    if (!hasLinkText) {
+      return;
+    }
+
     if (!isUrlFormat(jdLink)) {
       setLinkModalStep("failed");
       return;
     }
+
     setLinkModalStep("reading");
   };
 
   const selectMethodFromFailure = (method: JdInputMethod) => {
     onMethodChange(method);
+
     if (method === "link") {
       setJdLink("");
       setLinkModalStep("input");
@@ -118,6 +139,7 @@ const JdInputPageClient = forwardRef<
       setIsLinkModalOpen(true);
       return;
     }
+
     if (method === "image") {
       setSelectedImageFile(null);
       setImageModalStep("upload");
@@ -125,6 +147,7 @@ const JdInputPageClient = forwardRef<
       setIsImageModalOpen(true);
       return;
     }
+
     router.push(manualJdReviewPath);
   };
 
@@ -132,14 +155,7 @@ const JdInputPageClient = forwardRef<
     <>
       <div className="flex-1 bg-line-neutral-assistive px-6 py-6">
         <div className="mx-auto flex w-[1280px] flex-col">
-          <Header
-            currentStep={2}
-            leftAction={{
-              label: "돌아가기",
-              iconType: "HOME_S",
-              onClick: () => router.push("/"),
-            }}
-          />
+          <Header currentStep={2} />
 
           <section className="flex flex-1 flex-col items-center gap-8 self-stretch bg-bg-default px-[82px] pt-8 pb-20">
             <div className="flex w-[1116px] max-w-[1440px] flex-col items-center gap-8">
@@ -271,8 +287,8 @@ const JdInputPageClient = forwardRef<
             value=""
             onChange={() => undefined}
             onSubmit={restartImageUpload}
-            onCancel={returnToUploadedImage}
-            onClose={returnToUploadedImage}
+            onCancel={cancelImageReading}
+            onClose={cancelImageReading}
             title="이미지를 읽고 있습니다"
             description="이미지가 부적절한 경우 제대로 추출되지 않을 수 있습니다"
             submitLabel="다시 입력하기"

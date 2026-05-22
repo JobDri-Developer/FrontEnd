@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
 import { Button } from "@/components/common/buttons";
 import DropDown from "@/components/common/dropdown/DropDown";
+import useOutsideClick from "@/hooks/useOutsideClick";
 import { InputSingleLine } from "../input";
 
 interface ModalAddProps {
@@ -13,9 +14,12 @@ interface ModalAddProps {
 }
 
 export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
   const [question, setQuestion] = useState("");
   const [maxLength, setMaxLength] = useState("1000");
   const [error, setError] = useState("");
+
+  useOutsideClick(modalRef, onClose);
 
   const handleSubmit = () => {
     if (question.trim() === "") {
@@ -28,7 +32,10 @@ export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-bg-lightbox-default z-50">
-      <div className="flex flex-col bg-fill-quaternary-default rounded-card w-[480px] overflow-visible shadow-card">
+      <div
+        ref={modalRef}
+        className="flex flex-col bg-fill-quaternary-default rounded-card w-[480px] overflow-visible shadow-card"
+      >
         {/* X 버튼 */}
         <div className="flex justify-end px-7 pt-6">
           <button
@@ -67,6 +74,7 @@ export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
                 <InputSingleLine
                   placeholder="문항 내용을 입력하세요"
                   value={question}
+                  focusedBorder="border-line-primary-default"
                   onChange={(e) => {
                     setQuestion(e);
                     if (error) setError("");
