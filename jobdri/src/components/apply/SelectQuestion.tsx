@@ -103,14 +103,11 @@ export default function SelectQuestion({
     };
     const nextQuestions = [newQuestion, ...questions];
 
+    const next = [...selectedIds, newQuestion.id];
+
     setQuestions(nextQuestions);
-
-    if (selectedIds.length < MAX_SELECT) {
-      const next = [...selectedIds, newQuestion.id];
-      setSelectedIds(next);
-      notify(next, nextQuestions);
-    }
-
+    setSelectedIds(next);
+    notify(next, nextQuestions);
     showToast("문항이 추가되었습니다.", "check");
   };
 
@@ -140,6 +137,7 @@ export default function SelectQuestion({
                 size="small"
                 styleType="secondary"
                 iconType="ADD_S"
+                disabled={selectedIds.length >= MAX_SELECT}
                 onClick={() => setIsOpen(true)}
               />
             </div>
