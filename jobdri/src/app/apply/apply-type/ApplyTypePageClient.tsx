@@ -6,6 +6,7 @@ import clsx from "clsx";
 import Header from "@/components/common/header/Header";
 import { Footer } from "@/components/common/footer";
 import { ApplyOptionCard } from "@/components/common/cards";
+import { saveSelectedApplyType } from "@/lib/api/mockApplies";
 
 type ApplyType = "real" | "virtual";
 
@@ -33,12 +34,14 @@ export default function ApplyTypePageClient() {
 
   const handleSubmit = () => {
     if (selectedType === "real") {
+      saveSelectedApplyType("ACTUAL");
       router.push("/apply/virtual/new/jd-input");
       return;
     }
 
     if (selectedType === "virtual") {
-      router.push("/apply/virtual/new/jd");
+      saveSelectedApplyType("MOCK");
+      router.push("/apply/virtual/new/jd-input");
     }
   };
 

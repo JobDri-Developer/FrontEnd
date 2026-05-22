@@ -1,29 +1,36 @@
 "use client";
 
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import { Method1Card, Method2Card } from "@/components/common/cards";
 import { InputFileSummary } from "@/components/common/input";
 import { ModalFileUpload, ModalInput } from "@/components/common/modal";
+import {
+  ingestJobPosting,
+  waitForJobPostingIngest,
+  type JobPostingIngestStatus,
+} from "@/lib/api/jobPostings";
+import {
+  createJdReviewSectionsFromJobPosting,
+  getJdReviewMetadataStorageKey,
+  getJdReviewSavedStorageKey,
+  getJdReviewStorageKey,
+} from "@/components/mock-application/jdReviewSections";
 
 type JdInputMethod = "link" | "image" | "manual";
 type LinkModalStep = "input" | "reading" | "failed";
 type ImageModalStep = "upload" | "reading" | "failed";
 
 function isUrlFormat(value: string) {
-  const trimmedValue = value.trim();
+  const normalizedUrl = normalizeUrl(value);
 
-  if (!trimmedValue || /\s/.test(trimmedValue)) {
+  if (!normalizedUrl || /\s/.test(value.trim())) {
     return false;
   }
 
-  const valueWithProtocol = /^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(trimmedValue)
-    ? trimmedValue
-    : `https://${trimmedValue}`;
-
   try {
-    const url = new URL(valueWithProtocol);
+    const url = new URL(normalizedUrl);
 
     return (
       ["http:", "https:"].includes(url.protocol) && url.hostname.includes(".")
@@ -31,6 +38,18 @@ function isUrlFormat(value: string) {
   } catch {
     return false;
   }
+}
+
+function normalizeUrl(value: string) {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return "";
+  }
+
+  return /^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(trimmedValue)
+    ? trimmedValue
+    : `https://${trimmedValue}`;
 }
 
 export interface JdInputPageClientHandle {
@@ -49,6 +68,7 @@ const JdInputPageClient = forwardRef<
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const manualJdReviewPath = `/apply/virtual/${id}/jd-review?mode=manual`;
+  const activeRequestIdRef = useRef(0);
 
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -57,6 +77,7 @@ const JdInputPageClient = forwardRef<
     useState<ImageModalStep>("upload");
   const [jdLink, setJdLink] = useState("");
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [processingErrorMessage, setProcessingErrorMessage] = useState("");
   const hasLinkText = jdLink.trim().length > 0;
 
   const handleCtaClick = () => {
@@ -89,6 +110,7 @@ const JdInputPageClient = forwardRef<
   };
 
   const resetToUploadStart = () => {
+    activeRequestIdRef.current += 1;
     setIsLinkModalOpen(false);
     setIsImageModalOpen(false);
     setLinkModalStep("input");
@@ -96,12 +118,15 @@ const JdInputPageClient = forwardRef<
     onMethodChange(null);
     setJdLink("");
     setSelectedImageFile(null);
+    setProcessingErrorMessage("");
   };
 
   const cancelImageReading = () => {
+    activeRequestIdRef.current += 1;
     setIsLinkModalOpen(false);
     setIsImageModalOpen(false);
     setImageModalStep("upload");
+    setProcessingErrorMessage("");
 
     if (document.fullscreenElement) {
       void document.exitFullscreen();
@@ -109,11 +134,91 @@ const JdInputPageClient = forwardRef<
   };
 
   const restartImageUpload = () => {
+    activeRequestIdRef.current += 1;
     setIsLinkModalOpen(false);
     setIsImageModalOpen(true);
     onMethodChange("image");
     setSelectedImageFile(null);
     setImageModalStep("upload");
+    setProcessingErrorMessage("");
+  };
+
+  const moveToJdReviewWithResult = (status: JobPostingIngestStatus) => {
+    const result = status.result;
+    const jobPosting = result?.generated ?? result?.extracted;
+
+    if (!jobPosting) {
+      throw new Error("추출된 공고 정보를 확인할 수 없습니다.");
+    }
+
+    const detailClassificationId =
+      result?.saved?.detailClassificationId ??
+      result?.classification?.detailClassificationId ??
+      result?.candidates?.[0]?.detailClassificationId ??
+      0;
+
+    window.sessionStorage.setItem(
+      getJdReviewStorageKey(id),
+      JSON.stringify(createJdReviewSectionsFromJobPosting(jobPosting)),
+    );
+    window.sessionStorage.setItem(
+      getJdReviewMetadataStorageKey(id),
+      JSON.stringify({
+        companySize: result?.saved?.companySize ?? "STARTUP",
+        detailClassificationId,
+      }),
+    );
+
+    if (result?.saved) {
+      window.sessionStorage.setItem(
+        getJdReviewSavedStorageKey(id),
+        JSON.stringify(result.saved),
+      );
+    } else {
+      window.sessionStorage.removeItem(getJdReviewSavedStorageKey(id));
+    }
+
+    router.push(`/apply/virtual/${id}/jd-review`);
+  };
+
+  const processJobPosting = async ({
+    sourceUrl,
+    image,
+  }: {
+    sourceUrl?: string;
+    image?: File | null;
+  }) => {
+    const requestId = activeRequestIdRef.current + 1;
+    activeRequestIdRef.current = requestId;
+    setProcessingErrorMessage("");
+
+    try {
+      const accepted = await ingestJobPosting({ sourceUrl, image });
+      const status = await waitForJobPostingIngest(accepted.taskId);
+
+      if (activeRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      moveToJdReviewWithResult(status);
+    } catch (error) {
+      if (activeRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      setProcessingErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "공고 입력에 실패했습니다.",
+      );
+
+      if (sourceUrl) {
+        setLinkModalStep("failed");
+        return;
+      }
+
+      setImageModalStep("failed");
+    }
   };
 
   const submitLinkInput = () => {
@@ -122,11 +227,22 @@ const JdInputPageClient = forwardRef<
     }
 
     if (!isUrlFormat(jdLink)) {
+      setProcessingErrorMessage("올바른 공고 링크를 입력해주세요.");
       setLinkModalStep("failed");
       return;
     }
 
     setLinkModalStep("reading");
+    void processJobPosting({ sourceUrl: normalizeUrl(jdLink) });
+  };
+
+  const submitImageInput = () => {
+    if (!selectedImageFile) {
+      return;
+    }
+
+    setImageModalStep("reading");
+    void processJobPosting({ image: selectedImageFile });
   };
 
   const selectMethodFromFailure = (method: JdInputMethod) => {
@@ -137,6 +253,7 @@ const JdInputPageClient = forwardRef<
       setLinkModalStep("input");
       setIsImageModalOpen(false);
       setIsLinkModalOpen(true);
+      setProcessingErrorMessage("");
       return;
     }
 
@@ -145,6 +262,7 @@ const JdInputPageClient = forwardRef<
       setImageModalStep("upload");
       setIsLinkModalOpen(false);
       setIsImageModalOpen(true);
+      setProcessingErrorMessage("");
       return;
     }
 
@@ -227,7 +345,10 @@ const JdInputPageClient = forwardRef<
               variant="alert"
               value={jdLink}
               onChange={setJdLink}
-              onSubmit={() => setLinkModalStep("input")}
+              onSubmit={() => {
+                activeRequestIdRef.current += 1;
+                setLinkModalStep("input");
+              }}
               onCancel={resetToUploadStart}
               onClose={resetToUploadStart}
               title="링크를 읽고 있습니다"
@@ -245,7 +366,9 @@ const JdInputPageClient = forwardRef<
               onSubmit={() => undefined}
               onClose={resetToUploadStart}
               title="공고 입력에 실패했습니다"
-              description="다른 방법으로 공고 내용을 입력해주세요"
+              description={
+                processingErrorMessage || "다른 방법으로 공고 내용을 입력해주세요"
+              }
               showInputField={false}
               showDescription
               showLoadMotion={false}
@@ -277,7 +400,7 @@ const JdInputPageClient = forwardRef<
           <ModalFileUpload
             selectedFile={selectedImageFile}
             onFileSelect={setSelectedImageFile}
-            onSubmit={() => setImageModalStep("reading")}
+            onSubmit={submitImageInput}
             onClose={closeImageModal}
           />
         ) : imageModalStep === "reading" ? (
@@ -308,7 +431,9 @@ const JdInputPageClient = forwardRef<
             onSubmit={() => undefined}
             onClose={resetToUploadStart}
             title="공고 입력에 실패했습니다"
-            description="다른 방법으로 공고 내용을 입력해주세요"
+            description={
+              processingErrorMessage || "다른 방법으로 공고 내용을 입력해주세요"
+            }
             showInputField={false}
             showDescription
             showLoadMotion={false}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProgressSidebar } from "@/components/common/progress";
 import { InputAutoGrow } from "@/components/common/input";
 import {
@@ -46,18 +46,28 @@ function JdReviewField({
 
 export default function JdReviewMain({
   sections: initialSections = mockJdSections,
+  onSectionsChange,
 }: {
   sections?: JdReviewSection[];
+  onSectionsChange?: (sections: JdReviewSection[]) => void;
 }) {
   const [sections, setSections] = useState(initialSections);
   const sidebarItems = sections.map(({ id, label }) => ({ id, label }));
 
+  useEffect(() => {
+    onSectionsChange?.(initialSections);
+  }, [initialSections, onSectionsChange]);
+
   const updateSectionValue = (id: string, value: string) => {
-    setSections((currentSections) =>
-      currentSections.map((section) =>
+    setSections((currentSections) => {
+      const nextSections = currentSections.map((section) =>
         section.id === id ? { ...section, value } : section,
-      ),
-    );
+      );
+
+      onSectionsChange?.(nextSections);
+
+      return nextSections;
+    });
   };
 
   return (

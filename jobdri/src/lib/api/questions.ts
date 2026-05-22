@@ -1,3 +1,5 @@
+import { API_BASE_URL, AUTH_STORAGE_KEYS } from "@/lib/auth";
+
 export interface QuestionItem {
   id: string;
   question: string;
@@ -12,39 +14,67 @@ interface QuestionApiItem {
   selected?: boolean;
 }
 
-interface QuestionApiResponse {
-  result: QuestionApiItem[];
+interface ApiResponse<T> {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: T | null;
   error: string | null;
 }
 
 interface SelectedQuestionsApiResponse {
-  result: {
-    mockApplyId: number;
-    status: string;
-    questions: QuestionApiItem[];
-  };
-  error: string | null;
+  mockApplyId: number;
+  status: string;
+  questions: QuestionApiItem[];
 }
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 function getAuthHeaders(): Record<string, string> {
   const token =
     typeof window !== "undefined"
-      ? window.localStorage.getItem("jobdri.accessToken")
+      ? window.localStorage.getItem(AUTH_STORAGE_KEYS.accessToken)
       : null;
+
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function parseApiResponse<T>(
+  response: Response,
+  fallbackMessage: string,
+) {
+  let data: ApiResponse<T> | null = null;
+
+  try {
+    data = (await response.json()) as ApiResponse<T>;
+  } catch {
+    throw new Error(`${fallbackMessage} 응답을 확인할 수 없습니다.`);
+  }
+
+  if (!response.ok || !data.isSuccess) {
+    throw new Error(data?.error || data?.message || fallbackMessage);
+  }
+
+  return data.result;
 }
 
 export async function fetchQuestions(
   mockApplyId: number,
 ): Promise<QuestionItem[]> {
   const response = await fetch(
-    `${BASE_URL}/api/mock-applies/${mockApplyId}/questions/candidates`,
-    { headers: getAuthHeaders() },
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/questions/candidates`,
+    {
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    },
   );
-  if (!response.ok) throw new Error("문항 목록을 불러오지 못했습니다.");
-  const { result }: QuestionApiResponse = await response.json();
+  const result = await parseApiResponse<QuestionApiItem[]>(
+    response,
+    "문항 목록을 불러오지 못했습니다.",
+  );
+
+  if (!result) {
+    return [];
+  }
+
   return result.map(({ content, charLimit, selected }, index) => ({
     id: String(index),
     question: content,
@@ -59,7 +89,7 @@ export async function saveQuestions(
   questions: QuestionItem[],
 ): Promise<void> {
   const response = await fetch(
-    `${BASE_URL}/api/mock-applies/${mockApplyId}/questions`,
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/questions`,
     {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
@@ -72,19 +102,26 @@ export async function saveQuestions(
       }),
     },
   );
-  if (!response.ok) throw new Error("문항 저장에 실패했습니다.");
+
+  await parseApiResponse<unknown>(response, "문항 저장에 실패했습니다.");
 }
 
 export async function fetchSelectedQuestions(
   mockApplyId: number,
 ): Promise<QuestionItem[]> {
   const response = await fetch(
-    `${BASE_URL}/api/mock-applies/${mockApplyId}/questions`,
-    { headers: getAuthHeaders() },
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/questions`,
+    {
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    },
   );
-  if (!response.ok) throw new Error("선택 문항 조회에 실패했습니다.");
-  const { result }: SelectedQuestionsApiResponse = await response.json();
-  return result.questions.map(({ content, charLimit, selected }, index) => ({
+  const result = await parseApiResponse<SelectedQuestionsApiResponse>(
+    response,
+    "선택 문항 조회에 실패했습니다.",
+  );
+
+  return (result?.questions ?? []).map(({ content, charLimit, selected }, index) => ({
     id: String(index),
     question: content,
     maxLength: charLimit,

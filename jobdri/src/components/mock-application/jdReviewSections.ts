@@ -4,6 +4,75 @@ export interface JdReviewSection {
   value: string;
 }
 
+export interface JdReviewJobPostingData {
+  companyName?: string | null;
+  jobTitle?: string | null;
+  task?: string | null;
+  requirements?: string | null;
+  preferredQualifications?: string | null;
+}
+
+export interface JdReviewMetadata {
+  companySize?: string | null;
+  detailClassificationId?: number | null;
+}
+
+export const JD_REVIEW_STORAGE_KEY_PREFIX = "jobdri.jdReviewSections";
+export const JD_REVIEW_METADATA_STORAGE_KEY_PREFIX = "jobdri.jdReviewMetadata";
+export const JD_REVIEW_SAVED_STORAGE_KEY_PREFIX = "jobdri.savedJobPosting";
+
+export function getJdReviewStorageKey(applyId: string) {
+  return `${JD_REVIEW_STORAGE_KEY_PREFIX}:${applyId}`;
+}
+
+export function getJdReviewMetadataStorageKey(applyId: string) {
+  return `${JD_REVIEW_METADATA_STORAGE_KEY_PREFIX}:${applyId}`;
+}
+
+export function getJdReviewSavedStorageKey(applyId: string) {
+  return `${JD_REVIEW_SAVED_STORAGE_KEY_PREFIX}:${applyId}`;
+}
+
+function normalizeJdValue(value?: string | null) {
+  return value?.trim() ?? "";
+}
+
+export function createJdReviewSectionsFromJobPosting({
+  companyName,
+  jobTitle,
+  task,
+  requirements,
+  preferredQualifications,
+}: JdReviewJobPostingData): JdReviewSection[] {
+  return [
+    {
+      id: "company",
+      label: "회사명",
+      value: normalizeJdValue(companyName),
+    },
+    {
+      id: "job",
+      label: "직무",
+      value: normalizeJdValue(jobTitle),
+    },
+    {
+      id: "main-task",
+      label: "주요 업무",
+      value: normalizeJdValue(task),
+    },
+    {
+      id: "qualification",
+      label: "자격요건",
+      value: normalizeJdValue(requirements),
+    },
+    {
+      id: "preference",
+      label: "우대사항",
+      value: normalizeJdValue(preferredQualifications),
+    },
+  ];
+}
+
 export const mockJdSections: JdReviewSection[] = [
   {
     id: "job",
@@ -30,10 +99,15 @@ export const mockJdSections: JdReviewSection[] = [
   },
 ];
 
-export const emptyJdSections: JdReviewSection[] = mockJdSections.map(
-  ({ id, label }) => ({
+export const emptyJdSections: JdReviewSection[] = [
+  {
+    id: "company",
+    label: "회사명",
+    value: "",
+  },
+  ...mockJdSections.map(({ id, label }) => ({
     id,
     label,
     value: "",
-  }),
-);
+  })),
+];
