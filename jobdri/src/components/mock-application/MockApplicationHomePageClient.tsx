@@ -46,8 +46,14 @@ function createRows<T>(items: T[], size: number) {
   );
 }
 
-function isAuthMissingError(message: string) {
-  return message.includes("인증") || message.includes("Unauthorized");
+function isEmptyApplicationStateError(message: string) {
+  return (
+    message.includes("인증") ||
+    message.includes("Unauthorized") ||
+    message.includes("Failed to fetch") ||
+    message.includes("NetworkError") ||
+    message.includes("Load failed")
+  );
 }
 
 function KebabButton({
@@ -263,7 +269,8 @@ export default function MockApplicationHomePageClient() {
   const hasApplicationData =
     pausedApplications.length > 0 || resultApplications.length > 0;
   const shouldShowErrorMessage =
-    applicationsErrorMessage && !isAuthMissingError(applicationsErrorMessage);
+    applicationsErrorMessage &&
+    !isEmptyApplicationStateError(applicationsErrorMessage);
 
   const openDeleteConfirm = () => setShowDeleteConfirm(true);
   const closeDeleteConfirm = () => setShowDeleteConfirm(false);
