@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
 import { ModalNotice } from "@/components/common/modal";
 import { AUTH_STORAGE_KEYS, getStoredAuthEmail } from "@/lib/auth";
-import Logo from "@/assets/ic_LOGO_minimum.svg";
+import Logo from "@/assets/ic_LOGO_minimum_favi.svg";
 import { fetchCreditBalance } from "@/lib/api/credit";
 
 type LnbItemKey = "experience" | "apply";
