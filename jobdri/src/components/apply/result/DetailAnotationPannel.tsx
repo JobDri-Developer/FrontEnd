@@ -39,18 +39,20 @@ export default function DetailAnnotationPanel({
             {analysis.reason}
           </h3>
           {/* 인용 문장 */}
-          <p className="border-l-2 border-icon-neutral-default break-keep pl-3 text-cap12-med text-text-neutral-caption">
+          <p className="text-sub14-reg text-text-neutral-white">
             {analysis.sentence}
           </p>
           {/* 개선 예시 카드 */}
-          <div className="flex flex-col gap-2 px-3 py-4 rounded-chip-m bg-fill-inverse-hover">
-            <span className="text-cap12-semibold text-text-neutral-caption">
-              개선 예시
-            </span>
-            <p className="text-cap12-med text-text-neutral-caption break-keep">
-              {answer}
-            </p>
-          </div>
+          {analysis.status !== "proven" && (
+            <div className="flex flex-col gap-2 px-3 py-4 rounded-chip-m bg-fill-inverse-hover">
+              <span className="text-cap12-semibold text-text-neutral-caption">
+                개선 예시
+              </span>
+              <p className="text-cap12-med text-text-neutral-caption break-keep">
+                {answer}
+              </p>
+            </div>
+          )}
         </div>
       ))}
     </div>
