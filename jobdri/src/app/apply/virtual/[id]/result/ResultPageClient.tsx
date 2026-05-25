@@ -78,7 +78,7 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
       <Header
         currentStep={6}
         rightAction={{
-          label: "저장하기",
+          label: "재지원하기",
           onClick: handleSave,
           disabled: isSaving,
         }}

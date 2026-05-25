@@ -1,4 +1,5 @@
 "use client";
+import clsx from "clsx";
 
 interface ScoreCircleProps {
   score: number;
@@ -43,7 +44,12 @@ export default function ScoreCircle({
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className="text-text-neutral-title transition-all duration-500"
+          className={clsx(
+            score >= 60
+              ? ` text-text-primary-strong `
+              : `text-text-system-fail`,
+            "transition-all duration-500",
+          )}
         />
       </svg>
       <span className="text-h24-bold text-text-neutral-title">{score}점</span>
