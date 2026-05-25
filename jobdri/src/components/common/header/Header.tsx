@@ -77,7 +77,7 @@ export default function Header({
 
   return (
     <header className="flex w-full items-start justify-between bg-bg-default px-[82px] pt-10 pb-4">
-      <div className="mx-auto flex max-w-[1116px] flex-1 items-start gap-5">
+      <div className="mx-auto flex w-full flex-1 items-start gap-5">
         <div className="flex min-w-0 flex-1 items-start gap-5">
           <div className="flex shrink-0 self-stretch items-start justify-center gap-2.5 py-2 pr-2 pl-0">
             <h1 className="text-center text-label14-semibold tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
