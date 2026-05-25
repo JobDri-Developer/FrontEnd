@@ -14,6 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" className="h-full antialiased">
+      <head>
+        <link rel="icon" href="/ic_JobDri.svg" />
+      </head>
       <body className="min-h-full bg-line-neutral-assistive">
         <LayoutShell>{children}</LayoutShell>
       </body>
