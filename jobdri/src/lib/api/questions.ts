@@ -132,10 +132,16 @@ export async function fetchSelectedQuestions(
   );
 }
 
+export interface SaveApplyResult {
+  mockApplyId: number;
+  status: string;
+  sequence: number;
+}
+
 export async function saveApply(
   mockApplyId: number,
   answers: AnswerItem[],
-): Promise<void> {
+): Promise<SaveApplyResult> {
   const response = await fetch(
     `${API_BASE_URL}/api/mock-applies/${mockApplyId}/questions/answers`,
     {
@@ -145,5 +151,9 @@ export async function saveApply(
     },
   );
 
-  await parseApiResponse<unknown>(response, "답변 제출에 실패했습니다.");
+  const result = await parseApiResponse<SaveApplyResult>(
+    response,
+    "답변 제출에 실패했습니다.",
+  );
+  return result!;
 }

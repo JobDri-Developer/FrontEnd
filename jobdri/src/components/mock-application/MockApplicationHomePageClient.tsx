@@ -94,7 +94,7 @@ function mapMockApplyToApplication(
   const status =
     section === "completed"
       ? "COMPLETED"
-      : findLocalResumeStatus(item) ?? item.status;
+      : (findLocalResumeStatus(item) ?? item.status);
   const score =
     isCompletedStatus(status) && typeof item.score === "number"
       ? item.score
@@ -246,7 +246,9 @@ function getResumePath({
   return `/apply/virtual/${mockApplyId}/questions`;
 }
 
-function getResultPath({ mockApplyId }: Pick<ApplicationCardData, "mockApplyId">) {
+function getResultPath({
+  mockApplyId,
+}: Pick<ApplicationCardData, "mockApplyId">) {
   return `/apply/virtual/${mockApplyId}/result`;
 }
 
@@ -367,6 +369,10 @@ function KebabButton({
                 onDeleteClick();
               },
             },
+            // {
+            //   label:'재지원하기',
+            //   onClick={}
+            // }
           ]}
         />
       )}
@@ -510,8 +516,8 @@ export default function MockApplicationHomePageClient() {
   const pausedApplications = applications.filter(
     ({ status }) => !isCompletedStatus(status),
   );
-  const resultApplications = applications.filter(
-    ({ status }) => isCompletedStatus(status),
+  const resultApplications = applications.filter(({ status }) =>
+    isCompletedStatus(status),
   );
   const resultRows = createRows(resultApplications, 5);
   const hasApplicationData =
@@ -695,16 +701,16 @@ export default function MockApplicationHomePageClient() {
                     </header>
 
                     <div className="flex flex-col items-center gap-2 self-stretch">
-	                      {pausedApplications.map((application) => (
-	                        <PausedApplicationCard
-	                          key={application.id}
-	                          {...application}
-	                          onDeleteClick={openDeleteConfirm}
-	                          onResumeClick={() =>
-	                            handleResumeApplication(application)
-	                          }
-	                        />
-	                      ))}
+                      {pausedApplications.map((application) => (
+                        <PausedApplicationCard
+                          key={application.id}
+                          {...application}
+                          onDeleteClick={openDeleteConfirm}
+                          onResumeClick={() =>
+                            handleResumeApplication(application)
+                          }
+                        />
+                      ))}
                     </div>
                   </section>
                 )}
@@ -726,16 +732,16 @@ export default function MockApplicationHomePageClient() {
                           key={rowIndex}
                           className="flex flex-col items-start gap-3 self-stretch md:flex-row"
                         >
-	                          {row.map((application) => (
-	                            <ResultApplicationCard
-	                              key={application.id}
-	                              {...application}
-	                              onDeleteClick={openDeleteConfirm}
-	                              onResumeClick={() =>
-	                                handleResultApplication(application)
-	                              }
-	                            />
-	                          ))}
+                          {row.map((application) => (
+                            <ResultApplicationCard
+                              key={application.id}
+                              {...application}
+                              onDeleteClick={openDeleteConfirm}
+                              onResumeClick={() =>
+                                handleResultApplication(application)
+                              }
+                            />
+                          ))}
                         </div>
                       ))}
                     </div>

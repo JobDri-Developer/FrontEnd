@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Footer } from "@/components/common/footer";
 import Header from "@/components/common/header/Header";
 import { ModalNotice } from "@/components/common/modal";
@@ -11,7 +11,7 @@ import InputSection, {
 import ResumeAnalysisLoading from "@/components/mock-application/ResumeAnalysisLoading";
 import { saveApply } from "@/lib/api/questions";
 import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
-import { runAnalysis } from "@/lib/api/result";
+import { runAnalysis, CreditInsufficientError } from "@/lib/api/result";
 
 interface WritePageClientProps {
   id: string;
@@ -33,6 +33,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
   const [allComplete, setAllComplete] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showAnalysisErrorModal, setShowAnalysisErrorModal] = useState(false);
+  const [isCreditInsufficient, setIsCreditInsufficient] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [analysisLoadingDurationMs, setAnalysisLoadingDurationMs] =
     useState(50000);
@@ -48,11 +49,13 @@ export default function WritePageClient({ id }: WritePageClientProps) {
     setShowModal(false);
     const answers = inputRef.current?.getAnswers() ?? [];
     let shouldKeepLoading = false;
+    let savedSequence = 1;
 
     try {
       const analysisResult = await Promise.allSettled([
         (async () => {
-          await saveApply(Number(id), answers);
+          const saveResult = await saveApply(Number(id), answers);
+          savedSequence = saveResult.sequence;
           await runAnalysis(Number(id));
         })(),
         delay(loadingDurationMs),
@@ -64,9 +67,13 @@ export default function WritePageClient({ id }: WritePageClientProps) {
 
       updateMockApplyResumeStatus(Number(id), "COMPLETED");
       shouldKeepLoading = true;
-      router.push(`/apply/virtual/${id}/result`);
-    } catch {
-      setShowAnalysisErrorModal(true);
+      router.push(`/apply/virtual/${id}/result?sequence=${savedSequence}`);
+    } catch (error) {
+      if (error instanceof CreditInsufficientError) {
+        setIsCreditInsufficient(true);
+      } else {
+        setShowAnalysisErrorModal(true);
+      }
     } finally {
       if (!shouldKeepLoading) {
         setIsSubmitting(false);
@@ -145,6 +152,27 @@ export default function WritePageClient({ id }: WritePageClientProps) {
             primaryAction={{
               label: "닫기",
               onClick: closeAnalysisErrorModal,
+            }}
+          />
+        </div>
+      )}
+
+      {isCreditInsufficient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default backdrop-blur-2xl">
+          <ModalNotice
+            variant="double"
+            title="크레딧이 부족합니다"
+            description={
+              "채점을 진행하려면 크레딧이 필요합니다.\n크레딧을 충전하고 다시 시도해 주세요."
+            }
+            onClose={() => setIsCreditInsufficient(false)}
+            secondaryAction={{
+              label: "닫기",
+              onClick: () => setIsCreditInsufficient(false),
+            }}
+            primaryAction={{
+              label: "크레딧 충전하기",
+              onClick: () => router.push("/credit"),
             }}
           />
         </div>

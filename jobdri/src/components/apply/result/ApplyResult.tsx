@@ -10,6 +10,7 @@ import DetailSection from "./DetailSection";
 
 interface ApplyResultProps {
   applyId: number;
+  sequence?: number;
   onAnalysisError?: () => void;
 }
 
@@ -49,6 +50,7 @@ function ResultLoadingState({ message }: { message: string }) {
 
 export default function ApplyResult({
   applyId,
+  sequence = 1,
   onAnalysisError,
 }: ApplyResultProps) {
   const [questions, setQuestions] = useState<Question[]>(FALLBACK_QUESTIONS);
@@ -70,7 +72,7 @@ export default function ApplyResult({
       })
       .catch(() => {});
 
-    fetchAnalysis(applyId)
+    fetchAnalysis(applyId, sequence)
       .then((fetchedAnalysis) => {
         setAnalysis(fetchedAnalysis);
         setAnalysisError(null);
@@ -85,7 +87,7 @@ export default function ApplyResult({
         });
         onAnalysisError?.();
       });
-  }, [applyId, onAnalysisError]);
+  }, [applyId, sequence, onAnalysisError]);
 
   const handleOverview = () => {
     setIsOverview(true);

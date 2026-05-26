@@ -1,40 +1,21 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import ApplyResult from "@/components/apply/result/ApplyResult";
 import { ModalNotice } from "@/components/common/modal";
-import {
-  getMockApplyResumeRecords,
-  saveMockApplyResumeRecord,
-  updateMockApplyResumeStatus,
-} from "@/lib/api/mockApplies";
-import { getJdReviewSavedStorageKey } from "@/components/mock-application/jdReviewSections";
-import type { SavedJobPosting } from "@/lib/api/jobPostings";
+import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
+import { fetchSequence } from "@/lib/api/result";
 
 interface ResultPageClientProps {
   id: string;
 }
 
-function getSavedJobPosting(applyId: string) {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const rawValue = window.sessionStorage.getItem(
-      getJdReviewSavedStorageKey(applyId),
-    );
-
-    return rawValue ? (JSON.parse(rawValue) as SavedJobPosting) : null;
-  } catch {
-    return null;
-  }
-}
-
 export default function ResultPageClient({ id }: ResultPageClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sequence = Number(searchParams.get("sequence") ?? "1");
   const [isSaving, setIsSaving] = useState(false);
   const [showAnalysisErrorModal, setShowAnalysisErrorModal] = useState(false);
   const applyId = Number(id);
@@ -47,30 +28,17 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
     setShowAnalysisErrorModal(true);
   }, []);
 
-  const handleSave = () => {
+  const handleReApply = async () => {
     if (isSaving) return;
-
     setIsSaving(true);
 
-    const hasResumeRecord = getMockApplyResumeRecords().some(
-      (record) => record.mockApplyId === applyId,
-    );
-
-    if (hasResumeRecord) {
+    try {
       updateMockApplyResumeStatus(applyId, "COMPLETED");
-    } else {
-      const savedJobPosting = getSavedJobPosting(id);
-
-      if (savedJobPosting?.jobPostingId) {
-        saveMockApplyResumeRecord({
-          jobPostingId: savedJobPosting.jobPostingId,
-          mockApplyId: applyId,
-          status: "COMPLETED",
-        });
-      }
+      const { sequence: currentSequence } = await fetchSequence(applyId);
+      router.push(`/apply/virtual/${id}/write?sequence=${currentSequence + 1}`);
+    } catch {
+      setIsSaving(false);
     }
-
-    router.push("/apply");
   };
 
   return (
@@ -79,13 +47,14 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
         currentStep={6}
         rightAction={{
           label: "재지원하기",
-          onClick: handleSave,
+          onClick: handleReApply,
           disabled: isSaving,
         }}
       />
       <main className="mx-auto w-full flex-1 flex flex-col overflow-hidden">
         <ApplyResult
           applyId={applyId}
+          sequence={sequence}
           onAnalysisError={openAnalysisErrorModal}
         />
       </main>

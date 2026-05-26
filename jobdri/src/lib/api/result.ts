@@ -1,5 +1,12 @@
 import { API_BASE_URL, getAuthHeaders } from "@/lib/auth";
 
+export class CreditInsufficientError extends Error {
+  constructor() {
+    super("크레딧이 부족합니다.");
+    this.name = "CreditInsufficientError";
+  }
+}
+
 export interface SequenceResult {
   jobPostingId: number;
   mockApplyId: number;
@@ -22,12 +29,14 @@ export interface AnalysisQuestion {
   questionContent: string;
   answer: string;
   analyses: QuestionAnalysis[];
+  improvement: string;
 }
 
 export interface AnalysisResult {
   mockApplyId: number;
   analysisId: number;
   status: string;
+  sequence: number;
   score: number;
   jobFit: number;
   impact: number;
@@ -44,7 +53,14 @@ interface ApiResponse<T> {
   error: string | null;
 }
 
-async function parseApiResponse<T>(response: Response, fallbackMessage: string) {
+async function parseApiResponse<T>(
+  response: Response,
+  fallbackMessage: string,
+) {
+  if (response.status === 402) {
+    throw new CreditInsufficientError();
+  }
+
   let data: ApiResponse<T> | null = null;
 
   try {
@@ -68,24 +84,35 @@ export async function fetchSequence(
     { headers: getAuthHeaders() },
   );
 
-  return parseApiResponse<SequenceResult>(response, "순번 조회에 실패했습니다.");
+  return parseApiResponse<SequenceResult>(
+    response,
+    "순번 조회에 실패했습니다.",
+  );
 }
 
 export async function fetchAnalysis(
   mockApplyId: number,
+  sequence: number = 1,
 ): Promise<AnalysisResult> {
-  const response = await fetch(
+  const url = new URL(
     `${API_BASE_URL}/api/mock-applies/${mockApplyId}/analysis`,
-    {
-      headers: getAuthHeaders(),
-      cache: "no-store",
-    },
   );
+  url.searchParams.set("sequence", String(sequence));
 
-  return parseApiResponse<AnalysisResult>(response, "자소서 분석에 실패했습니다.");
+  const response = await fetch(url.toString(), {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+
+  return parseApiResponse<AnalysisResult>(
+    response,
+    "자소서 분석에 실패했습니다.",
+  );
 }
 
-export async function runAnalysis(mockApplyId: number): Promise<AnalysisResult> {
+export async function runAnalysis(
+  mockApplyId: number,
+): Promise<AnalysisResult> {
   const response = await fetch(
     `${API_BASE_URL}/api/mock-applies/${mockApplyId}/analysis`,
     {

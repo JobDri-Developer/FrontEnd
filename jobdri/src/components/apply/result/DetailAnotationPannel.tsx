@@ -13,12 +13,10 @@ const statusLabel: Record<HighlightStatus, string> = {
 
 interface DetailAnnotationPanelProps {
   analyses: QuestionAnalysis[];
-  answer: string;
 }
 
 export default function DetailAnnotationPanel({
   analyses,
-  answer,
 }: DetailAnnotationPanelProps) {
   return (
     <div
@@ -36,7 +34,7 @@ export default function DetailAnnotationPanel({
           />
           {/* 타이틀 */}
           <h3 className="text-b16-semibold text-text-neutral-white break-keep min-w-0">
-            {analysis.reason}
+            {analysis.improvement}
           </h3>
           {/* 인용 문장 */}
           <p className="text-sub14-reg text-text-neutral-white">
@@ -49,7 +47,7 @@ export default function DetailAnnotationPanel({
                 개선 예시
               </span>
               <p className="text-cap12-med text-text-neutral-caption break-keep">
-                {answer}
+                {analysis.improvement}
               </p>
             </div>
           )}
