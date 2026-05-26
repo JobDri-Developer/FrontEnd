@@ -40,7 +40,7 @@ export function ListQ({
   };
 
   const chipList = isCustom
-    ? [{ label: "직접 추가", variant: "normal" as const }]
+    ? [{ label: "직접 입력", variant: "normal" as const }]
     : (chips ?? DEFAULT_CHIPS);
 
   return (
