@@ -14,10 +14,13 @@ import clsx from "clsx";
 import {
   Button,
   IconOnlyButton,
+  TextButton,
   TextOnlyButton,
 } from "@/components/common/buttons";
 import { InputMain, InputSingleLine } from "@/components/common/input";
 import { Tooltip } from "@/components/common/tooltip";
+import LogoSymbol from "@/assets/ic_LOGO_symbol.svg";
+import LogoType from "@/assets/ic_LOGO_type.svg";
 import { ROUTES } from "@/constants/routes";
 import {
   AuthApiError,
@@ -354,6 +357,10 @@ export default function EmailLoginScreen() {
     handleModeChange("login");
   };
 
+  const handleGoHome = () => {
+    router.push(ROUTES.APPLY);
+  };
+
   const handleBackToSignup = () => {
     setAuthMode("signup");
     setVerificationCode([...initialVerificationCode]);
@@ -386,78 +393,80 @@ export default function EmailLoginScreen() {
   };
 
   return (
-    <main className="flex min-h-screen w-full flex-col items-start bg-bg-default">
-      <section className="flex min-h-screen w-full flex-col items-start self-stretch">
-        <div className="flex flex-[1_0_0] flex-col items-center gap-20 self-stretch px-20 pt-[10vh] pb-[120px]">
-          <form
-            className={clsx(
-              "relative flex w-[440px] max-w-[calc(100vw-32px)] flex-col items-center justify-center rounded-card bg-bg-contents-default shadow-[0_0_24px_0_var(--color-bg-shadow-default)]",
-              authMode === "verify"
-                ? "gap-0 p-0"
-                : authMode === "success"
-                  ? "gap-9 p-10"
-                  : "gap-8 p-10",
-            )}
-            noValidate
-            onSubmit={
-              authMode === "login"
-                ? handleLoginSubmit
-                : authMode === "signup"
-                  ? handleSignupSubmit
-                  : authMode === "verify"
-                    ? handleVerificationSubmit
-                    : undefined
-            }
-          >
-            {authMode === "verify" ? (
-              <EmailVerificationContent
-                email={displayedVerificationEmail}
-                verificationCode={verificationCode}
-                verificationInputRefs={verificationInputRefs}
-                hasVerificationError={hasVerificationError}
-                verificationErrorMessage={verificationErrorMessage}
-                isVerificationReady={isVerificationReady}
-                isSubmitting={isVerificationSubmitting}
-                isResending={isResendingVerificationCode}
-                onBack={handleBackToSignup}
-                onCodeChange={handleVerificationCodeChange}
-                onCodeFocus={handleVerificationCodeFocus}
-                onCodeKeyDown={handleVerificationCodeKeyDown}
-                onCodePaste={handleVerificationCodePaste}
-                onResend={handleResendVerificationCode}
-              />
-            ) : authMode === "success" ? (
-              <EmailVerificationSuccessContent
-                onConfirm={handleVerificationSuccessConfirm}
-              />
-            ) : (
-              <>
-                <header className="flex flex-col items-center gap-6 self-stretch">
-                  <h1 className="text-center text-[32px] leading-[130%] font-bold tracking-[-0.02em] text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-                    JobDri
-                  </h1>
+    <main className="flex min-h-screen w-full justify-center overflow-x-hidden bg-[linear-gradient(206deg,#F7F8FE_33.45%,#EEF1FF_83.74%)]">
+      <div className="mx-auto flex w-[1440px] max-w-full flex-col items-center gap-32 pb-[219px] max-lg:gap-16 max-lg:pb-20 max-md:gap-10 max-md:pb-10">
+        <header className="flex items-start justify-between self-stretch px-[82px] pt-10 pb-4 max-md:px-5 max-md:pt-6">
+          <TextButton
+            label="메인으로"
+            size="large"
+            styleType="primary"
+            iconPosition="left"
+            className="gap-2"
+            onClick={handleGoHome}
+          />
+        </header>
 
-                  <div className="flex flex-col items-center gap-2 self-stretch">
-                    <p className="text-t20-semibold text-center text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-                      인사담당자가 보는 내 자소서는 몇점?
-                    </p>
-                    <p className="text-sub14-med text-center text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-                      내 경험을 살린 합격 자소서를 완성해보세요
-                    </p>
-                  </div>
-                </header>
+        <section className="flex items-center justify-center self-stretch px-[82px] max-md:px-5">
+          {authMode === "verify" || authMode === "success" ? (
+            <form
+              className={clsx(
+                "relative flex w-[440px] max-w-[calc(100vw-32px)] flex-col items-center justify-center rounded-card bg-bg-contents-default shadow-[0_0_24px_0_var(--color-bg-shadow-default)]",
+                authMode === "verify" ? "gap-0 p-0" : "gap-9 p-10",
+              )}
+              noValidate
+              onSubmit={
+                authMode === "verify" ? handleVerificationSubmit : undefined
+              }
+            >
+              {authMode === "verify" ? (
+                <EmailVerificationContent
+                  email={displayedVerificationEmail}
+                  verificationCode={verificationCode}
+                  verificationInputRefs={verificationInputRefs}
+                  hasVerificationError={hasVerificationError}
+                  verificationErrorMessage={verificationErrorMessage}
+                  isVerificationReady={isVerificationReady}
+                  isSubmitting={isVerificationSubmitting}
+                  isResending={isResendingVerificationCode}
+                  onBack={handleBackToSignup}
+                  onCodeChange={handleVerificationCodeChange}
+                  onCodeFocus={handleVerificationCodeFocus}
+                  onCodeKeyDown={handleVerificationCodeKeyDown}
+                  onCodePaste={handleVerificationCodePaste}
+                  onResend={handleResendVerificationCode}
+                />
+              ) : authMode === "success" ? (
+                <EmailVerificationSuccessContent
+                  onConfirm={handleVerificationSuccessConfirm}
+                />
+              ) : null}
+            </form>
+          ) : (
+            <div className="flex items-center justify-center gap-6 self-stretch max-lg:flex-col">
+              <BrandPanel />
+
+              <form
+                className="relative flex w-[440px] max-w-[calc(100vw-32px)] flex-col items-start gap-6 rounded-card bg-white px-10 pt-8 pb-10 shadow-[0_0_24px_0_var(--color-bg-shadow-default)]"
+                noValidate
+                onSubmit={
+                  authMode === "login" ? handleLoginSubmit : handleSignupSubmit
+                }
+              >
+                <h1 className="text-t20-semibold text-center text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+                  {authMode === "login" ? "로그인" : "회원가입"}
+                </h1>
 
                 {authMode === "login" ? (
                   <>
-                    <div className="flex flex-col items-center gap-6 self-stretch">
-                      <div className="flex flex-col items-start gap-5 self-stretch">
+                    <div className="flex flex-col items-center gap-4 self-stretch">
+                      <div className="flex flex-col items-start gap-[37px] self-stretch">
                         <div className="flex flex-col items-start gap-2 self-stretch">
                           <InputMain
                             name="email"
                             type="ID"
                             inputType="email"
                             autoComplete="email"
-                            placeholder="내용을 입력해주세요."
+                            placeholder="아이디"
                             value={email}
                             disabled={isLoginSubmitting}
                             hasError={loginError}
@@ -471,7 +480,7 @@ export default function EmailLoginScreen() {
                             type="PASSWORD"
                             inputType="password"
                             autoComplete="current-password"
-                            placeholder="내용을 입력해주세요."
+                            placeholder="비밀번호"
                             value={password}
                             disabled={isLoginSubmitting}
                             error={loginError ? loginErrorMessage : undefined}
@@ -482,7 +491,7 @@ export default function EmailLoginScreen() {
 
                         <Button
                           label={isLoginSubmitting ? "로그인 중" : "로그인"}
-                          styleType="secondary"
+                          styleType="primary"
                           size="large"
                           active={isLoginReady}
                           className="self-stretch"
@@ -503,7 +512,7 @@ export default function EmailLoginScreen() {
                       />
                     </div>
 
-                    <footer className="flex items-center justify-center gap-7 self-stretch">
+                    <footer className="mt-4 flex items-center justify-center gap-7 self-stretch">
                       <TextOnlyButton
                         label="비밀번호 재설정"
                         size="small"
@@ -519,8 +528,8 @@ export default function EmailLoginScreen() {
                   </>
                 ) : (
                   <>
-                    <div className="flex flex-col items-center gap-6 self-stretch">
-                      <div className="flex flex-col items-start gap-5 self-stretch">
+                    <div className="flex flex-col items-center gap-4 self-stretch">
+                      <div className="flex flex-col items-start gap-4 self-stretch">
                         <div className="flex flex-col items-start gap-2 self-stretch">
                           <InputMain
                             label="이름"
@@ -614,7 +623,7 @@ export default function EmailLoginScreen() {
                       />
                     </div>
 
-                    <footer className="flex items-center justify-center gap-3 self-stretch">
+                    <footer className="mt-4 flex items-center justify-center gap-3 self-stretch">
                       <span className="text-label14-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
                         이미 계정이 있으신가요?
                       </span>
@@ -633,12 +642,36 @@ export default function EmailLoginScreen() {
                     <Tooltip placement="up_mid" />
                   </div>
                 )}
-              </>
-            )}
-          </form>
-        </div>
-      </section>
+              </form>
+            </div>
+          )}
+        </section>
+      </div>
     </main>
+  );
+}
+
+function BrandPanel() {
+  return (
+    <aside className="flex w-[440px] max-w-[calc(100vw-32px)] flex-col items-center justify-center gap-12 self-stretch bg-transparent px-10 pt-0 pb-10 max-lg:self-auto max-md:px-4">
+      <div className="flex flex-col items-center justify-center gap-4 self-stretch">
+        <div className="flex h-36 w-60 items-center justify-center px-[41.455px] pt-[27px] pb-[30.75px] pl-[38.449px]">
+          <div className="flex h-[86.25px] w-[160.096px] shrink-0 flex-col items-center gap-[14.712px]">
+            <LogoSymbol className="h-[30.288px] w-[90.577px]" />
+            <LogoType className="h-[41.25px] w-[160.096px]" />
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center gap-2 self-stretch">
+          <p className="text-t20-semibold text-center text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+            인사담당자가 보는 내 자소서는 몇점?
+          </p>
+          <p className="text-sub14-med text-center text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+            내 경험을 살린 합격 자소서를 완성해보세요
+          </p>
+        </div>
+      </div>
+    </aside>
   );
 }
 
@@ -813,7 +846,7 @@ function AuthDivider() {
   return (
     <div className="flex items-center justify-center gap-5 self-stretch">
       <span className="h-[0.75px] flex-1 bg-line-neutral-default" />
-      <span className="flex items-center justify-center gap-2.5 text-label14-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+      <span className="flex items-center justify-center gap-2.5 text-cap12-med text-center text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
         또는
       </span>
       <span className="h-[0.75px] flex-1 bg-line-neutral-default" />
