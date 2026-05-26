@@ -7,6 +7,7 @@ export interface QuestionItem {
   maxLength?: number;
   selected?: boolean;
   custom?: boolean;
+  answer?: string;
 }
 
 interface QuestionApiItem {
@@ -16,6 +17,7 @@ interface QuestionApiItem {
   selected?: boolean;
   questionId?: number;
   custom?: boolean;
+  answer?: string;
 }
 
 interface ApiResponse<T> {
@@ -121,13 +123,14 @@ export async function fetchSelectedQuestions(
   );
 
   return (result?.questions ?? []).map(
-    ({ id, questionId, content, charLimit, selected, custom }, index) => ({
+    ({ id, questionId, content, charLimit, selected, custom, answer }, index) => ({
       id: String(index),
       questionId: id ?? questionId,
       question: content,
       maxLength: charLimit,
       selected,
       custom,
+      answer,
     }),
   );
 }

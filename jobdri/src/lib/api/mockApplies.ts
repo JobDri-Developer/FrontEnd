@@ -21,6 +21,15 @@ export interface MockApplyFromJobPosting {
   applyType: JobPostingApplyType;
 }
 
+export interface MockApplyRetryResult {
+  sourceMockApplyId: number;
+  jobPostingId: number;
+  mockApplyId: number;
+  applyType: JobPostingApplyType;
+  status: MockApplyProgressStatus;
+  sequence: number;
+}
+
 export interface MockApplyResumeRecord {
   jobPostingId: number;
   mockApplyId: number;
@@ -58,7 +67,10 @@ function getAuthHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function parseApiResponse<T>(response: Response, fallbackMessage: string) {
+async function parseApiResponse<T>(
+  response: Response,
+  fallbackMessage: string,
+) {
   let data: ApiResponse<T> | null = null;
 
   try {
@@ -119,7 +131,9 @@ export function createApplyFromJobPosting({
     : createActualApplyFromJobPosting(jobPostingId);
 }
 
-export async function fetchMyMockApplies({ signal }: { signal?: AbortSignal } = {}) {
+export async function fetchMyMockApplies({
+  signal,
+}: { signal?: AbortSignal } = {}) {
   const response = await fetch(`${API_BASE_URL}/api/mock-applies/me`, {
     headers: getAuthHeaders(),
     cache: "no-store",
@@ -249,4 +263,21 @@ export function updateMockApplyResumeStatus(
     ...targetRecord,
     status,
   });
+}
+
+export async function retryMockApply(
+  mockApplyId: number,
+): Promise<MockApplyRetryResult> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/retry`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+    },
+  );
+
+  return parseApiResponse<MockApplyRetryResult>(
+    response,
+    "재도전 모의 서류 지원 생성에 실패했습니다.",
+  );
 }

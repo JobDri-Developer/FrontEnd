@@ -1,11 +1,16 @@
 "use client";
 
 import { useCallback, useState } from "react";
+
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import ApplyResult from "@/components/apply/result/ApplyResult";
 import { ModalNotice } from "@/components/common/modal";
-import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
+import {
+  updateMockApplyResumeStatus,
+  retryMockApply,
+  saveMockApplyResumeRecord,
+} from "@/lib/api/mockApplies";
 
 interface ResultPageClientProps {
   id: string;
@@ -16,6 +21,7 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
   const searchParams = useSearchParams();
   const sequence = Number(searchParams.get("sequence") ?? "1");
   const [showAnalysisErrorModal, setShowAnalysisErrorModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const applyId = Number(id);
 
   const closeAnalysisErrorModal = () => {
@@ -26,9 +32,22 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
     setShowAnalysisErrorModal(true);
   }, []);
 
-  const handleReApply = () => {
-    updateMockApplyResumeStatus(applyId, "COMPLETED");
-    router.push(`/apply/virtual/${id}/write`);
+  const handleReApply = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+
+    try {
+      updateMockApplyResumeStatus(applyId, "COMPLETED");
+      const result = await retryMockApply(applyId);
+      saveMockApplyResumeRecord({
+        jobPostingId: result.jobPostingId,
+        mockApplyId: result.mockApplyId,
+        status: "ANSWER_WRITE",
+      });
+      router.push(`/apply/virtual/${result.mockApplyId}/write`);
+    } catch {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -38,6 +57,7 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
         rightAction={{
           label: "재지원하기",
           onClick: handleReApply,
+          disabled: isSaving,
         }}
       />
       <main className="mx-auto w-full flex-1 flex flex-col overflow-hidden">
