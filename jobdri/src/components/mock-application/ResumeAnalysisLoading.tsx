@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Header from "@/components/common/header/Header";
 import Icon from "@/components/common/icons/Icon";
 import ProgressPanelRow from "@/components/common/progress/ProgressPanelRow";
+import Analysising from "@/assets/img_analysis.png";
+import Image from "next/image";
 
 interface ResumeAnalysisLoadingProps {
   durationMs: number;
@@ -42,9 +44,12 @@ export default function ResumeAnalysisLoading({
       setCurrentStep(3);
     }, durationMs / 2);
 
-    const fourthStepTimer = window.setTimeout(() => {
-      setCurrentStep(4);
-    }, (durationMs / 4) * 3);
+    const fourthStepTimer = window.setTimeout(
+      () => {
+        setCurrentStep(4);
+      },
+      (durationMs / 4) * 3,
+    );
 
     return () => {
       window.clearInterval(countdownTimer);
@@ -90,7 +95,7 @@ export default function ResumeAnalysisLoading({
           aria-live="polite"
           aria-busy="true"
         >
-          <section className="flex w-[776px] flex-col items-start gap-20 rounded-card-l bg-bg-contents-default px-12 py-10 shadow-card">
+          <section className="flex w-[776px] flex-col items-start gap-10 rounded-card-l bg-bg-contents-default px-12 py-10 shadow-card">
             <div className="flex items-start justify-between self-stretch">
               <div className="flex flex-col items-start gap-6">
                 <h2 className="whitespace-pre-line text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
@@ -107,7 +112,13 @@ export default function ResumeAnalysisLoading({
                 </div>
               </div>
 
-              <div className="h-28 w-[356px] bg-[#F2F2F2]" />
+              {/* <div className="h-28 w-[356px] bg-[#F2F2F2]" /> */}
+
+              <Image
+                src={Analysising}
+                alt="분석중"
+                width={Analysising.width / 2}
+              />
             </div>
 
             <ProgressPanelRow
