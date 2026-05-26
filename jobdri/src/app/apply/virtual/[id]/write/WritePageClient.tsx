@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Footer } from "@/components/common/footer";
 import Header from "@/components/common/header/Header";
 import { ModalNotice } from "@/components/common/modal";
@@ -31,7 +31,8 @@ export default function WritePageClient({ id }: WritePageClientProps) {
   const router = useRouter();
   const inputRef = useRef<InputSectionHandle>(null);
   const [allComplete, setAllComplete] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [showCharactersModal, setShowCharactersModal] = useState(false);
   const [showAnalysisErrorModal, setShowAnalysisErrorModal] = useState(false);
   const [isCreditInsufficient, setIsCreditInsufficient] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,7 +47,8 @@ export default function WritePageClient({ id }: WritePageClientProps) {
     const loadingDurationMs = createAnalysisLoadingDurationMs();
     setAnalysisLoadingDurationMs(loadingDurationMs);
     setIsSubmitting(true);
-    setShowModal(false);
+    setShowCharactersModal(false);
+    setShowApplyModal(false);
     const answers = inputRef.current?.getAnswers() ?? [];
     let shouldKeepLoading = false;
     let savedSequence = 1;
@@ -54,9 +56,9 @@ export default function WritePageClient({ id }: WritePageClientProps) {
     try {
       const analysisResult = await Promise.allSettled([
         (async () => {
-          const saveResult = await saveApply(Number(id), answers);
-          savedSequence = saveResult.sequence;
-          await runAnalysis(Number(id));
+          await saveApply(Number(id), answers);
+          const analysisResult = await runAnalysis(Number(id));
+          savedSequence = analysisResult.sequence;
         })(),
         delay(loadingDurationMs),
       ]).then(([result]) => result);
@@ -83,11 +85,11 @@ export default function WritePageClient({ id }: WritePageClientProps) {
 
   const handleSubmit = () => {
     if (inputRef.current?.hasUnderThreshold()) {
-      setShowModal(true);
+      setShowCharactersModal(true);
       return;
     }
 
-    submit();
+    setShowApplyModal(true);
   };
 
   const closeAnalysisErrorModal = () => {
@@ -110,7 +112,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
         />
       </main>
       <Footer
-        ctaLabel="제출하기"
+        ctaLabel="지원하기"
         backAction={{ href: `/apply/virtual/${id}/questions` }}
         ctaAction={{
           disabled: !allComplete || isSubmitting,
@@ -118,7 +120,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
         }}
       />
 
-      {showModal && (
+      {showCharactersModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
             variant="double"
@@ -126,13 +128,35 @@ export default function WritePageClient({ id }: WritePageClientProps) {
             description={
               "글자 수가 부족하면 채점 결과에\n부정적인 영향을 줄 수 있습니다."
             }
-            onClose={() => setShowModal(false)}
+            onClose={() => setShowCharactersModal(false)}
             secondaryAction={{
               label: "계속 작성하기",
-              onClick: () => setShowModal(false),
+              onClick: () => setShowCharactersModal(false),
             }}
             primaryAction={{
               label: "확정하기",
+              onClick: () => {
+                setShowCharactersModal(false);
+                setShowApplyModal(true);
+              },
+            }}
+          />
+        </div>
+      )}
+
+      {showApplyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            variant="double"
+            title="작성된 내용을 바탕으로 모의 지원 하시겠습니까?"
+            description={"지원 시 1 크레딧이 차감되며, 취소할 수 없습니다."}
+            onClose={() => setShowApplyModal(false)}
+            secondaryAction={{
+              label: "아니요",
+              onClick: () => setShowApplyModal(false),
+            }}
+            primaryAction={{
+              label: "지원하기",
               onClick: submit,
               disabled: isSubmitting,
             }}

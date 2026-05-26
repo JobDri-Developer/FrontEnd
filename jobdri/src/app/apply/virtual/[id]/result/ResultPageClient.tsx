@@ -6,7 +6,6 @@ import Header from "@/components/common/header/Header";
 import ApplyResult from "@/components/apply/result/ApplyResult";
 import { ModalNotice } from "@/components/common/modal";
 import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
-import { fetchSequence } from "@/lib/api/result";
 
 interface ResultPageClientProps {
   id: string;
@@ -16,7 +15,6 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sequence = Number(searchParams.get("sequence") ?? "1");
-  const [isSaving, setIsSaving] = useState(false);
   const [showAnalysisErrorModal, setShowAnalysisErrorModal] = useState(false);
   const applyId = Number(id);
 
@@ -28,17 +26,9 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
     setShowAnalysisErrorModal(true);
   }, []);
 
-  const handleReApply = async () => {
-    if (isSaving) return;
-    setIsSaving(true);
-
-    try {
-      updateMockApplyResumeStatus(applyId, "COMPLETED");
-      const { sequence: currentSequence } = await fetchSequence(applyId);
-      router.push(`/apply/virtual/${id}/write?sequence=${currentSequence + 1}`);
-    } catch {
-      setIsSaving(false);
-    }
+  const handleReApply = () => {
+    updateMockApplyResumeStatus(applyId, "COMPLETED");
+    router.push(`/apply/virtual/${id}/write`);
   };
 
   return (
@@ -48,7 +38,6 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
         rightAction={{
           label: "재지원하기",
           onClick: handleReApply,
-          disabled: isSaving,
         }}
       />
       <main className="mx-auto w-full flex-1 flex flex-col overflow-hidden">

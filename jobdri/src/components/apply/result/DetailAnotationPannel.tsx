@@ -34,7 +34,7 @@ export default function DetailAnnotationPanel({
           />
           {/* 타이틀 */}
           <h3 className="text-b16-semibold text-text-neutral-white break-keep min-w-0">
-            {analysis.improvement}
+            {analysis.reason}
           </h3>
           {/* 인용 문장 */}
           <p className="text-sub14-reg text-text-neutral-white">
