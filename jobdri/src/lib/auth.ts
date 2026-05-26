@@ -29,7 +29,7 @@ export interface LoginRequest {
 }
 
 export interface SignupRequest {
-  name: string;
+  name?: string | null;
   email: string;
   password: string;
 }
@@ -150,13 +150,15 @@ export async function confirmEmailVerification({
 }
 
 export async function signupWithEmail({
-  name,
+  name = null,
   email,
   password,
 }: SignupRequest) {
+  const fallbackName = email.split("@")[0] || "회원";
+
   await postAuth<null>(
     "/api/auth/signup",
-    { name, email, password },
+    { name: name ?? fallbackName, email, password },
     "회원가입",
   );
 }

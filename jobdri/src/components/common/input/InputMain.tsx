@@ -20,6 +20,8 @@ interface InputMainProps {
   error?: string;
   rightContent?: React.ReactNode;
   className?: string;
+  gapClassName?: string;
+  labelClassName?: string;
   type?: "ID" | "PASSWORD" | "EMAIL";
 }
 
@@ -38,6 +40,8 @@ export function InputMain({
   error,
   rightContent,
   className,
+  gapClassName = "gap-1.5",
+  labelClassName,
   type,
 }: InputMainProps) {
   const [internalValue, setInternalValue] = useState("");
@@ -61,9 +65,14 @@ export function InputMain({
   };
 
   return (
-    <div className={clsx("flex flex-col gap-1.5", className)}>
+    <div className={clsx("flex flex-col", gapClassName, className)}>
       {label && (
-        <span className="text-label14-semibold text-text-neutral-title">
+        <span
+          className={clsx(
+            "text-label14-semibold text-text-neutral-title",
+            labelClassName,
+          )}
+        >
           {label}
           {required && <span className="text-text-system-fail ml-0.5">•</span>}
         </span>
@@ -74,7 +83,7 @@ export function InputMain({
           {!focused && !value && (
             <Icon
               type={type ? iconMap[type] : "PROFILE"}
-              className="text-icon-neutral-assistive shrink-0"
+              className="text-icon-neutral-weak shrink-0"
             />
           )}
           <input
