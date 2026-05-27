@@ -17,14 +17,15 @@ const toneStyles: Record<IconOnlyButtonTone, string> = {
 };
 
 export default function IconOnlyButton({
-  iconType = "CLOSE_M",
+  iconType,
   tone = "light",
   className,
   type = "button",
   size = "default",
   ...buttonProps
 }: IconOnlyButtonProps) {
-  const closeIconType = size === "small" ? "CLOSE_S" : "CLOSE_M";
+  const resolvedIconType = iconType ?? (size === "small" ? "CLOSE_S" : "CLOSE_M");
+
   return (
     <button
       type={type}
@@ -39,10 +40,8 @@ export default function IconOnlyButton({
       {...buttonProps}
     >
       <Icon
-        type={closeIconType}
-        className={
-          (clsx("shrink-0 "), size === "small" ? "h-5 w-5" : "h-6 w-6")
-        }
+        type={resolvedIconType}
+        className={clsx("shrink-0", size === "small" ? "h-5 w-5" : "h-6 w-6")}
       />
     </button>
   );

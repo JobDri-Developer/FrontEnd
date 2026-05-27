@@ -73,11 +73,13 @@ function normalizeQuestionText(question: string) {
 }
 
 function mergeCustomFlag(a?: boolean, b?: boolean) {
-  if (a === false || b === false) {
-    return false;
-  }
-
   return a === true || b === true;
+}
+
+function createSelectedQuestionId(question: Question, index: number) {
+  return typeof question.questionId === "number" && question.questionId > 0
+    ? `selected_${question.questionId}`
+    : `selected_${question.id || index}`;
 }
 
 function uniqueQuestionsByContent(questions: Question[]) {
@@ -124,7 +126,7 @@ function mergeSelectedQuestions(
   ).map((question) => ({
     ...question,
     selected: true,
-    custom: question.custom ?? false,
+    custom: question.custom === true,
   }));
 
   const mergedCandidates = candidates.map((candidate) => {
@@ -138,10 +140,7 @@ function mergeSelectedQuestions(
           questionId: candidate.questionId ?? selectedQuestion.questionId,
           maxLength: candidate.maxLength ?? selectedQuestion.maxLength ?? 1000,
           selected: true,
-          custom:
-            candidate.custom === undefined
-              ? selectedQuestion.custom === true
-              : candidate.custom === true,
+          custom: selectedQuestion.custom === true,
         }
       : {
           ...candidate,
@@ -158,7 +157,7 @@ function mergeSelectedQuestions(
     )
     .map((question, index) => ({
       ...question,
-      id: `selected_${question.questionId ?? index}`,
+      id: createSelectedQuestionId(question, index),
       maxLength: question.maxLength ?? 1000,
       selected: true,
       custom: question.custom === true,
@@ -238,12 +237,20 @@ export default function SelectQuestion({
         const selectedQuestionRefs = uniqueQuestionsByContent(
           selectionSources,
         ).slice(0, MAX_SELECT);
-        const normalizedQuestions = dedupedQuestions.map((question) => ({
-          ...question,
-          selected: selectedQuestionRefs.some((selectedQuestion) =>
-            isSameQuestion(question, selectedQuestion),
-          ),
-        }));
+        const normalizedQuestions = dedupedQuestions.map((question) => {
+          const selectedQuestion = selectedQuestionRefs.find(
+            (selectedQuestionRef) =>
+              isSameQuestion(question, selectedQuestionRef),
+          );
+
+          return {
+            ...question,
+            selected: Boolean(selectedQuestion),
+            custom: selectedQuestion
+              ? selectedQuestion.custom === true
+              : question.custom === true,
+          };
+        });
         const preSelected = normalizedQuestions
           .filter((q) => q.selected)
           .map((q) => q.id);
