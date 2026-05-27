@@ -1,16 +1,11 @@
 "use client";
 
 import { useCallback, useState } from "react";
-
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import ApplyResult from "@/components/apply/result/ApplyResult";
 import { ModalNotice } from "@/components/common/modal";
-import {
-  updateMockApplyResumeStatus,
-  retryMockApply,
-  saveMockApplyResumeRecord,
-} from "@/lib/api/mockApplies";
+import { useReApply } from "@/hooks/useReApply";
 
 interface ResultPageClientProps {
   id: string;
@@ -23,8 +18,8 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
   const totalCount = Number(searchParams.get("totalCount") ?? sequence);
   const jobPostingId = Number(id);
   const [showAnalysisErrorModal, setShowAnalysisErrorModal] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [mockApplyId, setMockApplyId] = useState(0);
+  const { reApply, isSaving } = useReApply();
 
   const closeAnalysisErrorModal = () => {
     setShowAnalysisErrorModal(false);
@@ -34,34 +29,14 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
     setShowAnalysisErrorModal(true);
   }, []);
 
-  const handleReApply = async () => {
-    if (isSaving || !mockApplyId) return;
-    setIsSaving(true);
-
-    try {
-      updateMockApplyResumeStatus(mockApplyId, "COMPLETED");
-      const result = await retryMockApply(mockApplyId);
-      saveMockApplyResumeRecord({
-        jobPostingId: result.jobPostingId,
-        mockApplyId: result.mockApplyId,
-        status: "ANSWER_WRITE",
-      });
-      router.push(
-        `/apply/virtual/${result.mockApplyId}/write?jobPostingId=${result.jobPostingId}`,
-      );
-    } catch {
-      setIsSaving(false);
-    }
-  };
-
   return (
     <div className="flex h-screen flex-col bg-bg-default">
       <Header
         currentStep={6}
         rightAction={{
           label: "재지원하기",
-          onClick: handleReApply,
-          disabled: isSaving,
+          onClick: () => reApply(mockApplyId),
+          disabled: isSaving || !mockApplyId,
         }}
       />
       <main className="mx-auto w-full flex-1 flex flex-col overflow-hidden">
