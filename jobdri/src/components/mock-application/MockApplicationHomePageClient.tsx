@@ -17,6 +17,7 @@ import { Lnb } from "@/components/common/lnb";
 import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
 import { fetchMyJobPosting, type SavedJobPosting } from "@/lib/api/jobPostings";
+import { fetchSequence } from "@/lib/api/result";
 import {
   fetchMyMockApplies,
   getMockApplyResumeRecords,
@@ -230,9 +231,10 @@ function normalizeResumePath(
 
 function getResumePath({
   mockApplyId,
+  jobPostingId,
   resumePath,
   status,
-}: Pick<ApplicationCardData, "mockApplyId" | "resumePath" | "status">) {
+}: Pick<ApplicationCardData, "mockApplyId" | "jobPostingId" | "resumePath" | "status">) {
   const normalizedResumePath = normalizeResumePath(resumePath, mockApplyId);
 
   if (normalizedResumePath) {
@@ -240,16 +242,16 @@ function getResumePath({
   }
 
   if (status === "ANSWER_WRITE") {
-    return `/apply/virtual/${mockApplyId}/write`;
+    return `/apply/virtual/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
   }
 
   return `/apply/virtual/${mockApplyId}/questions`;
 }
 
 function getResultPath({
-  mockApplyId,
-}: Pick<ApplicationCardData, "mockApplyId">) {
-  return `/apply/virtual/${mockApplyId}/result`;
+  jobPostingId,
+}: Pick<ApplicationCardData, "jobPostingId">) {
+  return `/apply/virtual/${jobPostingId}/result`;
 }
 
 function saveJdReviewSessionFromJobPosting(
@@ -546,8 +548,15 @@ export default function MockApplicationHomePageClient() {
 
     router.push(resumePath);
   };
-  const handleResultApplication = (application: ApplicationCardData) => {
-    router.push(getResultPath(application));
+  const handleResultApplication = async (application: ApplicationCardData) => {
+    try {
+      const { sequence, totalCount } = await fetchSequence(application.mockApplyId);
+      router.push(
+        `/apply/virtual/${application.jobPostingId}/result?sequence=${sequence}&totalCount=${totalCount}`,
+      );
+    } catch {
+      router.push(getResultPath(application));
+    }
   };
 
   useEffect(() => {

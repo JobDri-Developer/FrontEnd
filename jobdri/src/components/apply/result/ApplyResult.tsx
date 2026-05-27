@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchSelectedQuestions } from "@/lib/api/questions";
-import { fetchAnalysis, type AnalysisResult } from "@/lib/api/result";
+import {
+  fetchAnalysisByJobPosting,
+  type AnalysisResult,
+} from "@/lib/api/result";
 import Sidebar from "@/components/apply/result/Sidebar";
 import Trybar from "./Trybar";
 import OverviewSection from "./OverviewSection";
 import DetailSection from "./DetailSection";
 
 interface ApplyResultProps {
-  applyId: number;
+  jobPostingId: number;
   sequence?: number;
+  totalCount?: number;
   onAnalysisError?: () => void;
+  onMockApplyIdChange?: (mockApplyId: number) => void;
 }
 
 interface Question {
@@ -49,45 +53,50 @@ function ResultLoadingState({ message }: { message: string }) {
 }
 
 export default function ApplyResult({
-  applyId,
-  sequence = 1,
+  jobPostingId,
+  sequence: initialSequence = 1,
+  totalCount: initialTotalCount,
   onAnalysisError,
+  onMockApplyIdChange,
 }: ApplyResultProps) {
+  const [selectedSequence, setSelectedSequence] = useState(initialSequence);
   const [questions, setQuestions] = useState<Question[]>(FALLBACK_QUESTIONS);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
-  const [analysisError, setAnalysisError] = useState<{
-    applyId: number;
-    message: string;
-  } | null>(null);
+  const [analysisErrorMessage, setAnalysisErrorMessage] = useState("");
   const [isOverview, setIsOverview] = useState(true);
-  const [activeId, setActiveId] = useState(FALLBACK_QUESTIONS[0].id);
+  const [activeId, setActiveId] = useState("0");
 
   useEffect(() => {
-    fetchSelectedQuestions(applyId)
-      .then((fetched) => {
-        if (fetched.length > 0) {
-          setQuestions(fetched);
-          setActiveId(fetched[0].id);
+    const controller = new AbortController();
+
+    fetchAnalysisByJobPosting(jobPostingId, selectedSequence, controller.signal)
+      .then((fetchedAnalysis) => {
+        if (controller.signal.aborted) return;
+        setAnalysis(fetchedAnalysis);
+        setAnalysisErrorMessage("");
+        onMockApplyIdChange?.(fetchedAnalysis.mockApplyId);
+        // 분석 결과에서 문항 목록 추출
+        const fetchedQuestions = fetchedAnalysis.questions.map((q, i) => ({
+          id: String(i),
+          question: q.questionContent,
+        }));
+        if (fetchedQuestions.length > 0) {
+          setQuestions(fetchedQuestions);
+          setActiveId("0");
         }
       })
-      .catch(() => {});
-
-    fetchAnalysis(applyId, sequence)
-      .then((fetchedAnalysis) => {
-        setAnalysis(fetchedAnalysis);
-        setAnalysisError(null);
-      })
       .catch((error) => {
-        setAnalysisError({
-          applyId,
-          message:
-            error instanceof Error
-              ? error.message
-              : "분석 결과를 불러오지 못했습니다.",
-        });
+        if (controller.signal.aborted) return;
+        setAnalysisErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "분석 결과를 불러오지 못했습니다.",
+        );
         onAnalysisError?.();
       });
-  }, [applyId, sequence, onAnalysisError]);
+
+    return () => controller.abort();
+  }, [jobPostingId, selectedSequence, onAnalysisError]);
 
   const handleOverview = () => {
     setIsOverview(true);
@@ -99,16 +108,19 @@ export default function ApplyResult({
     setActiveId(id);
   };
 
-  const currentAnalysis = analysis?.mockApplyId === applyId ? analysis : null;
+  const currentAnalysis =
+    analysis?.sequence === selectedSequence ? analysis : null;
   const activeAnalysisQuestion = currentAnalysis?.questions[Number(activeId)];
-  const analysisErrorMessage =
-    analysisError?.applyId === applyId ? analysisError.message : "";
   const loadingMessage =
     analysisErrorMessage || "분석 결과를 불러오는 중입니다.";
 
   return (
     <div className="flex-1 flex flex-row pt-8 h-full overflow-hidden">
-      <Trybar applyId={applyId} />
+      <Trybar
+        totalCount={initialTotalCount ?? initialSequence}
+        selectedSequence={selectedSequence}
+        onSequenceChange={setSelectedSequence}
+      />
       <Sidebar
         questions={questions}
         activeId={activeId}

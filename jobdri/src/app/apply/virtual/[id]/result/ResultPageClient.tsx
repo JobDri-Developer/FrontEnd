@@ -20,9 +20,11 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sequence = Number(searchParams.get("sequence") ?? "1");
+  const totalCount = Number(searchParams.get("totalCount") ?? sequence);
+  const jobPostingId = Number(id);
   const [showAnalysisErrorModal, setShowAnalysisErrorModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const applyId = Number(id);
+  const [mockApplyId, setMockApplyId] = useState(0);
 
   const closeAnalysisErrorModal = () => {
     setShowAnalysisErrorModal(false);
@@ -33,18 +35,20 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
   }, []);
 
   const handleReApply = async () => {
-    if (isSaving) return;
+    if (isSaving || !mockApplyId) return;
     setIsSaving(true);
 
     try {
-      updateMockApplyResumeStatus(applyId, "COMPLETED");
-      const result = await retryMockApply(applyId);
+      updateMockApplyResumeStatus(mockApplyId, "COMPLETED");
+      const result = await retryMockApply(mockApplyId);
       saveMockApplyResumeRecord({
         jobPostingId: result.jobPostingId,
         mockApplyId: result.mockApplyId,
         status: "ANSWER_WRITE",
       });
-      router.push(`/apply/virtual/${result.mockApplyId}/write`);
+      router.push(
+        `/apply/virtual/${result.mockApplyId}/write?jobPostingId=${result.jobPostingId}`,
+      );
     } catch {
       setIsSaving(false);
     }
@@ -62,9 +66,11 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
       />
       <main className="mx-auto w-full flex-1 flex flex-col overflow-hidden">
         <ApplyResult
-          applyId={applyId}
+          jobPostingId={jobPostingId}
           sequence={sequence}
+          totalCount={totalCount}
           onAnalysisError={openAnalysisErrorModal}
+          onMockApplyIdChange={setMockApplyId}
         />
       </main>
 

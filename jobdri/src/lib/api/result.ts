@@ -90,18 +90,21 @@ export async function fetchSequence(
   );
 }
 
-export async function fetchAnalysis(
-  mockApplyId: number,
-  sequence: number = 1,
+
+export async function fetchAnalysisByJobPosting(
+  jobPostingId: number,
+  sequence: number,
+  signal?: AbortSignal,
 ): Promise<AnalysisResult> {
   const url = new URL(
-    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/analysis`,
+    `${API_BASE_URL}/api/job-postings/${jobPostingId}/analysis`,
   );
   url.searchParams.set("sequence", String(sequence));
 
   const response = await fetch(url.toString(), {
     headers: getAuthHeaders(),
     cache: "no-store",
+    signal,
   });
 
   return parseApiResponse<AnalysisResult>(

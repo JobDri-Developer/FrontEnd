@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Footer } from "@/components/common/footer";
 import Header from "@/components/common/header/Header";
 import { ModalNotice } from "@/components/common/modal";
@@ -29,6 +29,8 @@ function delay(ms: number) {
 
 export default function WritePageClient({ id }: WritePageClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const jobPostingId = Number(searchParams.get("jobPostingId") ?? "0");
   const inputRef = useRef<InputSectionHandle>(null);
   const [allComplete, setAllComplete] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
@@ -69,7 +71,9 @@ export default function WritePageClient({ id }: WritePageClientProps) {
 
       updateMockApplyResumeStatus(Number(id), "COMPLETED");
       shouldKeepLoading = true;
-      router.push(`/apply/virtual/${id}/result?sequence=${savedSequence}`);
+      router.push(
+        `/apply/virtual/${jobPostingId}/result?sequence=${savedSequence}`,
+      );
     } catch (error) {
       if (error instanceof CreditInsufficientError) {
         setIsCreditInsufficient(true);
