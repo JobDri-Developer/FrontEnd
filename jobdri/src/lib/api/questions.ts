@@ -7,6 +7,7 @@ export interface QuestionItem {
   maxLength?: number;
   selected?: boolean;
   custom?: boolean;
+  answer?: string;
 }
 
 interface QuestionApiItem {
@@ -16,6 +17,7 @@ interface QuestionApiItem {
   selected?: boolean;
   questionId?: number;
   custom?: boolean;
+  answer?: string;
 }
 
 interface ApiResponse<T> {
@@ -121,21 +123,28 @@ export async function fetchSelectedQuestions(
   );
 
   return (result?.questions ?? []).map(
-    ({ id, questionId, content, charLimit, selected, custom }, index) => ({
+    ({ id, questionId, content, charLimit, selected, custom, answer }, index) => ({
       id: String(index),
       questionId: id ?? questionId,
       question: content,
       maxLength: charLimit,
       selected,
       custom,
+      answer,
     }),
   );
+}
+
+export interface SaveApplyResult {
+  mockApplyId: number;
+  status: string;
+  sequence: number;
 }
 
 export async function saveApply(
   mockApplyId: number,
   answers: AnswerItem[],
-): Promise<void> {
+): Promise<SaveApplyResult> {
   const response = await fetch(
     `${API_BASE_URL}/api/mock-applies/${mockApplyId}/questions/answers`,
     {
@@ -145,5 +154,9 @@ export async function saveApply(
     },
   );
 
-  await parseApiResponse<unknown>(response, "답변 제출에 실패했습니다.");
+  const result = await parseApiResponse<SaveApplyResult>(
+    response,
+    "답변 제출에 실패했습니다.",
+  );
+  return result!;
 }

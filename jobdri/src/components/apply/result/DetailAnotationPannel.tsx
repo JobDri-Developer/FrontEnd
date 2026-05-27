@@ -13,12 +13,10 @@ const statusLabel: Record<HighlightStatus, string> = {
 
 interface DetailAnnotationPanelProps {
   analyses: QuestionAnalysis[];
-  answer: string;
 }
 
 export default function DetailAnnotationPanel({
   analyses,
-  answer,
 }: DetailAnnotationPanelProps) {
   return (
     <div
@@ -49,7 +47,7 @@ export default function DetailAnnotationPanel({
                 개선 예시
               </span>
               <p className="text-cap12-med text-text-neutral-caption break-keep">
-                {answer}
+                {analysis.improvement}
               </p>
             </div>
           )}

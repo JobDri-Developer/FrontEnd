@@ -34,16 +34,16 @@
   --color-white: #ffffff;
 
   /* Grayscale */
-  --color-gray-95: #f9f9fb;
-  --color-gray-100: #f6f6f9;
-  --color-gray-200: #eaeaef;
-  --color-gray-300: #c5c5c9;
-  --color-gray-400: #9a9aa0;
-  --color-gray-500: #7b7b80;
-  --color-gray-600: #585b60;
-  --color-gray-700: #3e3e44;
-  --color-gray-800: #2f2f35;
-  --color-gray-900: #212128;
+  --color-gray-95: #f9f9fd;
+  --color-gray-100: #f4f4f8;
+  --color-gray-200: #ebebf2;
+  --color-gray-300: #c5c5ca;
+  --color-gray-400: #9a9aa2;
+  --color-gray-500: #7b7b82;
+  --color-gray-600: #585b62;
+  --color-gray-700: #3e3e46;
+  --color-gray-800: #2f2f37;
+  --color-gray-900: #21212a;
 
   /* 변수를 직접 등록하거나, 클래스 사용 시 /10%를 붙여서 쓸 수 있습니다 */
   --color-gray-alpha-50: color-mix(in srgb, #212128 5%, transparent);

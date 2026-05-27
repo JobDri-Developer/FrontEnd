@@ -5,11 +5,12 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { ChipQnumber } from "@/components/common/chips";
 import { InputMultiLine1000 } from "@/components/common/input";
-import { fetchSelectedQuestions, type AnswerItem } from "@/lib/api/questions";
+import { fetchSelectedQuestions, saveApply, type AnswerItem } from "@/lib/api/questions";
 
 export interface StoredQuestion {
   id: string;
@@ -77,15 +78,46 @@ const InputSection = forwardRef<InputSectionHandle, InputSectionProps>(
       useState<StoredQuestion[]>(fallbackQuestions);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
     const [answersById, setAnswersById] = useState<Record<string, string>>({});
+    const isRestoredRef = useRef(false);
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
       fetchSelectedQuestions(applyId)
         .then((fetched) => {
           const normalized = normalizeQuestions(JSON.stringify(fetched));
           setQuestions(normalized);
+
+          const restoredById: Record<string, string> = {};
+          fetched.forEach((question, index) => {
+            if (question.answer) restoredById[String(index)] = question.answer;
+          });
+          if (Object.keys(restoredById).length > 0) {
+            setAnswersById(restoredById);
+          }
+          isRestoredRef.current = true;
         })
-        .catch(() => setQuestions(fallbackQuestions));
+        .catch(() => {
+          setQuestions(fallbackQuestions);
+          isRestoredRef.current = true;
+        });
     }, [applyId]);
+
+    useEffect(() => {
+      if (!isRestoredRef.current) return;
+
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        const answers = questions.map((question, index) => ({
+          questionId: question.questionId ?? index,
+          answer: answersById[question.id] ?? "",
+        }));
+        saveApply(applyId, answers).catch(() => {});
+      }, 1500);
+
+      return () => {
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      };
+    }, [answersById, applyId, questions]);
 
     const activeQuestion = questions[activeQuestionIndex] ?? questions[0];
     const activeAnswer = activeQuestion

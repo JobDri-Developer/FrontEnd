@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import ResultPageClient from "./ResultPageClient";
 
 interface ResultPageProps {
@@ -6,5 +7,9 @@ interface ResultPageProps {
 
 export default async function ResultPage({ params }: ResultPageProps) {
   const { id } = await params;
-  return <ResultPageClient id={id} />;
+  return (
+    <Suspense>
+      <ResultPageClient id={id} />
+    </Suspense>
+  );
 }
