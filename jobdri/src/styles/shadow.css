@@ -3,7 +3,7 @@
   --shadow-card: 0 0 24px 0 var(--color-bg-shadow-default);
 
   /* HoverShadow: x0 y0 blur40 spread0 */
-  --shadow-hover: 0 0 40px 0 var(--color-bg-shadow-strong);
+  --shadow-hover: 0 0 40px 0 var(--color-blue-alpha);
 
   /* MarkerShadow: x0 y0 blur4 spread0 */
   --shadow-marker: 0 0 4px 0 var(--color-bg-shadow-default);

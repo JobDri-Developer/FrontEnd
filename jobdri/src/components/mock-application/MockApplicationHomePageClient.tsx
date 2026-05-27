@@ -30,6 +30,7 @@ import {
   getJdReviewSavedStorageKey,
   getJdReviewStorageKey,
 } from "@/components/mock-application/jdReviewSections";
+import { useReApply } from "@/hooks/useReApply";
 
 interface ApplicationCardData {
   id: number;
@@ -234,7 +235,10 @@ function getResumePath({
   jobPostingId,
   resumePath,
   status,
-}: Pick<ApplicationCardData, "mockApplyId" | "jobPostingId" | "resumePath" | "status">) {
+}: Pick<
+  ApplicationCardData,
+  "mockApplyId" | "jobPostingId" | "resumePath" | "status"
+>) {
   const normalizedResumePath = normalizeResumePath(resumePath, mockApplyId);
 
   if (normalizedResumePath) {
@@ -308,9 +312,11 @@ function handleCardKeyDown(
 function KebabButton({
   label,
   onDeleteClick,
+  onReApplyClick,
 }: {
   label: string;
   onDeleteClick: () => void;
+  onReApplyClick?: () => void;
 }) {
   const dropdownId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -371,10 +377,17 @@ function KebabButton({
                 onDeleteClick();
               },
             },
-            // {
-            //   label:'재지원하기',
-            //   onClick={}
-            // }
+            ...(onReApplyClick
+              ? [
+                  {
+                    label: "재지원하기",
+                    onClick: () => {
+                      setOpen(false);
+                      onReApplyClick();
+                    },
+                  },
+                ]
+              : []),
           ]}
         />
       )}
@@ -460,9 +473,11 @@ function ResultApplicationCard({
   score,
   onDeleteClick,
   onResumeClick,
+  onReApplyClick,
 }: ApplicationCardData & {
   onDeleteClick: () => void;
   onResumeClick?: () => void;
+  onReApplyClick?: () => void;
 }) {
   return (
     <article
@@ -477,6 +492,7 @@ function ResultApplicationCard({
         <KebabButton
           label={`${company} 모의 서류 결과 메뉴`}
           onDeleteClick={onDeleteClick}
+          onReApplyClick={onReApplyClick}
         />
       </div>
 
@@ -505,6 +521,7 @@ function EmptyApplicationState() {
 
 export default function MockApplicationHomePageClient() {
   const router = useRouter();
+  const { reApply } = useReApply();
   const [applications, setApplications] = useState<ApplicationCardData[]>(
     readCachedApplications,
   );
@@ -550,7 +567,9 @@ export default function MockApplicationHomePageClient() {
   };
   const handleResultApplication = async (application: ApplicationCardData) => {
     try {
-      const { sequence, totalCount } = await fetchSequence(application.mockApplyId);
+      const { sequence, totalCount } = await fetchSequence(
+        application.mockApplyId,
+      );
       router.push(
         `/apply/virtual/${application.jobPostingId}/result?sequence=${sequence}&totalCount=${totalCount}`,
       );
@@ -748,6 +767,9 @@ export default function MockApplicationHomePageClient() {
                               onDeleteClick={openDeleteConfirm}
                               onResumeClick={() =>
                                 handleResultApplication(application)
+                              }
+                              onReApplyClick={() =>
+                                reApply(application.mockApplyId)
                               }
                             />
                           ))}
