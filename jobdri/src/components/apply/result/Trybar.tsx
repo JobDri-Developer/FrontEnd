@@ -8,7 +8,7 @@ interface TrybarProps {
   onSequenceChange: (sequence: number) => void;
 }
 
-export default function Trybar({ totalCount, selectedSequence }: TrybarProps) {
+export default function Trybar({ totalCount, selectedSequence, onSequenceChange }: TrybarProps) {
   return (
     <nav className="flex flex-col gap-1 pt-4 pr-3 pl-5">
       {Array.from({ length: totalCount }, (_, i) => i + 1).map((n) => (
