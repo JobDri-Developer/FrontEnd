@@ -200,7 +200,7 @@ export default function MockApplicationHomePageClient() {
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col self-stretch">
-        <main className="content-frame-lnb">
+        <main className="content-frame-lnb apply-home-content-frame">
           <div className="container-lnb flex flex-col items-center gap-16">
             <section className="flex flex-col items-center gap-10 self-stretch">
               <div className="flex items-start justify-between gap-6 self-stretch">

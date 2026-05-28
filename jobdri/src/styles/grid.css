@@ -68,6 +68,10 @@
   padding: 64px;
 }
 
+.apply-home-content-frame {
+  padding-bottom: 120px;
+}
+
 /* 모바일 대응 */
 @media (max-width: 767px) {
   .grid-base {
