@@ -3,6 +3,7 @@
 import { useState, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
+import clsx from "clsx";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
 import { ModalNotice } from "@/components/common/modal";
 import { AUTH_STORAGE_KEYS, getStoredAuthEmail } from "@/lib/auth";
@@ -14,6 +15,7 @@ type LnbItemKey = "experience" | "apply";
 interface LnbProps {
   initialActiveItem?: LnbItemKey;
   email?: string;
+  className?: string;
 }
 
 interface LnbNavItem {
@@ -64,7 +66,7 @@ function getEmailInitial(email: string) {
   return email.trim().charAt(0).toUpperCase() || "J";
 }
 
-export default function Lnb({ initialActiveItem, email }: LnbProps) {
+export default function Lnb({ initialActiveItem, email, className }: LnbProps) {
   const router = useRouter();
   const storedEmail = useSyncExternalStore(
     subscribeToStoredEmail,
@@ -101,9 +103,11 @@ export default function Lnb({ initialActiveItem, email }: LnbProps) {
   return (
     <>
       <aside
-        className={`flex h-screen flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default py-5 px-2 transition-[width] duration-300 ease-in-out overflow-hidden ${
-          isFold ? "w-[52px]" : "w-60"
-        }`}
+        className={clsx(
+          "flex h-screen flex-col justify-between overflow-hidden border-r border-line-neutral-default bg-bg-contents-default px-2 py-5 transition-[width] duration-300 ease-in-out",
+          isFold ? "w-[52px]" : "w-60",
+          className,
+        )}
       >
         <div className="flex w-full flex-col gap-8">
           <div className="flex h-8 w-full items-center px-1">
