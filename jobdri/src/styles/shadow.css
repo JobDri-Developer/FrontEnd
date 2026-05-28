@@ -2,8 +2,8 @@
   /* CardShadow: x0 y0 blur24 spread0 */
   --shadow-card: 0 0 24px 0 var(--color-bg-shadow-default);
 
-  /* HoverShadow: x0 y0 blur40 spread0 */
-  --shadow-hover: 0 0 40px 0 var(--color-bg-shadow-strong);
+  /* HoverShadow: x0 y0 blur24 spread0 */
+  --shadow-hover: 0 0 24px 0 rgba(108, 106, 255, 0.15);
 
   /* MarkerShadow: x0 y0 blur4 spread0 */
   --shadow-marker: 0 0 4px 0 var(--color-bg-shadow-default);

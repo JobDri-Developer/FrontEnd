@@ -9,6 +9,7 @@ import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
 import { deleteJobPosting, fetchMyJobPosting } from "@/lib/api/jobPostings";
 import { fetchMyMockApplies } from "@/lib/api/mockApplies";
+import { fetchSequence } from "@/lib/api/result";
 import {
   EmptyApplicationState,
   MockApplicationHomeIntro,
@@ -34,9 +35,11 @@ import {
   readCachedApplications,
   saveJdReviewSessionFromJobPosting,
 } from "@/components/mock-application/home/applicationHomeUtils";
+import { useReApply } from "@/hooks/useReApply";
 
 export default function MockApplicationHomePageClient() {
   const router = useRouter();
+  const { reApply } = useReApply();
   const [applications, setApplications] = useState<ApplicationCardData[]>([]);
   const [isLoadingApplications, setIsLoadingApplications] = useState(true);
   const [applicationsErrorMessage, setApplicationsErrorMessage] = useState("");
@@ -92,8 +95,18 @@ export default function MockApplicationHomePageClient() {
 
     router.push(resumePath);
   };
-  const handleResultApplication = (application: ApplicationCardData) => {
-    router.push(getResultPath(application));
+  const handleResultApplication = async (application: ApplicationCardData) => {
+    try {
+      const { sequence, totalCount } = await fetchSequence(
+        application.mockApplyId,
+      );
+
+      router.push(
+        `/apply/virtual/${application.jobPostingId}/result?sequence=${sequence}&totalCount=${totalCount}`,
+      );
+    } catch {
+      router.push(getResultPath(application));
+    }
   };
 
   useEffect(() => {
@@ -331,12 +344,12 @@ export default function MockApplicationHomePageClient() {
                               onDeleteClick={() =>
                                 openDeleteConfirm(application)
                               }
-                              onRetryClick={() =>
-                                handleRetryApplication(application)
-                              }
-                              onResumeClick={() =>
-                                handleResultApplication(application)
-                              }
+                              onRetryClick={() => {
+                                void reApply(application.mockApplyId);
+                              }}
+                              onResumeClick={() => {
+                                void handleResultApplication(application);
+                              }}
                             />
                           ))}
                         </div>

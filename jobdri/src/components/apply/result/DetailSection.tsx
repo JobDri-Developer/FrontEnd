@@ -91,10 +91,7 @@ export default function DetailSection({ question }: DetailSectionProps) {
         </p>
       </div>
       {/* 오른쪽: 개선안 목록 */}
-      <DetailAnnotationPanel
-        analyses={visibleAnalyses}
-        answer={question.answer}
-      />
+      <DetailAnnotationPanel analyses={visibleAnalyses} />
     </div>
   );
 }

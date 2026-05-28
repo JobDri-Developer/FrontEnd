@@ -34,7 +34,7 @@ export default function DropDownMenu({
           role="menuitem"
           disabled={item.disabled}
           onClick={item.onClick}
-          className="flex w-full items-center self-stretch bg-bg-contents-default px-6 py-5 text-left text-b16-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off] hover:bg-bg-contents-assistive active:bg-bg-default disabled:cursor-not-allowed disabled:text-text-neutral-disabled"
+          className="flex w-full items-center self-stretch bg-bg-contents-default px-4 py-3 text-left text-label14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off] hover:bg-bg-contents-assistive active:bg-bg-default disabled:cursor-not-allowed disabled:text-text-neutral-disabled"
         >
           {item.label}
         </button>

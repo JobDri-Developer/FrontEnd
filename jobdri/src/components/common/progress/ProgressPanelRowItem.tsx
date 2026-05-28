@@ -33,11 +33,11 @@ export default function ProgressPanelRowItem({
       )}
     >
       {isInProgress && (
-        <div className="absolute top-[-12px] left-[-12px] h-[133px] w-[152px] rounded-card-s bg-fill-quaternary-default" />
+        <div className="absolute top-[-12px] left-[-12px] h-[133px] w-[152px] rounded-card-s bg-fill-quaternary-assistive" />
       )}
 
       {showConnector && (
-        <span className="absolute top-[18px] right-[-63px] h-px w-[100px] bg-fill-disabled" />
+        <span className="absolute top-[18px] left-27 h-px w-[100px] bg-fill-disabled z-10" />
       )}
 
       <div
