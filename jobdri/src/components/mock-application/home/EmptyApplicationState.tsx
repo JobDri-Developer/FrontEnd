@@ -6,7 +6,7 @@ export function EmptyApplicationState({
   description: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-1 self-stretch rounded-card bg-bg-contents-default px-6 py-12">
+    <div className="flex flex-col items-center justify-center gap-1 self-stretch py-10">
       <p className="text-center text-t20-semibold text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
         {title}
       </p>
