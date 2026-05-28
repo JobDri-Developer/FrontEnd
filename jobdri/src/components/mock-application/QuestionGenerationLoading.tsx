@@ -1,15 +1,56 @@
 "use client";
 
+import type { ComponentType } from "react";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
+import dynamic from "next/dynamic";
+import questionLoadingBook from "@/assets/lottie/question-loading-book.json";
+import questionLoadingSparkle from "@/assets/lottie/question-loading-sparkle.json";
 import Header from "@/components/common/header/Header";
 import Icon from "@/components/common/icons/Icon";
-import LoadMotion from "@/components/common/LoadMotion";
 
 interface QuestionGenerationLoadingProps {
   companyName: string;
   jobName: string;
   durationMs: number;
+}
+
+type LottieAnimationProps = {
+  animationData: unknown;
+  loop?: boolean;
+  autoplay?: boolean;
+  className?: string;
+  rendererSettings?: {
+    preserveAspectRatio?: string;
+  };
+  "aria-hidden"?: boolean;
+};
+
+const LottiePlayer = dynamic<LottieAnimationProps>(
+  () =>
+    import("lottie-react").then(
+      (mod) => mod.default as ComponentType<LottieAnimationProps>,
+    ),
+  { ssr: false },
+);
+
+function LoadingGraphic({
+  animationData,
+  className,
+}: {
+  animationData: unknown;
+  className: string;
+}) {
+  return (
+    <LottiePlayer
+      aria-hidden
+      animationData={animationData}
+      autoplay
+      className={className}
+      loop
+      rendererSettings={{ preserveAspectRatio: "xMidYMid meet" }}
+    />
+  );
 }
 
 function LoadingStep({
@@ -23,22 +64,25 @@ function LoadingStep({
 }) {
   const isActive = status === "active";
   const isDone = status === "done";
+  const showStatusIcon = isActive || isDone;
 
   return (
-    <div className="flex min-h-[19.5px] items-start justify-center gap-2 self-stretch">
-      <div className="flex h-[19.5px] w-5 shrink-0 items-center justify-center">
-        {isActive ? (
-          <LoadMotion
-            className="py-1"
-            dotFrameClassName="h-1.5 w-1"
-            dotClassName="h-1 w-1"
-          />
-        ) : isDone ? (
-          <Icon type="CHECK_M" className="h-5 w-5 text-icon-neutral-assistive" />
-        ) : (
-          <span aria-hidden="true" className="h-5 w-5" />
-        )}
-      </div>
+    <div className="flex min-h-5 w-[280px] items-start justify-center gap-2">
+      {showStatusIcon && (
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+          {isActive ? (
+            <LoadingGraphic
+              animationData={questionLoadingSparkle}
+              className="h-5 w-5"
+            />
+          ) : (
+            <Icon
+              type="CHECK_M"
+              className="h-5 w-5 text-fill-secondary-default"
+            />
+          )}
+        </div>
+      )}
 
       <p
         className={clsx(
@@ -46,8 +90,12 @@ function LoadingStep({
           isActive ? "text-text-neutral-title" : "text-text-neutral-caption",
         )}
       >
-        <span className="text-cap12-semibold !leading-[1.2]">{emphasis}</span>
-        <span className="text-cap12-med !leading-[1.2]">{description}</span>
+        <span className="text-cap12-semibold !leading-[1.2] [letter-spacing:0]">
+          {emphasis}
+        </span>
+        <span className="text-cap12-med !leading-[1.2] [letter-spacing:0]">
+          {description}
+        </span>
       </p>
     </div>
   );
@@ -100,13 +148,16 @@ export default function QuestionGenerationLoading({
 
         <section className="flex h-[614px] flex-col items-center justify-center self-stretch bg-bg-default px-[82px] py-[102px]">
           <div className="flex items-center gap-2.5">
-            <article className="flex h-[426px] w-[364px] flex-col items-center gap-10 rounded-card-l bg-bg-contents-default px-10 py-16 shadow-card">
-              <div className="h-[156px] w-[156px] shrink-0 bg-[#E1E1E1]" />
+            <article className="flex w-[364px] flex-col items-center justify-center gap-10 rounded-card-l bg-bg-contents-default px-10 pt-4 pb-10 shadow-card">
+              <div className="flex aspect-[56/41] h-[205px] w-[280px] shrink-0 items-start justify-center overflow-hidden">
+                <LoadingGraphic
+                  animationData={questionLoadingBook}
+                  className="h-[223.27px] w-[280px] shrink-0"
+                />
+              </div>
 
-              <div className="flex flex-col items-center justify-center gap-4 self-stretch">
-                <div className="h-4 w-4 shrink-0 bg-[#E1E1E1]" />
-
-                <div className="flex flex-col items-start gap-2 self-stretch">
+              <div className="flex w-[280px] flex-col items-center justify-center gap-4">
+                <div className="flex w-[280px] flex-col items-center gap-2">
                   {steps.map((step, index) => (
                     <LoadingStep
                       key={`${index}-${step.description}`}

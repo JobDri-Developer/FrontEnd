@@ -27,12 +27,12 @@ import IC_APPLY from "@/assets/ic_Apply.svg";
 import IC_EX_S from "@/assets/ic_Ex.svg";
 import IC_ARROW_R_N_S from "@/assets/ic_Arrow_Right_S.svg";
 import IC_DOT_S from "@/assets/ic_Dots_S.svg";
-import IC_CLOSE from "@/assets/ic_Close.svg";
 import IC_EX_LINK from "@/assets/ic_ExternalLink.svg";
 import IC_TOKEN from "@/assets/ic_Token.svg";
 import IC_SPARKLE from "@/assets/ic_Sparkles.svg";
 import IC_SEARCH from "@/assets/ic_Search.svg";
 import IC_LIGHTBULB from "@/assets/ic_Lightbulb.svg";
+import IC_TEXT from "@/assets/ic_Text.svg";
 import IC_CHECK_M from "@/assets/ic_Check_M.svg";
 import IC_CHECK_COMPLETE from "@/assets/ic_Check_Complete.svg";
 import IC_EDIT from "@/assets/ic_Edit.svg";
@@ -77,6 +77,7 @@ const iconMap = {
   SPARKLE: IC_SPARKLE,
   SEARCH: IC_SEARCH,
   LIGHTBULB: IC_LIGHTBULB,
+  TEXT: IC_TEXT,
   CHECK_M: IC_CHECK_M,
   CHECK_COMPLETE: IC_CHECK_COMPLETE,
   EDIT: IC_EDIT,

@@ -10,7 +10,10 @@ import InputSection, {
 } from "@/components/apply/InputSection";
 import ResumeAnalysisLoading from "@/components/mock-application/ResumeAnalysisLoading";
 import { saveApply } from "@/lib/api/questions";
-import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
+import {
+  getMockApplyResumeRecords,
+  updateMockApplyResumeStatus,
+} from "@/lib/api/mockApplies";
 import { runAnalysis, CreditInsufficientError } from "@/lib/api/result";
 
 interface WritePageClientProps {
@@ -30,7 +33,14 @@ function delay(ms: number) {
 export default function WritePageClient({ id }: WritePageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const jobPostingId = Number(searchParams.get("jobPostingId") ?? "0");
+  const mockApplyId = Number(id);
+  const jobPostingIdParam = Number(searchParams.get("jobPostingId") ?? "0");
+  const jobPostingId =
+    jobPostingIdParam ||
+    getMockApplyResumeRecords().find(
+      (record) => record.mockApplyId === mockApplyId,
+    )?.jobPostingId ||
+    0;
   const inputRef = useRef<InputSectionHandle>(null);
   const [allComplete, setAllComplete] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
@@ -59,7 +69,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
       const analysisResult = await Promise.allSettled([
         (async () => {
           await saveApply(Number(id), answers);
-          const analysisResult = await runAnalysis(Number(id));
+          const analysisResult = await runAnalysis(mockApplyId);
           savedSequence = analysisResult.sequence;
         })(),
         delay(loadingDurationMs),
@@ -69,7 +79,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
         throw analysisResult.reason;
       }
 
-      updateMockApplyResumeStatus(Number(id), "COMPLETED");
+      updateMockApplyResumeStatus(mockApplyId, "COMPLETED");
       shouldKeepLoading = true;
       router.push(
         `/apply/virtual/${jobPostingId}/result?sequence=${savedSequence}`,

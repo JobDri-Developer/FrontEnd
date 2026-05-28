@@ -3,11 +3,15 @@
   /* 공통 거터 */
   --grid-gutter: 12px;
 
+  /* 페이지 최대 폭 */
+  --width-page: 1440px;
+
   /* 1. WEB_Default (사이드바 없을 때) */
   /* (82px * 12) + (12px * 11) = 1116px */
   --width-default: 1116px;
 
   /* 2. WEB_LNB (사이드바 있을 때) */
+  --width-lnb-min: 912px;
   --width-lnb: 1060px;
 
   /* 모바일 */
@@ -24,6 +28,13 @@
   margin: 0 auto;
 }
 
+/* 1440 페이지 셸 */
+.container-page {
+  width: 100%;
+  max-width: var(--width-page);
+  margin: 0 auto;
+}
+
 /* 케이스 A: 사이드바 없는 페이지 */
 .container-default {
   max-width: var(--width-default);
@@ -31,7 +42,10 @@
 
 /* 케이스 B: 사이드바 있는 페이지의 콘텐츠 영역 */
 .container-lnb {
+  width: clamp(var(--width-lnb-min), 100%, var(--width-lnb));
+  min-width: var(--width-lnb-min);
   max-width: var(--width-lnb);
+  margin: 0 auto;
 }
 
 /* LNB가 있는 페이지의 메인 콘텐츠 여백 */
@@ -39,6 +53,37 @@
   width: 100%;
   min-width: 0;
   padding: 44px 40px;
+}
+
+/* LNB가 있는 1440 페이지의 콘텐츠 여백 */
+.content-frame-lnb {
+  display: flex;
+  flex: 1 0 auto;
+  width: 100%;
+  align-self: stretch;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 60px;
+  min-width: 0;
+  overflow-x: hidden;
+  padding: 64px;
+  container: content-frame-lnb / inline-size;
+}
+
+.apply-home-content-frame {
+  padding-bottom: 120px;
+}
+
+@container content-frame-lnb (max-width: 911px) {
+  .container-lnb {
+    margin-inline: 0;
+  }
+}
+
+@container content-frame-lnb (min-width: 912px) {
+  .container-lnb {
+    margin-inline: auto;
+  }
 }
 
 /* 모바일 대응 */

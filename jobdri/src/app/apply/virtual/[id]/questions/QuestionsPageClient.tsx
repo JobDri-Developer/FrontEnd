@@ -8,7 +8,10 @@ import SelectQuestion, {
 } from "@/components/apply/SelectQuestion";
 import Header from "@/components/common/header/Header";
 import { saveQuestions } from "@/lib/api/questions";
-import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
+import {
+  getMockApplyResumeRecords,
+  updateMockApplyResumeStatus,
+} from "@/lib/api/mockApplies";
 
 interface QuestionsPageClientProps {
   id: string;
@@ -19,9 +22,18 @@ export default function QuestionsPageClient({ id }: QuestionsPageClientProps) {
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
 
   const handleConfirm = async () => {
+    const mockApplyId = Number(id);
+    const jobPostingId = getMockApplyResumeRecords().find(
+      (record) => record.mockApplyId === mockApplyId,
+    )?.jobPostingId;
+
     await saveQuestions(Number(id), selectedQuestions);
-    updateMockApplyResumeStatus(Number(id), "ANSWER_WRITE");
-    router.push(`/apply/virtual/${id}/write`);
+    updateMockApplyResumeStatus(mockApplyId, "ANSWER_WRITE");
+    router.push(
+      `/apply/virtual/${id}/write${
+        jobPostingId ? `?jobPostingId=${jobPostingId}` : ""
+      }`,
+    );
   };
 
   return (

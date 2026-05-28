@@ -27,7 +27,7 @@ interface Stack3Item {
 
 const stack3Items: Stack3Item[] = [
   { label: "직접 입력하기", iconType: "EDIT" },
-  { label: "링크 붙여넣기", iconType: "LINK" },
+  { label: "텍스트 붙여넣기", iconType: "TEXT" },
   { label: "이미지 업로드", iconType: "UPLOAD_M" },
 ];
 
