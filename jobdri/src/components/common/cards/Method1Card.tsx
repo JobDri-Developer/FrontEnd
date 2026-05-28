@@ -29,14 +29,14 @@ const selectedStyle = clsx(
   "border-line-primary-default bg-fill-quaternary-default",
   hoverShadow,
 );
-const iconDefaultStyle = "bg-icon-neutral-weak text-icon-neutral-default";
+const iconDefaultStyle = "bg-[#EBEBF2] text-icon-neutral-default";
 const iconActiveStyle = "bg-fill-primary-assistive text-icon-primary-default";
 const iconHoverStyle =
-  "group-hover:bg-fill-primary-assistive group-hover:text-icon-primary-default";
+  "group-hover:bg-fill-primary-assistive group-hover:text-icon-primary-default group-active:bg-fill-primary-assistive group-active:text-icon-primary-default";
 
 export default function Method1Card({
-  label = "링크 붙여넣기",
-  iconType = "LINK",
+  label = "텍스트 붙여넣기",
+  iconType = "TEXT",
   selected,
   defaultSelected = false,
   onSelectedChange,
@@ -96,7 +96,7 @@ export default function Method1Card({
             ? "text-icon-neutral-default"
             : isActive
               ? "text-icon-primary-default"
-              : "text-icon-neutral-default group-hover:text-icon-primary-default",
+              : "text-icon-neutral-default group-hover:text-icon-primary-default group-active:text-icon-primary-default",
         )}
       />
 
