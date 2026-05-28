@@ -223,9 +223,18 @@ async function parseApiResponseAllowNull<T>(
   fallbackMessage: string,
 ) {
   let data: ApiResponse<T> | null = null;
+  const responseText = await response.text();
+
+  if (!responseText.trim()) {
+    if (!response.ok) {
+      throw new Error(fallbackMessage);
+    }
+
+    return null;
+  }
 
   try {
-    data = (await response.json()) as ApiResponse<T>;
+    data = JSON.parse(responseText) as ApiResponse<T>;
   } catch {
     throw new Error(`${fallbackMessage} 응답을 확인할 수 없습니다.`);
   }

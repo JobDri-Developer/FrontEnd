@@ -184,40 +184,30 @@ export default function MockApplicationHomePageClient() {
     };
   }, [showDeleteToast]);
 
-  const deleteApplicationRecord = async () => {
-    if (!deleteTargetApplication) {
-      return false;
-    }
-
-    await deleteJobPosting(deleteTargetApplication.jobPostingId);
-
+  const removeApplicationLocally = (application: ApplicationCardData) => {
     setApplications((currentApplications) => {
       const nextApplications = currentApplications.filter(
-        ({ jobPostingId }) =>
-          jobPostingId !== deleteTargetApplication.jobPostingId,
+        ({ jobPostingId }) => jobPostingId !== application.jobPostingId,
       );
 
       cacheApplications(nextApplications);
 
       return nextApplications;
     });
-
-    return true;
   };
 
   const handleConfirmDelete = async () => {
-    if (isDeleting) return;
+    if (isDeleting || !deleteTargetApplication) return;
 
+    const targetApplication = deleteTargetApplication;
     setIsDeleting(true);
+    setShowDeleteConfirm(false);
+    setDeleteTargetApplication(null);
+    removeApplicationLocally(targetApplication);
 
     try {
-      const deleted = await deleteApplicationRecord();
-
-      if (deleted) {
-        setShowDeleteConfirm(false);
-        setDeleteTargetApplication(null);
-        setShowDeleteToast(true);
-      }
+      await deleteJobPosting(targetApplication.jobPostingId);
+      setShowDeleteToast(true);
     } catch (error) {
       setApplicationsErrorMessage(
         error instanceof Error
