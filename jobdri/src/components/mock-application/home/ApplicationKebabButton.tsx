@@ -7,10 +7,12 @@ export function ApplicationKebabButton({
   label,
   onDeleteClick,
   onRetryClick,
+  showRetry = true,
 }: {
   label: string;
   onDeleteClick: () => void;
   onRetryClick?: () => void;
+  showRetry?: boolean;
 }) {
   const dropdownId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -23,13 +25,17 @@ export function ApplicationKebabButton({
         onDeleteClick();
       },
     },
-    {
-      label: "재도전하기",
-      onClick: () => {
-        setOpen(false);
-        onRetryClick?.();
-      },
-    },
+    ...(showRetry
+      ? [
+          {
+            label: "재도전하기",
+            onClick: () => {
+              setOpen(false);
+              onRetryClick?.();
+            },
+          },
+        ]
+      : []),
   ];
 
   useEffect(() => {

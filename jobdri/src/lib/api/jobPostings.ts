@@ -218,6 +218,25 @@ async function parseApiResponse<T>(response: Response, fallbackMessage: string) 
   return data.result;
 }
 
+async function parseApiResponseAllowNull<T>(
+  response: Response,
+  fallbackMessage: string,
+) {
+  let data: ApiResponse<T> | null = null;
+
+  try {
+    data = (await response.json()) as ApiResponse<T>;
+  } catch {
+    throw new Error(`${fallbackMessage} 응답을 확인할 수 없습니다.`);
+  }
+
+  if (!response.ok || !data.isSuccess) {
+    throw new Error(data?.error || data?.message || fallbackMessage);
+  }
+
+  return data.result;
+}
+
 async function postJobPosting<T>(
   path: string,
   input: JobPostingRequestInput,
@@ -356,6 +375,21 @@ export async function fetchMyJobPosting(jobPostingId: number) {
   return parseApiResponse<SavedJobPosting>(
     response,
     "내 지원 데이터를 불러오지 못했습니다.",
+  );
+}
+
+export async function deleteJobPosting(jobPostingId: number) {
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/api/job-postings/${jobPostingId}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    },
+  );
+
+  return parseApiResponseAllowNull<unknown>(
+    response,
+    "채용 공고 삭제에 실패했습니다.",
   );
 }
 

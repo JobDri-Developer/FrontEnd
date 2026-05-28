@@ -47,6 +47,7 @@ export function PausedApplicationCard({
             label={`${company} 모의 지원 메뉴`}
             onDeleteClick={onDeleteClick}
             onRetryClick={onRetryClick}
+            showRetry={false}
           />
         </div>
 

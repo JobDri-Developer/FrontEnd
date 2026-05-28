@@ -7,13 +7,14 @@ import { BusinessFooter } from "@/components/common/footer";
 import { Lnb } from "@/components/common/lnb";
 import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
-import { fetchMyJobPosting } from "@/lib/api/jobPostings";
+import { deleteJobPosting, fetchMyJobPosting } from "@/lib/api/jobPostings";
 import { fetchMyMockApplies } from "@/lib/api/mockApplies";
 import {
   EmptyApplicationState,
   MockApplicationHomeIntro,
   PausedApplicationCard,
   ResultApplicationCard,
+  SavedApplicationsModal,
   type ApplicationCardData,
 } from "@/components/mock-application/home";
 import {
@@ -24,6 +25,7 @@ import {
   createRows,
   getLatestApplication,
   getResumePath,
+  getRetryPath,
   getResultPath,
   isCompletedStatus,
   isEmptyApplicationStateError,
@@ -40,7 +42,11 @@ export default function MockApplicationHomePageClient() {
   const [applicationsErrorMessage, setApplicationsErrorMessage] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDeleteToast, setShowDeleteToast] = useState(false);
+  const [showSavedApplicationsModal, setShowSavedApplicationsModal] =
+    useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteTargetApplication, setDeleteTargetApplication] =
+    useState<ApplicationCardData | null>(null);
   const pausedApplications = applications.filter(
     ({ status }) => !isCompletedStatus(status),
   );
@@ -55,11 +61,19 @@ export default function MockApplicationHomePageClient() {
     applicationsErrorMessage &&
     !isEmptyApplicationStateError(applicationsErrorMessage);
 
-  const openDeleteConfirm = () => setShowDeleteConfirm(true);
-  const closeDeleteConfirm = () => setShowDeleteConfirm(false);
+  const openDeleteConfirm = (application: ApplicationCardData) => {
+    setDeleteTargetApplication(application);
+    setShowDeleteConfirm(true);
+  };
+  const closeDeleteConfirm = () => {
+    setShowDeleteConfirm(false);
+    setDeleteTargetApplication(null);
+  };
   const closeDeleteToast = () => setShowDeleteToast(false);
-  const handleRetryApplication = () => {
-    router.push("/apply/apply-type");
+  const openSavedApplicationsModal = () => setShowSavedApplicationsModal(true);
+  const closeSavedApplicationsModal = () => setShowSavedApplicationsModal(false);
+  const handleRetryApplication = (application: ApplicationCardData) => {
+    router.push(getRetryPath(application));
   };
   const handleResumeApplication = async (application: ApplicationCardData) => {
     const resumePath = getResumePath(application);
@@ -170,12 +184,24 @@ export default function MockApplicationHomePageClient() {
     };
   }, [showDeleteToast]);
 
-  const deleteApplicationRecord = async (): Promise<boolean> => {
-    // TODO: API 연결 후 실제 지원 기록 삭제 요청을 여기에 붙입니다.
-    // const response = await fetch("/api/mock-application/records/{id}", {
-    //   method: "DELETE",
-    // });
-    // return response.ok;
+  const deleteApplicationRecord = async () => {
+    if (!deleteTargetApplication) {
+      return false;
+    }
+
+    await deleteJobPosting(deleteTargetApplication.jobPostingId);
+
+    setApplications((currentApplications) => {
+      const nextApplications = currentApplications.filter(
+        ({ jobPostingId }) =>
+          jobPostingId !== deleteTargetApplication.jobPostingId,
+      );
+
+      cacheApplications(nextApplications);
+
+      return nextApplications;
+    });
+
     return true;
   };
 
@@ -188,9 +214,16 @@ export default function MockApplicationHomePageClient() {
       const deleted = await deleteApplicationRecord();
 
       if (deleted) {
-        closeDeleteConfirm();
+        setShowDeleteConfirm(false);
+        setDeleteTargetApplication(null);
         setShowDeleteToast(true);
       }
+    } catch (error) {
+      setApplicationsErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "지원 기록을 삭제하지 못했습니다.",
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -259,6 +292,7 @@ export default function MockApplicationHomePageClient() {
                         onClick={(event) => {
                           event.preventDefault();
                           event.stopPropagation();
+                          openSavedApplicationsModal();
                         }}
                       />
                     </header>
@@ -268,8 +302,12 @@ export default function MockApplicationHomePageClient() {
                         <PausedApplicationCard
                           key={latestPausedApplication.id}
                           {...latestPausedApplication}
-                          onDeleteClick={openDeleteConfirm}
-                          onRetryClick={handleRetryApplication}
+                          onDeleteClick={() =>
+                            openDeleteConfirm(latestPausedApplication)
+                          }
+                          onRetryClick={() =>
+                            handleRetryApplication(latestPausedApplication)
+                          }
                           onResumeClick={() =>
                             handleResumeApplication(latestPausedApplication)
                           }
@@ -300,8 +338,12 @@ export default function MockApplicationHomePageClient() {
                             <ResultApplicationCard
                               key={application.id}
                               {...application}
-                              onDeleteClick={openDeleteConfirm}
-                              onRetryClick={handleRetryApplication}
+                              onDeleteClick={() =>
+                                openDeleteConfirm(application)
+                              }
+                              onRetryClick={() =>
+                                handleRetryApplication(application)
+                              }
                               onResumeClick={() =>
                                 handleResultApplication(application)
                               }
@@ -343,6 +385,15 @@ export default function MockApplicationHomePageClient() {
             }}
           />
         </div>
+      )}
+
+      {showSavedApplicationsModal && (
+        <SavedApplicationsModal
+          applications={pausedApplications}
+          onClose={closeSavedApplicationsModal}
+          onDeleteApplication={openDeleteConfirm}
+          onResumeApplication={handleResumeApplication}
+        />
       )}
 
       {showDeleteToast && (

@@ -249,6 +249,12 @@ export function getResultPath({
   return `/apply/virtual/${mockApplyId}/result`;
 }
 
+export function getRetryPath({
+  mockApplyId,
+}: Pick<ApplicationCardData, "mockApplyId">) {
+  return `/apply/virtual/${mockApplyId}/write`;
+}
+
 export function saveJdReviewSessionFromJobPosting(
   jobPosting: SavedJobPosting,
   applyId: number,
