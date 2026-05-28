@@ -1,19 +1,36 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { DropDownMenu } from "@/components/common/dropdown";
 import Icon from "@/components/common/icons/Icon";
 
 export function ApplicationKebabButton({
   label,
   onDeleteClick,
+  onRetryClick,
 }: {
   label: string;
   onDeleteClick: () => void;
+  onRetryClick?: () => void;
 }) {
   const dropdownId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const menuItems = [
+    {
+      label: "삭제하기",
+      onClick: () => {
+        setOpen(false);
+        onDeleteClick();
+      },
+    },
+    {
+      label: "재도전하기",
+      onClick: () => {
+        setOpen(false);
+        onRetryClick?.();
+      },
+    },
+  ];
 
   useEffect(() => {
     if (!open) return;
@@ -59,19 +76,33 @@ export function ApplicationKebabButton({
       </button>
 
       {open && (
-        <DropDownMenu
+        <div
           id={dropdownId}
-          className="absolute top-[calc(100%+8px)] right-0 z-30"
-          items={[
-            {
-              label: "삭제하기",
-              onClick: () => {
-                setOpen(false);
-                onDeleteClick();
-              },
-            },
-          ]}
-        />
+          role="menu"
+          className="absolute top-0 right-full z-30 flex w-[104px] flex-col items-start overflow-hidden rounded-cta-s bg-fill-quaternary-default shadow-[0_0_24px_0_rgba(108,106,255,0.15)]"
+        >
+          {menuItems.map((item, index) => (
+            <div
+              key={item.label}
+              className="flex w-[104px] flex-col items-start bg-bg-contents-default"
+            >
+              <button
+                type="button"
+                role="menuitem"
+                className="flex items-center gap-1.5 self-stretch px-4 py-3 text-left text-label14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off] hover:bg-bg-contents-assistive active:bg-bg-default"
+                onClick={item.onClick}
+              >
+                {item.label}
+              </button>
+              {index < menuItems.length - 1 && (
+                <span
+                  className="h-px self-stretch bg-line-neutral-default"
+                  aria-hidden="true"
+                />
+              )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

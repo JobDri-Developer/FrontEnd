@@ -58,6 +58,9 @@ export default function MockApplicationHomePageClient() {
   const openDeleteConfirm = () => setShowDeleteConfirm(true);
   const closeDeleteConfirm = () => setShowDeleteConfirm(false);
   const closeDeleteToast = () => setShowDeleteToast(false);
+  const handleRetryApplication = () => {
+    router.push("/apply/apply-type");
+  };
   const handleResumeApplication = async (application: ApplicationCardData) => {
     const resumePath = getResumePath(application);
 
@@ -266,6 +269,7 @@ export default function MockApplicationHomePageClient() {
                           key={latestPausedApplication.id}
                           {...latestPausedApplication}
                           onDeleteClick={openDeleteConfirm}
+                          onRetryClick={handleRetryApplication}
                           onResumeClick={() =>
                             handleResumeApplication(latestPausedApplication)
                           }
@@ -297,6 +301,7 @@ export default function MockApplicationHomePageClient() {
                               key={application.id}
                               {...application}
                               onDeleteClick={openDeleteConfirm}
+                              onRetryClick={handleRetryApplication}
                               onResumeClick={() =>
                                 handleResultApplication(application)
                               }

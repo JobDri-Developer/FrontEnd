@@ -14,9 +14,11 @@ export function PausedApplicationCard({
   createdAt,
   status,
   onDeleteClick,
+  onRetryClick,
   onResumeClick,
 }: ApplicationCardData & {
   onDeleteClick: () => void;
+  onRetryClick?: () => void;
   onResumeClick?: () => void;
 }) {
   return (
@@ -44,6 +46,7 @@ export function PausedApplicationCard({
           <ApplicationKebabButton
             label={`${company} 모의 지원 메뉴`}
             onDeleteClick={onDeleteClick}
+            onRetryClick={onRetryClick}
           />
         </div>
 

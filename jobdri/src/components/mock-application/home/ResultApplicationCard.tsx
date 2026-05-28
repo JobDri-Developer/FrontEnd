@@ -42,10 +42,12 @@ export function ResultApplicationCard({
   score,
   companyVariant,
   onDeleteClick,
+  onRetryClick,
   onResumeClick,
 }: ApplicationCardData & {
   companyVariant?: "default" | "none";
   onDeleteClick: () => void;
+  onRetryClick?: () => void;
   onResumeClick?: () => void;
 }) {
   const showCompany =
@@ -84,6 +86,7 @@ export function ResultApplicationCard({
         <ApplicationKebabButton
           label={`${menuLabelTarget} 모의 서류 결과 메뉴`}
           onDeleteClick={onDeleteClick}
+          onRetryClick={onRetryClick}
         />
       </div>
 
