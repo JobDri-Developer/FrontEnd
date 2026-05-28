@@ -195,9 +195,7 @@ export default function MockApplicationHomePageClient() {
 
   return (
     <div className="flex min-h-screen w-full bg-[linear-gradient(206deg,#F7F8FE_33.45%,#EEF1FF_83.74%)]">
-      <div className="sticky top-0 h-screen w-60 shrink-0">
-        <Lnb initialActiveItem="apply" className="bg-white/75" />
-      </div>
+      <Lnb initialActiveItem="apply" className="sticky top-0 bg-white/75" />
 
       <div className="flex min-w-0 flex-1 flex-col self-stretch">
         <main className="content-frame-lnb apply-home-content-frame">

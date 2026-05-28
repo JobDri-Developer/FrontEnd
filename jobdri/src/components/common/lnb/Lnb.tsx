@@ -104,7 +104,7 @@ export default function Lnb({ initialActiveItem, email, className }: LnbProps) {
     <>
       <aside
         className={clsx(
-          "flex h-screen flex-col justify-between overflow-hidden border-r border-line-neutral-default bg-bg-contents-default px-2 py-5 transition-[width] duration-300 ease-in-out",
+          "flex h-screen shrink-0 flex-col justify-between overflow-hidden border-r border-line-neutral-default bg-bg-contents-default px-2 py-5 transition-[width] duration-300 ease-in-out",
           isFold ? "w-[52px]" : "w-60",
           className,
         )}
