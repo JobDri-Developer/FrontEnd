@@ -522,12 +522,14 @@ function EmptyApplicationState() {
 export default function MockApplicationHomePageClient() {
   const router = useRouter();
   const { reApply } = useReApply();
-  const [applications, setApplications] = useState<ApplicationCardData[]>(
-    readCachedApplications,
-  );
-  const [isLoadingApplications, setIsLoadingApplications] = useState(
-    () => readCachedApplications().length === 0,
-  );
+  const [applications, setApplications] = useState<ApplicationCardData[]>([]);
+  const [isLoadingApplications, setIsLoadingApplications] = useState(true);
+
+  useEffect(() => {
+    const cached = readCachedApplications();
+    setApplications(cached);
+    setIsLoadingApplications(cached.length === 0);
+  }, []);
   const [applicationsErrorMessage, setApplicationsErrorMessage] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDeleteToast, setShowDeleteToast] = useState(false);
