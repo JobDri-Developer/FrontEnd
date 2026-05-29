@@ -48,9 +48,9 @@ export function ChipMain({
     <span
       onClick={onClick}
       className={clsx(
+        className,
         "inline-flex items-center justify-center px-3 py-1 text-label14-med rounded-chip-m cursor-pointer transition-colors",
         selected ? styles[color].selected : styles[color].default,
-        className,
       )}
     >
       {label}
