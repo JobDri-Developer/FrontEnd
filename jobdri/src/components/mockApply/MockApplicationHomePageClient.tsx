@@ -18,6 +18,7 @@ import {
   SavedApplicationsModal,
   type ApplicationCardData,
 } from "@/components/mockApply/home";
+import {
   APPLICATION_FETCH_TIMEOUT_MS,
   EMPTY_APPLICATION_DESCRIPTION,
   EMPTY_APPLICATION_TITLE,
