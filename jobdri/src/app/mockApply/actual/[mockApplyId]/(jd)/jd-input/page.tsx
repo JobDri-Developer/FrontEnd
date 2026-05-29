@@ -1,16 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Footer } from "@/components/common/footer";
 import JdInputPageClient, {
   type JdInputPageClientHandle,
 } from "./JdInputPageClient";
 
-type JdInputMethod = "link" | "image" | "manual";
+type JdInputMethod = "text" | "link" | "image" | "manual";
 
 export default function MockApplicationJdInputPage() {
-  const { mockApplyId: id } = useParams<{ mockApplyId: string }>();
   const router = useRouter();
   const clientRef = useRef<JdInputPageClientHandle>(null);
   const [selectedMethod, setSelectedMethod] = useState<JdInputMethod | null>(
