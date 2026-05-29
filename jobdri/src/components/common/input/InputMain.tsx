@@ -78,8 +78,10 @@ export function InputMain({
         </span>
       )}
 
-      <div className={getWrapperClass(focused, disabled, isError)}>
-        <div className={clsx("flex items-center gap-2")}>
+      <div
+        className={clsx(getWrapperClass(focused, disabled, isError), "h-12")}
+      >
+        <div className={clsx("flex h-full items-center gap-2")}>
           {!focused && !value && (
             <Icon
               type={type ? iconMap[type] : "PROFILE"}
