@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { ButtonHTMLAttributes } from "react";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,7 @@ const defaultSteps: ProgressStep[] = [
   { label: "결과 확인" },
 ];
 
-const MOCK_APPLICATION_HOME_PATH = "/apply";
+const MOCK_APPLICATION_HOME_PATH = "/mockApply";
 
 function HeaderAction({
   iconType,
