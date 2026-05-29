@@ -37,7 +37,6 @@ import {
 } from "@/components/mockApply/home/applicationHomeUtils";
 import { useReApply } from "@/hooks/useReApply";
 
-
 export default function MockApplicationHomePageClient() {
   const router = useRouter();
   const { reApply } = useReApply();
@@ -54,8 +53,8 @@ export default function MockApplicationHomePageClient() {
   const pausedApplications = applications.filter(
     ({ status }) => !isCompletedStatus(status),
   );
-  const resultApplications = applications.filter(
-    ({ status }) => isCompletedStatus(status),
+  const resultApplications = applications.filter(({ status }) =>
+    isCompletedStatus(status),
   );
   const latestPausedApplication = getLatestApplication(pausedApplications);
   const resultRows = createRows(resultApplications, 3);
@@ -75,7 +74,8 @@ export default function MockApplicationHomePageClient() {
   };
   const closeDeleteToast = () => setShowDeleteToast(false);
   const openSavedApplicationsModal = () => setShowSavedApplicationsModal(true);
-  const closeSavedApplicationsModal = () => setShowSavedApplicationsModal(false);
+  const closeSavedApplicationsModal = () =>
+    setShowSavedApplicationsModal(false);
   const handleRetryApplication = (application: ApplicationCardData) => {
     router.push(getRetryPath(application));
   };
@@ -99,7 +99,7 @@ export default function MockApplicationHomePageClient() {
   const handleResultApplication = async (application: ApplicationCardData) => {
     try {
       const { sequence, totalCount } = await fetchSequence(
-        application.mockApplyId,
+        application.jobPostingId,
       );
 
       router.push(

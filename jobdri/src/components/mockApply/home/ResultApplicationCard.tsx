@@ -29,7 +29,7 @@ function ImprovementChip() {
       label="보완 필요"
       color="secondary"
       selected
-      className="cursor-default rounded-chip-s bg-blue-200 px-1.5 py-1 text-cap12-semibold text-text-primary-strong hover:shadow-none"
+      className="cursor-default rounded-chip-s bg-blue-200 px-1.5 py-1 text-cap12-semibold text-text-primary-strong hover:shadow-none hover:!ring-0"
     />
   );
 }
@@ -52,7 +52,8 @@ export function ResultApplicationCard({
 }) {
   const showCompany =
     companyVariant !== "none" &&
-    (hasCompanyName ?? (company.trim().length > 0 && company !== "회사명 미입력"));
+    (hasCompanyName ??
+      (company.trim().length > 0 && company !== "회사명 미입력"));
   const menuLabelTarget = showCompany ? company : position;
 
   return (
@@ -63,9 +64,7 @@ export function ResultApplicationCard({
         showCompany ? "gap-10" : "gap-[72px]"
       }`}
       onClick={onResumeClick}
-      onKeyDown={(event) =>
-        handleApplicationCardKeyDown(event, onResumeClick)
-      }
+      onKeyDown={(event) => handleApplicationCardKeyDown(event, onResumeClick)}
     >
       <div className="flex items-start gap-3 self-stretch">
         <div className="flex min-w-0 flex-1 flex-col items-start justify-center gap-3">

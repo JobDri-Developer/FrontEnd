@@ -58,12 +58,12 @@ function HeaderAction({
 export default function Header({
   title = "모의 서류 지원",
   leftAction = { label: "메인으로", iconType: "HOME_S" },
-  rightAction = { label: "저장하기" },
+  // rightAction = { label: "저장하기" },
   currentStep = 1,
   steps = defaultSteps,
 }: HeaderProps) {
   const router = useRouter();
-  const rightActionDisabled = currentStep <= 2 || rightAction.disabled;
+  // const rightActionDisabled = currentStep <= 2 || rightAction.disabled;
   const { onClick: leftActionOnClick, ...leftButtonProps } = leftAction;
 
   const handleLeftActionClick: ButtonHTMLAttributes<HTMLButtonElement>["onClick"] =
@@ -131,11 +131,11 @@ export default function Header({
             onClick={handleLeftActionClick}
             className={clsx("tracking-normal", leftAction.className)}
           />
-          <HeaderAction
+          {/* <HeaderAction
             {...rightAction}
             disabled={rightActionDisabled}
             className={clsx("tracking-normal", rightAction.className)}
-          />
+          /> */}
         </div>
       </div>
     </header>
