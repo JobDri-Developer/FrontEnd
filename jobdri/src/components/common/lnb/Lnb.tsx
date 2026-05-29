@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
@@ -28,7 +28,7 @@ const navItems: LnbNavItem[] = [
     key: "apply",
     label: "모의서류지원",
     iconType: "APPLY",
-    href: "/apply",
+    href: "/mockApply",
   },
   { key: "experience", label: "경험기록장", iconType: "EX_S" },
 ];

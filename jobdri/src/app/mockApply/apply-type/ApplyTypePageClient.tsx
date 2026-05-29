@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -37,7 +37,7 @@ export default function ApplyTypePageClient() {
   const handleSubmit = () => {
     if (selectedType === "real") {
       saveSelectedApplyType("ACTUAL");
-      router.push("/apply/virtual/new/jd-input");
+      router.push("/mockApply/actual/new/jd-input");
       return;
     }
 

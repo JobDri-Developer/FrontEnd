@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -25,7 +25,7 @@ export function useReApply() {
         status: "ANSWER_WRITE",
       });
       router.push(
-        `/apply/virtual/${result.mockApplyId}/write?jobPostingId=${result.jobPostingId}`,
+        `/mockApply/actual/${result.mockApplyId}/write?jobPostingId=${result.jobPostingId}`,
       );
     } catch {
       setIsSaving(false);

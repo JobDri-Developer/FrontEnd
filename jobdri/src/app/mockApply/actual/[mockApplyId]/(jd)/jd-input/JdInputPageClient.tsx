@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -17,7 +17,7 @@ import {
   getJdReviewMetadataStorageKey,
   getJdReviewSavedStorageKey,
   getJdReviewStorageKey,
-} from "@/components/mock-application/jdReviewSections";
+} from "@/components/mockApply/jd/jdReviewSections";
 
 type JdInputMethod = "link" | "image" | "manual";
 type LinkModalStep = "input" | "reading" | "failed";
@@ -68,7 +68,7 @@ const JdInputPageClient = forwardRef<
 >(function JdInputPageClient({ selectedMethod, onMethodChange }, ref) {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const manualJdReviewPath = `/apply/virtual/${id}/jd-review?mode=manual`;
+  const manualJdReviewPath = `/mockApply/actual/${id}/jd-review?mode=manual`;
   const activeRequestIdRef = useRef(0);
 
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -179,7 +179,7 @@ const JdInputPageClient = forwardRef<
       window.sessionStorage.removeItem(getJdReviewSavedStorageKey(id));
     }
 
-    router.push(`/apply/virtual/${id}/jd-review`);
+    router.push(`/mockApply/actual/${id}/jd-review`);
   };
 
   const processJobPosting = async ({
@@ -210,9 +210,7 @@ const JdInputPageClient = forwardRef<
       }
 
       setProcessingErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "공고 입력에 실패했습니다.",
+        error instanceof Error ? error.message : "공고 입력에 실패했습니다.",
       );
 
       if (sourceUrl) {
@@ -370,7 +368,8 @@ const JdInputPageClient = forwardRef<
               onClose={resetToUploadStart}
               title="공고 입력에 실패했습니다"
               description={
-                processingErrorMessage || "다른 방법으로 공고 내용을 입력해주세요"
+                processingErrorMessage ||
+                "다른 방법으로 공고 내용을 입력해주세요"
               }
               showInputField={false}
               showDescription

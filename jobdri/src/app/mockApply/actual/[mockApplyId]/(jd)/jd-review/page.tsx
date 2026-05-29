@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Footer } from "@/components/common/footer";
 import { ModalNotice } from "@/components/common/modal";
 import JdReviewPageClient from "./JdReviewPageClient";
-import QuestionGenerationLoading from "@/components/mock-application/QuestionGenerationLoading";
+import QuestionGenerationLoading from "@/components/mockApply/QuestionGenerationLoading";
 import {
   ingestJobPosting,
   saveJobPosting,
@@ -26,7 +26,7 @@ import {
   mockJdSections,
   type JdReviewMetadata,
   type JdReviewSection,
-} from "@/components/mock-application/jdReviewSections";
+} from "@/components/mockApply/jd/jdReviewSections";
 
 function subscribeToSessionStorage(onStoreChange: () => void) {
   const handleStorage = () => onStoreChange();
@@ -200,7 +200,7 @@ export default function MockApplicationJdReviewPage() {
 
   const openBackConfirm = () => setShowBackConfirm(true);
   const closeBackConfirm = () => setShowBackConfirm(false);
-  const goToJdInput = () => router.replace(`/apply/virtual/${id}/jd-input`);
+  const goToJdInput = () => router.replace(`/mockApply/actual/${id}/jd-input`);
   const closeSaveError = () => setSaveErrorMessage("");
 
   const handleConfirm = async () => {
@@ -231,7 +231,9 @@ export default function MockApplicationJdReviewPage() {
       }
     } catch (error) {
       setSaveErrorMessage(
-        error instanceof Error ? error.message : "채용 공고 저장에 실패했습니다.",
+        error instanceof Error
+          ? error.message
+          : "채용 공고 저장에 실패했습니다.",
       );
       return;
     }
@@ -282,7 +284,7 @@ export default function MockApplicationJdReviewPage() {
       ]);
 
       shouldKeepLoading = true;
-      router.push(`/apply/virtual/${nextApplyId}/questions`);
+      router.push(`/mockApply/actual/${nextApplyId}/questions`);
     } catch (error) {
       setSaveErrorMessage(
         error instanceof Error
@@ -300,8 +302,7 @@ export default function MockApplicationJdReviewPage() {
   const loadingJobName = getSectionValue(currentSections, "job");
   const questionLoadingCompanyName =
     questionLoadingInfo?.companyName || loadingCompanyName;
-  const questionLoadingJobName =
-    questionLoadingInfo?.jobName || loadingJobName;
+  const questionLoadingJobName = questionLoadingInfo?.jobName || loadingJobName;
 
   return (
     <div className="flex min-h-screen flex-col bg-bg-default">

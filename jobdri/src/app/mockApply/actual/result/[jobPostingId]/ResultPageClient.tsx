@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/common/header/Header";
-import ApplyResult from "@/components/apply/result/ApplyResult";
+import ApplyResult from "@/components/mockApply/result/ApplyResult";
 import { ModalNotice } from "@/components/common/modal";
 import { useReApply } from "@/hooks/useReApply";
 
@@ -23,7 +23,7 @@ export default function ResultPageClient({ id }: ResultPageClientProps) {
 
   const closeAnalysisErrorModal = () => {
     setShowAnalysisErrorModal(false);
-    router.push("/apply");
+    router.push("/mockApply");
   };
   const openAnalysisErrorModal = useCallback(() => {
     setShowAnalysisErrorModal(true);

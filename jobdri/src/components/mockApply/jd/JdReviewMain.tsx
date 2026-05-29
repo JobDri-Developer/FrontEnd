@@ -6,7 +6,7 @@ import { InputAutoGrow } from "@/components/common/input";
 import {
   mockJdSections,
   type JdReviewSection,
-} from "@/components/mock-application/jdReviewSections";
+} from "@/components/mockApply/jd/jdReviewSections";
 
 function JdFieldLabel({ label }: { label: string }) {
   return (

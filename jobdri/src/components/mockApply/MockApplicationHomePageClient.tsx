@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   useEffect,
@@ -29,7 +29,7 @@ import {
   getJdReviewMetadataStorageKey,
   getJdReviewSavedStorageKey,
   getJdReviewStorageKey,
-} from "@/components/mock-application/jdReviewSections";
+} from "@/components/mockApply/jd/jdReviewSections";
 import { useReApply } from "@/hooks/useReApply";
 
 interface ApplicationCardData {
@@ -201,7 +201,7 @@ function normalizeResumePath(
   const resumeStep = trimmedResumePath.replace(/^\/+/, "");
 
   if (RESUME_ROUTE_SEGMENTS.has(resumeStep)) {
-    return `/apply/virtual/${mockApplyId}/${resumeStep}`;
+    return `/mockApply/actual/${mockApplyId}/${resumeStep}`;
   }
 
   let path = trimmedResumePath;
@@ -218,7 +218,7 @@ function normalizeResumePath(
   path = path.startsWith("/") ? path : `/${path}`;
 
   const routeMatch = path.match(
-    /^\/apply\/virtual\/[^/]+\/([^/?#]+)([?#].*)?$/,
+    /^\/mockApply\/virtual\/[^/]+\/([^/?#]+)([?#].*)?$/,
   );
   const routeSegment = routeMatch?.[1];
 
@@ -226,7 +226,7 @@ function normalizeResumePath(
     return "";
   }
 
-  return `/apply/virtual/${mockApplyId}/${routeSegment}${routeMatch[2] ?? ""}`;
+  return `/mockApply/actual/${mockApplyId}/${routeSegment}${routeMatch[2] ?? ""}`;
 }
 
 function getResumePath({
@@ -245,16 +245,16 @@ function getResumePath({
   }
 
   if (status === "ANSWER_WRITE") {
-    return `/apply/virtual/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
+    return `/mockApply/actual/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
   }
 
-  return `/apply/virtual/${mockApplyId}/questions`;
+  return `/mockApply/actual/${mockApplyId}/questions`;
 }
 
 function getResultPath({
   jobPostingId,
 }: Pick<ApplicationCardData, "jobPostingId">) {
-  return `/apply/virtual/result/${jobPostingId}`;
+  return `/mockApply/actual/result/${jobPostingId}`;
 }
 
 function saveJdReviewSessionFromJobPosting(
@@ -572,7 +572,7 @@ export default function MockApplicationHomePageClient() {
         application.mockApplyId,
       );
       router.push(
-        `/apply/virtual/${application.jobPostingId}/result?sequence=${sequence}&totalCount=${totalCount}`,
+        `/mockApply/actual/result/${application.jobPostingId}?sequence=${sequence}&totalCount=${totalCount}`,
       );
     } catch {
       router.push(getResultPath(application));
@@ -704,7 +704,7 @@ export default function MockApplicationHomePageClient() {
                   styleType="secondary"
                   size="large"
                   iconType="ADD"
-                  onClick={() => router.push("/apply/apply-type")}
+                  onClick={() => router.push("/mockApply/mockApply-type")}
                 />
               </div>
 

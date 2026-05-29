@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/common/footer";
 import SelectQuestion, {
   type Question,
-} from "@/components/apply/SelectQuestion";
+} from "@/components/mockApply/SelectQuestion";
 import Header from "@/components/common/header/Header";
 import { saveQuestions } from "@/lib/api/questions";
 import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
@@ -21,7 +21,7 @@ export default function QuestionsPageClient({ id }: QuestionsPageClientProps) {
   const handleConfirm = async () => {
     await saveQuestions(Number(id), selectedQuestions);
     updateMockApplyResumeStatus(Number(id), "ANSWER_WRITE");
-    router.push(`/apply/virtual/${id}/write`);
+    router.push(`/mockApply/actual/${id}/write`);
   };
 
   return (
@@ -36,7 +36,7 @@ export default function QuestionsPageClient({ id }: QuestionsPageClientProps) {
       </main>
       <Footer
         ctaLabel="확정하기"
-        backAction={{ href: `/apply/virtual/${id}/jd-review` }}
+        backAction={{ href: `/mockApply/actual/${id}/jd-review` }}
         ctaAction={{
           disabled: selectedQuestions.length === 0,
           onClick: handleConfirm,

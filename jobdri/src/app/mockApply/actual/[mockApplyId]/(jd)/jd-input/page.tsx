@@ -25,7 +25,7 @@ export default function MockApplicationJdInputPage() {
         onMethodChange={setSelectedMethod}
       />
       <Footer
-        backAction={{ onClick: () => router.push("/apply") }}
+        backAction={{ onClick: () => router.push("/mockApply") }}
         ctaAction={{
           label: "선택하기",
           disabled: selectedMethod === null,

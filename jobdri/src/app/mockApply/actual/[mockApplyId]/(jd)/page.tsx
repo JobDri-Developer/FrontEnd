@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { use } from "react";
 import { Footer } from "@/components/common/footer";
@@ -19,8 +19,8 @@ export default function JdPage({ params }: JdPageProps) {
       </main>
       <Footer
         ctaLabel="다음"
-        backAction={{ href: "/apply" }}
-        ctaAction={{ href: `/apply/virtual/${mockApplyId}/questions` }}
+        backAction={{ href: "/mockApply" }}
+        ctaAction={{ href: `/mockApply/actual/${mockApplyId}/questions` }}
       />
     </>
   );

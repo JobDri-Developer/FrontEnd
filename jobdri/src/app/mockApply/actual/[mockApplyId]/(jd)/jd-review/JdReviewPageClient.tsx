@@ -1,8 +1,8 @@
 "use client";
 
 import Header from "@/components/common/header/Header";
-import JdReviewMain from "@/components/mock-application/JdReviewMain";
-import type { JdReviewSection } from "@/components/mock-application/jdReviewSections";
+import JdReviewMain from "@/components/mockApply/jd/JdReviewMain";
+import type { JdReviewSection } from "@/components/mockApply/jd/jdReviewSections";
 
 interface JdReviewPageClientProps {
   sections?: JdReviewSection[];

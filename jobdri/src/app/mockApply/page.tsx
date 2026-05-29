@@ -1,4 +1,4 @@
-import MockApplicationHomePageClient from "@/components/mock-application/MockApplicationHomePageClient";
+import MockApplicationHomePageClient from "@/components/mockApply/MockApplicationHomePageClient";
 
 export default function ApplyPage() {
   return <MockApplicationHomePageClient />;

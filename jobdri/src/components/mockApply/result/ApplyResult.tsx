@@ -5,7 +5,7 @@ import {
   fetchAnalysisByJobPosting,
   type AnalysisResult,
 } from "@/lib/api/result";
-import Sidebar from "@/components/apply/result/Sidebar";
+import Sidebar from "@/components/mockApply/result/Sidebar";
 import Trybar from "./Trybar";
 import OverviewSection from "./OverviewSection";
 import DetailSection from "./DetailSection";

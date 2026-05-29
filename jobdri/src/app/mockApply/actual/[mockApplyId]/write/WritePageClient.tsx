@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -7,8 +7,8 @@ import Header from "@/components/common/header/Header";
 import { ModalNotice } from "@/components/common/modal";
 import InputSection, {
   type InputSectionHandle,
-} from "@/components/apply/InputSection";
-import ResumeAnalysisLoading from "@/components/mock-application/ResumeAnalysisLoading";
+} from "@/components/mockApply/InputSection";
+import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
 import { saveApply } from "@/lib/api/questions";
 import { updateMockApplyResumeStatus } from "@/lib/api/mockApplies";
 import { runAnalysis, CreditInsufficientError } from "@/lib/api/result";
@@ -72,7 +72,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
       updateMockApplyResumeStatus(Number(id), "COMPLETED");
       shouldKeepLoading = true;
       router.push(
-        `/apply/virtual/result/${jobPostingId}?sequence=${savedSequence}`,
+        `/mockApply/actual/result/${jobPostingId}?sequence=${savedSequence}`,
       );
     } catch (error) {
       if (error instanceof CreditInsufficientError) {
@@ -98,7 +98,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
 
   const closeAnalysisErrorModal = () => {
     setShowAnalysisErrorModal(false);
-    router.push("/apply");
+    router.push("/mockApply");
   };
 
   if (isSubmitting) {
@@ -117,7 +117,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
       </main>
       <Footer
         ctaLabel="지원하기"
-        backAction={{ href: `/apply/virtual/${id}/questions` }}
+        backAction={{ href: `/mockApply/actual/${id}/questions` }}
         ctaAction={{
           disabled: !allComplete || isSubmitting,
           onClick: handleSubmit,
