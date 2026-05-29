@@ -1,10 +1,10 @@
 import QuestionsPageClient from "./QuestionsPageClient";
 
 interface QuestionsPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ mockApplyId: string }>;
 }
 
 export default async function QuestionsPage({ params }: QuestionsPageProps) {
-  const { id } = await params;
-  return <QuestionsPageClient id={id} />;
+  const { mockApplyId } = await params;
+  return <QuestionsPageClient id={mockApplyId} />;
 }

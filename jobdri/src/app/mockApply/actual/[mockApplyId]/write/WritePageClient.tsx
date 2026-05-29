@@ -72,7 +72,7 @@ export default function WritePageClient({ id }: WritePageClientProps) {
       updateMockApplyResumeStatus(Number(id), "COMPLETED");
       shouldKeepLoading = true;
       router.push(
-        `/apply/virtual/${jobPostingId}/result?sequence=${savedSequence}`,
+        `/apply/virtual/result/${jobPostingId}?sequence=${savedSequence}`,
       );
     } catch (error) {
       if (error instanceof CreditInsufficientError) {

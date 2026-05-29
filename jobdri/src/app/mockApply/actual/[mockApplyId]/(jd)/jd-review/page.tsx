@@ -169,7 +169,7 @@ function saveJdReviewSessionData({
 }
 
 export default function MockApplicationJdReviewPage() {
-  const { id } = useParams<{ id: string }>();
+  const { mockApplyId: id } = useParams<{ mockApplyId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode");

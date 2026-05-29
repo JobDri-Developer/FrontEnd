@@ -10,7 +10,7 @@ import JdInputPageClient, {
 type JdInputMethod = "link" | "image" | "manual";
 
 export default function MockApplicationJdInputPage() {
-  const { id } = useParams<{ id: string }>();
+  const { mockApplyId: id } = useParams<{ mockApplyId: string }>();
   const router = useRouter();
   const clientRef = useRef<JdInputPageClientHandle>(null);
   const [selectedMethod, setSelectedMethod] = useState<JdInputMethod | null>(

@@ -2,14 +2,14 @@ import { Suspense } from "react";
 import WritePageClient from "./WritePageClient";
 
 interface WritePageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ mockApplyId: string }>;
 }
 
 export default async function WritePage({ params }: WritePageProps) {
-  const { id } = await params;
+  const { mockApplyId } = await params;
   return (
     <Suspense>
-      <WritePageClient id={id} />
+      <WritePageClient id={mockApplyId} />
     </Suspense>
   );
 }

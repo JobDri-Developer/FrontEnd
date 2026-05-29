@@ -55,7 +55,6 @@ const RESUME_ROUTE_SEGMENTS = new Set([
   "jd-review",
   "questions",
   "write",
-  "result",
 ]);
 
 function formatCreatedAt(createdAt: string) {
@@ -255,7 +254,7 @@ function getResumePath({
 function getResultPath({
   jobPostingId,
 }: Pick<ApplicationCardData, "jobPostingId">) {
-  return `/apply/virtual/${jobPostingId}/result`;
+  return `/apply/virtual/result/${jobPostingId}`;
 }
 
 function saveJdReviewSessionFromJobPosting(

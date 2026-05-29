@@ -5,11 +5,11 @@ import { Footer } from "@/components/common/footer";
 import Header from "@/components/common/header/Header";
 
 interface JdPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ mockApplyId: string }>;
 }
 
 export default function JdPage({ params }: JdPageProps) {
-  const { id } = use(params);
+  const { mockApplyId } = use(params);
 
   return (
     <>
@@ -20,7 +20,7 @@ export default function JdPage({ params }: JdPageProps) {
       <Footer
         ctaLabel="다음"
         backAction={{ href: "/apply" }}
-        ctaAction={{ href: `/apply/virtual/${id}/questions` }}
+        ctaAction={{ href: `/apply/virtual/${mockApplyId}/questions` }}
       />
     </>
   );
