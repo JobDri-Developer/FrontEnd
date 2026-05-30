@@ -1,4 +1,4 @@
-import { API_BASE_URL, getAuthHeaders } from "@/lib/auth";
+import { API_BASE_URL, getAuthHeaders, parseApiResponse as parseApiResponseBase } from "@/lib/api/client";
 
 export class CreditInsufficientError extends Error {
   constructor() {
@@ -45,14 +45,6 @@ export interface AnalysisResult {
   questions: AnalysisQuestion[];
 }
 
-interface ApiResponse<T> {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: T | null;
-  error: string | null;
-}
-
 async function parseApiResponse<T>(
   response: Response,
   fallbackMessage: string,
@@ -61,19 +53,7 @@ async function parseApiResponse<T>(
     throw new CreditInsufficientError();
   }
 
-  let data: ApiResponse<T> | null = null;
-
-  try {
-    data = (await response.json()) as ApiResponse<T>;
-  } catch {
-    throw new Error(`${fallbackMessage} 응답을 확인할 수 없습니다.`);
-  }
-
-  if (!response.ok || !data.isSuccess || !data.result) {
-    throw new Error(data?.error || data?.message || fallbackMessage);
-  }
-
-  return data.result;
+  return parseApiResponseBase<T>(response, fallbackMessage);
 }
 
 export async function fetchSequence(
