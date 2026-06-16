@@ -1,12 +1,9 @@
-import { API_BASE_URL, AUTH_STORAGE_KEYS } from "@/lib/auth";
-
-interface ApiResponse<T> {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: T | null;
-  error: string | null;
-}
+import {
+  API_BASE_URL,
+  getAuthHeaders,
+  parseApiResponse,
+  parseApiResponseAllowNull,
+} from "@/lib/api/client";
 
 export interface JobPostingExtracted {
   companyName: string;
@@ -117,14 +114,6 @@ interface TimedRequestInit extends RequestInit {
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 30000;
 
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    typeof window !== "undefined"
-      ? window.localStorage.getItem(AUTH_STORAGE_KEYS.accessToken)
-      : null;
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 function getImageContentType(file: File) {
   if (file.type) {
@@ -202,49 +191,6 @@ async function fetchWithTimeout(
   }
 }
 
-async function parseApiResponse<T>(response: Response, fallbackMessage: string) {
-  let data: ApiResponse<T> | null = null;
-
-  try {
-    data = (await response.json()) as ApiResponse<T>;
-  } catch {
-    throw new Error(`${fallbackMessage} 응답을 확인할 수 없습니다.`);
-  }
-
-  if (!response.ok || !data.isSuccess || !data.result) {
-    throw new Error(data?.error || data?.message || fallbackMessage);
-  }
-
-  return data.result;
-}
-
-async function parseApiResponseAllowNull<T>(
-  response: Response,
-  fallbackMessage: string,
-) {
-  let data: ApiResponse<T> | null = null;
-  const responseText = await response.text();
-
-  if (!responseText.trim()) {
-    if (!response.ok) {
-      throw new Error(fallbackMessage);
-    }
-
-    return null;
-  }
-
-  try {
-    data = JSON.parse(responseText) as ApiResponse<T>;
-  } catch {
-    throw new Error(`${fallbackMessage} 응답을 확인할 수 없습니다.`);
-  }
-
-  if (!response.ok || !data.isSuccess) {
-    throw new Error(data?.error || data?.message || fallbackMessage);
-  }
-
-  return data.result;
-}
 
 async function postJobPosting<T>(
   path: string,

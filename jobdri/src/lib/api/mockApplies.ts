@@ -1,12 +1,4 @@
-import { API_BASE_URL, AUTH_STORAGE_KEYS } from "@/lib/auth";
-
-interface ApiResponse<T> {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: T | null;
-  error: string | null;
-}
+import { API_BASE_URL, getAuthHeaders, parseApiResponse } from "@/lib/api/client";
 
 export type JobPostingApplyType = "MOCK" | "ACTUAL";
 export type MockApplyProgressStatus =
@@ -57,34 +49,6 @@ export interface MockApplyHomeList {
 
 export const APPLY_TYPE_STORAGE_KEY = "jobdri.applyType";
 const MOCK_APPLY_RESUME_STORAGE_KEY = "jobdri.mockApplyResumeRecords";
-
-function getAuthHeaders(): Record<string, string> {
-  const token =
-    typeof window !== "undefined"
-      ? window.localStorage.getItem(AUTH_STORAGE_KEYS.accessToken)
-      : null;
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-async function parseApiResponse<T>(
-  response: Response,
-  fallbackMessage: string,
-) {
-  let data: ApiResponse<T> | null = null;
-
-  try {
-    data = (await response.json()) as ApiResponse<T>;
-  } catch {
-    throw new Error(`${fallbackMessage} 응답을 확인할 수 없습니다.`);
-  }
-
-  if (!response.ok || !data.isSuccess || !data.result) {
-    throw new Error(data?.error || data?.message || fallbackMessage);
-  }
-
-  return data.result;
-}
 
 async function postMockApplyFromJobPosting(
   path: string,
