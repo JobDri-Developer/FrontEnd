@@ -32,6 +32,11 @@ export interface LoginRequest {
   password: string;
 }
 
+interface LogoutRequest {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface SignupRequest {
   name?: string | null;
   email: string;
@@ -264,4 +269,12 @@ export function getAuthHeaders(): Record<string, string> {
     cookieToken ?? window.localStorage.getItem(AUTH_STORAGE_KEYS.accessToken);
 
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function requestLogout(accessToken: string, refreshToken: string) {
+  await postAuth<null>(
+    "/api/auth/logout",
+    { accessToken, refreshToken },
+    "로그아웃",
+  );
 }
