@@ -88,6 +88,13 @@
     line-height: 140%;
     letter-spacing: -0.02em;
   }
+  /* Button & Label 14 */
+  .text-btn14-semibold {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 140%;
+    letter-spacing: -0.02em;
+  }
   .text-label14-med {
     font-size: 14px;
     font-weight: 500;
