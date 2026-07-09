@@ -4,13 +4,15 @@ import Icon from "@/components/common/icons/Icon";
 
 export type TextButtonSize = "small" | "large";
 export type TextButtonStyle = "primary" | "secondary";
-export type TextButtonIconPosition = "right" | "left";
+export type TextButtonIconPosition = "right" | "left" | "null";
+export type HoverType = "textOnly" | "none";
 
 interface TextButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label?: ReactNode;
   size?: TextButtonSize;
   styleType?: TextButtonStyle;
   iconPosition?: TextButtonIconPosition;
+  hover?: HoverType;
 }
 
 const sizeStyles: Record<TextButtonSize, string> = {
@@ -38,6 +40,7 @@ export default function TextButton({
   size = "small",
   styleType = "primary",
   iconPosition = "right",
+  hover = "none",
   className,
   type = "button",
   ...buttonProps
@@ -65,7 +68,10 @@ export default function TextButton({
     <button
       type={type}
       className={clsx(
-        "inline-flex items-center gap-0 rounded-toast-s [font-feature-settings:'liga'_off,'clig'_off] hover:bg-fill-hover",
+        "inline-flex items-center gap-0 rounded-toast-s [font-feature-settings:'liga'_off,'clig'_off]",
+        hover === "none"
+          ? " hover:bg-fill-hover"
+          : "hover:text-fill-tertiary-default-pressed hover:bg-transparent",
         buttonProps.disabled ? "cursor-not-allowed" : "cursor-pointer",
         isLeftLarge
           ? "py-1.5 pr-3 pl-2 text-b16-med"

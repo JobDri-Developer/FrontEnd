@@ -6,9 +6,15 @@ import { createPortal } from "react-dom";
 import clsx from "clsx";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
 import { ModalNotice } from "@/components/common/modal";
-import { AUTH_STORAGE_KEYS, getStoredAuthEmail } from "@/lib/auth";
+import {
+  AUTH_STORAGE_KEYS,
+  getStoredAuthEmail,
+  requestLogout,
+  clearAuthTokens,
+} from "@/lib/auth";
 import Logo from "@/assets/ic_LOGO_minimum_favi.svg";
 import { fetchCreditBalance } from "@/lib/api/credit";
+import { TextButton } from "../buttons";
 
 type LnbItemKey = "experience" | "apply";
 
@@ -99,6 +105,26 @@ export default function Lnb({ initialActiveItem, email, className }: LnbProps) {
       .then(setCreditCount)
       .catch(() => {});
   }, []);
+
+  const handleLogout = async () => {
+    const accessToken = window.localStorage.getItem(
+      AUTH_STORAGE_KEYS.accessToken,
+    );
+    const refreshToken = window.localStorage.getItem(
+      AUTH_STORAGE_KEYS.refreshToken,
+    );
+
+    if (accessToken && refreshToken) {
+      try {
+        await requestLogout(accessToken, refreshToken);
+      } catch (error) {
+        console.error("서버 로그아웃 처리 실패:", error);
+      }
+    }
+
+    clearAuthTokens();
+    router.replace("/login");
+  };
 
   return (
     <>
@@ -205,6 +231,17 @@ export default function Lnb({ initialActiveItem, email, className }: LnbProps) {
             >
               {displayEmail}
             </span>
+          </div>
+          <div
+            className={`flex w-full items-center gap-2 py-1.5 ${isFold ? "justify-center px-0" : "px-2"}`}
+          >
+            <TextButton
+              label="로그아웃"
+              styleType="secondary"
+              iconPosition="null"
+              hover="textOnly"
+              onClick={handleLogout}
+            />
           </div>
         </div>
       </aside>
