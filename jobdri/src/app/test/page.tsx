@@ -3,6 +3,7 @@
 import TabMenu from "@/components/common/tabs/TabMenu";
 import { useState } from "react";
 import { Pagination } from "@/components/common/Pagination";
+import { QuestionList } from "@/components/mockApply/Question/QuestionList";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -57,6 +58,13 @@ export default function TestPage() {
           totalPages={40}
           onPageChange={(page) => setCompactPage(page)}
         />
+      </section>
+
+      <section className="w-full max-w-5xl flex gap-6 items-start mt-8">
+        {/* 왼쪽: 우리가 만든 문항 리스트 컴포넌트 */}
+        <div className="flex-shrink-0">
+          <QuestionList />
+        </div>
       </section>
     </div>
   );
