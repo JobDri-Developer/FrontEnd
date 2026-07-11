@@ -4,6 +4,8 @@ import TabMenu from "@/components/common/tabs/TabMenu";
 import { useState } from "react";
 import { Pagination } from "@/components/common/Pagination";
 import { QuestionList } from "@/components/mockApply/Question/QuestionList";
+import Avatar from "@/components/mockApply/home/Avatar";
+import AvatarColorPicker from "@/components/mockApply/home/AvatarColorPicker";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -66,6 +68,27 @@ export default function TestPage() {
           <QuestionList />
         </div>
       </section>
+
+      <div className="p-8 flex flex-col gap-8 bg-gray-50 min-h-screen">
+        {/* 1. 일반 User 아바타 (단순 표시용) */}
+        <section>
+          <h3 className="text-sm font-semibold mb-3 text-gray-700">
+            User (Static)
+          </h3>
+          <Avatar type="user" name="John Doe" />
+        </section>
+
+        {/* 2. 컬러 선택이 가능한 Company 아바타 (인터랙션) */}
+        <section>
+          <h3 className="text-sm font-semibold mb-3 text-gray-700">
+            Company (Interactive)
+          </h3>
+          <AvatarColorPicker
+            name="토스"
+            onChange={(color) => console.log("선택된 색상:", color)}
+          />
+        </section>
+      </div>
     </div>
   );
 }
