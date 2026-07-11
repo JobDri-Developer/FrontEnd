@@ -43,7 +43,7 @@ export default function ProgressPanelRow({
     }));
 
   return (
-    <div className={clsx("flex min-h-[133px] items-start gap-14", className)}>
+    <div className={clsx("flex flex-col items-start gap-1", className)}>
       {steps.map((item, index) => (
         <ProgressPanelRowItem
           key={item.stepNumber ?? index}

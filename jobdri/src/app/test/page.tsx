@@ -7,6 +7,7 @@ import { QuestionList } from "@/components/mockApply/Question/QuestionList";
 import Avatar from "@/components/mockApply/home/Avatar";
 import AvatarColorPicker from "@/components/mockApply/home/AvatarColorPicker";
 import { ChipTag } from "@/components/common/chips";
+import { ProgressPanelRow } from "@/components/common/progress";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -70,7 +71,7 @@ export default function TestPage() {
         </div>
       </section>
 
-      <div className="p-8 flex flex-col gap-8 bg-gray-50 min-h-screen">
+      <div className="p-8 flex flex-col gap-8 bg-gray-50 ">
         {/* 1. 일반 User 아바타 (단순 표시용) */}
         <section>
           <h3 className="text-sm font-semibold mb-3 text-gray-700">
@@ -102,6 +103,7 @@ export default function TestPage() {
           </div>
         </section>
       </div>
+      <ProgressPanelRow itemCount={4} currentStep={2} />
     </div>
   );
 }
