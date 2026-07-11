@@ -6,6 +6,7 @@ import { Pagination } from "@/components/common/Pagination";
 import { QuestionList } from "@/components/mockApply/Question/QuestionList";
 import Avatar from "@/components/mockApply/home/Avatar";
 import AvatarColorPicker from "@/components/mockApply/home/AvatarColorPicker";
+import { ChipTag } from "@/components/common/chips";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -87,6 +88,18 @@ export default function TestPage() {
             name="토스"
             onChange={(color) => console.log("선택된 색상:", color)}
           />
+        </section>
+
+        <section className="bg-white p-6 rounded-2xl border border-gray-200">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+            추출된 핵심 역량
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            <ChipTag label="React" color="blue" />
+            <ChipTag label="UI/UX" color="pink" />
+            <ChipTag label="디자인 시스템" color="green" />
+            <ChipTag label="팀 리더십" color="default" />
+          </div>
         </section>
       </div>
     </div>
