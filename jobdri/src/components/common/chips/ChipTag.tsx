@@ -14,7 +14,7 @@ const colorStyles: Record<NonNullable<ChipTagProps["color"]>, string> = {
     "border border-line-neutral-default bg-fill-quaternary-default text-text-neutral-description",
   blue: "bg-fill-primary-assistive text-text-primary-strong",
   green: "bg-green-300 text-green-800",
-  red: "bg-fill-system-fail-hover text-system-fail",
+  red: "bg-fill-system-fail-hover text-text-system-fail",
   pink: "bg-fill-sub-pink-hover text-fill-sub-pink-default",
 };
 

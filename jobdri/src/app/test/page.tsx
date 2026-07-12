@@ -9,6 +9,8 @@ import AvatarColorPicker from "@/components/mockApply/home/AvatarColorPicker";
 import { ChipTag } from "@/components/common/chips";
 import { ProgressPanelRow } from "@/components/common/progress";
 import { HeaderPanel } from "@/components/common/header/HeaderPanel";
+import DetailAnnotationPanel from "@/components/mockApply/result/DetailAnotationPannel";
+import { QuestionAnalysis } from "@/lib/api/result";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -24,7 +26,52 @@ export default function TestPage() {
     { id: 4, label: "첨삭 결과" },
   ];
 
-  // 3. 다음/이전 버튼 핸들러
+  const mockAnalyses: QuestionAnalysis[] = [
+    {
+      questionAnalysisId: 1, // 문자열에서 숫자로 변경
+      status: "mentioned",
+      reason: "모호한 표현보다는 구체적으로 기술해주세요.",
+      sentence:
+        "구체적인 경험이나 수치적 지표가 드러나 있지 않아 신뢰성이 떨어져요. 구체적인 경험이나 수치적 지표가 드러나 있지 않아 신뢰성이 떨어져요.",
+      improvement:
+        "친환경차로의 전환기에서 사용자가 겪는 새로운 불편함을 해결하고, 자율주행 환경에서 신뢰할 수 있는 HMI를 설계하고자 현대자동차에 지원했습니다.",
+      start: 0, // 타입 에러 해결을 위한 더미 값
+      end: 10, // 타입 에러 해결을 위한 더미 값
+    },
+    {
+      questionAnalysisId: 2,
+      status: "proven",
+      reason: "모호한 표현보다는 구체적으로 기술해주세요.",
+      sentence:
+        "구체적인 경험이나 수치적 지표가 드러나 있지 않아 신뢰성이 떨어져요. 구체적인 경험이나 수치적 지표가 드러나 있지 않아 신뢰성이 떨어져요.",
+      improvement:
+        "친환경차로의 전환기에서 사용자가 겪는 새로운 불편함을 해결하고, 자율주행 환경에서 신뢰할 수 있는 HMI를 설계하고자 현대자동차에 지원했습니다.",
+      start: 0,
+      end: 10,
+    },
+    {
+      questionAnalysisId: 3,
+      status: "fabricated",
+      reason: "모호한 표현보다는 구체적으로 기술해주세요.",
+      sentence:
+        "구체적인 경험이나 수치적 지표가 드러나 있지 않아 신뢰성이 떨어져요. 구체적인 경험이나 수치적 지표가 드러나 있지 않아 신뢰성이 떨어져요.",
+      improvement:
+        "친환경차로의 전환기에서 사용자가 겪는 새로운 불편함을 해결하고, 자율주행 환경에서 신뢰할 수 있는 HMI를 설계하고자 현대자동차에 지원했습니다.",
+      start: 0,
+      end: 10,
+    },
+    {
+      questionAnalysisId: 4,
+      status: "mentioned",
+      reason: "모호한 표현보다는 구체적으로 기술해주세요.",
+      sentence:
+        "구체적인 경험이나 수치적 지표가 드러나 있지 않아 신뢰성이 떨어져요. 구체적인 경험이나 수치적 지표가 드러나 있지 않아 신뢰성이 떨어져요.",
+      improvement:
+        "친환경차로의 전환기에서 사용자가 겪는 새로운 불편함을 해결하고, 자율주행 환경에서 신뢰할 수 있는 HMI를 설계하고자 현대자동차에 지원했습니다.",
+      start: 0,
+      end: 10,
+    },
+  ]; // 3. 다음/이전 버튼 핸들러
   const handleNextStep = () => {
     if (currentStepId < mySteps.length) {
       setCurrentStepId((prev) => prev + 1);
@@ -157,6 +204,13 @@ export default function TestPage() {
             {currentStepId === mySteps.length ? "완료" : "다음"}
           </button>
         </div>
+      </div>
+
+      <div className="flex w-full flex-col gap-6 p-8">
+        <h2 className="text-h2-bold text-center">Result</h2>
+
+        {/* 위에서 정의한 데이터를 props로 전달합니다. */}
+        <DetailAnnotationPanel analyses={mockAnalyses} />
       </div>
     </div>
   );
