@@ -4,12 +4,16 @@ import Icon, { type IconType } from "@/components/common/icons/Icon";
 
 export type ButtonSize = "large" | "medium" | "small" | "xsmall";
 export type ButtonStyle = "primary" | "secondary" | "tertiary" | "quaternary";
+export type ButtonIconPosition = "left" | "right";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   styleType?: ButtonStyle;
   size?: ButtonSize;
   iconType?: IconType;
+  iconPosition?: ButtonIconPosition;
+  iconClassName?: string;
+  labelClassName?: string;
   active?: boolean;
 }
 
@@ -62,6 +66,9 @@ export default function Button({
   styleType = "primary",
   size = "large",
   iconType,
+  iconPosition = "left",
+  iconClassName,
+  labelClassName,
   active = true,
   className,
   type = "button",
@@ -69,6 +76,19 @@ export default function Button({
 }: ButtonProps) {
   const resolvedStyleType = size === "xsmall" ? "tertiary" : styleType;
   const isInactive = !active || buttonProps.disabled;
+  const icon = iconType ? (
+    <Icon
+      type={iconType}
+      className={clsx(
+        "aspect-square shrink-0",
+        iconSizeStyles[size],
+        isInactive
+          ? "text-icon-neutral-assistive"
+          : iconColorStyles[resolvedStyleType],
+        iconClassName,
+      )}
+    />
+  ) : null;
 
   return (
     <button
@@ -88,27 +108,18 @@ export default function Button({
       aria-disabled={isInactive || undefined}
       {...buttonProps}
     >
-      {iconType && (
-        <Icon
-          type={iconType}
-          className={clsx(
-            "aspect-square shrink-0",
-            iconSizeStyles[size],
-            isInactive
-              ? "text-icon-neutral-assistive"
-              : iconColorStyles[resolvedStyleType],
-          )}
-        />
-      )}
+      {iconPosition === "left" && icon}
       <span
         className={clsx(
           "flex items-center justify-center gap-2.5 px-0.5 whitespace-nowrap",
           size !== "xsmall" && "h-[22px]",
           size === "xsmall" && "translate-y-px",
+          labelClassName,
         )}
       >
         {label}
       </span>
+      {iconPosition === "right" && icon}
     </button>
   );
 }

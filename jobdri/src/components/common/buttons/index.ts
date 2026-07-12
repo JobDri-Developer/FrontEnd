@@ -5,7 +5,7 @@ export { default as IconButton } from "./IconButton";
 export { default as IconOnlyButton } from "./IconOnlyButton";
 export { default as TextButton } from "./TextButton";
 export { default as TextOnlyButton } from "./TextOnlyButton";
-export type { ButtonSize, ButtonStyle } from "./Button";
+export type { ButtonIconPosition, ButtonSize, ButtonStyle } from "./Button";
 export type { TextButtonSize, TextButtonStyle } from "./TextButton";
 export type {
   TextOnlyButtonSize,
