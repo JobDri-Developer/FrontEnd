@@ -12,6 +12,7 @@ import { HeaderPanel } from "@/components/common/header/HeaderPanel";
 import DetailAnnotationPanel from "@/components/mockApply/result/DetailAnotationPannel";
 import { QuestionAnalysis } from "@/lib/api/result";
 import { TooltipPlacement, Tooltip } from "@/components/common/tooltip";
+import { DropDownMenu, DropDownMenuItem } from "@/components/common/dropdown";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -96,6 +97,24 @@ export default function TestPage() {
     "down_left",
     "down_mid",
     "down_right",
+  ];
+
+  const [clickedItem, setClickedItem] = useState<string | null>(null);
+
+  const checkItems: DropDownMenuItem[] = [
+    {
+      label: "일반 항목",
+      onClick: () => setClickedItem("일반 항목"),
+    },
+    {
+      label: "호버/액티브 테스트",
+      onClick: () => setClickedItem("호버/액티브 테스트"),
+    },
+    {
+      label: "비활성화 항목 (disabled)",
+      disabled: true,
+      onClick: () => setClickedItem("비활성화 항목"), // 👈 disabled 속성 때문에 어차피 클릭 안 됨!
+    },
   ];
 
   return (
@@ -251,6 +270,20 @@ export default function TestPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-gray-100 p-10">
+        {/* 🎯 클릭 피드백 확인 영역 */}
+        <div className="flex h-12 items-center rounded-lg bg-white px-6 shadow-sm">
+          <p className="text-sm font-medium text-gray-700">
+            {clickedItem
+              ? `👆 방금 클릭한 항목: [ ${clickedItem} ]`
+              : "아래 메뉴를 클릭해 보세요!"}
+          </p>
+        </div>
+
+        {/* 컴포넌트 자체는 항상 열려있음 (패딩, 호버, 액티브 맘껏 확인 가능) */}
+        <DropDownMenu items={checkItems} />
       </div>
     </div>
   );
