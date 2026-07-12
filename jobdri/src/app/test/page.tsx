@@ -11,6 +11,7 @@ import { ProgressPanelRow } from "@/components/common/progress";
 import { HeaderPanel } from "@/components/common/header/HeaderPanel";
 import DetailAnnotationPanel from "@/components/mockApply/result/DetailAnotationPannel";
 import { QuestionAnalysis } from "@/lib/api/result";
+import { TooltipPlacement, Tooltip } from "@/components/common/tooltip";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -83,6 +84,20 @@ export default function TestPage() {
       setCurrentStepId((prev) => prev - 1);
     }
   };
+
+  const PLACEMENTS: TooltipPlacement[] = [
+    "up_left",
+    "up_mid",
+    "up_right",
+    "left_up",
+    "left_mid",
+    "right_mid",
+    "right_up",
+    "down_left",
+    "down_mid",
+    "down_right",
+  ];
+
   return (
     // 💡 여러 태그를 하나로 묶어주기 위해 빈 태그(Fragment)나 div로 감싸야 합니다.
     <div className="p-10">
@@ -211,6 +226,31 @@ export default function TestPage() {
 
         {/* 위에서 정의한 데이터를 props로 전달합니다. */}
         <DetailAnnotationPanel analyses={mockAnalyses} />
+      </div>
+
+      <div className="flex min-h-screen flex-col items-center gap-10 bg-gray-50 p-10">
+        <h2 className="text-h2-bold text-gray-800">
+          Tooltip Placements Test 🎯
+        </h2>
+
+        {/* 3열 그리드로 모든 방향 한눈에 보기 */}
+        <div className="grid w-full max-w-5xl grid-cols-1 gap-16 md:grid-cols-3">
+          {PLACEMENTS.map((placement) => (
+            <div
+              key={placement}
+              className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white p-16 shadow-sm"
+            >
+              {/* 현재 어떤 placement인지 상단에 라벨 표시 */}
+              <span className="mb-10 text-label14-med text-gray-500">
+                placement:{" "}
+                <strong className="text-gray-900">{placement}</strong>
+              </span>
+
+              {/* 툴팁 컴포넌트 렌더링 */}
+              <Tooltip placement={placement} message={`${placement} 테스트`} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
