@@ -8,10 +8,34 @@ import Avatar from "@/components/mockApply/home/Avatar";
 import AvatarColorPicker from "@/components/mockApply/home/AvatarColorPicker";
 import { ChipTag } from "@/components/common/chips";
 import { ProgressPanelRow } from "@/components/common/progress";
+import { HeaderPanel } from "@/components/common/header/HeaderPanel";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
   const [compactPage, setCompactPage] = useState(3);
+
+  const [currentStepId, setCurrentStepId] = useState(1);
+
+  // 2. 전체 스텝 데이터 정의 (이미지에 있는 텍스트 기반)
+  const mySteps = [
+    { id: 1, label: "기본 정보 입력" },
+    { id: 2, label: "JD 확인" },
+    { id: 3, label: "자소서 입력" },
+    { id: 4, label: "첨삭 결과" },
+  ];
+
+  // 3. 다음/이전 버튼 핸들러
+  const handleNextStep = () => {
+    if (currentStepId < mySteps.length) {
+      setCurrentStepId((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (currentStepId > 1) {
+      setCurrentStepId((prev) => prev - 1);
+    }
+  };
   return (
     // 💡 여러 태그를 하나로 묶어주기 위해 빈 태그(Fragment)나 div로 감싸야 합니다.
     <div className="p-10">
@@ -104,6 +128,36 @@ export default function TestPage() {
         </section>
       </div>
       <ProgressPanelRow itemCount={4} currentStep={2} />
+
+      <div className="flex flex-col items-center p-10 bg-gray-100 min-h-screen">
+        {/* 상단 진행률 패널 */}
+        <HeaderPanel steps={mySteps} currentStepId={currentStepId} />
+
+        {/* 현재 스텝에 따른 본문 내용 렌더링 영역 */}
+        <div className="w-full max-w-2xl p-8 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm min-h-[300px] flex items-center justify-center">
+          <h3 className="text-xl text-gray-600 font-medium">
+            {currentStepId}단계: {mySteps[currentStepId - 1].label} 진행 중...
+          </h3>
+        </div>
+
+        {/* 하단 네비게이션 버튼 */}
+        <div className="flex justify-between w-full max-w-2xl mt-6">
+          <button
+            onClick={handlePrevStep}
+            disabled={currentStepId === 1}
+            className="px-6 py-2 text-gray-600 bg-white border border-gray-300 rounded-md disabled:opacity-50 hover:bg-gray-50"
+          >
+            이전
+          </button>
+          <button
+            onClick={handleNextStep}
+            disabled={currentStepId === mySteps.length}
+            className="px-6 py-2 text-white bg-gray-800 rounded-md disabled:opacity-50 hover:bg-gray-700"
+          >
+            {currentStepId === mySteps.length ? "완료" : "다음"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
