@@ -3,6 +3,7 @@ import IC_APPLY_L from "@/assets/ic_Apply_L.svg";
 import IC_UPLOAD from "@/assets/ic_Upload.svg";
 import IC_UPLOAD_M from "@/assets/ic_Upload_M.svg";
 import IC_HOME_M from "@/assets/ic_Home_M.svg";
+import IC_HOME_20 from "@/assets/ic_Home_20.svg";
 import IC_ARROW_R from "@/assets/ic_Arrow_RIght.svg";
 import IC_ARROW_L from "@/assets/ic_Arrow_left.svg";
 import IC_ARROW_DOWN_M from "@/assets/ic_Arrow_Down_M.svg";
@@ -37,6 +38,7 @@ import IC_DOT_S from "@/assets/ic_Dots_S.svg";
 import IC_EX_LINK from "@/assets/ic_ExternalLink.svg";
 import IC_TOKEN from "@/assets/ic_Token.svg";
 import IC_SPARKLE from "@/assets/ic_Sparkles.svg";
+import IC_SPARKLE_16 from "@/assets/ic_Sparkles_16.svg";
 import IC_SEARCH from "@/assets/ic_Search.svg";
 import IC_LIGHTBULB from "@/assets/ic_Lightbulb.svg";
 import IC_TEXT from "@/assets/ic_Text.svg";
@@ -59,6 +61,7 @@ const iconMap = {
   UPLOAD: IC_UPLOAD,
   UPLOAD_M: IC_UPLOAD_M,
   HOME_M: IC_HOME_M,
+  HOME_20: IC_HOME_20,
   ARROW_R: IC_ARROW_R,
   ARROW_L: IC_ARROW_L,
   ARROW_DOWN_M: IC_ARROW_DOWN_M,
@@ -93,6 +96,7 @@ const iconMap = {
   EX_LINK: IC_EX_LINK,
   TOKEN: IC_TOKEN,
   SPARKLE: IC_SPARKLE,
+  SPARKLE_16: IC_SPARKLE_16,
   SEARCH: IC_SEARCH,
   LIGHTBULB: IC_LIGHTBULB,
   TEXT: IC_TEXT,
