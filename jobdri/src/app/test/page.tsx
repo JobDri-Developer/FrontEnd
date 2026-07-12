@@ -13,6 +13,9 @@ import DetailAnnotationPanel from "@/components/mockApply/result/DetailAnotation
 import { QuestionAnalysis } from "@/lib/api/result";
 import { TooltipPlacement, Tooltip } from "@/components/common/tooltip";
 import { DropDownMenu, DropDownMenuItem } from "@/components/common/dropdown";
+import { scrollbarClass } from "@/components/common/input/inputStyles";
+import ScoreCircle from "@/components/mockApply/result/ScoreCircle";
+import ScoreBar from "@/components/mockApply/result/ScoreBar";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -210,7 +213,7 @@ export default function TestPage() {
       </div>
       <ProgressPanelRow itemCount={4} currentStep={2} />
 
-      <div className="flex flex-col items-center p-10 bg-gray-100 min-h-screen">
+      <div className="flex flex-col items-center p-10 bg-gray-100 h-fit">
         {/* 상단 진행률 패널 */}
         <HeaderPanel steps={mySteps} currentStepId={currentStepId} />
 
@@ -240,7 +243,9 @@ export default function TestPage() {
         </div>
       </div>
 
-      <div className="flex w-full flex-col gap-6 p-8">
+      <div
+        className={`flex w-full flex-col gap-6 p-8 h-80 overflow-y-auto ${scrollbarClass}`}
+      >
         <h2 className="text-h2-bold text-center">Result</h2>
 
         {/* 위에서 정의한 데이터를 props로 전달합니다. */}
@@ -284,6 +289,16 @@ export default function TestPage() {
 
         {/* 컴포넌트 자체는 항상 열려있음 (패딩, 호버, 액티브 맘껏 확인 가능) */}
         <DropDownMenu items={checkItems} />
+      </div>
+      <div>
+        <div className="flex flex-row gap-10 items-center justify-center">
+          <ScoreCircle score={86} />
+          <ScoreCircle score={56} />
+        </div>
+        <div className="flex flex-col gap-10 items-center justify-center">
+          <ScoreBar score={86} />
+          <ScoreBar score={56} />
+        </div>
       </div>
     </div>
   );
