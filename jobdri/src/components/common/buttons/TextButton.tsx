@@ -36,6 +36,11 @@ const labelSizeStyles: Record<TextButtonSize, string> = {
   large: "px-2 py-1",
 };
 
+const labelTextSizeStyles: Record<TextButtonSize, string> = {
+  small: "text-sub14-med",
+  large: "text-b16-med",
+};
+
 const styleTypeStyles: Record<TextButtonStyle, string> = {
   primary: "text-text-primary-default",
   secondary: "text-text-neutral-description",
@@ -124,12 +129,14 @@ export default function TextButton({
       {renderIcon(resolvedLeftIconType, leftIconClassName)}
       <span
         className={clsx(
-          "flex items-center justify-center gap-2.5 whitespace-nowrap",
+          "flex items-center justify-center whitespace-nowrap",
           labelSizeStyles[size],
           labelClassName,
         )}
       >
-        {label}
+        <span className={clsx("block", labelTextSizeStyles[size])}>
+          {label}
+        </span>
       </span>
       {renderIcon(resolvedRightIconType, rightIconClassName)}
     </button>
