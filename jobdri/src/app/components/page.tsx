@@ -14,6 +14,7 @@ import {
   type TextOnlyButtonStyle,
 } from "@/components/common/buttons";
 import { CtaFooter } from "@/components/common/cta";
+import Header from "@/components/common/header/Header";
 
 const textOnlyButtonSizes: TextOnlyButtonSize[] = ["large", "small"];
 const textOnlyButtonStyles: TextOnlyButtonStyle[] = ["primary", "secondary"];
@@ -233,6 +234,15 @@ function IconButtonMatrix() {
 export default function ComponentsPage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-16 bg-bg-default px-8 py-8">
+      <section className="flex w-[1440px] flex-col items-start gap-8">
+        <h1 className="text-h28-bold text-text-neutral-title">Layout</h1>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>Header</SectionTitle>
+          <Header progressStep={1} />
+        </div>
+      </section>
+
       <section className="flex w-[1440px] flex-col items-start gap-8">
         <h1 className="text-h28-bold text-text-neutral-title">CTA</h1>
         <div className="flex flex-col gap-10">
