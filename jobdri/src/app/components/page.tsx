@@ -46,19 +46,15 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 function ComponentGroup({
-  label,
   children,
   dark = false,
 }: {
-  label: string;
+  label?: string;
   children: React.ReactNode;
   dark?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-cap12-semibold text-text-neutral-caption">
-        {label}
-      </span>
       <div
         className={
           dark
