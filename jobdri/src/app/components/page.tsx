@@ -28,6 +28,48 @@ const iconTextButtonRows: Array<{
   { styleType: "secondary", size: "large" },
 ];
 
+const iconButtonGroups = [
+  {
+    styleType: "weak",
+    buttonType: "transparent",
+    items: [
+      { size: "xs", iconType: "CLOSE" },
+      { size: "s", iconType: "CLOSE_S" },
+      { size: "m", iconType: "CLOSE_M" },
+      { size: "l", iconType: "CLOSE_M" },
+    ],
+  },
+  {
+    styleType: "normal",
+    buttonType: "transparent",
+    items: [
+      { size: "xs", iconType: "CLOSE" },
+      { size: "s", iconType: "CLOSE_S" },
+      { size: "m", iconType: "CLOSE_M" },
+      { size: "l", iconType: "CLOSE_M" },
+    ],
+  },
+  {
+    styleType: "normal",
+    buttonType: "fill",
+    items: [
+      { size: "xs", iconType: "CLOSE" },
+      { size: "s", iconType: "CLOSE_S" },
+      { size: "m", iconType: "CLOSE_M" },
+      { size: "l", iconType: "CLOSE_M" },
+    ],
+  },
+  {
+    styleType: "warning",
+    buttonType: "transparent",
+    items: [
+      { size: "s", iconType: "CLOSE_S" },
+      { size: "m", iconType: "CLOSE_M" },
+      { size: "l", iconType: "CLOSE_M" },
+    ],
+  },
+] as const;
+
 const boxButtonGroups: Array<{
   styleType: ButtonStyle;
   sizes: ButtonSize[];
@@ -148,6 +190,46 @@ function IconTextButtonMatrix() {
   );
 }
 
+function IconButtonMatrix() {
+  return (
+    <div className="flex flex-col items-start gap-6">
+      {iconButtonGroups.map(({ styleType, buttonType, items }) => (
+        <div
+          key={`${styleType}-${buttonType}`}
+          className="flex items-center gap-8"
+        >
+          {items.map(({ size, iconType }) => (
+            <div key={`${styleType}-${buttonType}-${size}`} className="flex items-center gap-3">
+              <IconButton
+                iconType={iconType}
+                styleType={styleType}
+                size={size}
+                buttonType={buttonType}
+                className={
+                  buttonType === "fill"
+                    ? undefined
+                    : styleType === "warning"
+                      ? "bg-fill-system-fail-hover"
+                      : "bg-fill-state-hover-light"
+                }
+                aria-label={`${styleType} ${size} ${buttonType} icon button`}
+              />
+              <IconButton
+                iconType={iconType}
+                styleType={styleType}
+                size={size}
+                buttonType={buttonType}
+                disabled
+                aria-label={`${styleType} ${size} ${buttonType} disabled icon button`}
+              />
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ComponentsPage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-16 bg-bg-default px-8 py-8">
@@ -192,12 +274,7 @@ export default function ComponentsPage() {
           <div className="grid grid-cols-2 gap-6">
             <div className="flex flex-col gap-5">
               <SectionTitle>Button/IconButton</SectionTitle>
-              <ComponentGroup label="default">
-                <IconButton direction="left" />
-                <IconButton direction="right" />
-                <IconButton direction="left" active />
-                <IconButton direction="right" active />
-              </ComponentGroup>
+              <IconButtonMatrix />
             </div>
 
             <div className="flex flex-col gap-5">
