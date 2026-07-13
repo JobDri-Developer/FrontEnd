@@ -15,10 +15,18 @@ import {
 } from "@/components/common/buttons";
 import { CtaFooter } from "@/components/common/cta";
 
-const textButtonSizes: TextButtonSize[] = ["large", "small"];
-const textButtonStyles: TextButtonStyle[] = ["primary", "secondary"];
 const textOnlyButtonSizes: TextOnlyButtonSize[] = ["large", "small"];
 const textOnlyButtonStyles: TextOnlyButtonStyle[] = ["primary", "secondary"];
+
+const iconTextButtonRows: Array<{
+  styleType: TextButtonStyle;
+  size: TextButtonSize;
+}> = [
+  { styleType: "primary", size: "small" },
+  { styleType: "primary", size: "large" },
+  { styleType: "secondary", size: "small" },
+  { styleType: "secondary", size: "large" },
+];
 
 const boxButtonGroups: Array<{
   styleType: ButtonStyle;
@@ -55,7 +63,7 @@ function ComponentGroup({
         className={
           dark
             ? "flex min-h-[96px] flex-wrap items-center gap-4 bg-fill-tertiary-default p-6"
-            : "flex min-h-[96px] flex-wrap items-center gap-4 bg-bg-white p-6"
+            : "flex min-h-[96px] flex-wrap items-center gap-4"
         }
       >
         {children}
@@ -106,6 +114,44 @@ function BoxButtonMatrix() {
   );
 }
 
+function getTextButtonLeftIcon(
+  size: TextButtonSize,
+): "ARROW_LEFT_20" | "ARROW_LEFT_24" {
+  return size === "small" ? "ARROW_LEFT_20" : "ARROW_LEFT_24";
+}
+
+function getTextButtonRightIcon(
+  size: TextButtonSize,
+): "ARROW_RIGHT_20" | "ARROW_RIGHT_24" {
+  return size === "small" ? "ARROW_RIGHT_20" : "ARROW_RIGHT_24";
+}
+
+function IconTextButtonMatrix() {
+  return (
+    <div className="grid grid-cols-[repeat(2,max-content)] items-center justify-items-start gap-x-20 gap-y-6">
+      {iconTextButtonRows.map(({ styleType, size }) => (
+        <div key={`${styleType}-${size}`} className="contents">
+          <TextButton
+            label="전체보기"
+            size={size}
+            styleType={styleType}
+            leftIconType={getTextButtonLeftIcon(size)}
+            rightIconType={getTextButtonRightIcon(size)}
+          />
+          <TextButton
+            label="전체보기"
+            size={size}
+            styleType={styleType}
+            leftIconType={getTextButtonLeftIcon(size)}
+            rightIconType={getTextButtonRightIcon(size)}
+            disabled
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ComponentsPage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-16 bg-bg-default px-8 py-8">
@@ -127,30 +173,8 @@ export default function ComponentsPage() {
           </div>
 
           <div className="flex flex-col gap-5">
-            <SectionTitle>Button/TextButton</SectionTitle>
-            <ComponentGroup label="default">
-              {textButtonSizes.map((size) =>
-                textButtonStyles.map((styleType) => (
-                  <TextButton
-                    key={`${size}-${styleType}-right`}
-                    label={`${styleType} ${size}`}
-                    size={size}
-                    styleType={styleType}
-                  />
-                )),
-              )}
-              {textButtonSizes.map((size) =>
-                textButtonStyles.map((styleType) => (
-                  <TextButton
-                    key={`${size}-${styleType}-left`}
-                    label={`${styleType} ${size}`}
-                    size={size}
-                    styleType={styleType}
-                    iconPosition="left"
-                  />
-                )),
-              )}
-            </ComponentGroup>
+            <SectionTitle>Button/IconText</SectionTitle>
+            <IconTextButtonMatrix />
           </div>
 
           <div className="flex flex-col gap-5">

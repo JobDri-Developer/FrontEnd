@@ -11,7 +11,12 @@ export type {
   ButtonSize,
   ButtonStyle,
 } from "./Button";
-export type { TextButtonSize, TextButtonStyle } from "./TextButton";
+export type {
+  TextButtonIconPosition,
+  TextButtonProps,
+  TextButtonSize,
+  TextButtonStyle,
+} from "./TextButton";
 export type {
   TextOnlyButtonSize,
   TextOnlyButtonStyle,

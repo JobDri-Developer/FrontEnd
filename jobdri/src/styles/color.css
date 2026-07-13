@@ -87,6 +87,7 @@
   --color-fill-quaternary-assistive-pressed: var(--color-gray-200);
 
   --color-fill-hover: var(--color-gray-alpha-50);
+  --color-fill-state-hover-light: var(--color-gray-alpha-50);
   --color-fill-inverse-hover: color-mix(
     in srgb,
     var(--color-white) 5%,
