@@ -14,6 +14,7 @@ import {
 import { CtaFooter } from "@/components/common/cta";
 import Header from "@/components/common/header/Header";
 import {
+  InputTextField,
   InputTextAreaAutoGrowS,
   InputTextAreaFixedL,
   InputTextAreaFixedS,
@@ -289,6 +290,13 @@ export default function ComponentsPage() {
         <h1 className="text-h28-bold text-text-neutral-title">
           TextInput/TextArea
         </h1>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>Text Field</SectionTitle>
+          <InputTextField />
+          <InputTextField error="글자수를 확인해주세요" defaultValue="현대자동차" />
+          <InputTextField disabled />
+        </div>
 
         <div className="flex w-full flex-col gap-5">
           <SectionTitle>size: s / Type: Fixed</SectionTitle>

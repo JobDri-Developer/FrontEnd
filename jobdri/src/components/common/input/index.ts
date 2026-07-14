@@ -11,6 +11,11 @@ export {
   type InputTextAreaAutoGrowSProps,
 } from "./InputTextAreaAutoGrowS";
 export {
+  InputTextField,
+  type InputTextFieldProps,
+  type InputTextFieldState,
+} from "./InputTextField";
+export {
   JDInput,
   type JDInputProps,
   type JDInputState,
