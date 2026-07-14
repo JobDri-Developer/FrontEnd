@@ -61,7 +61,7 @@ export function InputModalQuestion({
         <div className="flex w-[286px] min-w-0 items-center gap-2">
           <input
             className={clsx(
-              "min-w-0 flex-1 overflow-hidden bg-transparent text-sub14-reg tracking-normal text-text-neutral-title text-ellipsis outline-none placeholder:text-text-neutral-disabled [font-feature-settings:'liga'_off,'clig'_off]",
+              "min-w-0 flex-1 overflow-hidden bg-transparent text-sub14-reg tracking-normal text-text-neutral-title text-ellipsis outline-none placeholder:text-text-neutral-disabled caret-line-primary-strong [font-feature-settings:'liga'_off,'clig'_off]",
               disabled && "cursor-not-allowed text-text-neutral-disabled",
             )}
             placeholder={placeholder}

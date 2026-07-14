@@ -14,6 +14,11 @@ import {
 import { CtaFooter } from "@/components/common/cta";
 import Header from "@/components/common/header/Header";
 import {
+  InputTextAreaAutoGrowS,
+  InputTextAreaFixedL,
+  InputTextAreaFixedS,
+} from "@/components/common/input";
+import {
   defaultNotificationItems,
   Lnb,
   LnbNotificationPanel,
@@ -275,6 +280,42 @@ export default function ComponentsPage() {
         <div className="flex flex-col gap-10">
           <CtaFooter />
           <CtaFooter type="result" />
+        </div>
+      </section>
+
+      <section className="flex w-[1440px] flex-col items-start gap-8">
+        <h1 className="text-h28-bold text-text-neutral-title">
+          TextInput/TextArea
+        </h1>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>size: s / Type: Fixed</SectionTitle>
+          <InputTextAreaFixedS key="fixed-s-default-empty" />
+          <InputTextAreaFixedS
+            key="fixed-s-error-empty"
+            error="글자수를 확인해주세요"
+          />
+          <InputTextAreaFixedS key="fixed-s-disabled-empty" disabled />
+        </div>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>size: l / Type: Fixed</SectionTitle>
+          <InputTextAreaFixedL key="fixed-l-default-empty" />
+          <InputTextAreaFixedL
+            key="fixed-l-error-empty"
+            error="글자수를 확인해주세요"
+          />
+          <InputTextAreaFixedL key="fixed-l-disabled-empty" disabled />
+        </div>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>size: s / Type: AutoGrow</SectionTitle>
+          <InputTextAreaAutoGrowS key="autogrow-s-default-empty" />
+          <InputTextAreaAutoGrowS
+            key="autogrow-s-error-empty"
+            error="글자수를 확인해주세요"
+          />
+          <InputTextAreaAutoGrowS key="autogrow-s-disabled-empty" disabled />
         </div>
       </section>
 
