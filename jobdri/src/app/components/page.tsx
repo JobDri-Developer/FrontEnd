@@ -17,6 +17,7 @@ import {
   InputTextAreaAutoGrowS,
   InputTextAreaFixedL,
   InputTextAreaFixedS,
+  LLMInput,
 } from "@/components/common/input";
 import {
   defaultNotificationItems,
@@ -316,6 +317,11 @@ export default function ComponentsPage() {
             error="글자수를 확인해주세요"
           />
           <InputTextAreaAutoGrowS key="autogrow-s-disabled-empty" disabled />
+        </div>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>LLM Input</SectionTitle>
+          <LLMInput />
         </div>
       </section>
 
