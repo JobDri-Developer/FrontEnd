@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
 import { Button } from "@/components/common/buttons";
-import DropDown from "@/components/common/dropdown/DropDown";
+import { Select, type SelectOption } from "@/components/common/select";
 import useOutsideClick from "@/hooks/useOutsideClick";
 import { InputSingleLine } from "../input";
 
@@ -12,6 +12,15 @@ interface ModalAddProps {
   onClose: () => void;
   onAdd: (question: string, maxLength: number) => void;
 }
+
+const maxLengthOptions: SelectOption[] = [
+  { label: "300자", value: "300" },
+  { label: "500자", value: "500" },
+  { label: "800자", value: "800" },
+  { label: "1,000자", value: "1000" },
+  { label: "1,500자", value: "1500" },
+  { label: "2,000자", value: "2000" },
+];
 
 export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -89,7 +98,11 @@ export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
             </div>
 
             {/* 글자수 드롭다운 */}
-            <DropDown value={maxLength} onChange={setMaxLength} />
+            <Select
+              options={maxLengthOptions}
+              value={maxLength}
+              onChange={setMaxLength}
+            />
           </div>
 
           {/* 추가 버튼 */}

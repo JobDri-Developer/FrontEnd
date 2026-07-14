@@ -18,6 +18,7 @@ import {
   Lnb,
   LnbNotificationPanel,
 } from "@/components/common/lnb";
+import { Select, type SelectOption } from "@/components/common/select";
 
 const textOnlyButtonSizes: TextOnlyButtonSize[] = ["large", "small"];
 const textOnlyButtonStyles: TextOnlyButtonStyle[] = ["primary", "secondary"];
@@ -83,6 +84,15 @@ const boxButtonGroups: Array<{
   { styleType: "tertiary", sizes: ["large", "medium", "small", "xsmall"] },
   { styleType: "quaternary", sizes: ["large", "medium", "small"] },
   { styleType: "error", sizes: ["large", "medium", "small"] },
+];
+
+const maxLengthOptions: SelectOption[] = [
+  { label: "300자", value: "300" },
+  { label: "500자", value: "500" },
+  { label: "800자", value: "800" },
+  { label: "1,000자", value: "1000" },
+  { label: "1,500자", value: "1500" },
+  { label: "2,000자", value: "2000" },
 ];
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -265,6 +275,18 @@ export default function ComponentsPage() {
         <div className="flex flex-col gap-10">
           <CtaFooter />
           <CtaFooter type="result" />
+        </div>
+      </section>
+
+      <section className="flex w-[1440px] flex-col items-start gap-8">
+        <h1 className="text-h28-bold text-text-neutral-title">Select</h1>
+
+        <div className="flex min-h-[430px] flex-wrap items-start gap-8">
+          <Select
+            options={maxLengthOptions}
+            placeholder="최대글자수"
+            defaultOpen
+          />
         </div>
       </section>
 
