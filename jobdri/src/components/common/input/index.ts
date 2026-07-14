@@ -10,6 +10,7 @@ export {
   InputTextAreaAutoGrowS,
   type InputTextAreaAutoGrowSProps,
 } from "./InputTextAreaAutoGrowS";
+export { JDInput, type JDInputProps } from "./JDInput";
 export { LLMInput, type LLMInputProps } from "./LLMInput";
 export {
   LLMInputImageLoadMotion,

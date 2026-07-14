@@ -17,6 +17,7 @@ import {
   InputTextAreaAutoGrowS,
   InputTextAreaFixedL,
   InputTextAreaFixedS,
+  JDInput,
   LLMInput,
 } from "@/components/common/input";
 import {
@@ -322,6 +323,12 @@ export default function ComponentsPage() {
         <div className="flex w-full flex-col gap-5">
           <SectionTitle>LLM Input</SectionTitle>
           <LLMInput />
+        </div>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>JD Input</SectionTitle>
+          <JDInput />
+          <JDInput value="토스" />
         </div>
       </section>
 
