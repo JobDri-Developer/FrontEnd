@@ -45,6 +45,7 @@ interface LnbProps {
   notificationItems?: LnbNotificationItem[];
   defaultRecentOpen?: boolean;
   hasNotification?: boolean;
+  disableCreditFetch?: boolean;
 }
 
 interface LnbNavItem {
@@ -832,6 +833,7 @@ export default function Lnb({
   notificationItems = defaultNotificationItems,
   defaultRecentOpen = true,
   hasNotification = true,
+  disableCreditFetch = false,
 }: LnbProps) {
   const router = useRouter();
   const storedEmail = useSyncExternalStore(
@@ -867,10 +869,14 @@ export default function Lnb({
   };
 
   useEffect(() => {
+    if (disableCreditFetch) {
+      return;
+    }
+
     fetchCreditBalance()
       .then(setCreditCount)
       .catch(() => {});
-  }, []);
+  }, [disableCreditFetch]);
 
   const handleLogout = async () => {
     const accessToken = window.localStorage.getItem(

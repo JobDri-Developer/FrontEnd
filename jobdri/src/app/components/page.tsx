@@ -248,7 +248,7 @@ export default function ComponentsPage() {
 
         <div className="flex w-full flex-col gap-5">
           <SectionTitle>LNB</SectionTitle>
-          <Lnb className="!h-[800px] !min-h-[800px]" />
+          <Lnb className="!h-[800px] !min-h-[800px]" disableCreditFetch />
         </div>
 
         <div className="flex w-full flex-col gap-5">
