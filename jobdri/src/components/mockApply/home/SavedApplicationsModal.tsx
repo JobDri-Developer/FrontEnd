@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { scrollbarClass } from "@/components/common/input/inputStyles";
+import { scrollbarClass } from "@/components/common/scrollbar/scrollbarStyles";
 import Icon from "@/components/common/icons/Icon";
 import { ApplicationKebabButton } from "./ApplicationKebabButton";
 import {

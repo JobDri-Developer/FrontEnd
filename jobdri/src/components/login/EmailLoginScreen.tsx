@@ -3,12 +3,15 @@
 import type {
   ClipboardEvent,
   Dispatch,
+  FocusEvent,
   FormEvent,
+  HTMLInputTypeAttribute,
+  InputHTMLAttributes,
   KeyboardEvent,
   MutableRefObject,
   SetStateAction,
 } from "react";
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import {
@@ -17,7 +20,6 @@ import {
   TextButton,
   TextOnlyButton,
 } from "@/components/common/buttons";
-import { InputMain, InputSingleLine } from "@/components/common/input";
 import LogoHorizontalM from "@/components/common/logo/horizontal/m";
 import LogoVerticalM from "@/components/common/logo/vertical/m";
 import { Tooltip } from "@/components/common/tooltip";
@@ -44,6 +46,187 @@ const loginValidationErrorMessage = "이메일과 비밀번호를 확인해주�
 const authInputLabelClass =
   "text-sub14-reg text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]";
 const authInputGapClass = "gap-1";
+
+interface AuthInputProps {
+  label?: string;
+  required?: boolean;
+  placeholder?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  inputType?: HTMLInputTypeAttribute;
+  name?: string;
+  autoComplete?: string;
+  maxLength?: number;
+  disabled?: boolean;
+  hasError?: boolean;
+  error?: string;
+  className?: string;
+  gapClassName?: string;
+  labelClassName?: string;
+  type?: "ID" | "PASSWORD" | "EMAIL";
+}
+
+function InputMain({
+  label,
+  required,
+  placeholder,
+  value = "",
+  onChange,
+  inputType,
+  name,
+  autoComplete,
+  maxLength,
+  disabled = false,
+  hasError = false,
+  error,
+  className,
+  gapClassName = "gap-1.5",
+  labelClassName,
+  type,
+}: AuthInputProps) {
+  const [focused, setFocused] = useState(false);
+  const isError = hasError || !!error;
+  const resolvedInputType =
+    inputType ?? (type === "PASSWORD" ? "password" : "text");
+
+  return (
+    <div className={clsx("flex flex-col", gapClassName, className)}>
+      {label && (
+        <span
+          className={clsx(
+            "text-label14-semibold text-text-neutral-title",
+            labelClassName,
+          )}
+        >
+          {label}
+          {required && <span className="ml-0.5 text-text-system-fail">•</span>}
+        </span>
+      )}
+
+      <div
+        className={clsx(
+          "flex h-12 items-center rounded-lg border px-4 py-3 transition-colors",
+          disabled
+            ? "border-line-neutral-default bg-transparent"
+            : isError
+              ? "border-line-system-fail-default bg-white"
+              : focused
+                ? "border-line-primary-default bg-white"
+                : "border-line-neutral-default bg-white",
+        )}
+      >
+        <input
+          type={resolvedInputType}
+          name={name}
+          autoComplete={autoComplete}
+          maxLength={maxLength}
+          className={clsx(
+            "min-w-0 flex-1 bg-transparent text-sub14-reg text-text-neutral-description outline-none placeholder:text-text-neutral-disabled caret-line-primary-strong [font-feature-settings:'liga'_off,'clig'_off]",
+            disabled && "text-text-neutral-disabled",
+          )}
+          placeholder={placeholder}
+          value={value}
+          onChange={(event) => onChange?.(event.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          disabled={disabled}
+        />
+      </div>
+
+      {error && (
+        <span className="text-right text-cap12-med text-text-system-fail">
+          {error}
+        </span>
+      )}
+    </div>
+  );
+}
+
+interface AuthSingleLineProps
+  extends Omit<
+    InputHTMLAttributes<HTMLInputElement>,
+    "value" | "onChange" | "disabled" | "className"
+  > {
+  value?: string;
+  onChange?: (value: string) => void;
+  disabled?: boolean;
+  hasError?: boolean;
+  className?: string;
+  wrapperClassName?: string;
+  inputClassName?: string;
+  focusedBorder?: string;
+  paddingClass?: string;
+  radiusClass?: string;
+}
+
+const InputSingleLine = forwardRef<HTMLInputElement, AuthSingleLineProps>(
+  function InputSingleLine(
+    {
+      value = "",
+      onChange,
+      disabled = false,
+      hasError = false,
+      className,
+      wrapperClassName,
+      inputClassName,
+      focusedBorder = "border-line-neutral-strong",
+      paddingClass = "px-4 py-3",
+      radiusClass = "rounded-lg",
+      onFocus,
+      onBlur,
+      ...inputProps
+    },
+    ref,
+  ) {
+    const [focused, setFocused] = useState(false);
+    const isActive = focused || value.length > 0;
+
+    const handleFocus = (event: FocusEvent<HTMLInputElement>) => {
+      setFocused(true);
+      onFocus?.(event);
+    };
+
+    const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
+      setFocused(false);
+      onBlur?.(event);
+    };
+
+    return (
+      <div className={clsx("flex flex-col gap-1.5 w-148", className)}>
+        <div
+          className={clsx(
+            "border transition-colors",
+            radiusClass,
+            paddingClass,
+            disabled
+              ? "border-line-neutral-default bg-transparent"
+              : hasError
+                ? "border-line-system-fail-default bg-white"
+                : isActive
+                  ? `${focusedBorder} bg-white`
+                  : "border-line-neutral-default bg-white",
+            wrapperClassName,
+          )}
+        >
+          <input
+            ref={ref}
+            className={clsx(
+              "w-full bg-transparent text-sub14-reg text-text-neutral-description outline-none placeholder:text-text-neutral-disabled caret-line-primary-strong",
+              disabled && "text-text-neutral-disabled",
+              inputClassName,
+            )}
+            value={value}
+            onChange={(event) => onChange?.(event.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            disabled={disabled}
+            {...inputProps}
+          />
+        </div>
+      </div>
+    );
+  },
+);
 
 export default function EmailLoginScreen() {
   const router = useRouter();

@@ -1,14 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
+import clsx from "clsx";
 import { Button } from "@/components/common/buttons";
 import Icon from "@/components/common/icons/Icon";
-import {
-  InputFile,
-  type FileState,
-  type InputFileHandle,
-} from "@/components/common/input";
 import useOutsideClick from "@/hooks/useOutsideClick";
+
+type FileState = "default" | "dragover" | "uploading" | "uploaded";
 
 interface ModalFileUploadProps {
   selectedFile?: File | null;
@@ -28,14 +26,56 @@ export default function ModalFileUpload({
   description = "5MB 이하jpeg, jpg, png 파일만 가능합니다",
 }: ModalFileUploadProps) {
   const modalRef = useRef<HTMLDivElement>(null);
-  const inputFileRef = useRef<InputFileHandle>(null);
+  const inputFileRef = useRef<HTMLInputElement>(null);
   const [fileState, setFileState] = useState<FileState>(
     selectedFile ? "uploaded" : "default",
   );
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isHover, setIsHover] = useState(false);
   const isUploading = fileState === "uploading";
   const isUploaded = Boolean(selectedFile) && fileState === "uploaded";
+  const isActive = fileState === "dragover" || isHover;
 
   useOutsideClick(modalRef, onClose);
+
+  const openFileDialog = () => {
+    if (inputFileRef.current) {
+      inputFileRef.current.value = "";
+      inputFileRef.current.click();
+    }
+  };
+
+  const handleFile = (file: File) => {
+    const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+    const isAllowed =
+      ["image/jpeg", "image/png"].includes(file.type) ||
+      ["jpg", "jpeg", "png"].includes(extension);
+
+    if (!isAllowed) {
+      setErrorMessage("JPG, PNG 파일만 업로드할 수 있습니다.");
+      onFileSelect(null);
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage("5MB 이하 파일만 업로드할 수 있습니다.");
+      onFileSelect(null);
+      return;
+    }
+
+    setErrorMessage("");
+    setFileState("uploading");
+    onFileSelect(file);
+    setTimeout(() => setFileState("uploaded"), 300);
+  };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      handleFile(file);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
@@ -69,16 +109,57 @@ export default function ModalFileUpload({
             </div>
 
             <div className="flex flex-col items-start gap-2 self-stretch">
-              <InputFile
+              <input
                 ref={inputFileRef}
+                type="file"
                 accept=".jpeg,.jpg,.png,image/jpeg,image/png"
-                iconType="UPLOAD_M"
-                selectedFileName={selectedFile?.name}
-                onFileSelect={onFileSelect}
-                onFileReject={() => onFileSelect(null)}
-                onStateChange={setFileState}
-                className="w-full"
+                className="hidden"
+                onChange={handleInputChange}
               />
+              <button
+                type="button"
+                className={clsx(
+                  "flex w-full flex-col items-center justify-center gap-3 self-stretch rounded-card border bg-bg-contents-assistive py-12 transition-colors",
+                  isActive
+                    ? "border-line-primary-default"
+                    : "border-line-neutral-default",
+                )}
+                onClick={openFileDialog}
+                onMouseEnter={() => setIsHover(true)}
+                onMouseLeave={() => setIsHover(false)}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setFileState("dragover");
+                }}
+                onDragLeave={(event) => {
+                  event.preventDefault();
+                  setFileState(selectedFile ? "uploaded" : "default");
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  const file = event.dataTransfer.files[0];
+                  if (file) handleFile(file);
+                }}
+              >
+                <Icon
+                  type={selectedFile ? "FILE" : "UPLOAD_M"}
+                  className="h-10 w-10 text-icon-neutral-default"
+                />
+                <span
+                  className={clsx(
+                    "text-sub14-med",
+                    errorMessage
+                      ? "text-text-system-fail"
+                      : isActive
+                        ? "text-text-primary-default"
+                        : "text-text-neutral-caption",
+                  )}
+                >
+                  {errorMessage ||
+                    selectedFile?.name ||
+                    "파일을 여기에 끌어다 놓으세요"}
+                </span>
+              </button>
             </div>
           </div>
         </div>
@@ -90,7 +171,7 @@ export default function ModalFileUpload({
                 label="파일 다시 선택"
                 size="large"
                 styleType="quaternary"
-                onClick={() => inputFileRef.current?.openFileDialog()}
+                onClick={openFileDialog}
                 className="h-[46px] flex-1"
               />
               <Button

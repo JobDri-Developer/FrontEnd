@@ -3,7 +3,7 @@
 import { type QuestionAnalysis } from "@/lib/api/result";
 import ChipTag from "@/components/common/chips/ChipTag";
 import { type HighlightStatus } from "./highlightStyles";
-import { scrollbarClass } from "@/components/common/input/inputStyles";
+import { scrollbarClass } from "@/components/common/scrollbar/scrollbarStyles";
 
 const statusLabel: Record<HighlightStatus, string> = {
   proven: "적절함",

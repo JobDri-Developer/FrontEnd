@@ -6,7 +6,6 @@ import Icon from "@/components/common/icons/Icon";
 import { Button } from "@/components/common/buttons";
 import { Select, type SelectOption } from "@/components/common/select";
 import useOutsideClick from "@/hooks/useOutsideClick";
-import { InputSingleLine } from "../input";
 
 interface ModalAddProps {
   onClose: () => void;
@@ -80,12 +79,12 @@ export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
                     : "border-line-neutral-default bg-fill-quaternary-assistive",
                 )}
               >
-                <InputSingleLine
+                <input
                   placeholder="문항 내용을 입력하세요"
                   value={question}
-                  focusedBorder="border-line-primary-default"
-                  onChange={(e) => {
-                    setQuestion(e);
+                  className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sub14-reg text-text-neutral-description outline-none placeholder:text-text-neutral-disabled caret-line-primary-strong [font-feature-settings:'liga'_off,'clig'_off]"
+                  onChange={(event) => {
+                    setQuestion(event.target.value);
                     if (error) setError("");
                   }}
                 />
