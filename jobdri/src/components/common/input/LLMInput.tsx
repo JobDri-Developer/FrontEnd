@@ -348,6 +348,10 @@ export function LLMInput({
         </div>
       )}
 
+      {isUploadMode && imagePreviews.length === 0 && (
+        <div className="min-h-0 flex-1" aria-hidden="true" />
+      )}
+
       <div className="flex self-stretch items-start px-1">
         <div className="relative flex flex-1 items-start">
           {!value && placeholder && (
