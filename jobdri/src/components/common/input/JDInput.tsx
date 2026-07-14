@@ -7,6 +7,41 @@ import Icon, { type IconType } from "@/components/common/icons/Icon";
 import { InputTextAreaAutoGrowS } from "./InputTextAreaAutoGrowS";
 
 export type JDInputState = "default" | "tapped";
+export type JDInputType =
+  | "company"
+  | "role"
+  | "task"
+  | "qualification"
+  | "prefer";
+
+const jdInputTypeConfig: Record<
+  JDInputType,
+  {
+    iconType: IconType;
+    label: string;
+  }
+> = {
+  company: {
+    iconType: "COMPANY",
+    label: "회사명",
+  },
+  role: {
+    iconType: "PROFILE_16",
+    label: "직무",
+  },
+  task: {
+    iconType: "APPLY_16",
+    label: "주요 업무",
+  },
+  qualification: {
+    iconType: "CIRCLE_CHECK_16",
+    label: "자격 요건",
+  },
+  prefer: {
+    iconType: "GOOD_16",
+    label: "우대 사항",
+  },
+};
 
 export interface JDInputProps {
   className?: string;
@@ -22,6 +57,7 @@ export interface JDInputProps {
   placeholder?: string;
   rightContent?: ReactNode;
   state?: JDInputState;
+  type?: JDInputType;
   value?: string;
 }
 
@@ -30,8 +66,8 @@ export function JDInput({
   defaultValue = "",
   editPlaceholder = "공고 내용을 입력해주세요.",
   fill = false,
-  iconType = "COMPANY",
-  label = "회사명",
+  iconType,
+  label,
   maxLength = 4000,
   onAdd,
   onChange,
@@ -39,8 +75,12 @@ export function JDInput({
   placeholder = "입력된 내용이 없습니다.",
   rightContent,
   state,
+  type = "company",
   value,
 }: JDInputProps) {
+  const typeConfig = jdInputTypeConfig[type];
+  const resolvedIconType = iconType ?? typeConfig.iconType;
+  const resolvedLabel = label ?? typeConfig.label;
   const [internalState, setInternalState] = useState<JDInputState>("default");
   const [draftValue, setDraftValue] = useState(value ?? defaultValue);
   const resolvedState = state ?? internalState;
@@ -76,12 +116,12 @@ export function JDInput({
     >
       <div className="flex w-[160px] min-w-[104px] max-w-[160px] shrink-0 items-center gap-[9px]">
         <Icon
-          type={iconType}
+          type={resolvedIconType}
           className="h-4 w-4 shrink-0 text-icon-neutral-default"
         />
         <div className="flex flex-col items-start">
           <span className="text-label14-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-            {label}
+            {resolvedLabel}
           </span>
         </div>
       </div>
@@ -121,7 +161,7 @@ export function JDInput({
                 styleType="weak"
                 size="s"
                 buttonType="transparent"
-                aria-label={`${label} 수정`}
+                aria-label={`${resolvedLabel} 수정`}
                 className="invisible opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
                 onClick={handleEdit}
               />

@@ -20,6 +20,7 @@ import IC_ARROW2_UP from "@/assets/ic_Arrow2_Up.svg";
 import IC_ARROW3_DOWN from "@/assets/ic_Arrow3_Down.svg";
 import IC_GOOGLE from "@/assets/ic_GoogleAsset.svg";
 import IC_GOOD from "@/assets/ic_Good.svg";
+import IC_GOOD_16 from "@/assets/ic_Good_16.svg";
 import IC_ADD from "@/assets/ic_Add.svg";
 import IC_ADD_S from "@/assets/ic_Add_S.svg";
 import IC_TRASH from "@/assets/ic_Trash.svg";
@@ -28,6 +29,7 @@ import IC_WARN_24 from "@/assets/ic_Warning_24.svg";
 import IC_CHECK from "@/assets/ic_Check.svg";
 import IC_CLOSE from "@/assets/ic_Close.svg";
 import IC_PROFILE from "@/assets/ic_Profile.svg";
+import IC_PROFILE_16 from "@/assets/ic_Profile_16.svg";
 import IC_PASSWORD from "@/assets/ic_Password.svg";
 import IC_DOTS_M from "@/assets/ic_Dots_M.svg";
 import IC_KABAB from "@/assets/ic_Kabab.svg";
@@ -36,6 +38,7 @@ import IC_CLOSE_S from "@/assets/ic_Close_S.svg";
 import IC_SIDEBAR from "@/assets/ic_SidebarToggle.svg";
 import IC_HOME_S from "@/assets/ic_Home_s.svg";
 import IC_APPLY from "@/assets/ic_Apply.svg";
+import IC_APPLY_16 from "@/assets/ic_Apply_16.svg";
 import IC_EX_S from "@/assets/ic_Ex.svg";
 import IC_DOT_S from "@/assets/ic_Dots_S.svg";
 import IC_EX_LINK from "@/assets/ic_ExternalLink.svg";
@@ -55,6 +58,7 @@ import IC_POLYGON_2 from "@/assets/ic_Polygon_2.svg";
 import IC_FILE from "@/assets/ic_file.svg";
 import IC_BELL from "@/assets/ic_Bell.svg";
 import IC_CIRCLE_CHECK from "@/assets/ic_CircleCheck.svg";
+import IC_CIRCLE_CHECK_16 from "@/assets/ic_CircleCheck_16.svg";
 import IC_COMPANY from "@/assets/ic_Company.svg";
 import IC_LOGOUT from "@/assets/ic_Logout.svg";
 
@@ -83,6 +87,7 @@ const iconMap = {
   ARROW3_DOWN: IC_ARROW3_DOWN,
   GOOGLE: IC_GOOGLE,
   GOOD: IC_GOOD,
+  GOOD_16: IC_GOOD_16,
   ADD: IC_ADD,
   ADD_S: IC_ADD_S,
   TRASH: IC_TRASH,
@@ -91,6 +96,7 @@ const iconMap = {
   CHECK: IC_CHECK,
   CLOSE: IC_CLOSE,
   PROFILE: IC_PROFILE,
+  PROFILE_16: IC_PROFILE_16,
   PASSWORD: IC_PASSWORD,
   ARROW_R_N: IC_ARROW_RIGHT_24,
   DOTS_M: IC_DOTS_M,
@@ -100,6 +106,7 @@ const iconMap = {
   SIDEBAR: IC_SIDEBAR,
   HOME_S: IC_HOME_S,
   APPLY: IC_APPLY,
+  APPLY_16: IC_APPLY_16,
   EX_S: IC_EX_S,
   ARROW_R_N_S: IC_ARROW_RIGHT_20,
   DOT_S: IC_DOT_S,
@@ -120,6 +127,7 @@ const iconMap = {
   FILE: IC_FILE,
   BELL: IC_BELL,
   CIRCLE_CHECK: IC_CIRCLE_CHECK,
+  CIRCLE_CHECK_16: IC_CIRCLE_CHECK_16,
   COMPANY: IC_COMPANY,
   LOGOUT: IC_LOGOUT,
 } as const;

@@ -328,7 +328,10 @@ export default function ComponentsPage() {
         <div className="flex w-full flex-col gap-5">
           <SectionTitle>JD Input</SectionTitle>
           <JDInput />
-          <JDInput value="토스" />
+          <JDInput type="role" />
+          <JDInput type="task" />
+          <JDInput type="qualification" />
+          <JDInput type="prefer" />
         </div>
       </section>
 
