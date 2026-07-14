@@ -1,7 +1,5 @@
 import {
   Button,
-  ButtonCta,
-  ButtonCtaModal,
   IconButton,
   IconOnlyButton,
   TextButton,
@@ -323,38 +321,6 @@ export default function ComponentsPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-5">
-            <SectionTitle>Button/ButtonCta</SectionTitle>
-            <ComponentGroup label="variants">
-              <div className="w-[280px]">
-                <ButtonCta variant="gradient_white" />
-              </div>
-              <div className="w-[280px]">
-                <ButtonCta variant="gradient_dark" />
-              </div>
-              <div className="w-[280px]">
-                <ButtonCta variant="empty_white" />
-              </div>
-              <div className="w-[280px]">
-                <ButtonCta variant="empty_dark" />
-              </div>
-            </ComponentGroup>
-          </div>
-
-          <div className="flex flex-col gap-5">
-            <SectionTitle>Button/ButtonCtaModal</SectionTitle>
-            <ComponentGroup label="stacks">
-              <div className="w-[320px]">
-                <ButtonCtaModal stack="stack1_horizontal" />
-              </div>
-              <div className="w-[420px]">
-                <ButtonCtaModal stack="stack2_horizontal" />
-              </div>
-              <div className="w-[320px]">
-                <ButtonCtaModal stack="stack3_vertical" />
-              </div>
-            </ComponentGroup>
-          </div>
         </div>
       </section>
     </main>
