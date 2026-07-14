@@ -10,6 +10,10 @@ export const AUTH_STORAGE_KEYS = {
   userEmail: "jobdri.userEmail",
 } as const;
 
+export const AUTH_COOKIE_KEYS = {
+  accessToken: "jobdri_accessToken",
+} as const;
+
 interface ApiResponse<T> {
   isSuccess: boolean;
   code: string;
@@ -26,6 +30,11 @@ export interface AuthTokens {
 export interface LoginRequest {
   email: string;
   password: string;
+}
+
+interface LogoutRequest {
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface SignupRequest {
@@ -168,6 +177,10 @@ export function saveAuthTokens(tokens: AuthTokens, email?: string) {
     return;
   }
 
+  // middleware에서 읽을 수 있도록 쿠키에 저장
+  const maxAge = 60 * 60 * 24 * 7; // 7일
+  document.cookie = `${AUTH_COOKIE_KEYS.accessToken}=${tokens.accessToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+
   window.localStorage.setItem(
     AUTH_STORAGE_KEYS.accessToken,
     tokens.accessToken,
@@ -180,6 +193,17 @@ export function saveAuthTokens(tokens: AuthTokens, email?: string) {
   if (email) {
     window.localStorage.setItem(AUTH_STORAGE_KEYS.userEmail, email);
   }
+}
+
+export function clearAuthTokens() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  document.cookie = `${AUTH_COOKIE_KEYS.accessToken}=; path=/; max-age=0`;
+  window.localStorage.removeItem(AUTH_STORAGE_KEYS.accessToken);
+  window.localStorage.removeItem(AUTH_STORAGE_KEYS.refreshToken);
+  window.localStorage.removeItem(AUTH_STORAGE_KEYS.userEmail);
 }
 
 export function getStoredAuthEmail() {
@@ -234,9 +258,23 @@ export function getGoogleAuthorizationUrl() {
 }
 
 export function getAuthHeaders(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+
+  const cookieToken = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${AUTH_COOKIE_KEYS.accessToken}=`))
+    ?.split("=")[1];
+
   const token =
-    typeof window !== "undefined"
-      ? window.localStorage.getItem("jobdri.accessToken")
-      : null;
+    cookieToken ?? window.localStorage.getItem(AUTH_STORAGE_KEYS.accessToken);
+
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function requestLogout(accessToken: string, refreshToken: string) {
+  await postAuth<null>(
+    "/api/auth/logout",
+    { accessToken, refreshToken },
+    "로그아웃",
+  );
 }

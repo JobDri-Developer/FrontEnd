@@ -1,4 +1,4 @@
-import { getAuthHeaders } from "../auth";
+import { getAuthHeaders, handleUnauthorized } from "@/lib/api/client";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -19,11 +19,16 @@ interface ApiResponse<T> {
   error: string | null;
 }
 
+function checkResponse(response: Response, fallbackMessage: string): void {
+  if (response.status === 401) handleUnauthorized();
+  if (!response.ok) throw new Error(fallbackMessage);
+}
+
 export async function fetchCreditBalance(): Promise<number> {
   const response = await fetch(`${BASE_URL}/api/payments/credits/me`, {
     headers: getAuthHeaders(),
   });
-  if (!response.ok) throw new Error("크레딧 잔액 조회에 실패했습니다.");
+  checkResponse(response, "크레딧 잔액 조회에 실패했습니다.");
   const { result }: ApiResponse<{ creditBalance: number }> =
     await response.json();
   return result.creditBalance;
@@ -38,7 +43,7 @@ export async function fetchCreditTransactions(
   const response = await fetch(url.toString(), {
     headers: getAuthHeaders(),
   });
-  if (!response.ok) throw new Error("크레딧 거래 내역 조회에 실패했습니다.");
+  checkResponse(response, "크레딧 거래 내역 조회에 실패했습니다.");
   const { result }: ApiResponse<CreditTransaction[]> = await response.json();
   return result;
 }
@@ -57,7 +62,7 @@ export async function fetchCreditPlans(): Promise<CreditPlan[]> {
   const response = await fetch(`${BASE_URL}/api/payments/plans`, {
     headers: getAuthHeaders(),
   });
-  if (!response.ok) throw new Error("크레딧 플랜 조회에 실패했습니다.");
+  checkResponse(response, "크레딧 플랜 조회에 실패했습니다.");
   const { result }: ApiResponse<CreditPlan[]> = await response.json();
   return result;
 }
@@ -83,7 +88,7 @@ export async function preparePurchase(
     },
     body: JSON.stringify({ planCode }),
   });
-  if (!response.ok) throw new Error("결제 준비에 실패했습니다.");
+  checkResponse(response, "결제 준비에 실패했습니다.");
   const { result }: ApiResponse<PreparePaymentResult> = await response.json();
   return result;
 }
@@ -101,5 +106,5 @@ export async function confirmPurchase(
     },
     body: JSON.stringify({ paymentKey, orderId, amount }),
   });
-  if (!response.ok) throw new Error("결제 승인에 실패했습니다.");
+  checkResponse(response, "결제 승인에 실패했습니다.");
 }

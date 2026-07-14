@@ -1,4 +1,4 @@
-import { API_BASE_URL, getAuthHeaders } from "@/lib/auth";
+import { API_BASE_URL, getAuthHeaders, parseApiResponse } from "@/lib/api/client";
 
 export interface QuestionItem {
   id: string;
@@ -20,14 +20,6 @@ interface QuestionApiItem {
   answer?: string;
 }
 
-interface ApiResponse<T> {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: T | null;
-  error: string | null;
-}
-
 interface SelectedQuestionsApiResponse {
   mockApplyId: number;
   status: string;
@@ -39,24 +31,6 @@ export interface AnswerItem {
   answer: string;
 }
 
-async function parseApiResponse<T>(
-  response: Response,
-  fallbackMessage: string,
-) {
-  let data: ApiResponse<T> | null = null;
-
-  try {
-    data = (await response.json()) as ApiResponse<T>;
-  } catch {
-    throw new Error(`${fallbackMessage} 응답을 확인할 수 없습니다.`);
-  }
-
-  if (!response.ok || !data.isSuccess) {
-    throw new Error(data?.error || data?.message || fallbackMessage);
-  }
-
-  return data.result;
-}
 
 export async function fetchQuestions(
   mockApplyId: number,

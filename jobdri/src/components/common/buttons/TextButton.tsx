@@ -4,7 +4,8 @@ import Icon, { type IconType } from "@/components/common/icons/Icon";
 
 export type TextButtonSize = "small" | "large";
 export type TextButtonStyle = "primary" | "secondary";
-export type TextButtonIconPosition = "right" | "left";
+export type TextButtonIconPosition = "right" | "left" | "null";
+export type HoverType = "textOnly" | "none";
 
 export interface TextButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -19,6 +20,7 @@ export interface TextButtonProps
   leftIconClassName?: string;
   rightIconClassName?: string;
   labelClassName?: string;
+  hover?: HoverType;
 }
 
 const sizeStyles: Record<TextButtonSize, string> = {
@@ -56,7 +58,7 @@ const disabledStyles =
 
 function getDefaultIconType(
   size: TextButtonSize,
-  iconPosition: TextButtonIconPosition,
+  iconPosition: Exclude<TextButtonIconPosition, "null">,
 ): IconType {
   if (iconPosition === "left") {
     return size === "small" ? "ARROW_LEFT_20" : "ARROW_LEFT_24";
@@ -77,6 +79,7 @@ export default function TextButton({
   leftIconClassName,
   rightIconClassName,
   labelClassName,
+  hover = "none",
   className,
   type = "button",
   ...buttonProps
@@ -86,12 +89,12 @@ export default function TextButton({
   const resolvedLeftIconType =
     leftIconType ??
     (!hasExplicitIcons && iconPosition === "left"
-      ? iconType ?? getDefaultIconType(size, iconPosition)
+      ? iconType ?? getDefaultIconType(size, "left")
       : undefined);
   const resolvedRightIconType =
     rightIconType ??
     (!hasExplicitIcons && iconPosition === "right"
-      ? iconType ?? getDefaultIconType(size, iconPosition)
+      ? iconType ?? getDefaultIconType(size, "right")
       : undefined);
   const renderIcon = (
     resolvedIconType: IconType | undefined,
@@ -119,7 +122,10 @@ export default function TextButton({
         isDisabled
           ? disabledStyles
           : clsx(
-              "cursor-pointer hover:bg-fill-state-hover-light active:bg-fill-state-hover-light",
+              "cursor-pointer",
+              hover === "textOnly"
+                ? "hover:bg-transparent hover:text-fill-tertiary-default-pressed active:bg-transparent"
+                : "hover:bg-fill-state-hover-light active:bg-fill-state-hover-light",
               styleTypeStyles[styleType],
             ),
         className,

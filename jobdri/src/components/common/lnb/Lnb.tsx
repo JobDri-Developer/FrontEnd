@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   type PointerEvent,
@@ -10,11 +10,18 @@ import {
 } from "react";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import { IconButton, TextButton } from "@/components/common/buttons";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
+import { ModalNotice } from "@/components/common/modal";
 import { Tooltip } from "@/components/common/tooltip";
 import useOutsideClick from "@/hooks/useOutsideClick";
-import { AUTH_STORAGE_KEYS, getStoredAuthEmail } from "@/lib/auth";
+import {
+  AUTH_STORAGE_KEYS,
+  clearAuthTokens,
+  getStoredAuthEmail,
+  requestLogout,
+} from "@/lib/auth";
 import { fetchCreditBalance } from "@/lib/api/credit";
 import Logo from "@/assets/ic_LOGO_minimum_favi.svg";
 import {
@@ -44,6 +51,7 @@ interface LnbNavItem {
   key: LnbItemKey;
   label: string;
   iconType: IconType;
+  href?: string;
 }
 
 interface LnbRecentItem {
@@ -58,6 +66,7 @@ const navItems: LnbNavItem[] = [
     key: "apply",
     label: "모의 서류 지원",
     iconType: "APPLY",
+    href: "/mockApply",
   },
   {
     key: "experience",
@@ -834,6 +843,7 @@ export default function Lnb({
   const emailInitial = getEmailInitial(displayEmail);
   const [creditCount, setCreditCount] = useState<number>(0);
   const [isFold, setIsFold] = useState(false);
+  const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [activeItem, setActiveItem] =
     useState<LnbItemKey | undefined>(initialActiveItem);
   const [selectedRecentItemId, setSelectedRecentItemId] = useState<string>(
@@ -841,19 +851,19 @@ export default function Lnb({
   );
 
   const handleNavItemClick = (item: LnbNavItem) => {
-    setActiveItem(item.key);
+    if (item.href) {
+      setActiveItem(item.key);
+      router.push(item.href);
+      return;
+    }
+
+    setShowComingSoonModal(true);
   };
+
+  const closeComingSoonModal = () => setShowComingSoonModal(false);
 
   const handleRecentItemClick = (item: LnbRecentItem) => {
     setSelectedRecentItemId(item.id);
-  };
-
-  const handleLogout = () => {
-    Object.values(AUTH_STORAGE_KEYS).forEach((storageKey) => {
-      window.localStorage.removeItem(storageKey);
-    });
-
-    router.replace("/login");
   };
 
   useEffect(() => {
@@ -862,14 +872,35 @@ export default function Lnb({
       .catch(() => {});
   }, []);
 
+  const handleLogout = async () => {
+    const accessToken = window.localStorage.getItem(
+      AUTH_STORAGE_KEYS.accessToken,
+    );
+    const refreshToken = window.localStorage.getItem(
+      AUTH_STORAGE_KEYS.refreshToken,
+    );
+
+    if (accessToken && refreshToken) {
+      try {
+        await requestLogout(accessToken, refreshToken);
+      } catch (error) {
+        console.error("서버 로그아웃 처리 실패:", error);
+      }
+    }
+
+    clearAuthTokens();
+    router.replace("/login");
+  };
+
   return (
-    <aside
-      className={clsx(
-        "flex h-screen min-h-[800px] shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out",
-        isFold ? "w-[52px] items-center" : "w-[280px]",
-        className,
-      )}
-    >
+    <>
+      <aside
+        className={clsx(
+          "flex h-screen min-h-[800px] shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out",
+          isFold ? "w-[52px] items-center" : "w-[280px]",
+          className,
+        )}
+      >
       <div
         className={clsx(
           "flex min-h-0 flex-1 flex-col self-stretch",
@@ -908,6 +939,25 @@ export default function Lnb({
         notificationItems={notificationItems}
         onLogout={handleLogout}
       />
-    </aside>
+      </aside>
+
+      {showComingSoonModal &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+            <ModalNotice
+              title="아직 준비중인 서비스입니다"
+              description={
+                "더 나은 서비스를 위해 노력하고 있습니다!\n조금만 기다려 주세요"
+              }
+              onClose={closeComingSoonModal}
+              primaryAction={{
+                label: "확인",
+                onClick: closeComingSoonModal,
+              }}
+            />
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }

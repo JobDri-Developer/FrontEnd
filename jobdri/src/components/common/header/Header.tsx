@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { ButtonHTMLAttributes, SVGProps } from "react";
 import { useRouter } from "next/navigation";
@@ -40,7 +40,7 @@ const defaultSteps: ProgressStep[] = [
   { label: "첨삭 결과" },
 ];
 
-const MOCK_APPLICATION_HOME_PATH = "/apply";
+const MOCK_APPLICATION_HOME_PATH = "/mockApply";
 
 function HeaderLogo({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
