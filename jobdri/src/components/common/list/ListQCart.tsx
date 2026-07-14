@@ -1,7 +1,6 @@
 "use client";
 
 import clsx from "clsx";
-import Icon from "@/components/common/icons/Icon";
 import IconBox from "../icons/IconBox";
 
 interface ListQCartProps {

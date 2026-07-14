@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = ["/login", "/oauth2"];
+const PUBLIC_ROUTES = ["/login", "/oauth2", "/components"];
 
 export function proxy(request: NextRequest) {
   const token = request.cookies.get("jobdri_accessToken")?.value;

@@ -16,6 +16,7 @@ interface TooltipProps {
   placement?: TooltipPlacement;
   message?: string;
   lines?: string[];
+  showIcon?: boolean;
   className?: string;
 }
 
@@ -46,6 +47,7 @@ export function Tooltip({
   placement = "up_mid",
   message = "1회 크레딧 무료 증정",
   lines,
+  showIcon = true,
   className,
 }: TooltipProps) {
   const contentLines = lines ?? [message];
@@ -54,7 +56,7 @@ export function Tooltip({
     <div
       role="tooltip"
       className={clsx(
-        "relative inline-flex max-w-[240px] items-center justify-center gap-0.5 rounded-[8px] bg-fill-tertiary-default px-3 py-2 text-text-neutral-white shadow-card",
+        "relative inline-flex max-w-[240px] items-center justify-center gap-0.5 rounded-[8px] bg-fill-tertiary-default px-3 py-2 text-center text-text-neutral-white shadow-card",
         className,
       )}
     >
@@ -85,7 +87,9 @@ export function Tooltip({
             </span>
           ))}
         </span>
-        <Icon type="SPARKLE" className="h-4 w-4 shrink-0 text-icon-white" />
+        {showIcon && (
+          <Icon type="SPARKLE" className="h-4 w-4 shrink-0 text-icon-white" />
+        )}
       </span>
     </div>
   );
