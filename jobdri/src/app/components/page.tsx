@@ -240,6 +240,7 @@ export default function ComponentsPage() {
 
         <div className="flex w-full flex-col gap-5">
           <SectionTitle>Header</SectionTitle>
+          <Header type="apply" />
           <Header progressStep={1} />
         </div>
 

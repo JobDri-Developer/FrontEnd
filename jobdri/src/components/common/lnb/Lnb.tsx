@@ -1,9 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  type PointerEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import clsx from "clsx";
+import { useRouter } from "next/navigation";
 import { IconButton, TextButton } from "@/components/common/buttons";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
+import { Tooltip } from "@/components/common/tooltip";
+import useOutsideClick from "@/hooks/useOutsideClick";
 import { AUTH_STORAGE_KEYS, getStoredAuthEmail } from "@/lib/auth";
 import { fetchCreditBalance } from "@/lib/api/credit";
 import Logo from "@/assets/ic_LOGO_minimum_favi.svg";
@@ -65,6 +76,12 @@ const defaultRecentItems: LnbRecentItem[] = [
     version: 1,
   },
   {
+    id: "sandbox-grading-criteria-refinement",
+    companyName: "SK하이닉스",
+    jobTitle: "채점 평가 요소 고도화 및 결과 리포트 개선",
+    version: 2,
+  },
+  {
     id: "coupang-mobile-designer",
     companyName: "쿠팡",
     jobTitle: "모바일 디자이너",
@@ -100,9 +117,61 @@ const defaultRecentItems: LnbRecentItem[] = [
     jobTitle: "모바일 디자이너 계약직 인턴십",
     version: 1,
   },
+  {
+    id: "line-product-manager",
+    companyName: "라인",
+    jobTitle: "프로덕트 매니저",
+    version: 3,
+  },
+  {
+    id: "baemin-brand-designer",
+    companyName: "배달의민족",
+    jobTitle: "브랜드 디자이너",
+    version: 2,
+  },
+  {
+    id: "danggeun-content-marketer",
+    companyName: "당근",
+    jobTitle: "콘텐츠 마케터",
+    version: 1,
+  },
+  {
+    id: "hyundai-data-analyst",
+    companyName: "현대자동차",
+    jobTitle: "서비스 데이터 분석가",
+    version: 4,
+  },
+  {
+    id: "musinsa-product-designer",
+    companyName: "무신사",
+    jobTitle: "커머스 프로덕트 디자이너",
+    version: 2,
+  },
+  {
+    id: "zigbang-frontend-engineer",
+    companyName: "직방",
+    jobTitle: "프론트엔드 엔지니어",
+    version: 5,
+  },
+  {
+    id: "bucketplace-ux-writer",
+    companyName: "오늘의집",
+    jobTitle: "UX 라이터",
+    version: 1,
+  },
+  {
+    id: "yanolja-growth-manager",
+    companyName: "야놀자",
+    jobTitle: "그로스 매니저",
+    version: 2,
+  },
 ];
 
 const defaultEmail = "jobdri@gmail.com";
+const recentMenuScrollbarClass =
+  "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
+const recentMenuScrollbarPadding = 8;
+const recentMenuScrollbarMinThumbHeight = 24;
 
 function subscribeToStoredEmail(onStoreChange: () => void) {
   const handleStorage = (event: StorageEvent) => {
@@ -185,7 +254,7 @@ function LnbNavItemButton({
   isFold: boolean;
   onClick: () => void;
 }) {
-  return (
+  const navButton = (
     <button
       type="button"
       onClick={onClick}
@@ -209,6 +278,24 @@ function LnbNavItemButton({
 
       {!isFold && <span className="truncate">{item.label}</span>}
     </button>
+  );
+
+  if (!isFold) {
+    return navButton;
+  }
+
+  return (
+    <div className="group relative flex h-9 w-9 items-center justify-center">
+      {navButton}
+      <div className="pointer-events-none invisible absolute left-[calc(100%+11px)] top-[-1px] z-50 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+        <Tooltip
+          placement="left_mid"
+          message={item.label.replace(/\s+/g, "")}
+          showIcon={false}
+          className="whitespace-nowrap"
+        />
+      </div>
+    </div>
   );
 }
 
@@ -274,30 +361,59 @@ function LnbSearchBar({
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hasSearchQuery = searchQuery.length > 0;
+  const handleClearSearch = () => {
+    onSearchQueryChange("");
+    inputRef.current?.focus();
+  };
+
   if (isFold) {
     return (
-      <button
-        type="button"
-        className="flex h-9 w-9 items-center justify-center rounded-cta-l px-2 text-icon-neutral-default hover:bg-fill-state-hover-light active:bg-fill-state-hover-light"
-        aria-label="검색"
-      >
-        <FoldSearchIcon />
-      </button>
+      <div className="group relative flex h-9 w-9 items-center justify-center">
+        <button
+          type="button"
+          className="flex h-9 w-9 items-center justify-center rounded-cta-l px-2 text-icon-neutral-default hover:bg-fill-state-hover-light active:bg-fill-state-hover-light"
+          aria-label="검색"
+        >
+          <FoldSearchIcon />
+        </button>
+        <div className="pointer-events-none invisible absolute left-[calc(100%+11px)] top-[-1px] z-50 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+          <Tooltip
+            placement="left_mid"
+            message="검색"
+            showIcon={false}
+            className="whitespace-nowrap"
+          />
+        </div>
+      </div>
     );
   }
 
   return (
-    <label className="flex items-center gap-2 self-stretch rounded-cta-s border border-line-neutral-default bg-bg-contents-default p-1.5">
+    <div className="flex items-center gap-2 self-stretch rounded-cta-s border border-line-neutral-default bg-bg-contents-default p-1.5">
       <span className="flex min-w-0 flex-1 items-center gap-2 px-0.5 pt-px pb-0.5">
         <Icon type="SEARCH" className="h-4 w-4 shrink-0 text-icon-neutral-default" />
         <input
+          ref={inputRef}
           value={searchQuery}
           onChange={(event) => onSearchQueryChange(event.target.value)}
           placeholder="검색어를 입력하세요"
-          className="flex min-w-0 flex-1 bg-transparent text-cap12-med text-text-neutral-description outline-none placeholder:text-text-neutral-disabled [font-feature-settings:'liga'_off,'clig'_off]"
+          className="flex min-w-0 flex-1 bg-transparent text-cap12-med text-text-neutral-description outline-none caret-line-primary-strong placeholder:text-text-neutral-disabled [font-feature-settings:'liga'_off,'clig'_off]"
         />
       </span>
-    </label>
+
+      {hasSearchQuery && (
+        <IconButton
+          iconType="CLOSE"
+          styleType="weak"
+          size="xs"
+          buttonType="transparent"
+          aria-label="검색어 지우기"
+          onClick={handleClearSearch}
+        />
+      )}
+    </div>
   );
 }
 
@@ -310,36 +426,85 @@ function RecentItemButton({
   selected: boolean;
   onClick: () => void;
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={clsx(
-        "flex w-[260px] items-center justify-between rounded-toast-s py-1.5 pr-2 pl-3 hover:bg-fill-state-hover-light",
-        selected && "bg-fill-state-hover-light",
-      )}
-    >
-      <span className="flex min-w-0 max-w-[220px] flex-1 items-center gap-1">
-        <span className="shrink-0 text-label14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-          {item.companyName}
-        </span>
-        <span className="shrink-0 text-label14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-          |
-        </span>
-        <span className="h-[21px] min-w-0 flex-1 truncate text-left text-label14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-          {item.jobTitle}
-        </span>
-      </span>
+  const titleRef = useRef<HTMLSpanElement>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const isTitleTruncated = () => {
+    const titleElement = titleRef.current;
 
-      <span className="flex shrink-0 items-center justify-end gap-0.5 pl-2">
-        <span className="text-right text-cap12-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-          v.
+    return titleElement
+      ? titleElement.scrollWidth > titleElement.clientWidth
+      : false;
+  };
+  const updateTooltipPosition = (
+    event: PointerEvent<HTMLButtonElement>,
+  ) => {
+    if (!isTitleTruncated()) {
+      setTooltipPosition(null);
+      return;
+    }
+
+    setTooltipPosition({
+      x: event.clientX + 12,
+      y: event.clientY + 14,
+    });
+  };
+  const hideTooltip = () => setTooltipPosition(null);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onClick}
+        onPointerEnter={updateTooltipPosition}
+        onPointerMove={updateTooltipPosition}
+        onPointerLeave={hideTooltip}
+        onBlur={hideTooltip}
+        className={clsx(
+          "flex h-[33px] w-[260px] items-center justify-between rounded-toast-s py-1.5 pr-2 pl-3 hover:bg-fill-state-hover-light",
+          selected && "bg-fill-state-hover-light",
+        )}
+      >
+        <span className="flex min-w-0 max-w-[220px] flex-1 items-center gap-1">
+          <span className="shrink-0 text-label14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+            {item.companyName}
+          </span>
+          <span className="shrink-0 text-label14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+            |
+          </span>
+          <span
+            ref={titleRef}
+            className="h-[21px] min-w-0 flex-1 truncate text-left text-label14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]"
+          >
+            {item.jobTitle}
+          </span>
         </span>
-        <span className="text-right text-cap12-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-          {item.version}
+
+        <span className="flex shrink-0 items-center justify-end gap-0.5 pl-2">
+          <span className="text-right text-cap12-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+            v.
+          </span>
+          <span className="text-right text-cap12-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+            {item.version}
+          </span>
         </span>
-      </span>
-    </button>
+      </button>
+
+      {tooltipPosition && (
+        <div
+          role="tooltip"
+          className="pointer-events-none fixed z-[100] whitespace-nowrap rounded-[2px] border border-line-neutral-strong bg-bg-contents-default px-2 py-1 text-cap12-med text-text-neutral-description shadow-card [font-feature-settings:'liga'_off,'clig'_off]"
+          style={{
+            left: tooltipPosition.x,
+            top: tooltipPosition.y,
+          }}
+        >
+          {item.jobTitle}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -347,28 +512,12 @@ function RecentSectionToggleIcon({ isOpen }: { isOpen: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className="flex h-5 w-5 shrink-0 items-center justify-center text-icon-neutral-assistive"
+      className="flex h-5 w-5 shrink-0 items-center justify-center text-icon-neutral-assistive group-hover:text-icon-neutral-default"
     >
-      <svg
-        className="block h-5 w-5"
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d={
-            isOpen
-              ? "M14.1667 11.6667L10 7.5L5.83333 11.6667"
-              : "M5.83333 8.33333L10 12.5L14.1667 8.33333"
-          }
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Icon
+        type={isOpen ? "ARROW_UP_20" : "ARROW_DOWN_20"}
+        className="h-5 w-5 shrink-0 [&_path]:fill-current"
+      />
     </span>
   );
 }
@@ -386,35 +535,164 @@ function RecentItemsSection({
   onToggleOpen: () => void;
   onRecentItemClick: (item: LnbRecentItem) => void;
 }) {
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [scrollbarMetrics, setScrollbarMetrics] = useState({
+    isScrollable: false,
+    thumbHeight: 0,
+    thumbTop: 0,
+  });
+  const updateScrollbarMetrics = useCallback(() => {
+    const scrollAreaElement = scrollAreaRef.current;
+
+    if (!scrollAreaElement) {
+      return;
+    }
+
+    const { clientHeight, scrollHeight, scrollTop } = scrollAreaElement;
+    const isScrollable = scrollHeight > clientHeight + 1;
+
+    if (!isScrollable) {
+      setScrollbarMetrics({
+        isScrollable: false,
+        thumbHeight: 0,
+        thumbTop: 0,
+      });
+      return;
+    }
+
+    const trackHeight = Math.max(
+      clientHeight - recentMenuScrollbarPadding,
+      0,
+    );
+    const thumbHeight = Math.min(
+      Math.max(
+        (clientHeight / scrollHeight) * trackHeight,
+        recentMenuScrollbarMinThumbHeight,
+      ),
+      trackHeight,
+    );
+    const maxScrollTop = scrollHeight - clientHeight;
+    const maxThumbTop = trackHeight - thumbHeight;
+    const thumbTop =
+      maxScrollTop > 0 ? (scrollTop / maxScrollTop) * maxThumbTop : 0;
+
+    setScrollbarMetrics({
+      isScrollable: true,
+      thumbHeight,
+      thumbTop,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const scrollAreaElement = scrollAreaRef.current;
+
+    if (!scrollAreaElement) {
+      return;
+    }
+
+    const animationFrameId = window.requestAnimationFrame(
+      updateScrollbarMetrics,
+    );
+
+    const contentElement = scrollAreaElement.firstElementChild;
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(updateScrollbarMetrics);
+
+    resizeObserver?.observe(scrollAreaElement);
+
+    if (contentElement instanceof HTMLElement) {
+      resizeObserver?.observe(contentElement);
+    }
+
+    window.addEventListener("resize", updateScrollbarMetrics);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", updateScrollbarMetrics);
+    };
+  }, [isOpen, items.length, updateScrollbarMetrics]);
+
   return (
     <section className="flex min-h-0 flex-1 flex-col items-center gap-0 self-stretch">
       <button
         type="button"
-        className="flex items-center gap-1.5 self-stretch px-3 py-1.5"
+        className="group flex items-center gap-1.5 self-stretch rounded-cta-l px-3 py-1.5"
         aria-expanded={isOpen}
         onClick={onToggleOpen}
       >
-        <span className="text-label14-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+        <span className="text-label14-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off] group-hover:text-text-neutral-description">
           최근 항목
         </span>
         <RecentSectionToggleIcon isOpen={isOpen} />
       </button>
 
       {isOpen && (
-        <div className="flex min-h-0 items-start self-stretch pr-1">
-          <div className="flex min-w-0 flex-1 flex-col items-start">
-            {items.map((item) => (
-              <RecentItemButton
-                key={item.id}
-                item={item}
-                selected={item.id === selectedItemId}
-                onClick={() => onRecentItemClick(item)}
-              />
-            ))}
+        <div className="relative flex min-h-0 flex-1 items-stretch self-stretch overflow-visible pr-1">
+          <div
+            ref={scrollAreaRef}
+            onScroll={updateScrollbarMetrics}
+            className={clsx(
+              "flex min-h-0 min-w-0 flex-1 flex-col items-start overflow-y-auto overflow-x-hidden",
+              recentMenuScrollbarClass,
+            )}
+          >
+            <div className="flex min-w-0 flex-col items-start">
+              {items.map((item) => (
+                <RecentItemButton
+                  key={item.id}
+                  item={item}
+                  selected={item.id === selectedItemId}
+                  onClick={() => onRecentItemClick(item)}
+                />
+              ))}
+            </div>
           </div>
+
+          {scrollbarMetrics.isScrollable && (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 right-[-4px] flex w-3 flex-col items-end rounded-badge-round p-1"
+            >
+              <span className="relative flex w-1 flex-1 flex-col items-center gap-2.5">
+                <span
+                  className="absolute right-0 flex w-1 flex-col items-start rounded-badge-round bg-icon-neutral-weak"
+                  style={{
+                    height: scrollbarMetrics.thumbHeight,
+                    transform: `translateY(${scrollbarMetrics.thumbTop}px)`,
+                  }}
+                />
+              </span>
+            </span>
+          )}
         </div>
       )}
     </section>
+  );
+}
+
+function SearchEmptyState() {
+  return (
+    <div className="flex h-[200px] items-center justify-center gap-2.5 self-stretch">
+      <div className="flex flex-col items-center justify-center gap-5 p-0">
+        <div
+          className="h-20 w-20 shrink-0 border border-pink-400 bg-pink-100"
+          aria-hidden="true"
+        />
+
+        <div className="flex flex-col items-center justify-center gap-2">
+          <p className="text-center text-b16-semibold text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+            검색 결과가 없습니다
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -445,6 +723,8 @@ function LnbSearchMenu({
         .includes(normalizedSearchQuery),
     );
   }, [normalizedSearchQuery, recentItems]);
+  const shouldShowSearchEmptyState =
+    normalizedSearchQuery.length > 0 && filteredRecentItems.length === 0;
 
   return (
     <div
@@ -465,7 +745,9 @@ function LnbSearchMenu({
           onSearchQueryChange={setSearchQuery}
         />
 
-        {!isFold && (
+        {!isFold && shouldShowSearchEmptyState && <SearchEmptyState />}
+
+        {!isFold && !shouldShowSearchEmptyState && (
           <RecentItemsSection
             items={filteredRecentItems}
             isOpen={isRecentOpen}
@@ -533,13 +815,24 @@ function LnbFooter({
   email,
   emailInitial,
   hasNotification,
+  onLogout,
 }: {
   isFold: boolean;
   creditCount: number;
   email: string;
   emailInitial: string;
   hasNotification: boolean;
+  onLogout: () => void;
 }) {
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+
+  useOutsideClick(
+    accountMenuRef,
+    () => setIsAccountMenuOpen(false),
+    isAccountMenuOpen,
+  );
+
   if (isFold) {
     return (
       <div className="flex flex-col items-start gap-0 self-stretch px-2 py-3">
@@ -585,15 +878,40 @@ function LnbFooter({
       </div>
 
       <div className="flex items-center justify-between self-stretch px-2 py-3">
-        <div className="flex items-center gap-2 p-0.5">
-          <div className="flex w-[126px] items-center justify-between gap-2">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-icon-neutral-default px-1.5 text-sub14-med text-text-neutral-white [font-feature-settings:'liga'_off,'clig'_off]">
-              {emailInitial}
-            </span>
-            <span className="min-w-0 flex-1 truncate text-cap12-med text-text-neutral-caption">
-              {email}
-            </span>
-          </div>
+        <div ref={accountMenuRef} className="relative flex items-center gap-2">
+          {isAccountMenuOpen && (
+            <div className="absolute bottom-[calc(100%+5px)] left-0 z-50 flex w-[200px] flex-col items-start gap-0 rounded-toast-s border border-line-neutral-default bg-bg-lightbox-light p-1 shadow-card backdrop-blur-[2px]">
+              <TextButton
+                label="로그아웃"
+                size="small"
+                styleType="secondary"
+                leftIconType="LOGOUT"
+                className="!flex w-full self-stretch justify-start"
+                onClick={onLogout}
+              />
+            </div>
+          )}
+
+          <button
+            type="button"
+            aria-expanded={isAccountMenuOpen}
+            aria-label={`${email} 계정 메뉴`}
+            onClick={() =>
+              setIsAccountMenuOpen(
+                (prevIsAccountMenuOpen) => !prevIsAccountMenuOpen,
+              )
+            }
+            className="inline-flex items-center gap-2 rounded-chip-s p-0.5 hover:bg-fill-state-hover-light"
+          >
+            <div className="flex w-[126px] items-center justify-between gap-2">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-icon-neutral-default px-1.5 text-sub14-med text-text-neutral-white [font-feature-settings:'liga'_off,'clig'_off]">
+                {emailInitial}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-left text-cap12-med text-text-neutral-caption">
+                {email}
+              </span>
+            </div>
+          </button>
         </div>
 
         <NotificationButton hasNotification={hasNotification} />
@@ -610,6 +928,7 @@ export default function Lnb({
   defaultRecentOpen = true,
   hasNotification = true,
 }: LnbProps) {
+  const router = useRouter();
   const storedEmail = useSyncExternalStore(
     subscribeToStoredEmail,
     getStoredEmailSnapshot,
@@ -631,6 +950,14 @@ export default function Lnb({
 
   const handleRecentItemClick = (item: LnbRecentItem) => {
     setSelectedRecentItemId(item.id);
+  };
+
+  const handleLogout = () => {
+    Object.values(AUTH_STORAGE_KEYS).forEach((storageKey) => {
+      window.localStorage.removeItem(storageKey);
+    });
+
+    router.replace("/login");
   };
 
   useEffect(() => {
@@ -682,6 +1009,7 @@ export default function Lnb({
         email={displayEmail}
         emailInitial={emailInitial}
         hasNotification={hasNotification}
+        onLogout={handleLogout}
       />
     </aside>
   );

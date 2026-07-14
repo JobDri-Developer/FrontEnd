@@ -138,6 +138,7 @@ function resolveApplicationLabel({
 }
 
 export default function Header({
+  type,
   title,
   companyName = "토스",
   jobTitle = "프로덕트 디자이너",
@@ -152,7 +153,9 @@ export default function Header({
   className,
 }: HeaderProps) {
   const router = useRouter();
+  const isApplyHeader = type === "apply";
   const displayedJobTitle = title ?? jobTitle;
+  const displayedApplyTitle = title ?? "새 모의서류 지원";
   const displayedApplicationLabel = resolveApplicationLabel({
     applicationLabel,
     version,
@@ -173,6 +176,54 @@ export default function Header({
         router.push(MOCK_APPLICATION_HOME_PATH);
       }
     };
+
+  const homeActionButton = (
+    <Button
+      {...homeAction}
+      label={homeAction.label}
+      styleType="tertiary"
+      size="small"
+      onClick={handleHomeActionClick}
+      className={clsx(
+        "!h-9 !w-[76px] !px-2 !py-1.5 tracking-normal",
+        homeActionClassName,
+      )}
+    />
+  );
+
+  if (isApplyHeader) {
+    return (
+      <header
+        className={clsx(
+          "flex w-full max-w-[1440px] items-center justify-between bg-fill-quaternary-default px-6 py-3",
+          className,
+        )}
+      >
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="flex flex-col items-start gap-2.5 py-[5px]">
+            <span className="flex h-[30px] w-[45px] items-center justify-center overflow-hidden pt-[11.154px] pr-[6.634px] pb-[8.75px] pl-[8.174px]">
+              <HeaderLogo
+                aria-hidden="true"
+                focusable="false"
+                className="block h-[10.096px] w-[30.192px] shrink-0"
+              />
+            </span>
+          </div>
+
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="min-w-0 truncate text-label14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+              {displayedApplyTitle}
+            </span>
+            <span className="shrink-0 text-label14-semibold text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+              {displayedApplicationLabel}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end">{homeActionButton}</div>
+      </header>
+    );
+  }
 
   return (
     <header
@@ -263,17 +314,7 @@ export default function Header({
           </time>
         </div>
 
-        <Button
-          {...homeAction}
-          label={homeAction.label}
-          styleType="tertiary"
-          size="small"
-          onClick={handleHomeActionClick}
-          className={clsx(
-            "!h-9 !w-[76px] !px-2 !py-1.5 tracking-normal",
-            homeActionClassName,
-          )}
-        />
+        {homeActionButton}
       </div>
     </header>
   );

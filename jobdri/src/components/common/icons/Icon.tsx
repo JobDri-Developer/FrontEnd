@@ -8,6 +8,8 @@ import IC_ARROW_R from "@/assets/ic_Arrow_Right.svg";
 import IC_ARROW_L from "@/assets/ic_Arrow_Left.svg";
 import IC_ARROW_DOWN_M from "@/assets/ic_Arrow_Down_M.svg";
 import IC_ARROW_UP_M from "@/assets/ic_Arrow_Up_M.svg";
+import IC_ARROW_DOWN_20 from "@/assets/ic_ArrowDown_20.svg";
+import IC_ARROW_UP_20 from "@/assets/ic_ArrowUp_20.svg";
 import IC_ARROW_LEFT_20 from "@/assets/ic_Arrow_Left_20.svg";
 import IC_ARROW_RIGHT_20 from "@/assets/ic_Arrow_Right_20.svg";
 import IC_ARROW_LEFT_24 from "@/assets/ic_Arrow_Left_24.svg";
@@ -66,6 +68,8 @@ const iconMap = {
   ARROW_L: IC_ARROW_L,
   ARROW_DOWN_M: IC_ARROW_DOWN_M,
   ARROW_UP_M: IC_ARROW_UP_M,
+  ARROW_DOWN_20: IC_ARROW_DOWN_20,
+  ARROW_UP_20: IC_ARROW_UP_20,
   ARROW_RIGHT: IC_ARROW_RIGHT_24,
   ARROW_LEFT: IC_ARROW_LEFT_24,
   ARROW_LEFT_20: IC_ARROW_LEFT_20,

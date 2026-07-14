@@ -50,6 +50,7 @@ export default function ApplyTypePageClient() {
     <div className="h-dvh overflow-hidden bg-line-neutral-assistive px-6 pt-6">
       <div className="mx-auto flex h-full w-[1280px] flex-col">
         <Header
+          type="apply"
           currentStep={1}
           leftAction={{
             label: "돌아가기",
