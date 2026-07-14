@@ -15,7 +15,11 @@ import {
 } from "@/components/common/buttons";
 import { CtaFooter } from "@/components/common/cta";
 import Header from "@/components/common/header/Header";
-import { Lnb } from "@/components/common/lnb";
+import {
+  defaultNotificationItems,
+  Lnb,
+  LnbNotificationPanel,
+} from "@/components/common/lnb";
 
 const textOnlyButtonSizes: TextOnlyButtonSize[] = ["large", "small"];
 const textOnlyButtonStyles: TextOnlyButtonStyle[] = ["primary", "secondary"];
@@ -247,6 +251,14 @@ export default function ComponentsPage() {
         <div className="flex w-full flex-col gap-5">
           <SectionTitle>LNB</SectionTitle>
           <Lnb className="!h-[800px] !min-h-[800px]" />
+        </div>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>LNB Notification</SectionTitle>
+          <div className="flex items-start gap-8">
+            <LnbNotificationPanel notificationItems={defaultNotificationItems} />
+            <LnbNotificationPanel notificationItems={[]} />
+          </div>
         </div>
       </section>
 

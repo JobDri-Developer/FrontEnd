@@ -2,7 +2,6 @@
 
 import {
   type PointerEvent,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -18,6 +17,16 @@ import useOutsideClick from "@/hooks/useOutsideClick";
 import { AUTH_STORAGE_KEYS, getStoredAuthEmail } from "@/lib/auth";
 import { fetchCreditBalance } from "@/lib/api/credit";
 import Logo from "@/assets/ic_LOGO_minimum_favi.svg";
+import {
+  defaultNotificationItems,
+  LnbNotificationButton,
+  type LnbNotificationItem,
+} from "./LnbNotification";
+import {
+  lnbHiddenScrollbarClass,
+  LnbScrollbar,
+  useLnbScrollMetrics,
+} from "./LnbScrollbar";
 
 type LnbItemKey = "experience" | "apply";
 
@@ -26,6 +35,7 @@ interface LnbProps {
   email?: string;
   className?: string;
   recentItems?: LnbRecentItem[];
+  notificationItems?: LnbNotificationItem[];
   defaultRecentOpen?: boolean;
   hasNotification?: boolean;
 }
@@ -168,10 +178,6 @@ const defaultRecentItems: LnbRecentItem[] = [
 ];
 
 const defaultEmail = "jobdri@gmail.com";
-const recentMenuScrollbarClass =
-  "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
-const recentMenuScrollbarPadding = 8;
-const recentMenuScrollbarMinThumbHeight = 24;
 
 function subscribeToStoredEmail(onStoreChange: () => void) {
   const handleStorage = (event: StorageEvent) => {
@@ -535,89 +541,8 @@ function RecentItemsSection({
   onToggleOpen: () => void;
   onRecentItemClick: (item: LnbRecentItem) => void;
 }) {
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [scrollbarMetrics, setScrollbarMetrics] = useState({
-    isScrollable: false,
-    thumbHeight: 0,
-    thumbTop: 0,
-  });
-  const updateScrollbarMetrics = useCallback(() => {
-    const scrollAreaElement = scrollAreaRef.current;
-
-    if (!scrollAreaElement) {
-      return;
-    }
-
-    const { clientHeight, scrollHeight, scrollTop } = scrollAreaElement;
-    const isScrollable = scrollHeight > clientHeight + 1;
-
-    if (!isScrollable) {
-      setScrollbarMetrics({
-        isScrollable: false,
-        thumbHeight: 0,
-        thumbTop: 0,
-      });
-      return;
-    }
-
-    const trackHeight = Math.max(
-      clientHeight - recentMenuScrollbarPadding,
-      0,
-    );
-    const thumbHeight = Math.min(
-      Math.max(
-        (clientHeight / scrollHeight) * trackHeight,
-        recentMenuScrollbarMinThumbHeight,
-      ),
-      trackHeight,
-    );
-    const maxScrollTop = scrollHeight - clientHeight;
-    const maxThumbTop = trackHeight - thumbHeight;
-    const thumbTop =
-      maxScrollTop > 0 ? (scrollTop / maxScrollTop) * maxThumbTop : 0;
-
-    setScrollbarMetrics({
-      isScrollable: true,
-      thumbHeight,
-      thumbTop,
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const scrollAreaElement = scrollAreaRef.current;
-
-    if (!scrollAreaElement) {
-      return;
-    }
-
-    const animationFrameId = window.requestAnimationFrame(
-      updateScrollbarMetrics,
-    );
-
-    const contentElement = scrollAreaElement.firstElementChild;
-    const resizeObserver =
-      typeof ResizeObserver === "undefined"
-        ? null
-        : new ResizeObserver(updateScrollbarMetrics);
-
-    resizeObserver?.observe(scrollAreaElement);
-
-    if (contentElement instanceof HTMLElement) {
-      resizeObserver?.observe(contentElement);
-    }
-
-    window.addEventListener("resize", updateScrollbarMetrics);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrameId);
-      resizeObserver?.disconnect();
-      window.removeEventListener("resize", updateScrollbarMetrics);
-    };
-  }, [isOpen, items.length, updateScrollbarMetrics]);
+  const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
+    useLnbScrollMetrics(isOpen, items.length);
 
   return (
     <section className="flex min-h-0 flex-1 flex-col items-center gap-0 self-stretch">
@@ -640,7 +565,7 @@ function RecentItemsSection({
             onScroll={updateScrollbarMetrics}
             className={clsx(
               "flex min-h-0 min-w-0 flex-1 flex-col items-start overflow-y-auto overflow-x-hidden",
-              recentMenuScrollbarClass,
+              lnbHiddenScrollbarClass,
             )}
           >
             <div className="flex min-w-0 flex-col items-start">
@@ -655,22 +580,7 @@ function RecentItemsSection({
             </div>
           </div>
 
-          {scrollbarMetrics.isScrollable && (
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 right-[-4px] flex w-3 flex-col items-end rounded-badge-round p-1"
-            >
-              <span className="relative flex w-1 flex-1 flex-col items-center gap-2.5">
-                <span
-                  className="absolute right-0 flex w-1 flex-col items-start rounded-badge-round bg-icon-neutral-weak"
-                  style={{
-                    height: scrollbarMetrics.thumbHeight,
-                    transform: `translateY(${scrollbarMetrics.thumbTop}px)`,
-                  }}
-                />
-              </span>
-            </span>
-          )}
+          <LnbScrollbar metrics={scrollbarMetrics} />
         </div>
       )}
     </section>
@@ -761,29 +671,6 @@ function LnbSearchMenu({
   );
 }
 
-function NotificationButton({
-  hasNotification,
-}: {
-  hasNotification: boolean;
-}) {
-  return (
-    <span className="relative flex items-end gap-2.5">
-      <IconButton
-        iconType="BELL"
-        styleType="weak"
-        size="s"
-        buttonType="transparent"
-        aria-label="알림"
-      />
-      {hasNotification && (
-        <span className="absolute top-px right-px flex items-center justify-center">
-          <span className="h-[5px] w-[5px] rounded-full bg-icon-primary-strong" />
-        </span>
-      )}
-    </span>
-  );
-}
-
 function CreditTokenIcon() {
   return (
     <span
@@ -815,6 +702,7 @@ function LnbFooter({
   email,
   emailInitial,
   hasNotification,
+  notificationItems,
   onLogout,
 }: {
   isFold: boolean;
@@ -822,6 +710,7 @@ function LnbFooter({
   email: string;
   emailInitial: string;
   hasNotification: boolean;
+  notificationItems: LnbNotificationItem[];
   onLogout: () => void;
 }) {
   const accountMenuRef = useRef<HTMLDivElement>(null);
@@ -847,7 +736,10 @@ function LnbFooter({
         </div>
 
         <div className="flex items-center justify-center self-stretch py-2">
-          <NotificationButton hasNotification={hasNotification} />
+          <LnbNotificationButton
+            hasNotification={hasNotification}
+            notificationItems={notificationItems}
+          />
         </div>
 
         <div className="flex items-center justify-center self-stretch py-3">
@@ -914,7 +806,10 @@ function LnbFooter({
           </button>
         </div>
 
-        <NotificationButton hasNotification={hasNotification} />
+        <LnbNotificationButton
+          hasNotification={hasNotification}
+          notificationItems={notificationItems}
+        />
       </div>
     </div>
   );
@@ -925,6 +820,7 @@ export default function Lnb({
   email,
   className,
   recentItems = defaultRecentItems,
+  notificationItems = defaultNotificationItems,
   defaultRecentOpen = true,
   hasNotification = true,
 }: LnbProps) {
@@ -1009,6 +905,7 @@ export default function Lnb({
         email={displayEmail}
         emailInitial={emailInitial}
         hasNotification={hasNotification}
+        notificationItems={notificationItems}
         onLogout={handleLogout}
       />
     </aside>
