@@ -198,7 +198,7 @@ export function LnbNotificationPanel({
 
             {isMenuOpen && (
               <DropDownMenu
-                className="absolute top-[calc(100%+4px)] right-0 z-[90] !w-[136px]"
+                className="absolute top-[calc(100%+4px)] right-0 z-[90] !w-[124px]"
                 items={[
                   {
                     label: "모두 읽음 표시",
