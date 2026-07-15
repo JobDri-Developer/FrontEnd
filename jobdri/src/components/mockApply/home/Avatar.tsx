@@ -38,10 +38,10 @@ export const colorStyles: Record<AvatarColor, string> = {
 };
 
 export const sizeStyles: Record<AvatarSize, string> = {
-  large: "w-[42px] h-[42px] text-[18px]",
-  medium: "w-[40px] h-[40px] text-[18px]",
-  small: "w-7 h-7 text-sub14-med",
-  xsmall: "w-6 h-6 text-[12px]",
+  large: "w-[42px] h-[42px] text-[18px] rounded-cta-s",
+  medium: "w-[40px] h-[40px] text-[18px] rounded-cta-s",
+  small: "w-7 h-7 text-sub14-med rounded-chip-s",
+  xsmall: "w-6 h-6 text-[12px] rounded-chip-s",
 };
 
 export default function Avatar({
@@ -54,7 +54,6 @@ export default function Avatar({
   onChange,
 }: AvatarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  // 🟢 아바타가 스스로 현재 색상을 기억하도록 내부 상태 추가! (초기값은 부모가 준 color)
   const [currentColor, setCurrentColor] = useState<AvatarColor>(color);
   const containerRef = useRef<HTMLDivElement>(null);
   const firstLetter = name.trim().charAt(0).toUpperCase();
@@ -93,7 +92,7 @@ export default function Avatar({
       ref={containerRef}
       onClick={() => isEditable && setIsOpen((prev) => !prev)}
       className={clsx(
-        "flex shrink-0 items-center justify-center font-bold rounded-[7px] relative ",
+        "flex shrink-0 items-center justify-center font-bold relative ",
         sizeStyles[size],
         colorStyles[currentColor],
         className,

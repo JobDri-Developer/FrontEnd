@@ -206,6 +206,10 @@ export default function TestPage() {
           </h3>
           <Avatar type="user" name="John Doe" />
         </section>
+        <Avatar size="xsmall" type="company" name="토스" isEditable={true} />
+
+        <Avatar size="small" type="company" name="토스" isEditable={true} />
+        <Avatar size="large" type="company" name="토스" isEditable={true} />
 
         {/* 2. 컬러 선택이 가능한 Company 아바타 (인터랙션) */}
         <section>
