@@ -34,8 +34,8 @@ const colorStyles: Record<AvatarColor, string> = {
 
 // 사이즈에 따른 너비, 높이, 폰트 크기 매핑
 const sizeStyles: Record<AvatarSize, string> = {
-  large: "w-[42px] h-[42px]", // 42px
-  medium: "w-[40px] h-[40px] ", // 40px
+  large: "w-[42px] h-[42px] text-[18px]", // 42px
+  medium: "w-[40px] h-[40px] text-[18px]", // 40px
   small: "w-7 h-7", // 28px
   xsmall: "w-6 h-6", // 24px
 };
