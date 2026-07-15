@@ -26,6 +26,8 @@ import IC_TRASH from "@/assets/ic_Trash.svg";
 import IC_WARN from "@/assets/ic_Warning.svg";
 import IC_WARN_24 from "@/assets/ic_Warning_24.svg";
 import IC_CHECK from "@/assets/ic_Check.svg";
+import IC_CHECK_R from "@/assets/ic_Check_Radio.svg";
+import IC_CHECK_S from "@/assets/ic_Check_S.svg";
 import IC_CLOSE from "@/assets/ic_Close.svg";
 import IC_PROFILE from "@/assets/ic_Profile.svg";
 import IC_PASSWORD from "@/assets/ic_Password.svg";
@@ -37,7 +39,7 @@ import IC_SIDEBAR from "@/assets/ic_SidebarToggle.svg";
 import IC_HOME_S from "@/assets/ic_Home_s.svg";
 import IC_APPLY from "@/assets/ic_Apply.svg";
 import IC_EX_S from "@/assets/ic_Ex.svg";
-// import IC_ARROW_R_N_S from "@/assets/ic_Arrow_Right_S.svg";
+// import IC_ARROW_R_N_S from "@/assets/ic_Arrow_Right.svg";
 import IC_CHEVRON_L from "@/assets/ic_Chevron_L.svg";
 import IC_CHEVRON_L_S from "@/assets/ic_Chevron_L_S.svg";
 import IC_CHEVRON_R from "@/assets/ic_Chevron_R.svg";
@@ -94,6 +96,8 @@ const iconMap = {
   WARN: IC_WARN,
   WARN_24: IC_WARN_24,
   CHECK: IC_CHECK,
+  CHECK_S: IC_CHECK_S,
+  CHECK_R: IC_CHECK_R,
   CLOSE: IC_CLOSE,
   PROFILE: IC_PROFILE,
   PASSWORD: IC_PASSWORD,

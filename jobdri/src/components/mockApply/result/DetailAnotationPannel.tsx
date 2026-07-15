@@ -5,7 +5,7 @@ import { type QuestionAnalysis } from "@/lib/api/result";
 import ChipTag from "@/components/common/chips/ChipTag";
 import { type HighlightStatus } from "./highlightStyles";
 import { scrollbarClass } from "@/components/common/input/inputStyles";
-import Icon from "@/components/icons/Icon"; // 새로 추가된 Icon 유지
+import Icon from "@/components/common/icons/Icon"; // 새로 추가된 Icon 유지
 
 const statusLabel: Record<HighlightStatus, string> = {
   proven: "적절함",

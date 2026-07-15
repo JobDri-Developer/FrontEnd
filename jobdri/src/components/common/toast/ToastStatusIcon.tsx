@@ -5,6 +5,7 @@ export type ToastStatusIconVariant = "check" | "warning";
 
 interface ToastStatusIconProps {
   variant: ToastStatusIconVariant;
+  position?: "top" | "bottom";
 }
 
 const statusIconStyles: Record<ToastStatusIconVariant, string> = {
@@ -12,45 +13,40 @@ const statusIconStyles: Record<ToastStatusIconVariant, string> = {
   warning: "bg-fill-system-fail-hover text-text-system-fail",
 };
 
-function CheckIcon() {
-  return (
-    <span className="flex aspect-square h-5 w-5 shrink-0 items-center justify-center p-[1.666px]">
-      <span className="flex aspect-square h-[16.667px] w-[16.667px] shrink-0 items-center justify-center rounded-full bg-fill-secondary-default text-icon-neutral-white">
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 15 15"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-          className="shrink-0"
-        >
-          <path
-            d="M3.75 7.5L6.25 10L11.25 5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-    </span>
-  );
-}
-
-export default function ToastStatusIcon({ variant }: ToastStatusIconProps) {
+export default function ToastStatusIcon({
+  variant,
+  position = "top",
+}: ToastStatusIconProps) {
+  const isTop = position === "top";
   return (
     <span
       className={clsx(
-        "flex aspect-square h-8 w-8 shrink-0 items-center justify-center gap-2.5 rounded-[10px] p-2.5",
-        statusIconStyles[variant],
+        "flex shrink-0 items-center justify-center",
+        isTop ? "h-6 w-6" : "h-8 w-8 rounded-[10px]",
+        isTop ? "" : statusIconStyles[variant],
       )}
       aria-hidden="true"
     >
       {variant === "check" ? (
-        <CheckIcon />
+        <div
+          className={clsx(
+            "h-5 w-5 ",
+            isTop ? "bg-fill-secondary-default rounded-full" : "",
+          )}
+        >
+          <Icon
+            type={isTop ? "CHECK" : "CHECK_R"}
+            className={clsx(
+              isTop ? "w-8 h-8" : "w-8 h-8 shrink-0",
+              " shrink-0 text-text-neutral-white ",
+            )}
+          />
+        </div>
       ) : (
-        <Icon type="WARN" className="h-6 w-6 shrink-0" />
+        <Icon
+          type="WARN_24"
+          className="h-6 w-6 shrink-0 text-text-system-fail"
+        />
       )}
     </span>
   );

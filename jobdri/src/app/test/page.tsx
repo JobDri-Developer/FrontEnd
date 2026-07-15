@@ -16,8 +16,8 @@ import { DropDownMenu, DropDownMenuItem } from "@/components/common/dropdown";
 import { scrollbarClass } from "@/components/common/input/inputStyles";
 import ScoreCircle from "@/components/mockApply/result/ScoreCircle";
 import ScoreBar from "@/components/mockApply/result/ScoreBar";
-import { ModalCard } from "@/components/common/modal/Modal";
-import { Button } from "@/components/common/buttons";
+import { ModalCard } from "@/components/common/modal/ModalCard";
+import { ToastVariant, Toast } from "@/components/common/toast";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -32,6 +32,18 @@ export default function TestPage() {
     { id: 3, label: "자소서 입력" },
     { id: 4, label: "첨삭 결과" },
   ];
+  const [activeToast, setActiveToast] = useState<{
+    variant: ToastVariant;
+    position: "top" | "bottom";
+  } | null>(null);
+
+  const showToast = (variant: ToastVariant, position: "top" | "bottom") => {
+    setActiveToast({ variant, position });
+    // 3초 뒤 자동 닫힘
+    setTimeout(() => {
+      setActiveToast(null);
+    }, 3000);
+  };
 
   const mockAnalyses: QuestionAnalysis[] = [
     {
@@ -332,6 +344,168 @@ export default function TestPage() {
             />
           </div>
         </div>
+      </section>
+
+      <section className="min-h-screen bg-[#F8F9FA] p-8 flex flex-col items-center gap-12 font-sans">
+        {/* 섹션 타이틀 */}
+        <div className="text-center">
+          <h2 className="text-h24-bold text-[#2D2D37] mb-2">
+            Toast Component Preview
+          </h2>
+          <p className="text-sub14-reg text-text-neutral-caption">
+            기획서 상의 모든 토스트 케이스를 한 화면에서 비교하고 확인합니다.
+          </p>
+        </div>
+
+        {/* 메인 비교 컨테이너 */}
+        <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* =========================================================
+            1. 왼쪽 영역: Bottom 위치용 토스트 (닫기 버튼 있음, 와이드 스타일)
+            ========================================================= */}
+          <div className="border-2 border-dashed border-purple-300 rounded-2xl p-6 bg-[#F3F0FF]/30 flex flex-col gap-6">
+            <div className="text-center mb-2">
+              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-cap12-semibold">
+                Bottom Position (닫기 버튼 X 포함)
+              </span>
+            </div>
+
+            {/* Case 1: Bottom + Check (아이콘 있음, 라이트 배경) */}
+            <div className="relative h-20">
+              <Toast
+                message="토스트 기본 더미텍스트."
+                variant="check"
+                position="bottom"
+                className="!absolute !bottom-2 !right-0 !left-0 mx-auto" // 레이아웃 확인용 포지션 강제 오버라이딩
+              />
+            </div>
+
+            {/* Case 2: Bottom + Warning (경고 아이콘 있음, 라이트 배경) */}
+            <div className="relative h-20">
+              <Toast
+                message="토스트 기본 더미텍스트."
+                variant="warning"
+                position="bottom"
+                className="!absolute !bottom-2 !right-0 !left-0 mx-auto"
+              />
+            </div>
+
+            {/* Case 3: Bottom + Normal (아이콘 없음, 라이트 배경) */}
+            <div className="relative h-20">
+              <Toast
+                message="토스트 기본 더미텍스트."
+                variant="normal"
+                position="bottom"
+                className="!absolute !bottom-2 !right-0 !left-0 mx-auto"
+              />
+            </div>
+
+            {/* Case 4: Bottom + Dark (글자 흰색, 다크 배경) */}
+            <div className="relative h-20">
+              <Toast
+                message="토스트 기본 더미텍스트."
+                variant="dark"
+                position="bottom"
+                className="!absolute !bottom-2 !right-0 !left-0 mx-auto"
+              />
+            </div>
+          </div>
+
+          {/* =========================================================
+            2. 오른쪽 영역: Top 위치용 토스트 (닫기 버튼 없음, 조약돌 스타일)
+            ========================================================= */}
+          <div className="border-2 border-dashed border-purple-300 rounded-2xl p-6 bg-[#F3F0FF]/30 flex flex-col gap-6 items-center">
+            <div className="text-center mb-2">
+              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-cap12-semibold">
+                Top Position (닫기 버튼 없음)
+              </span>
+            </div>
+
+            {/* Case 5: Top + Check */}
+            <div className="relative h-20 w-full flex justify-center">
+              <Toast
+                message="토스트 기본 더미텍스트"
+                variant="check"
+                position="top"
+                className="!absolute !top-2"
+              />
+            </div>
+
+            {/* Case 6: Top + Warning */}
+            <div className="relative h-20 w-full flex justify-center">
+              <Toast
+                message="토스트 기본 더미텍스트"
+                variant="warning"
+                position="top"
+                className="!absolute !top-2"
+              />
+            </div>
+
+            {/* Case 7: Top + Normal */}
+            <div className="relative h-20 w-full flex justify-center">
+              <Toast
+                message="토스트 기본 더미텍스트"
+                variant="normal"
+                position="top"
+                className="!absolute !top-2"
+              />
+            </div>
+
+            {/* Case 8: Top + Dark */}
+            <div className="relative h-20 w-full flex justify-center">
+              <Toast
+                message="토스트 기본 더미텍스트"
+                variant="dark"
+                position="top"
+                className="!absolute !top-2"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* =========================================================
+          3. 실시간 인터랙션 테스트 공간 (인터랙션 확인용 버튼)
+          ========================================================= */}
+        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm w-full max-w-6xl text-center">
+          <h3 className="text-t20-semibold mb-4 text-[#2D2D37]">
+            실시간 클릭 테스트
+          </h3>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <button
+              onClick={() => showToast("check", "bottom")}
+              className="px-4 py-2 bg-green-100 text-green-700 rounded-xl text-button14-semibold"
+            >
+              Bottom Check 띄우기
+            </button>
+            <button
+              onClick={() => showToast("warning", "bottom")}
+              className="px-4 py-2 bg-red-100 text-red-700 rounded-xl text-button14-semibold"
+            >
+              Bottom Warning 띄우기
+            </button>
+            <button
+              onClick={() => showToast("dark", "top")}
+              className="px-4 py-2 bg-gray-800 text-white rounded-xl text-button14-semibold"
+            >
+              Top Dark 띄우기
+            </button>
+            <button
+              onClick={() => showToast("normal", "top")}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-button14-semibold"
+            >
+              Top Normal 띄우기
+            </button>
+          </div>
+        </div>
+
+        {/* 실시간 테스트 클릭 시 하단 혹은 상단에 실제로 트리거되는 진짜 fixed 토스트 */}
+        {activeToast && (
+          <Toast
+            message={`${activeToast.position === "top" ? "Top" : "Bottom"} 토스트 테스트 알림입니다.`}
+            variant={activeToast.variant}
+            position={activeToast.position}
+            onClose={() => setActiveToast(null)}
+          />
+        )}
       </section>
     </div>
   );
