@@ -37,7 +37,7 @@ import IC_SIDEBAR from "@/assets/ic_SidebarToggle.svg";
 import IC_HOME_S from "@/assets/ic_Home_s.svg";
 import IC_APPLY from "@/assets/ic_Apply.svg";
 import IC_EX_S from "@/assets/ic_Ex.svg";
-import IC_ARROW_R_N_S from "@/assets/ic_Arrow_Right_S.svg";
+// import IC_ARROW_R_N_S from "@/assets/ic_Arrow_Right_S.svg";
 import IC_CHEVRON_L from "@/assets/ic_Chevron_L.svg";
 import IC_CHEVRON_L_S from "@/assets/ic_Chevron_L_S.svg";
 import IC_CHEVRON_R from "@/assets/ic_Chevron_R.svg";
@@ -106,7 +106,7 @@ const iconMap = {
   HOME_S: IC_HOME_S,
   APPLY: IC_APPLY,
   EX_S: IC_EX_S,
-  ARROW_R_N_S: IC_ARROW_R_N_S,
+  // ARROW_R_N_S: IC_ARROW_R_N_S,
   CHEVRON_L: IC_CHEVRON_L,
   CHEVRON_L_S: IC_CHEVRON_L_S,
   CHEVRON_R: IC_CHEVRON_R,

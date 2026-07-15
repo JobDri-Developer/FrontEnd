@@ -122,17 +122,12 @@
   --color-fill-state-disabled: var(--color-gray-200);
   --color-fill-disabled: var(--color-fill-state-disabled);
 
-<<<<<<< HEAD
   --color-fill-sub-pink-default: var(--color-pink-600);
   --color-fill-sub-pink-assistive: var(--color-pink-100);
   --color-fill-sub-pink-hover: var(--color-pink-200);
 
   --color-fill-system-fail-strong: var(--color-red-600);
   --color-fill-system-fail-default: var(--color-red-100);
-=======
-  --color-fill-system-fail-strong: var(--color-red-400);
-  --color-fill-system-fail-default: #fffafa;
->>>>>>> develop
   --color-fill-system-fail-hover: var(--color-red-200);
 
   /* Text */

@@ -73,14 +73,7 @@ export function Tooltip({
   return (
     <div
       role="tooltip"
-<<<<<<< HEAD
       className={clsx("inline-flex", containerFlexStyles[placement], className)}
-=======
-      className={clsx(
-        "relative inline-flex max-w-[240px] items-center justify-center gap-0.5 rounded-[8px] bg-fill-tertiary-default px-3 py-2 text-center text-text-neutral-white shadow-card",
-        className,
-      )}
->>>>>>> develop
     >
       <div
         aria-hidden="true"
@@ -112,14 +105,7 @@ export function Tooltip({
           </span>
           <Icon type="SPARKLE" className="h-4 w-4 shrink-0 text-icon-white" />
         </span>
-<<<<<<< HEAD
       </div>
-=======
-        {showIcon && (
-          <Icon type="SPARKLE" className="h-4 w-4 shrink-0 text-icon-white" />
-        )}
-      </span>
->>>>>>> develop
     </div>
   );
 }

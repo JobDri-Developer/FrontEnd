@@ -16,6 +16,8 @@ import { DropDownMenu, DropDownMenuItem } from "@/components/common/dropdown";
 import { scrollbarClass } from "@/components/common/input/inputStyles";
 import ScoreCircle from "@/components/mockApply/result/ScoreCircle";
 import ScoreBar from "@/components/mockApply/result/ScoreBar";
+import { ModalCard } from "@/components/common/modal/Modal";
+import { Button } from "@/components/common/buttons";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -119,6 +121,8 @@ export default function TestPage() {
       onClick: () => setClickedItem("비활성화 항목"), // 👈 disabled 속성 때문에 어차피 클릭 안 됨!
     },
   ];
+  const dummyDescription =
+    "모달 디스크립션입니다. 모달 디스크립션입니다. 모달 디스크립션입니다. 모달 디스크립션입니다. 모달 디스크립션입니다.";
 
   return (
     // 💡 여러 태그를 하나로 묶어주기 위해 빈 태그(Fragment)나 div로 감싸야 합니다.
@@ -300,6 +304,35 @@ export default function TestPage() {
           <ScoreBar score={56} />
         </div>
       </div>
+
+      <section className="min-h-screen bg-[#F8F9FA] p-8 flex flex-col items-center justify-center gap-12 font-sans">
+        <div className="w-full max-w-5xl">
+          <h2 className="text-2xl font-bold text-center text-[#2D2D37] mb-6">
+            Mordal
+          </h2>
+
+          <div className="border-2 border-dashed border-purple-300 rounded-2xl p-8 bg-[#F3F0FF]/30 flex flex-wrap gap-8 justify-center">
+            <ModalCard
+              title="타이틀"
+              description={dummyDescription}
+              secondaryBtn="보조 행동"
+              primaryBtn="권장 행동"
+            />
+
+            <ModalCard
+              title="타이틀"
+              description={dummyDescription}
+              secondaryBtn="보조 행동"
+            />
+            <ModalCard
+              title="타이틀"
+              description={dummyDescription}
+              secondaryBtn="보조 행동"
+              errorBtn="부정 행동"
+            />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

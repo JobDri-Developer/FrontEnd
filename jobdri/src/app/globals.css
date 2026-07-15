@@ -5,22 +5,22 @@
 @import "../styles/grid.css";
 @import "../styles/shadow.css";
 
-@layer base {
+/* @layer base {
   body {
     font-family: "Pretendard-Variable", sans-serif;
   }
-}
+} */
 
 :is(
-  button,
-  a[href],
-  summary,
-  label[for],
-  [role="button"],
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"]
-):not(:disabled):not([aria-disabled="true"]) {
+    button,
+    a[href],
+    summary,
+    label[for],
+    [role="button"],
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"]
+  ):not(:disabled):not([aria-disabled="true"]) {
   cursor: pointer !important;
 }
 
