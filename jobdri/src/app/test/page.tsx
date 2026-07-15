@@ -18,6 +18,7 @@ import ScoreCircle from "@/components/mockApply/result/ScoreCircle";
 import ScoreBar from "@/components/mockApply/result/ScoreBar";
 import { ModalCard } from "@/components/common/modal/ModalCard";
 import { ToastVariant, Toast } from "@/components/common/toast";
+import Evaluation from "@/components/mockApply/result/Evaluation";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -506,6 +507,61 @@ export default function TestPage() {
             onClose={() => setActiveToast(null)}
           />
         )}
+      </section>
+
+      <section className="min-h-screen bg-white p-8 flex flex-col items-center justify-center gap-12 font-sans">
+        {/* 섹션 타이틀 */}
+        <div className="text-center">
+          <h2 className="text-h24-bold text-[#2D2D37] mb-2">
+            Evaluation Component Preview
+          </h2>
+          <p className="text-sub14-reg text-text-neutral-caption">
+            점수(score)에 따른 두 가지 조건부 렌더링(60점 기준)을 비교합니다.
+          </p>
+        </div>
+
+        {/* 메인 비교 컨테이너 */}
+        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* =========================================================
+            1. 60점 이상 케이스 (Good / Complete)
+            ========================================================= */}
+          <div className="flex flex-col gap-4">
+            <div className="text-center">
+              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-cap12-semibold">
+                점수 60점 이상 (현재: 85점)
+              </span>
+            </div>
+
+            <div>
+              {/* 실제 컴포넌트 렌더링 */}
+              <Evaluation
+                score={85}
+                evaluate="우수한 평가"
+                quote="이 상태를 계속 유지하면 아주 좋습니다. 뛰어난 성과를 기록하고 있습니다."
+              />
+            </div>
+          </div>
+
+          {/* =========================================================
+            2. 60점 미만 케이스 (Warning / Fail)
+            ========================================================= */}
+          <div className="flex flex-col gap-4">
+            <div className="text-center">
+              <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-cap12-semibold">
+                점수 60점 미만 (현재: 45점)
+              </span>
+            </div>
+
+            <div>
+              {/* 실제 컴포넌트 렌더링 */}
+              <Evaluation
+                score={45}
+                evaluate="주의 필요 평가"
+                quote="현재 상태를 개선하기 위한 조치가 필요합니다. 주의 단계입니다."
+              />
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );
