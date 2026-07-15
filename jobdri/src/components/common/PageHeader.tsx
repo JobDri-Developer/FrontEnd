@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Header from "@/components/common/header/Header";
 
 const routeTitles: Record<string, string> = {
   "/": "홈",

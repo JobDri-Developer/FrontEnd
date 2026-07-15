@@ -66,7 +66,7 @@
   --color-gray-300: #c5c5ca;
   --color-gray-400: #9a9aa2;
   --color-gray-500: #7b7b82;
-  --color-gray-600: #585b62;
+  --color-gray-600: #5b5b62;
   --color-gray-700: #3e3e46;
   --color-gray-800: #2f2f37;
   --color-gray-900: #21212a;
@@ -109,23 +109,30 @@
   --color-fill-quaternary-default-pressed: var(--color-gray-100);
 
   --color-fill-quaternary-assistive: var(--color-gray-95);
-  --color-fill-quaternary-assistive-hover: #f4f4f6;
-  --color-fill-quaternary-assistive-pressed: #ebebef;
+  --color-fill-quaternary-assistive-hover: var(--color-gray-100);
+  --color-fill-quaternary-assistive-pressed: var(--color-gray-200);
 
   --color-fill-hover: var(--color-gray-alpha-50);
+  --color-fill-state-hover-light: var(--color-gray-alpha-50);
   --color-fill-inverse-hover: color-mix(
     in srgb,
     var(--color-white) 5%,
     transparent
   );
-  --color-fill-disabled: #ebebef;
+  --color-fill-state-disabled: var(--color-gray-200);
+  --color-fill-disabled: var(--color-fill-state-disabled);
 
+<<<<<<< HEAD
   --color-fill-sub-pink-default: var(--color-pink-600);
   --color-fill-sub-pink-assistive: var(--color-pink-100);
   --color-fill-sub-pink-hover: var(--color-pink-200);
 
   --color-fill-system-fail-strong: var(--color-red-600);
   --color-fill-system-fail-default: var(--color-red-100);
+=======
+  --color-fill-system-fail-strong: var(--color-red-400);
+  --color-fill-system-fail-default: #fffafa;
+>>>>>>> develop
   --color-fill-system-fail-hover: var(--color-red-200);
 
   /* Text */

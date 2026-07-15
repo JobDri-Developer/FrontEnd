@@ -35,6 +35,7 @@ export default function CreditCard({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handlePurchaseClick = () => {
+    onPurchase?.();
     setIsModalOpen(true);
   };
 

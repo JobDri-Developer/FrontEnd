@@ -272,9 +272,11 @@ export function getAuthHeaders(): Record<string, string> {
 }
 
 export async function requestLogout(accessToken: string, refreshToken: string) {
+  const logoutRequest: LogoutRequest = { accessToken, refreshToken };
+
   await postAuth<null>(
     "/api/auth/logout",
-    { accessToken, refreshToken },
+    logoutRequest,
     "로그아웃",
   );
 }

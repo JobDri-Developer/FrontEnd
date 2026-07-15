@@ -96,7 +96,7 @@ export default function ApplyResult({
       });
 
     return () => controller.abort();
-  }, [jobPostingId, selectedSequence, onAnalysisError]);
+  }, [jobPostingId, selectedSequence, onAnalysisError, onMockApplyIdChange]);
 
   const handleOverview = () => {
     setIsOverview(true);

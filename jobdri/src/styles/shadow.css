@@ -14,8 +14,8 @@
   /* CTA/HoverShadow_Primary: x0 y1 blur20 spread0 */
   --shadow-cta-primary: 0 1px 20px 0 var(--color-bg-shadow-primary);
 
-  /* CTA/HoverShadow_Secondary: x0 y1 blur40 spread0 */
-  --shadow-cta-secondary: 0 1px 40px 0 var(--color-bg-shadow-strong);
+  /* CTA/HoverShadow_Secondary: x0 y1 blur20 spread0 */
+  --shadow-cta-secondary: 0 1px 20px 0 var(--color-bg-shadow-strong);
 
   /* Chip/HoverShadow: x0 y2 blur8 spread0 */
   --shadow-chip: 0 2px 8px 0 var(--color-bg-shadow-strong);
