@@ -18,6 +18,10 @@ import IC_ARROW_UP from "@/assets/ic_Arrow_Up.svg";
 import IC_ARROW_DOWN from "@/assets/ic_Arrow_Down.svg";
 import IC_ARROW2_UP from "@/assets/ic_Arrow2_Up.svg";
 import IC_ARROW3_DOWN from "@/assets/ic_Arrow3_Down.svg";
+import IC_ARROW_DOUBLE_R20 from "@/assets/ic_DoubleArrow_Right_20.svg";
+import IC_ARROW_DOUBLE_R24 from "@/assets/ic_DoubleArrow_Right_24.svg";
+import IC_ARROW_DOUBLE_L20 from "@/assets/ic_DoubleArrow_Left_20.svg";
+import IC_ARROW_DOUBLE_L24 from "@/assets/ic_DoubleArrow_Left_24.svg";
 import IC_GOOGLE from "@/assets/ic_GoogleAsset.svg";
 import IC_GOOD from "@/assets/ic_Good.svg";
 import IC_ADD from "@/assets/ic_Add.svg";
@@ -60,8 +64,8 @@ import IC_LINK from "@/assets/ic_Link.svg";
 import IC_POLYGON_1 from "@/assets/ic_Polygon_1.svg";
 import IC_POLYGON_2 from "@/assets/ic_Polygon_2.svg";
 import IC_FILE from "@/assets/ic_file.svg";
+import IC_FILE_P from "@/assets/ic_File_Panel.svg";
 import IC_BELL from "@/assets/ic_Bell.svg";
-import IC_CIRCLE_CHECK from "@/assets/ic_CircleCheck.svg";
 import IC_COMPANY from "@/assets/ic_Company.svg";
 import IC_LOGOUT from "@/assets/ic_Logout.svg";
 
@@ -88,6 +92,10 @@ const iconMap = {
   ARROW_DOWN: IC_ARROW_DOWN,
   ARROW2_UP: IC_ARROW2_UP,
   ARROW3_DOWN: IC_ARROW3_DOWN,
+  ARROW_DOUBLE_R20: IC_ARROW_DOUBLE_R20,
+  ARROW_DOUBLE_R24: IC_ARROW_DOUBLE_R24,
+  ARROW_DOUBLE_L20: IC_ARROW_DOUBLE_L20,
+  ARROW_DOUBLE_L24: IC_ARROW_DOUBLE_L24,
   GOOGLE: IC_GOOGLE,
   GOOD: IC_GOOD,
   ADD: IC_ADD,
@@ -131,8 +139,8 @@ const iconMap = {
   POLYGON_1: IC_POLYGON_1,
   POLYGON_2: IC_POLYGON_2,
   FILE: IC_FILE,
+  FILE_P: IC_FILE_P,
   BELL: IC_BELL,
-  CIRCLE_CHECK: IC_CIRCLE_CHECK,
   COMPANY: IC_COMPANY,
   LOGOUT: IC_LOGOUT,
 } as const;

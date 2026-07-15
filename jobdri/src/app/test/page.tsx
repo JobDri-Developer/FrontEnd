@@ -1,4 +1,5 @@
 "use client";
+import clsx from "clsx";
 
 import TabMenu from "@/components/common/tabs/TabMenu";
 import { useState } from "react";
@@ -19,11 +20,12 @@ import ScoreBar from "@/components/mockApply/result/ScoreBar";
 import { ModalCard } from "@/components/common/modal/ModalCard";
 import { ToastVariant, Toast } from "@/components/common/toast";
 import Evaluation from "@/components/mockApply/result/Evaluation";
+import JDSidePanel from "@/components/mockApply/Question/SidePanel";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
   const [compactPage, setCompactPage] = useState(3);
-
+  const [isJdOpen, setIsJdOpen] = useState(true);
   const [currentStepId, setCurrentStepId] = useState(1);
 
   // 2. 전체 스텝 데이터 정의 (이미지에 있는 텍스트 기반)
@@ -562,6 +564,55 @@ export default function TestPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="flex flex-col items-center gap-6 p-8 bg-[#F3F0FF]/20 border-2 border-dashed border-purple-300 rounded-2xl">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            JD (Job Description) Side Panel
+          </h2>
+          <p className="text-sub14-reg text-text-neutral-caption">
+            왼쪽 버튼을 누르면 패널이 열리고, 닫혔을 때는 화면 우측 끝에 미니
+            탭(아이콘) 형태로 안착합니다.
+          </p>
+        </div>
+
+        {/* 메인 조작부 카드 (목업 프레임 대신 직관적인 컨트롤 레이아웃 적용) */}
+        <div className="flex h-40 w-full max-w-[560px] bg-white items-center justify-center border border-line-neutral-assistive rounded-3xl shadow-sm gap-8 px-6">
+          <div className="flex flex-col items-center gap-2">
+            <button
+              onClick={() => setIsJdOpen(!isJdOpen)}
+              className={clsx(
+                "w-24 p-4 rounded-xl flex flex-col items-center justify-center gap-2 border transition-all cursor-pointer",
+                isJdOpen
+                  ? "border-line-neutral-assistive bg-[#F5F6F9] text-text-neutral-caption"
+                  : "border-fill-secondary-default bg-fill-secondary-assistive text-fill-secondary-default font-semibold",
+              )}
+            >
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-current/10">
+                <span className="text-lg">📄</span>
+              </div>
+              <span className="text-cap12-semibold whitespace-nowrap">
+                공고 확인하기
+              </span>
+            </button>
+            <span className="text-xs text-text-neutral-caption mt-1">
+              {isJdOpen
+                ? "패널 활성화 상태 (열림)"
+                : "패널 비활성화 상태 (닫힘)"}
+            </span>
+          </div>
+        </div>
+
+        {/* 🟢 분리된 JDSidePanel 컴포넌트 연결
+          - fixed 속성으로 렌더링되므로, 이 조립 프레임 밖에서도 무조건 화면 오른쪽 끝에 찰떡같이 붙어서 대기합니다.
+          - 닫혔을 때는 이 패널 자체가 미니 아이콘 탭이 되므로, onOpen을 전달해 탭을 눌러도 열릴 수 있도록 연결해 줍니다.
+        */}
+        <JDSidePanel
+          isOpen={isJdOpen}
+          onClose={() => setIsJdOpen(false)}
+          onOpen={() => setIsJdOpen(true)}
+        />
       </section>
     </div>
   );
