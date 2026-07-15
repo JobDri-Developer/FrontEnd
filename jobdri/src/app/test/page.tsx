@@ -212,10 +212,7 @@ export default function TestPage() {
           <h3 className="text-sm font-semibold mb-3 text-gray-700">
             Company (Interactive)
           </h3>
-          <AvatarColorPicker
-            name="토스"
-            onChange={(color) => console.log("선택된 색상:", color)}
-          />
+          <Avatar size="medium" type="company" name="토스" isEditable={true} />
         </section>
 
         <section className="bg-white p-6 rounded-2xl border border-gray-200">
