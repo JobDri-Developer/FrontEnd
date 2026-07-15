@@ -13,4 +13,5 @@ export interface ApplicationCardData {
   resumePath?: string | null;
   status?: string;
   applyType?: JobPostingApplyType;
+  version: number;
 }

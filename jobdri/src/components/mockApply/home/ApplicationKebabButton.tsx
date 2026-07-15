@@ -75,10 +75,10 @@ export function ApplicationKebabButton({
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={open ? dropdownId : undefined}
-        className="flex h-6 w-6 shrink-0 items-center justify-center text-icon-neutral-default"
+        className="flex h-8 w-8 shrink-0 items-center justify-center text-icon-neutral-default"
         onClick={() => setOpen((currentOpen) => !currentOpen)}
       >
-        <Icon type="KABAB" className="h-6 w-6" />
+        <Icon type="KABAB" className=" hover:bg-fill-hover rounded-md" />
       </button>
 
       {open && (

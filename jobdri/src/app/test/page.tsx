@@ -22,7 +22,8 @@ import { ToastVariant, Toast } from "@/components/common/toast";
 import Evaluation from "@/components/mockApply/result/Evaluation";
 import JDSidePanel from "@/components/mockApply/Question/SidePanel";
 import { ModalPurchase } from "@/components/common/modal";
-import { CreditCard } from "@/components/common/cards";
+import { CreditCard, ResultSummaryCard } from "@/components/common/cards";
+import { ResultApplicationCard } from "@/components/mockApply/home";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -108,6 +109,47 @@ export default function TestPage() {
     }
   };
 
+  // 1. 간단한 더미 이벤트 핸들러
+  const handleDelete = (company: string) => {
+    alert(`${company} 모의 서류 결과를 삭제합니다.`);
+  };
+
+  const handleRetry = (company: string) => {
+    console.log(`${company} 다시 시도하기`);
+  };
+
+  const handleResume = (company: string) => {
+    console.log(`${company} 상세 결과 보기`);
+  };
+
+  // 2. 카드에 뿌려줄 더미 데이터 리스트 (회사명이 있는 경우와 없는 경우)
+  const mockApplications = [
+    {
+      id: "app-1",
+      company: "구글 코리아",
+      position: "프론트엔드 엔지니어",
+      createdAt: "2026.07.16",
+      score: 85,
+      version: 1,
+    },
+    {
+      id: "app-2",
+      company: "회사명 미입력", // showCompany가 false가 되어 직무만 강조되는 케이스
+      position: "UI/UX 인터랙션 디자이너",
+      createdAt: "2026.07.15",
+      score: 45,
+      version: 2,
+    },
+    {
+      id: "app-3",
+      company: "토스",
+      position: "웹 프론트엔드 개발자",
+      createdAt: "2026.07.14",
+      score: 92,
+      version: 3,
+    },
+  ];
+
   const PLACEMENTS: TooltipPlacement[] = [
     "up_left",
     "up_mid",
@@ -145,7 +187,6 @@ export default function TestPage() {
     // 💡 여러 태그를 하나로 묶어주기 위해 빈 태그(Fragment)나 div로 감싸야 합니다.
     <div className="p-10">
       <h1 className="mb-5 text-xl font-bold">테스트 페이지</h1>
-
       <div className="flex flex-col gap-5">
         <TabMenu
           // 아까 만든 style과 size 프롭스도 대충 넣어줍니다
@@ -181,7 +222,6 @@ export default function TestPage() {
           현재 선택된 페이지: {standardPage}
         </p>
       </section>
-
       {/* --- 두 번째: 분수형 (Compact) --- */}
       <section>
         <h3 className="text-lg font-bold mb-4 text-gray-800">Compact View</h3>
@@ -192,14 +232,12 @@ export default function TestPage() {
           onPageChange={(page) => setCompactPage(page)}
         />
       </section>
-
       <section className="w-full max-w-5xl flex gap-6 items-start mt-8">
         {/* 왼쪽: 우리가 만든 문항 리스트 컴포넌트 */}
         <div className="flex-shrink-0">
           <QuestionList />
         </div>
       </section>
-
       <div className="p-8 flex flex-col gap-8 bg-gray-50 ">
         {/* 1. 일반 User 아바타 (단순 표시용) */}
         <section>
@@ -234,7 +272,6 @@ export default function TestPage() {
         </section>
       </div>
       <ProgressPanelRow itemCount={4} currentStep={2} />
-
       <div className="flex flex-col items-center p-10 bg-gray-100 h-fit">
         {/* 상단 진행률 패널 */}
         <HeaderPanel steps={mySteps} currentStepId={currentStepId} />
@@ -264,7 +301,6 @@ export default function TestPage() {
           </button>
         </div>
       </div>
-
       <div
         className={`flex w-full flex-col gap-6 p-8 h-80 overflow-y-auto ${scrollbarClass}`}
       >
@@ -273,7 +309,6 @@ export default function TestPage() {
         {/* 위에서 정의한 데이터를 props로 전달합니다. */}
         <DetailAnnotationPanel analyses={mockAnalyses} />
       </div>
-
       <div className="flex min-h-screen flex-col items-center gap-10 bg-gray-50 p-10">
         <h2 className="text-h2-bold text-gray-800">
           Tooltip Placements Test 🎯
@@ -298,7 +333,6 @@ export default function TestPage() {
           ))}
         </div>
       </div>
-
       <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-gray-100 p-10">
         {/* 🎯 클릭 피드백 확인 영역 */}
         <div className="flex h-12 items-center rounded-lg bg-white px-6 shadow-sm">
@@ -322,7 +356,6 @@ export default function TestPage() {
           <ScoreBar score={56} />
         </div>
       </div>
-
       <section className="min-h-screen bg-[#F8F9FA] p-8 flex flex-col items-center justify-center gap-12 font-sans">
         <div className="w-full max-w-5xl">
           <h2 className="text-2xl font-bold text-center text-[#2D2D37] mb-6">
@@ -351,7 +384,6 @@ export default function TestPage() {
           </div>
         </div>
       </section>
-
       <section className="min-h-screen bg-[#F8F9FA] p-8 flex flex-col items-center gap-12 font-sans">
         {/* 섹션 타이틀 */}
         <div className="text-center">
@@ -513,7 +545,6 @@ export default function TestPage() {
           />
         )}
       </section>
-
       <section className="min-h-screen bg-white p-8 flex flex-col items-center justify-center gap-12 font-sans">
         {/* 섹션 타이틀 */}
         <div className="text-center">
@@ -568,7 +599,6 @@ export default function TestPage() {
           </div>
         </div>
       </section>
-
       <section className="flex flex-col items-center gap-6 p-8 bg-[#F3F0FF]/20 border-2 border-dashed border-purple-300 rounded-2xl">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -617,12 +647,43 @@ export default function TestPage() {
           onOpen={() => setIsJdOpen(true)}
         />
       </section>
-
       <section className="flex flex-row gap-3">
         <CreditCard planCode="FIVE_TIMES" />
         <CreditCard planCode="FIVE_TIMES" />
         <CreditCard planCode="FIVE_TIMES" />
       </section>
+      <section className="flex flex-col gap-6 p-8 bg-gray-50 min-h-screen">
+        {/* 섹션 타이틀 영역 */}
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl font-bold text-text-neutral-title">
+            내 모의 지원 결과
+          </h2>
+          <p className="text-sm text-text-neutral-description">
+            지금까지 진행한 모의 서류 결과를 확인하고 보완해보세요.
+          </p>
+        </div>
+
+        {/* 카드 리스트 렌더링 영역 (flex-wrap으로 가로로 나열되다 넘어가면 줄바꿈) */}
+        <div className="flex flex-wrap items-start gap-4">
+          {mockApplications.map((app) => (
+            <ResultApplicationCard
+              key={app.id}
+              id={Number(app.id)}
+              jobPostingId={Number(app.id)}
+              mockApplyId={Number(app.id)}
+              company={app.company}
+              position={app.position}
+              createdAt={app.createdAt}
+              score={app.score}
+              version={app.version}
+              // 핸들러 연결
+              onDeleteClick={() => handleDelete(app.company)}
+              onRetryClick={() => handleRetry(app.company)}
+              onResumeClick={() => handleResume(app.company)}
+            />
+          ))}
+        </div>
+      </section>{" "}
     </div>
   );
 }
