@@ -21,6 +21,8 @@ import { ModalCard } from "@/components/common/modal/ModalCard";
 import { ToastVariant, Toast } from "@/components/common/toast";
 import Evaluation from "@/components/mockApply/result/Evaluation";
 import JDSidePanel from "@/components/mockApply/Question/SidePanel";
+import { ModalPurchase } from "@/components/common/modal";
+import { CreditCard } from "@/components/common/cards";
 
 export default function TestPage() {
   const [standardPage, setStandardPage] = useState(1);
@@ -614,6 +616,12 @@ export default function TestPage() {
           onClose={() => setIsJdOpen(false)}
           onOpen={() => setIsJdOpen(true)}
         />
+      </section>
+
+      <section className="flex flex-row gap-3">
+        <CreditCard planCode="FIVE_TIMES" />
+        <CreditCard planCode="FIVE_TIMES" />
+        <CreditCard planCode="FIVE_TIMES" />
       </section>
     </div>
   );
