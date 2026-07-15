@@ -16,6 +16,7 @@ const COLOR_OPTIONS: AvatarColor[] = [
   "orange",
   "green",
   "lightblue",
+  "blue",
   "pink",
 ];
 
