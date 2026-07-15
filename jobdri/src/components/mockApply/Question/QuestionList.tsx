@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { QuestionItem, type QuestionData } from "./QuestionItem";
-import Icon from "@/components/icons/Icon";
+import Icon from "@/components/common/icons/Icon";
 import { Button } from "@/components/common/buttons";
 
 export const QuestionList = () => {
@@ -57,6 +57,7 @@ export const QuestionList = () => {
             iconType="ADD_S"
             onClick={handleAddQuestion}
             styleType="tertiary"
+            size="small"
           />
         )}
       </div>

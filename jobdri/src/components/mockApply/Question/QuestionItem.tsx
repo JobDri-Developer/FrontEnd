@@ -47,9 +47,6 @@ export const QuestionItem = ({
             <p className="text-cap12-semibold text-text-neutral-title truncate ">
               {data.content}
             </p>
-            <span className="text-cap12-med text-text-neutral-description mt-0.5">
-              {data.content.length} / 1,000자
-            </span>
           </>
         ) : (
           <span className="text-cap12-semibold text-text-neutral-disabled">
