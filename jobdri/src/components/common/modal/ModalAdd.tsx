@@ -4,14 +4,22 @@ import { useRef, useState } from "react";
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
 import { Button } from "@/components/common/buttons";
-import DropDown from "@/components/common/dropdown/DropDown";
+import { Select, type SelectOption } from "@/components/common/select";
 import useOutsideClick from "@/hooks/useOutsideClick";
-import { InputSingleLine } from "../input";
 
 interface ModalAddProps {
   onClose: () => void;
   onAdd: (question: string, maxLength: number) => void;
 }
+
+const maxLengthOptions: SelectOption[] = [
+  { label: "300자", value: "300" },
+  { label: "500자", value: "500" },
+  { label: "800자", value: "800" },
+  { label: "1,000자", value: "1000" },
+  { label: "1,500자", value: "1500" },
+  { label: "2,000자", value: "2000" },
+];
 
 export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -71,12 +79,12 @@ export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
                     : "border-line-neutral-default bg-fill-quaternary-assistive",
                 )}
               >
-                <InputSingleLine
+                <input
                   placeholder="문항 내용을 입력하세요"
                   value={question}
-                  focusedBorder="border-line-primary-default"
-                  onChange={(e) => {
-                    setQuestion(e);
+                  className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sub14-reg text-text-neutral-description outline-none placeholder:text-text-neutral-disabled caret-line-primary-strong [font-feature-settings:'liga'_off,'clig'_off]"
+                  onChange={(event) => {
+                    setQuestion(event.target.value);
                     if (error) setError("");
                   }}
                 />
@@ -89,7 +97,11 @@ export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
             </div>
 
             {/* 글자수 드롭다운 */}
-            <DropDown value={maxLength} onChange={setMaxLength} />
+            <Select
+              options={maxLengthOptions}
+              value={maxLength}
+              onChange={setMaxLength}
+            />
           </div>
 
           {/* 추가 버튼 */}

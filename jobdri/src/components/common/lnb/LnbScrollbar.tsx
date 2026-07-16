@@ -15,11 +15,11 @@ interface LnbScrollbarMetrics {
   thumbTop: number;
 }
 
-export function useLnbScrollMetrics(
+export function useLnbScrollMetrics<T extends HTMLElement = HTMLDivElement>(
   isEnabled: boolean,
-  recalculationKey: number,
+  recalculationKey: unknown,
 ) {
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<T>(null);
   const [scrollbarMetrics, setScrollbarMetrics] =
     useState<LnbScrollbarMetrics>({
       isScrollable: false,

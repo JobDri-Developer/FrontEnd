@@ -5,7 +5,7 @@ import clsx from "clsx";
 import Avatar from "../home/Avatar";
 import Icon from "@/components/common/icons/Icon";
 import Divider from "@/components/common/Divider";
-import { scrollbarClass } from "@/components/common/input/inputStyles";
+import { scrollbarClass } from "@/components/common/scrollbar/scrollbarStyles";
 
 export interface JDSectionItem {
   subtitle: string;

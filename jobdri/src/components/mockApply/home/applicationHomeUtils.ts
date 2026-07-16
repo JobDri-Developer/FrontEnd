@@ -89,6 +89,7 @@ export function mapMockApplyToApplication(
     resumePath: item.resumePath,
     status,
     applyType: item.applyType,
+    version: item.version ?? 1,
   };
 }
 

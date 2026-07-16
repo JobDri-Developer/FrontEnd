@@ -6,7 +6,7 @@ import Header from "@/components/common/header/Header";
 import { Button } from "@/components/common/buttons";
 import { Method1Card, Method2Card } from "@/components/common/cards";
 import Icon from "@/components/common/icons/Icon";
-import { InputAutoGrow, InputFileSummary } from "@/components/common/input";
+import { InputTextAreaAutoGrowS } from "@/components/common/input";
 import { ModalFileUpload, ModalInput } from "@/components/common/modal";
 import useOutsideClick from "@/hooks/useOutsideClick";
 import {
@@ -111,12 +111,14 @@ function TextJobPostingInputModal({
               공고 내용을 입력해주세요.
             </h2>
 
-            <InputAutoGrow
+            <InputTextAreaAutoGrowS
               value={value}
               onChange={onChange}
               placeholder="내용을 입력해주세요."
-              maxHeight={240}
-              className="!min-w-0 w-full self-stretch [&>div]:!rounded-cta-l [&>div]:!py-4 [&>div]:!pr-4 [&>div]:!pl-5"
+              label=""
+              message=""
+              showAddButton={false}
+              className="!min-w-0 w-full self-stretch [&>div]:!rounded-cta-l"
             />
           </div>
         </div>
@@ -616,7 +618,15 @@ const JdInputPageClient = forwardRef<
             showLoadMotion
           >
             {selectedImageFile && (
-              <InputFileSummary fileName={selectedImageFile.name} />
+              <div className="flex items-center gap-[19px] self-stretch rounded-card-s border border-line-neutral-default bg-fill-quaternary-default px-4 py-3">
+                <Icon
+                  type="FILE"
+                  className="h-10 w-10 shrink-0 text-icon-neutral-default"
+                />
+                <span className="min-w-0 truncate text-sub14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+                  {selectedImageFile.name}
+                </span>
+              </div>
             )}
           </ModalInput>
         ) : (

@@ -5,7 +5,6 @@ import type { IconType } from "@/components/common/icons/Icon";
 import clsx from "clsx";
 import { Button } from "@/components/common/buttons";
 import IconBox from "@/components/common/icons/IconBox";
-import { InputMain } from "@/components/common/input";
 import LoadMotionModal from "@/components/common/LoadMotionModal";
 import useOutsideClick from "@/hooks/useOutsideClick";
 
@@ -160,13 +159,28 @@ export default function ModalInput({
             </div>
 
             {showInputField && (
-              <InputMain
-                value={value}
-                onChange={onChange}
-                error={error}
-                placeholder={placeholder}
-                className="self-stretch"
-              />
+              <div className="flex flex-col gap-1.5 self-stretch">
+                <div
+                  className={clsx(
+                    "flex h-12 items-center rounded-lg border px-4 py-3 transition-colors",
+                    error
+                      ? "border-line-system-fail-default bg-white"
+                      : "border-line-neutral-default bg-white",
+                  )}
+                >
+                  <input
+                    value={value}
+                    onChange={(event) => onChange(event.target.value)}
+                    placeholder={placeholder}
+                    className="min-w-0 flex-1 bg-transparent text-sub14-reg text-text-neutral-description outline-none placeholder:text-text-neutral-disabled caret-line-primary-strong [font-feature-settings:'liga'_off,'clig'_off]"
+                  />
+                </div>
+                {error && (
+                  <span className="text-right text-cap12-med text-text-system-fail">
+                    {error}
+                  </span>
+                )}
+              </div>
             )}
 
             {children}

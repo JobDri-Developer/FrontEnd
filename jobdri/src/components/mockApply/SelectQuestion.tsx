@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../common/buttons";
 import { ListQ, ListQCart } from "../common/list";
-import { scrollbarClass } from "../common/input/inputStyles";
+import { scrollbarClass } from "@/components/common/scrollbar/scrollbarStyles";
 import { Toast } from "../common/toast";
 import AddQuestion from "./AddQuestion";
 import { fetchQuestions, fetchSelectedQuestions } from "@/lib/api/questions";

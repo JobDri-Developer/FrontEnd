@@ -3,8 +3,8 @@
 import { useRef, useState } from "react";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
-import { DropDownMenu } from "@/components/common/dropdown";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
+import { SelectListItem } from "@/components/common/select";
 import useOutsideClick from "@/hooks/useOutsideClick";
 import EmptyNotificationImage from "@/assets/ic_Image.svg";
 import {
@@ -197,15 +197,17 @@ export function LnbNotificationPanel({
             </div>
 
             {isMenuOpen && (
-              <DropDownMenu
-                className="absolute top-[calc(100%+4px)] right-0 z-[90] !w-[124px]"
-                items={[
-                  {
-                    label: "모두 읽음 표시",
-                    onClick: () => setIsMenuOpen(false),
-                  },
-                ]}
-              />
+              <div
+                role="menu"
+                className="absolute top-[calc(100%+4px)] right-0 z-[90] flex w-[124px] flex-col items-start overflow-hidden rounded-cta-s bg-fill-quaternary-default shadow-card"
+              >
+                <SelectListItem
+                  role="menuitem"
+                  itemClassName="w-full"
+                  label="모두 읽음 표시"
+                  onClick={() => setIsMenuOpen(false)}
+                />
+              </div>
             )}
           </div>
         </div>
