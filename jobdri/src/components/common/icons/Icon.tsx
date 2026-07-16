@@ -18,6 +18,10 @@ import IC_ARROW_UP from "@/assets/ic_Arrow_Up.svg";
 import IC_ARROW_DOWN from "@/assets/ic_Arrow_Down.svg";
 import IC_ARROW2_UP from "@/assets/ic_Arrow2_Up.svg";
 import IC_ARROW3_DOWN from "@/assets/ic_Arrow3_Down.svg";
+import IC_ARROW_DOUBLE_R20 from "@/assets/ic_DoubleArrow_Right_20.svg";
+import IC_ARROW_DOUBLE_R24 from "@/assets/ic_DoubleArrow_Right_24.svg";
+import IC_ARROW_DOUBLE_L20 from "@/assets/ic_DoubleArrow_Left_20.svg";
+import IC_ARROW_DOUBLE_L24 from "@/assets/ic_DoubleArrow_Left_24.svg";
 import IC_GOOGLE from "@/assets/ic_GoogleAsset.svg";
 import IC_GOOD from "@/assets/ic_Good.svg";
 import IC_GOOD_16 from "@/assets/ic_Good_16.svg";
@@ -27,6 +31,8 @@ import IC_TRASH from "@/assets/ic_Trash.svg";
 import IC_WARN from "@/assets/ic_Warning.svg";
 import IC_WARN_24 from "@/assets/ic_Warning_24.svg";
 import IC_CHECK from "@/assets/ic_Check.svg";
+import IC_CHECK_R from "@/assets/ic_Check_Radio.svg";
+import IC_CHECK_S from "@/assets/ic_Check_S.svg";
 import IC_CLOSE from "@/assets/ic_Close.svg";
 import IC_PROFILE from "@/assets/ic_Profile.svg";
 import IC_PROFILE_16 from "@/assets/ic_Profile_16.svg";
@@ -40,11 +46,17 @@ import IC_HOME_S from "@/assets/ic_Home_s.svg";
 import IC_APPLY from "@/assets/ic_Apply.svg";
 import IC_APPLY_16 from "@/assets/ic_Apply_16.svg";
 import IC_EX_S from "@/assets/ic_Ex.svg";
+// import IC_ARROW_R_N_S from "@/assets/ic_Arrow_Right.svg";
+import IC_CHEVRON_L from "@/assets/ic_Chevron_L.svg";
+import IC_CHEVRON_L_S from "@/assets/ic_Chevron_L_S.svg";
+import IC_CHEVRON_R from "@/assets/ic_Chevron_R.svg";
+import IC_CHEVRON_R_S from "@/assets/ic_Chevron_R_S.svg";
 import IC_DOT_S from "@/assets/ic_Dots_S.svg";
 import IC_EX_LINK from "@/assets/ic_ExternalLink.svg";
 import IC_TOKEN from "@/assets/ic_Token.svg";
 import IC_SPARKLE from "@/assets/ic_Sparkles.svg";
 import IC_SPARKLE_16 from "@/assets/ic_Sparkles_16.svg";
+import IC_SPARKLE_LOADER from "@/assets/ic_Sparkle_Loader.svg";
 import IC_SEARCH from "@/assets/ic_Search.svg";
 import IC_LIGHTBULB from "@/assets/ic_Lightbulb.svg";
 import IC_TEXT from "@/assets/ic_Text.svg";
@@ -56,6 +68,7 @@ import IC_LINK from "@/assets/ic_Link.svg";
 import IC_POLYGON_1 from "@/assets/ic_Polygon_1.svg";
 import IC_POLYGON_2 from "@/assets/ic_Polygon_2.svg";
 import IC_FILE from "@/assets/ic_file.svg";
+import IC_FILE_P from "@/assets/ic_File_Panel.svg";
 import IC_BELL from "@/assets/ic_Bell.svg";
 import IC_CIRCLE_CHECK from "@/assets/ic_CircleCheck.svg";
 import IC_CIRCLE_CHECK_16 from "@/assets/ic_CircleCheck_16.svg";
@@ -85,6 +98,10 @@ const iconMap = {
   ARROW_DOWN: IC_ARROW_DOWN,
   ARROW2_UP: IC_ARROW2_UP,
   ARROW3_DOWN: IC_ARROW3_DOWN,
+  ARROW_DOUBLE_R20: IC_ARROW_DOUBLE_R20,
+  ARROW_DOUBLE_R24: IC_ARROW_DOUBLE_R24,
+  ARROW_DOUBLE_L20: IC_ARROW_DOUBLE_L20,
+  ARROW_DOUBLE_L24: IC_ARROW_DOUBLE_L24,
   GOOGLE: IC_GOOGLE,
   GOOD: IC_GOOD,
   GOOD_16: IC_GOOD_16,
@@ -94,6 +111,8 @@ const iconMap = {
   WARN: IC_WARN,
   WARN_24: IC_WARN_24,
   CHECK: IC_CHECK,
+  CHECK_S: IC_CHECK_S,
+  CHECK_R: IC_CHECK_R,
   CLOSE: IC_CLOSE,
   PROFILE: IC_PROFILE,
   PROFILE_16: IC_PROFILE_16,
@@ -108,12 +127,17 @@ const iconMap = {
   APPLY: IC_APPLY,
   APPLY_16: IC_APPLY_16,
   EX_S: IC_EX_S,
-  ARROW_R_N_S: IC_ARROW_RIGHT_20,
+  // ARROW_R_N_S: IC_ARROW_R_N_S,
+  CHEVRON_L: IC_CHEVRON_L,
+  CHEVRON_L_S: IC_CHEVRON_L_S,
+  CHEVRON_R: IC_CHEVRON_R,
+  CHEVRON_R_S: IC_CHEVRON_R_S,
   DOT_S: IC_DOT_S,
   EX_LINK: IC_EX_LINK,
   TOKEN: IC_TOKEN,
   SPARKLE: IC_SPARKLE,
   SPARKLE_16: IC_SPARKLE_16,
+  SPARKLE_LOADER: IC_SPARKLE_LOADER,
   SEARCH: IC_SEARCH,
   LIGHTBULB: IC_LIGHTBULB,
   TEXT: IC_TEXT,
@@ -125,6 +149,7 @@ const iconMap = {
   POLYGON_1: IC_POLYGON_1,
   POLYGON_2: IC_POLYGON_2,
   FILE: IC_FILE,
+  FILE_P: IC_FILE_P,
   BELL: IC_BELL,
   CIRCLE_CHECK: IC_CIRCLE_CHECK,
   CIRCLE_CHECK_16: IC_CIRCLE_CHECK_16,

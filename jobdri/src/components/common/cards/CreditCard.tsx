@@ -21,11 +21,8 @@ interface CreditCardProps extends HTMLAttributes<HTMLElement> {
 
 export default function CreditCard({
   creditCount = 3,
-  creditLabel = "크레딧",
   price = "2,500",
-  currencyLabel = "원",
-  discountRate = "21%",
-  discountLabel = "할인",
+  discountRate = "21",
   buttonLabel = "구매하기",
   planCode,
   onPurchase,
@@ -52,40 +49,37 @@ export default function CreditCard({
       )}
       <article
         className={clsx(
-          "flex w-full flex-col items-center h-full rounded-card bg-bg-contents-default px-8 pt-8 pb-7 shadow-card",
+          "flex w-fit flex-col items-center h-fit rounded-card bg-bg-contents-default px-8 pt-8 pb-7 shadow-card",
           className,
         )}
         {...articleProps}
       >
-        <div className="flex flex-1 flex-col justify-between gap-8 w-full">
+        <div className="flex flex-1 flex-col justify-between gap-8 min-w-62">
           <div className="flex flex-col  items-center gap-4">
             <div className="flex items-end justify-center gap-1">
-              <span className="text-center text-[32px] font-bold leading-[130%] text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+              <span className="text-center text-[32px] font-bold leading-[130%] text-text-neutral-title ">
                 {creditCount}
               </span>
-              <span className="flex items-center justify-center gap-2.5 pb-1 text-center text-b16-bold text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-                {creditLabel}
+              <span className="flex items-center justify-center gap-2.5 pb-1 text-center text-b16-med text-text-neutral-caption">
+                크레딧
               </span>
             </div>
 
             <div className="flex flex-col items-center gap-1">
               <div className="flex items-start">
                 <span className="text-center text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-                  {price}
-                </span>
-                <span className="text-center text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-                  {currencyLabel}
+                  {price}원
                 </span>
               </div>
 
               <div
-                className={`flex items-start ${!discountRate ? "invisible" : ""}`}
+                className={clsx(
+                  "flex items-start",
+                  !discountRate ? "invisible" : "",
+                )}
               >
-                <span className="text-center text-b16-med text-text-primary-strong [font-feature-settings:'liga'_off,'clig'_off]">
-                  {discountRate}
-                </span>
-                <span className="text-center text-b16-med text-text-primary-strong [font-feature-settings:'liga'_off,'clig'_off]">
-                  {discountLabel}
+                <span className="text-center text-b16-med text-text-primary-strong ">
+                  {discountRate}% 할인
                 </span>
               </div>
             </div>
@@ -95,7 +89,6 @@ export default function CreditCard({
             label={buttonLabel}
             size="large"
             styleType="secondary"
-            className="mt-auto h-[46px] items-end  w-full px-4"
             onClick={handlePurchaseClick}
           />
         </div>

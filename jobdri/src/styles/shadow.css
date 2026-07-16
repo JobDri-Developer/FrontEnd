@@ -1,4 +1,6 @@
 @theme {
+  --shadow-default: 0 0 24px 0 var(--color-bg-shadow-default);
+
   /* CardShadow: x0 y0 blur24 spread0 */
   --shadow-card: 0 0 24px 0 var(--color-bg-shadow-default);
 

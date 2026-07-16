@@ -30,8 +30,9 @@ function IntroStepCard({ step }: { step: (typeof INTRO_STEPS)[number] }) {
         </div>
       ) : (
         <StepImage
-          className={`h-[240px] w-[240px] shrink-0 overflow-visible ${step.step === "STEP 02" ? "-translate-x-10" : "-translate-x-2"
-            }`}
+          className={`h-[240px] w-[240px] shrink-0 overflow-visible ${
+            step.step === "STEP 02" ? "-translate-x-10" : "-translate-x-2"
+          }`}
           preserveAspectRatio="xMaxYMin meet"
           aria-hidden="true"
         />

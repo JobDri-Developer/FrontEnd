@@ -1,46 +1,21 @@
 "use client";
 
-import { ChipMain } from "@/components/common/chips";
-import { ApplicationKebabButton } from "./ApplicationKebabButton";
+import React, { useState, useRef, useEffect } from "react";
 import {
   CreatedAt,
   handleApplicationCardKeyDown,
 } from "./ApplicationCardShared";
 import type { ApplicationCardData } from "./types";
-
-function ScoreText({ score }: Pick<ApplicationCardData, "score">) {
-  const displayScore = typeof score === "number" ? score : 45;
-
-  return (
-    <div className="flex items-start gap-0.5">
-      <span className="text-h24-med text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-        {displayScore}
-      </span>
-      <span className="text-h24-med text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-        점
-      </span>
-    </div>
-  );
-}
-
-function ImprovementChip() {
-  return (
-    <ChipMain
-      label="보완 필요"
-      color="secondary"
-      selected
-      className="cursor-default rounded-chip-s bg-blue-200 px-1.5 py-1 text-cap12-semibold text-text-primary-strong hover:shadow-none hover:!ring-0"
-    />
-  );
-}
+import Avatar from "./Avatar";
+import Icon from "@/components/common/icons/Icon";
+import { DropDownMenu } from "@/components/common/dropdown";
 
 export function ResultApplicationCard({
   company,
-  hasCompanyName,
   position,
   createdAt,
   score,
-  companyVariant,
+  version = 1,
   onDeleteClick,
   onRetryClick,
   onResumeClick,
@@ -50,48 +25,98 @@ export function ResultApplicationCard({
   onRetryClick?: () => void;
   onResumeClick?: () => void;
 }) {
-  const showCompany =
-    companyVariant !== "none" &&
-    (hasCompanyName ??
-      (company.trim().length > 0 && company !== "회사명 미입력"));
-  const menuLabelTarget = showCompany ? company : position;
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
+
+  const handleKebabClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen((prev) => !prev);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    onDeleteClick(); // 부모로부터 받은 삭제 함수 실행
+  };
+
+  const handleRetry = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    onRetryClick?.(); // 부모로부터 받은 다시하기 함수 실행
+  };
 
   return (
     <article
       role="button"
       tabIndex={0}
-      className={`relative flex w-[345.333px] flex-none cursor-pointer flex-col items-start justify-center rounded-card border-4 border-transparent bg-bg-contents-default px-6 py-5 hover:border-icon-neutral-white hover:bg-[linear-gradient(0deg,#EFF0FF_0%,var(--color-bg-contents-default)_60%)] active:border-icon-neutral-white active:bg-[linear-gradient(0deg,#E3E5FF_0%,var(--color-fill-quaternary-assistive)_60%)] ${
-        showCompany ? "gap-10" : "gap-[72px]"
-      }`}
+      className="relative flex w-[293px] p-5 flex-col cursor-pointer items-start justify-between rounded-card bg-fill-quaternary-default min-h-[160px] hover:shadow-card active:bg-fill-quaternary-default-hover"
       onClick={onResumeClick}
       onKeyDown={(event) => handleApplicationCardKeyDown(event, onResumeClick)}
     >
-      <div className="flex items-start gap-3 self-stretch">
-        <div className="flex min-w-0 flex-1 flex-col items-start justify-center gap-3">
-          <CreatedAt createdAt={createdAt} />
-          <div className="flex min-w-0 flex-col items-start justify-center gap-1 self-stretch">
-            <span className="max-w-full truncate text-b16-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-              {position}
+      <div className="flex flex-col self-stretch w-full">
+        <div className="flex items-center justify-between self-stretch mb-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Avatar name={company} type="company" size="small" />
+            <span className="max-w-full truncate text-b16-semibold text-text-neutral-title">
+              {company}
             </span>
-            {showCompany && (
-              <div className="flex min-w-0 items-center">
-                <span className="max-w-full truncate text-t20-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-                  {company}
-                </span>
+          </div>
+
+          {/* 케밥 버튼 및 드롭다운 메뉴 */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={handleKebabClick}
+              className="p-1 rounded-md text-icon-neutral-default hover:bg-fill-quaternary-assistive-hover transition-colors"
+              aria-label="모의 서류 결과 메뉴"
+            >
+              <Icon type="KABAB" />
+            </button>
+
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 z-10">
+                <DropDownMenu
+                  items={[
+                    { label: "다시하기", onClick: handleRetry },
+                    { label: "삭제하기", onClick: handleDelete },
+                  ]}
+                />
               </div>
             )}
           </div>
         </div>
-        <ApplicationKebabButton
-          label={`${menuLabelTarget} 모의 서류 결과 메뉴`}
-          onDeleteClick={onDeleteClick}
-          onRetryClick={onRetryClick}
-        />
+
+        {/* 중단: 직무 이름 */}
+        <div className="flex min-w-0 flex-row items-start self-stretch gap-0.5">
+          <span className="max-w-full truncate text-sub14-med text-text-neutral-description">
+            {position}
+          </span>
+          <span className="text-text-neutral-caption text-sub14-med">
+            v.{version}
+          </span>
+        </div>
       </div>
 
-      <div className="flex items-center justify-between self-stretch">
-        <ScoreText score={score} />
-        <ImprovementChip />
+      {/* 하단: 점수 및 날짜 */}
+      <div className="flex items-end justify-between self-stretch mt-6">
+        <p className="text-cap12-med text-text-neutral-caption">{createdAt}</p>
+        <div className="flex flex-row justify-center items-end gap-0.5">
+          <p className="text-h24-bold">{score}</p>
+          <p className="text-label14-semibold">점</p>
+          <Icon type="CHEVRON_R" className="text-icon-neutral-default" />
+        </div>
       </div>
     </article>
   );

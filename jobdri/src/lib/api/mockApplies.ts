@@ -1,4 +1,8 @@
-import { API_BASE_URL, getAuthHeaders, parseApiResponse } from "@/lib/api/client";
+import {
+  API_BASE_URL,
+  getAuthHeaders,
+  parseApiResponse,
+} from "@/lib/api/client";
 
 export type JobPostingApplyType = "MOCK" | "ACTUAL";
 export type MockApplyProgressStatus =
@@ -40,6 +44,7 @@ export interface MockApplyHomeItem {
   createdAt: string;
   applyType: JobPostingApplyType;
   score?: number | null;
+  version: number;
 }
 
 export interface MockApplyHomeList {

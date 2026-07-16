@@ -7,20 +7,21 @@
 
 @layer base {
   body {
-    font-family: "Pretendard-Variable", sans-serif;
+    font-family: "Pretendard-Variable", sans-serif !important;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
 :is(
-  button,
-  a[href],
-  summary,
-  label[for],
-  [role="button"],
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"]
-):not(:disabled):not([aria-disabled="true"]) {
+    button,
+    a[href],
+    summary,
+    label[for],
+    [role="button"],
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"]
+  ):not(:disabled):not([aria-disabled="true"]) {
   cursor: pointer !important;
 }
 
