@@ -34,6 +34,7 @@ import {
   LnbScrollbar,
   useLnbScrollMetrics,
 } from "./LnbScrollbar";
+import { fetchMyMockApplies } from "@/lib/api/mockApplies";
 
 type LnbItemKey = "experience" | "apply";
 
@@ -76,118 +77,118 @@ const navItems: LnbNavItem[] = [
   },
 ];
 
-const defaultRecentItems: LnbRecentItem[] = [
-  {
-    id: "toss-product-designer",
-    companyName: "토스",
-    jobTitle: "프로덕트 디자이너",
-    version: 1,
-  },
-  {
-    id: "kakao-ux-researcher",
-    companyName: "카카오",
-    jobTitle: "UX 리서처",
-    version: 1,
-  },
-  {
-    id: "naver-ui-designer",
-    companyName: "네이버",
-    jobTitle: "UI 디자이너",
-    version: 1,
-  },
-  {
-    id: "sandbox-grading-criteria-refinement",
-    companyName: "SK하이닉스",
-    jobTitle: "채점 평가 요소 고도화 및 결과 리포트 개선",
-    version: 2,
-  },
-  {
-    id: "coupang-mobile-designer",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너",
-    version: 6,
-  },
-  {
-    id: "coupang-contract-interview-5",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너 계약직 인턴십",
-    version: 5,
-  },
-  {
-    id: "coupang-contract-interview-4",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너 계약직 인턴십",
-    version: 4,
-  },
-  {
-    id: "coupang-contract-interview-3",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너 계약직 인턴십",
-    version: 3,
-  },
-  {
-    id: "coupang-contract-interview-2",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너 계약직 인턴십",
-    version: 2,
-  },
-  {
-    id: "coupang-contract-interview-1",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너 계약직 인턴십",
-    version: 1,
-  },
-  {
-    id: "line-product-manager",
-    companyName: "라인",
-    jobTitle: "프로덕트 매니저",
-    version: 3,
-  },
-  {
-    id: "baemin-brand-designer",
-    companyName: "배달의민족",
-    jobTitle: "브랜드 디자이너",
-    version: 2,
-  },
-  {
-    id: "danggeun-content-marketer",
-    companyName: "당근",
-    jobTitle: "콘텐츠 마케터",
-    version: 1,
-  },
-  {
-    id: "hyundai-data-analyst",
-    companyName: "현대자동차",
-    jobTitle: "서비스 데이터 분석가",
-    version: 4,
-  },
-  {
-    id: "musinsa-product-designer",
-    companyName: "무신사",
-    jobTitle: "커머스 프로덕트 디자이너",
-    version: 2,
-  },
-  {
-    id: "zigbang-frontend-engineer",
-    companyName: "직방",
-    jobTitle: "프론트엔드 엔지니어",
-    version: 5,
-  },
-  {
-    id: "bucketplace-ux-writer",
-    companyName: "오늘의집",
-    jobTitle: "UX 라이터",
-    version: 1,
-  },
-  {
-    id: "yanolja-growth-manager",
-    companyName: "야놀자",
-    jobTitle: "그로스 매니저",
-    version: 2,
-  },
-];
+// const defaultRecentItems: LnbRecentItem[] = [
+//   {
+//     id: "toss-product-designer",
+//     companyName: "토스",
+//     jobTitle: "프로덕트 디자이너",
+//     version: 1,
+//   },
+//   {
+//     id: "kakao-ux-researcher",
+//     companyName: "카카오",
+//     jobTitle: "UX 리서처",
+//     version: 1,
+//   },
+//   {
+//     id: "naver-ui-designer",
+//     companyName: "네이버",
+//     jobTitle: "UI 디자이너",
+//     version: 1,
+//   },
+//   {
+//     id: "sandbox-grading-criteria-refinement",
+//     companyName: "SK하이닉스",
+//     jobTitle: "채점 평가 요소 고도화 및 결과 리포트 개선",
+//     version: 2,
+//   },
+//   {
+//     id: "coupang-mobile-designer",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너",
+//     version: 6,
+//   },
+//   {
+//     id: "coupang-contract-interview-5",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너 계약직 인턴십",
+//     version: 5,
+//   },
+//   {
+//     id: "coupang-contract-interview-4",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너 계약직 인턴십",
+//     version: 4,
+//   },
+//   {
+//     id: "coupang-contract-interview-3",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너 계약직 인턴십",
+//     version: 3,
+//   },
+//   {
+//     id: "coupang-contract-interview-2",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너 계약직 인턴십",
+//     version: 2,
+//   },
+//   {
+//     id: "coupang-contract-interview-1",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너 계약직 인턴십",
+//     version: 1,
+//   },
+//   {
+//     id: "line-product-manager",
+//     companyName: "라인",
+//     jobTitle: "프로덕트 매니저",
+//     version: 3,
+//   },
+//   {
+//     id: "baemin-brand-designer",
+//     companyName: "배달의민족",
+//     jobTitle: "브랜드 디자이너",
+//     version: 2,
+//   },
+//   {
+//     id: "danggeun-content-marketer",
+//     companyName: "당근",
+//     jobTitle: "콘텐츠 마케터",
+//     version: 1,
+//   },
+//   {
+//     id: "hyundai-data-analyst",
+//     companyName: "현대자동차",
+//     jobTitle: "서비스 데이터 분석가",
+//     version: 4,
+//   },
+//   {
+//     id: "musinsa-product-designer",
+//     companyName: "무신사",
+//     jobTitle: "커머스 프로덕트 디자이너",
+//     version: 2,
+//   },
+//   {
+//     id: "zigbang-frontend-engineer",
+//     companyName: "직방",
+//     jobTitle: "프론트엔드 엔지니어",
+//     version: 5,
+//   },
+//   {
+//     id: "bucketplace-ux-writer",
+//     companyName: "오늘의집",
+//     jobTitle: "UX 라이터",
+//     version: 1,
+//   },
+//   {
+//     id: "yanolja-growth-manager",
+//     companyName: "야놀자",
+//     jobTitle: "그로스 매니저",
+//     version: 2,
+//   },
+// ];
 
-const defaultEmail = "jobdri@gmail.com";
+// const defaultEmail = "jobdri@gmail.com";
 
 function subscribeToStoredEmail(onStoreChange: () => void) {
   const handleStorage = (event: StorageEvent) => {
@@ -830,7 +831,6 @@ export default function Lnb({
   initialActiveItem = "apply",
   email,
   className,
-  recentItems = defaultRecentItems,
   notificationItems = defaultNotificationItems,
   defaultRecentOpen = true,
   hasNotification = true,
@@ -842,7 +842,7 @@ export default function Lnb({
     getStoredEmailSnapshot,
     getServerStoredEmailSnapshot,
   );
-  const displayEmail = (email ?? storedEmail) || defaultEmail;
+  const displayEmail = email ?? storedEmail;
   const emailInitial = getEmailInitial(displayEmail);
   const [creditCount, setCreditCount] = useState<number>(0);
   const [isFold, setIsFold] = useState(false);
@@ -850,9 +850,38 @@ export default function Lnb({
   const [activeItem, setActiveItem] = useState<LnbItemKey | undefined>(
     initialActiveItem,
   );
-  const [selectedRecentItemId, setSelectedRecentItemId] = useState<string>(
-    recentItems[1]?.id ?? recentItems[0]?.id ?? "",
-  );
+  const [recentItems, setRecentItems] = useState<LnbRecentItem[]>([]);
+  const [selectedRecentItemId, setSelectedRecentItemId] = useState<string>("");
+
+  useEffect(() => {
+    // 💡 LNB 전용 데이터 불러오기 함수
+    const fetchRecentItems = async () => {
+      try {
+        const data = await fetchMyMockApplies();
+
+        const allItems = [...data.inProgress, ...data.completed];
+
+        const mappedItems: LnbRecentItem[] = allItems.map((item) => ({
+          id: String(item.mockApplyId),
+          companyName: item.companyName,
+          jobTitle:
+            item.jobTitle || item.detailClassificationName || "직무 미지정",
+          version: item.version || 1,
+        }));
+
+        setRecentItems(mappedItems);
+
+        if (mappedItems.length > 0) {
+          setSelectedRecentItemId(mappedItems[0].id);
+        }
+      } catch (error) {
+        console.error("최근 항목을 불러오는 중 오류가 발생했습니다:", error);
+        setRecentItems([]);
+      }
+    };
+
+    fetchRecentItems();
+  }, []);
 
   const handleNavItemClick = (item: LnbNavItem) => {
     if (item.href) {
