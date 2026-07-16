@@ -1,50 +1,94 @@
 "use client";
-
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
 import { BusinessFooter } from "@/components/common/footer";
 import { Lnb } from "@/components/common/lnb";
 import ResultDraftList from "@/components/mockApply/home/ResultDraftList";
 import ResultApplicationList from "@/components/mockApply/home/ResultApplicationList";
+import { fetchMyMockApplies } from "@/lib/api/mockApplies";
+import { formatDate } from "@/utils/date";
+import {
+  DraftData,
+  ApplicationCardData,
+} from "@/components/mockApply/home/types";
 
-const DUMMY_DRAFTS = [
-  {
-    id: "1",
-    companyName: "네이버",
-    position: "UXUI 디자이너",
-    currentStep: 1,
-    updatedAt: "오늘",
-  },
-  {
-    id: "2",
-    companyName: "당근마켓",
-    position: "그로스 프로덕트 디자이너",
-    currentStep: 2,
-    updatedAt: "어제",
-  },
-  {
-    id: "3",
-    companyName: "현대자동차",
-    position: "모델링 디자이너",
-    currentStep: 3,
-    updatedAt: "오늘",
-  },
-];
+// const DUMMY_DRAFTS = [
+//   {
+//     id: "1",
+//     companyName: "네이버",
+//     position: "UXUI 디자이너",
+//     currentStep: 1,
+//     updatedAt: "오늘",
+//   },
+//   {
+//     id: "2",
+//     companyName: "당근마켓",
+//     position: "그로스 프로덕트 디자이너",
+//     currentStep: 2,
+//     updatedAt: "어제",
+//   },
+//   {
+//     id: "3",
+//     companyName: "현대자동차",
+//     position: "모델링 디자이너",
+//     currentStep: 3,
+//     updatedAt: "오늘",
+//   },
+// ];
 
-const DUMMY_RESULTS = Array.from({ length: 12 }).map((_, i) => ({
-  id: i, // string("result-0")에서 number(i)로 변경!
-  jobPostingId: i,
-  mockApplyId: i,
-  company: "토스",
-  position: "프로덕트 디자이너(인턴)",
-  createdAt: "YY.MM.DD",
-  score: 85,
-  version: 1,
-  status: "completed",
-}));
+// const DUMMY_RESULTS = Array.from({ length: 12 }).map((_, i) => ({
+//   id: i, // string("result-0")에서 number(i)로 변경!
+//   jobPostingId: i,
+//   mockApplyId: i,
+//   company: "토스",
+//   position: "프로덕트 디자이너(인턴)",
+//   createdAt: "YY.MM.DD",
+//   score: 85,
+//   version: 1,
+//   status: "completed",
+// }));
 
 export default function Home() {
   const router = useRouter();
+  const [drafts, setDrafts] = useState<DraftData[]>([]);
+  const [results, setResults] = useState<ApplicationCardData[]>([]);
+
+  useEffect(() => {
+    const loadMockApplies = async () => {
+      try {
+        const data = await fetchMyMockApplies();
+
+        const mappedDrafts = data.inProgress.map((item) => ({
+          id: String(item.mockApplyId),
+          companyName: item.companyName,
+          position:
+            item.jobTitle || item.detailClassificationName || "직무 미지정",
+          currentStep: item.status === "ANSWER_WRITE" ? 2 : 1,
+          updatedAt: formatDate(item.createdAt),
+        }));
+
+        const mappedResults = data.completed.map((item) => ({
+          id: item.mockApplyId,
+          jobPostingId: item.jobPostingId,
+          mockApplyId: item.mockApplyId,
+          company: item.companyName,
+          position:
+            item.jobTitle || item.detailClassificationName || "직무 미지정",
+          createdAt: formatDate(item.createdAt),
+          score: item.score || 0,
+          version: item.version || 1,
+          status: "completed",
+        }));
+        setDrafts(mappedDrafts);
+        setResults(mappedResults);
+      } catch (error) {
+        console.error("데이터를 불러오는데 실패했습니다.", error);
+      }
+    };
+
+    loadMockApplies();
+  }, []);
   return (
     <div className="flex min-h-screen w-full bg-[#F5F6F9] overflow-x-hidden ">
       <Lnb className="shrink-0" />
@@ -71,14 +115,14 @@ export default function Home() {
           <div className="flex flex-col gap-16">
             {/* 이어서 작성하기 섹션 */}
             <ResultDraftList
-              drafts={DUMMY_DRAFTS}
+              drafts={drafts}
               onItemClick={(id) => console.log(id)}
               onDelete={(id) => console.log(id)}
             />
 
             {/* 분석 완료 섹션 */}
             <ResultApplicationList
-              applications={DUMMY_RESULTS}
+              applications={results}
               onDelete={(app) => console.log(app.id, "삭제")}
               onRetry={(app) => console.log(app.id, "다시하기")}
               onResume={(app) => console.log(app.id, "결과보기")}
