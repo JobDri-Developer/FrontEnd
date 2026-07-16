@@ -14,10 +14,19 @@ import {
 import { CtaFooter } from "@/components/common/cta";
 import Header from "@/components/common/header/Header";
 import {
+  InputTextField,
+  InputTextAreaAutoGrowS,
+  InputTextAreaFixedL,
+  InputTextAreaFixedS,
+  JDInput,
+  LLMInput,
+} from "@/components/common/input";
+import {
   defaultNotificationItems,
   Lnb,
   LnbNotificationPanel,
 } from "@/components/common/lnb";
+import { Select, type SelectOption } from "@/components/common/select";
 
 const textOnlyButtonSizes: TextOnlyButtonSize[] = ["large", "small"];
 const textOnlyButtonStyles: TextOnlyButtonStyle[] = ["primary", "secondary"];
@@ -83,6 +92,15 @@ const boxButtonGroups: Array<{
   { styleType: "tertiary", sizes: ["large", "medium", "small", "xsmall"] },
   { styleType: "quaternary", sizes: ["large", "medium", "small"] },
   { styleType: "error", sizes: ["large", "medium", "small"] },
+];
+
+const maxLengthOptions: SelectOption[] = [
+  { label: "300자", value: "300" },
+  { label: "500자", value: "500" },
+  { label: "800자", value: "800" },
+  { label: "1,000자", value: "1000" },
+  { label: "1,500자", value: "1500" },
+  { label: "2,000자", value: "2000" },
 ];
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -265,6 +283,75 @@ export default function ComponentsPage() {
         <div className="flex flex-col gap-10">
           <CtaFooter />
           <CtaFooter type="result" />
+        </div>
+      </section>
+
+      <section className="flex w-[1440px] flex-col items-start gap-8">
+        <h1 className="text-h28-bold text-text-neutral-title">
+          TextInput/TextArea
+        </h1>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>Text Field</SectionTitle>
+          <InputTextField />
+          <InputTextField error="글자수를 확인해주세요" defaultValue="현대자동차" />
+          <InputTextField disabled />
+        </div>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>size: s / Type: Fixed</SectionTitle>
+          <InputTextAreaFixedS key="fixed-s-default-empty" />
+          <InputTextAreaFixedS
+            key="fixed-s-error-empty"
+            error="글자수를 확인해주세요"
+          />
+          <InputTextAreaFixedS key="fixed-s-disabled-empty" disabled />
+        </div>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>size: l / Type: Fixed</SectionTitle>
+          <InputTextAreaFixedL key="fixed-l-default-empty" />
+          <InputTextAreaFixedL
+            key="fixed-l-error-empty"
+            error="글자수를 확인해주세요"
+          />
+          <InputTextAreaFixedL key="fixed-l-disabled-empty" disabled />
+        </div>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>size: s / Type: AutoGrow</SectionTitle>
+          <InputTextAreaAutoGrowS key="autogrow-s-default-empty" />
+          <InputTextAreaAutoGrowS
+            key="autogrow-s-error-empty"
+            error="글자수를 확인해주세요"
+          />
+          <InputTextAreaAutoGrowS key="autogrow-s-disabled-empty" disabled />
+        </div>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>LLM Input</SectionTitle>
+          <LLMInput />
+        </div>
+
+        <div className="flex w-full flex-col gap-5">
+          <SectionTitle>JD Input</SectionTitle>
+          <JDInput />
+          <JDInput type="role" />
+          <JDInput type="task" />
+          <JDInput type="qualification" />
+          <JDInput type="prefer" />
+        </div>
+      </section>
+
+      <section className="flex w-[1440px] flex-col items-start gap-8">
+        <h1 className="text-h28-bold text-text-neutral-title">Select</h1>
+
+        <div className="flex min-h-[430px] flex-wrap items-start gap-8">
+          <Select
+            options={maxLengthOptions}
+            placeholder="최대글자수"
+            defaultOpen
+          />
         </div>
       </section>
 

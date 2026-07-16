@@ -14,7 +14,7 @@ import DetailAnnotationPanel from "@/components/mockApply/result/DetailAnotation
 import { QuestionAnalysis } from "@/lib/api/result";
 import { TooltipPlacement, Tooltip } from "@/components/common/tooltip";
 import { DropDownMenu, DropDownMenuItem } from "@/components/common/dropdown";
-import { scrollbarClass } from "@/components/common/input/inputStyles";
+import { scrollbarClass } from "@/components/common/scrollbar/scrollbarStyles";
 import ScoreCircle from "@/components/mockApply/result/ScoreCircle";
 import ScoreBar from "@/components/mockApply/result/ScoreBar";
 import { ModalCard } from "@/components/common/modal/ModalCard";

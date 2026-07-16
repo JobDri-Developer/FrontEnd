@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { ChipQnumber } from "@/components/common/chips";
-import { InputMultiLine1000 } from "@/components/common/input";
+import { InputTextAreaFixedL } from "@/components/common/input";
 import { fetchSelectedQuestions, saveApply, type AnswerItem } from "@/lib/api/questions";
 
 export interface StoredQuestion {
@@ -198,10 +198,13 @@ const InputSection = forwardRef<InputSectionHandle, InputSectionProps>(
                 {activeMaxLength}자 이내
               </p>
             </div>
-            <InputMultiLine1000
+            <InputTextAreaFixedL
               className="w-full"
               value={activeAnswer}
               maxLength={activeMaxLength}
+              label=""
+              message=""
+              showAddButton={false}
               onChange={handleAnswerChange}
             />
           </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ProgressSidebar } from "@/components/common/progress";
-import { InputAutoGrow } from "@/components/common/input";
+import { InputTextAreaAutoGrowS } from "@/components/common/input";
 import {
   mockJdSections,
   type JdReviewSection,
@@ -33,10 +33,12 @@ function JdReviewField({
       <div className="flex flex-col items-start gap-2 self-stretch">
         <JdFieldLabel label={section.label} />
 
-        <InputAutoGrow
+        <InputTextAreaAutoGrowS
           value={section.value}
           onChange={onChange}
-          maxHeight={168}
+          label=""
+          message=""
+          showAddButton={false}
           className="w-full min-w-0"
         />
       </div>
