@@ -439,7 +439,7 @@ export default function EmailLoginScreen() {
     try {
       const tokens = await loginWithEmail({ email, password });
       saveAuthTokens(tokens, email);
-      router.push(ROUTES.APPLY);
+      router.push(ROUTES.HOME);
     } catch (error) {
       setLoginError(true);
       setLoginErrorMessage(
@@ -542,7 +542,7 @@ export default function EmailLoginScreen() {
   };
 
   const handleGoHome = () => {
-    router.push(ROUTES.APPLY);
+    router.push(ROUTES.HOME);
   };
 
   const handleBackToSignup = () => {

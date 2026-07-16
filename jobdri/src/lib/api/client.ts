@@ -1,5 +1,5 @@
 import { clearAuthTokens, getAuthHeaders, API_BASE_URL } from "@/lib/auth";
-import { ROUTES } from "@/constants/routes";
+// import { ROUTES } from "@/constants/routes";
 
 export { API_BASE_URL, getAuthHeaders };
 
@@ -23,7 +23,7 @@ export function handleUnauthorized(): never {
 
   if (typeof window !== "undefined") {
     const redirectPath = encodeURIComponent(window.location.pathname);
-    window.location.replace(`${ROUTES.LOGIN}?redirect=${redirectPath}`);
+    window.location.replace(`/login?redirect=${redirectPath}`);
   }
 
   throw new UnauthorizedError();

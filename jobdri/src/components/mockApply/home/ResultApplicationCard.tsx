@@ -62,7 +62,7 @@ export function ResultApplicationCard({
     <article
       role="button"
       tabIndex={0}
-      className="relative flex w-[293px] p-5 flex-col cursor-pointer items-start justify-between rounded-card bg-fill-quaternary-default min-h-[160px] hover:shadow-card active:bg-fill-quaternary-default-hover"
+      className="relative flex w-ful p-5 flex-col cursor-pointer items-start justify-between rounded-card bg-fill-quaternary-default min-h-[160px] hover:shadow-card active:bg-fill-quaternary-default-hover"
       onClick={onResumeClick}
       onKeyDown={(event) => handleApplicationCardKeyDown(event, onResumeClick)}
     >

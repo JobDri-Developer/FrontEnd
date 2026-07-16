@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
@@ -12,6 +12,7 @@ import {
   requestLogout,
 } from "@/lib/auth";
 import { fetchCreditBalance } from "@/lib/api/credit";
+import { fetchMyMockApplies } from "@/lib/api/mockApplies";
 import LnbDefault from "./LnbDefault";
 import LnbFolded from "./LnbFolded";
 import {
@@ -19,24 +20,20 @@ import {
   type LnbNotificationItem,
 } from "./LnbNotification";
 import {
-  defaultRecentItems,
   type LnbItemKey,
-  type LnbNavItem,
   type LnbRecentItem,
+  type LnbNavItem,
 } from "./LnbShared";
 
 interface LnbProps {
   initialActiveItem?: LnbItemKey;
   email?: string;
   className?: string;
-  recentItems?: LnbRecentItem[];
   notificationItems?: LnbNotificationItem[];
   defaultRecentOpen?: boolean;
   hasNotification?: boolean;
   disableCreditFetch?: boolean;
 }
-
-const defaultEmail = "jobdri@gmail.com";
 
 function subscribeToStoredEmail(onStoreChange: () => void) {
   const handleStorage = (event: StorageEvent) => {
@@ -44,12 +41,8 @@ function subscribeToStoredEmail(onStoreChange: () => void) {
       onStoreChange();
     }
   };
-
   window.addEventListener("storage", handleStorage);
-
-  return () => {
-    window.removeEventListener("storage", handleStorage);
-  };
+  return () => window.removeEventListener("storage", handleStorage);
 }
 
 function getStoredEmailSnapshot() {
@@ -68,77 +61,95 @@ export default function Lnb({
   initialActiveItem = "apply",
   email,
   className,
-  recentItems = defaultRecentItems,
   notificationItems = defaultNotificationItems,
   defaultRecentOpen = true,
   hasNotification = true,
   disableCreditFetch = false,
 }: LnbProps) {
   const router = useRouter();
+
   const storedEmail = useSyncExternalStore(
     subscribeToStoredEmail,
     getStoredEmailSnapshot,
     getServerStoredEmailSnapshot,
   );
-  const displayEmail = (email ?? storedEmail) || defaultEmail;
+
+  const displayEmail = email ?? storedEmail;
   const emailInitial = getEmailInitial(displayEmail);
+
+  // States
   const [creditCount, setCreditCount] = useState<number>(0);
   const [isFold, setIsFold] = useState(false);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
-  const [activeItem, setActiveItem] =
-    useState<LnbItemKey | undefined>(initialActiveItem);
-  const [selectedRecentItemId, setSelectedRecentItemId] = useState<string>(
-    recentItems[1]?.id ?? recentItems[0]?.id ?? "",
+  const [activeItem, setActiveItem] = useState<LnbItemKey | undefined>(
+    initialActiveItem,
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [isRecentOpen, setIsRecentOpen] = useState(defaultRecentOpen);
 
-  const handleToggleFold = () => {
-    setIsFold((prevIsFold) => !prevIsFold);
-  };
+  // API Data States
+  const [recentItems, setRecentItems] = useState<LnbRecentItem[]>([]);
+  const [selectedRecentItemId, setSelectedRecentItemId] = useState<string>("");
 
-  const handleNavItemClick = (item: LnbNavItem) => {
-    if (item.href) {
-      setActiveItem(item.key);
-      router.push(item.href);
-      return;
-    }
-
-    setShowComingSoonModal(true);
-  };
-
-  const closeComingSoonModal = () => setShowComingSoonModal(false);
-
-  const handleRecentItemClick = (item: LnbRecentItem) => {
-    setSelectedRecentItemId(item.id);
-  };
-
+  // Fetch API Data
   useEffect(() => {
-    if (disableCreditFetch) {
-      return;
-    }
+    const loadData = async () => {
+      try {
+        const data = await fetchMyMockApplies();
+        const allItems = [...data.inProgress, ...data.completed];
 
+        const mappedItems: LnbRecentItem[] = allItems.map((item) => ({
+          id: String(item.mockApplyId),
+          companyName: item.companyName,
+          jobTitle:
+            item.jobTitle || item.detailClassificationName || "직무 미지정",
+          version: item.version ?? 1,
+        }));
+
+        setRecentItems(mappedItems);
+        if (mappedItems.length > 0) {
+          setSelectedRecentItemId(mappedItems[0].id);
+        }
+      } catch (error) {
+        console.error("데이터 로드 실패:", error);
+        setRecentItems([]);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Credit Fetch
+  useEffect(() => {
+    if (disableCreditFetch) return;
     fetchCreditBalance()
       .then(setCreditCount)
       .catch(() => {});
   }, [disableCreditFetch]);
 
+  // Handlers
+  const handleToggleFold = () => setIsFold((prev) => !prev);
+
+  const handleNavItemClick = (item: LnbNavItem) => {
+    if (item.href) {
+      setActiveItem(item.key);
+      router.push(item.href);
+    } else {
+      setShowComingSoonModal(true);
+    }
+  };
+
   const handleLogout = async () => {
-    const accessToken = window.localStorage.getItem(
-      AUTH_STORAGE_KEYS.accessToken,
-    );
-    const refreshToken = window.localStorage.getItem(
-      AUTH_STORAGE_KEYS.refreshToken,
-    );
+    const accessToken = localStorage.getItem(AUTH_STORAGE_KEYS.accessToken);
+    const refreshToken = localStorage.getItem(AUTH_STORAGE_KEYS.refreshToken);
 
     if (accessToken && refreshToken) {
       try {
         await requestLogout(accessToken, refreshToken);
       } catch (error) {
-        console.error("서버 로그아웃 처리 실패:", error);
+        console.error("로그아웃 처리 실패:", error);
       }
     }
-
     clearAuthTokens();
     router.replace("/login");
   };
@@ -147,7 +158,7 @@ export default function Lnb({
     <>
       <aside
         className={clsx(
-          "flex h-screen min-h-[800px] shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out",
+          "sticky top-0 flex h-screen min-h-[800px] shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out",
           isFold ? "w-[52px] items-center" : "w-[280px]",
           className,
         )}
@@ -177,12 +188,10 @@ export default function Lnb({
             selectedRecentItemId={selectedRecentItemId}
             onLogout={handleLogout}
             onNavItemClick={handleNavItemClick}
-            onRecentItemClick={handleRecentItemClick}
+            onRecentItemClick={(item) => setSelectedRecentItemId(item.id)}
             onSearchQueryChange={setSearchQuery}
             onToggleFold={handleToggleFold}
-            onToggleRecentOpen={() =>
-              setIsRecentOpen((prevIsRecentOpen) => !prevIsRecentOpen)
-            }
+            onToggleRecentOpen={() => setIsRecentOpen((prev) => !prev)}
           />
         )}
       </aside>
@@ -192,13 +201,11 @@ export default function Lnb({
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
             <ModalNotice
               title="아직 준비중인 서비스입니다"
-              description={
-                "더 나은 서비스를 위해 노력하고 있습니다!\n조금만 기다려 주세요"
-              }
-              onClose={closeComingSoonModal}
+              description="더 나은 서비스를 위해 노력하고 있습니다!\n조금만 기다려 주세요"
+              onClose={() => setShowComingSoonModal(false)}
               primaryAction={{
                 label: "확인",
-                onClick: closeComingSoonModal,
+                onClick: () => setShowComingSoonModal(false),
               }}
             />
           </div>,

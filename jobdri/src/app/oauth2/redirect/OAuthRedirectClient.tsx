@@ -16,7 +16,9 @@ export default function OAuthRedirectClient() {
     accessToken && refreshToken
       ? "Google 로그인 처리 중입니다."
       : errorMessage ||
-        (error ? "Google 로그인에 실패했습니다." : "로그인 정보를 확인할 수 없습니다.");
+        (error
+          ? "Google 로그인에 실패했습니다."
+          : "로그인 정보를 확인할 수 없습니다.");
 
   useEffect(() => {
     if (accessToken && refreshToken) {
