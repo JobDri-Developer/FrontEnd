@@ -116,7 +116,30 @@ export default function Home() {
             {/* 이어서 작성하기 섹션 */}
             <ResultDraftList
               drafts={drafts}
-              onItemClick={(id) => console.log(id)}
+              onItemClick={(id) => {
+                const targetDraft = drafts.find(
+                  (draft) => draft.id === String(id),
+                );
+
+                if (!targetDraft) return;
+
+                switch (targetDraft.currentStep) {
+                  case 1:
+                    // 1단계 (공고 확인/질문 선택)에서 멈췄을 때
+                    router.push(`/mockApply/question-select/${id}`);
+                    break;
+                  case 2:
+                    // 2단계 (자소서 작성)에서 멈췄을 때
+                    router.push(`/mockApply/answer-write/${id}`);
+                    break;
+                  case 3:
+                    // 3단계 (채점 중)일 때 (보통 대기 화면이나 결과 화면으로)
+                    router.push(`/mockApply/grading/${id}`);
+                    break;
+                  default:
+                    router.push(`/mockApply/${id}`);
+                }
+              }}
               onDelete={(id) => console.log(id)}
             />
 
@@ -124,8 +147,13 @@ export default function Home() {
             <ResultApplicationList
               applications={results}
               onDelete={(app) => console.log(app.id, "삭제")}
-              onRetry={(app) => console.log(app.id, "다시하기")}
-              onResume={(app) => console.log(app.id, "결과보기")}
+              onRetry={(app) => {
+                router.push(`/mockApply/retry/${app.jobPostingId}`);
+              }}
+              onResume={(app) => {
+                // 예시: 결과 상세 페이지로 이동!
+                router.push(`/mockApply/result/${app.mockApplyId}`);
+              }}
             />
           </div>
         </main>
