@@ -53,6 +53,7 @@ import IC_EX_LINK from "@/assets/ic_ExternalLink.svg";
 import IC_TOKEN from "@/assets/ic_Token.svg";
 import IC_SPARKLE from "@/assets/ic_Sparkles.svg";
 import IC_SPARKLE_16 from "@/assets/ic_Sparkles_16.svg";
+import IC_SPARKLE_LOADER from "@/assets/ic_Sparkle_Loader.svg";
 import IC_SEARCH from "@/assets/ic_Search.svg";
 import IC_LIGHTBULB from "@/assets/ic_Lightbulb.svg";
 import IC_TEXT from "@/assets/ic_Text.svg";
@@ -128,6 +129,7 @@ const iconMap = {
   TOKEN: IC_TOKEN,
   SPARKLE: IC_SPARKLE,
   SPARKLE_16: IC_SPARKLE_16,
+  SPARKLE_LOADER: IC_SPARKLE_LOADER,
   SEARCH: IC_SEARCH,
   LIGHTBULB: IC_LIGHTBULB,
   TEXT: IC_TEXT,

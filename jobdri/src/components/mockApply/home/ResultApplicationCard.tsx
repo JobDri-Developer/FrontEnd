@@ -1,6 +1,6 @@
 "use client";
 
-import { ApplicationKebabButton } from "./ApplicationKebabButton";
+import React, { useState, useRef, useEffect } from "react";
 import {
   CreatedAt,
   handleApplicationCardKeyDown,
@@ -8,22 +8,7 @@ import {
 import type { ApplicationCardData } from "./types";
 import Avatar from "./Avatar";
 import Icon from "@/components/common/icons/Icon";
-
-function ScoreText({ score }: Pick<ApplicationCardData, "score">) {
-  const displayScore = typeof score === "number" ? score : 0;
-
-  return (
-    <div className="flex items-center gap-1">
-      <div className="flex items-start gap-0.5">
-        <span className="text-h24-med text-text-neutral-title ">
-          {displayScore}
-        </span>
-        <span className="text-h24-med text-text-neutral-title ">점</span>
-      </div>
-      <Icon type="CHEVRON_R" className="h-5 w-5 fill-icon-neutral-default" />
-    </div>
-  );
-}
+import { DropDownMenu } from "@/components/common/dropdown";
 
 export function ResultApplicationCard({
   company,
@@ -40,34 +25,82 @@ export function ResultApplicationCard({
   onRetryClick?: () => void;
   onResumeClick?: () => void;
 }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
+
+  const handleKebabClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen((prev) => !prev);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    onDeleteClick(); // 부모로부터 받은 삭제 함수 실행
+  };
+
+  const handleRetry = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    onRetryClick?.(); // 부모로부터 받은 다시하기 함수 실행
+  };
+
   return (
     <article
       role="button"
       tabIndex={0}
-      className="relative flex w-[293px] p-5 flex-col cursor-pointer items-start justify-between rounded-card bg-fill-quaternary-default min-h-[160px]  hover:shadow-card active:bg-fill-quaternary-default-hover"
+      className="relative flex w-[293px] p-5 flex-col cursor-pointer items-start justify-between rounded-card bg-fill-quaternary-default min-h-[160px] hover:shadow-card active:bg-fill-quaternary-default-hover"
       onClick={onResumeClick}
       onKeyDown={(event) => handleApplicationCardKeyDown(event, onResumeClick)}
     >
       <div className="flex flex-col self-stretch w-full">
         <div className="flex items-center justify-between self-stretch mb-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <>
-              <Avatar name={company} type="company" size="small" />
-              <span className="max-w-full truncate text-b16-semibold text-text-neutral-title ">
-                {company}
-              </span>
-            </>
+            <Avatar name={company} type="company" size="small" />
+            <span className="max-w-full truncate text-b16-semibold text-text-neutral-title">
+              {company}
+            </span>
           </div>
-          <ApplicationKebabButton
-            label={`모의 서류 결과 메뉴`}
-            onDeleteClick={onDeleteClick}
-            onRetryClick={onRetryClick}
-          />
+
+          {/* 케밥 버튼 및 드롭다운 메뉴 */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={handleKebabClick}
+              className="p-1 rounded-md text-icon-neutral-default hover:bg-fill-quaternary-assistive-hover transition-colors"
+              aria-label="모의 서류 결과 메뉴"
+            >
+              <Icon type="KABAB" />
+            </button>
+
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 z-10">
+                <DropDownMenu
+                  items={[
+                    { label: "다시하기", onClick: handleRetry },
+                    { label: "삭제하기", onClick: handleDelete },
+                  ]}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* 2. 중단: 직무 이름 */}
+        {/* 중단: 직무 이름 */}
         <div className="flex min-w-0 flex-row items-start self-stretch gap-0.5">
-          <span className="max-w-full truncate text-sub14-med text-text-neutral-description ">
+          <span className="max-w-full truncate text-sub14-med text-text-neutral-description">
             {position}
           </span>
           <span className="text-text-neutral-caption text-sub14-med">
@@ -76,12 +109,11 @@ export function ResultApplicationCard({
         </div>
       </div>
 
+      {/* 하단: 점수 및 날짜 */}
       <div className="flex items-end justify-between self-stretch mt-6">
-        <p className=" text-cap12-med  text-text-neutral-caption">
-          {createdAt}
-        </p>
+        <p className="text-cap12-med text-text-neutral-caption">{createdAt}</p>
         <div className="flex flex-row justify-center items-end gap-0.5">
-          <p className="text-h24-bold"> {score}</p>
+          <p className="text-h24-bold">{score}</p>
           <p className="text-label14-semibold">점</p>
           <Icon type="CHEVRON_R" className="text-icon-neutral-default" />
         </div>

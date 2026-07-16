@@ -5,11 +5,12 @@
 @import "../styles/grid.css";
 @import "../styles/shadow.css";
 
-/* @layer base {
+@layer base {
   body {
-    font-family: "Pretendard-Variable", sans-serif;
+    font-family: "Pretendard-Variable", sans-serif !important;
+    -webkit-font-smoothing: antialiased;
   }
-} */
+}
 
 :is(
     button,
