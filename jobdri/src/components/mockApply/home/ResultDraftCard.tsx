@@ -1,18 +1,22 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ResultDraftStep } from "./ResultDraftStep";
-import { DraftData, MOCK_API_DATA } from "./types";
+import { DraftData } from "./types";
 import Icon from "@/components/common/icons/Icon";
 import Avatar from "./Avatar";
 import { DropDownMenu } from "@/components/common/dropdown";
 import clsx from "clsx";
 
-interface DraftItemProps {
+interface ResultDraftCardProps {
   data: DraftData;
   onClick?: () => void;
   onDelete?: (id: string) => void; // 삭제 핸들러 추가
 }
 
-const DraftItem: React.FC<DraftItemProps> = ({ data, onClick, onDelete }) => {
+export const ResultDraftCard: React.FC<ResultDraftCardProps> = ({
+  data,
+  onClick,
+  onDelete,
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -53,33 +57,37 @@ const DraftItem: React.FC<DraftItemProps> = ({ data, onClick, onDelete }) => {
         onClick && "cursor-pointer",
       )}
     >
-      <div className="flex items-center w-[618px] gap-4 flex-1">
+      {/* 1. 왼쪽 영역: 무조건 전체의 2/3 (66.6%) 고정 */}
+      {/* 💡 flex-1을 빼고 shrink-0을 넣어서 크기가 줄어들지 않게 꽉 잡아줍니다. */}
+      <div className="flex items-center w-2/3 gap-4 shrink-0 min-w-0">
         <Avatar name={data.companyName} size="medium" />
 
-        <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-1 text-label14-semibold">
-            {data.companyName}
-            <Icon type="CHEVRON_R_S" className="text-icon-neutral-strong" />
+        <div className="flex flex-col gap-0.5 min-w-0">
+          <div className="flex items-center gap-1 text-label14-semibold min-w-0">
+            <span className="truncate">{data.companyName}</span>
+            <Icon
+              type="CHEVRON_R_S"
+              className="shrink-0 text-icon-neutral-strong"
+            />
           </div>
-          <span className="text-cap12-med text-text-neutral-description">
+          <span className="truncate text-cap12-med text-text-neutral-description">
             {data.position}
           </span>
         </div>
       </div>
 
-      <div className="flex-1 flex justify-center">
-        <ResultDraftStep
-          currentStep={data.currentStep}
-          totalSteps={data.totalSteps}
-        />
+      {/* 2. 중앙 영역: 남은 공간(1/3)의 절반을 알아서 차지 */}
+      {/* 💡 flex-1만 남겨서 유연하게 맞춥니다. */}
+      <div className="flex-1 flex justify-center shrink-0">
+        <ResultDraftStep currentStep={data.currentStep} />
       </div>
 
-      <div className="flex items-center justify-end gap-4 flex-1">
-        <span className="text-cap12-med w-[160px] pl-2 text-text-neutral-caption">
+      <div className="flex-1 flex items-center justify-end gap-4 min-w-0">
+        <span className=" text-cap12-med w-40 text-text-neutral-caption text-center pl-2">
           {data.updatedAt}
         </span>
 
-        <div className="relative" ref={menuRef}>
+        <div className="relative shrink-0" ref={menuRef}>
           <button
             onClick={handleKababClick}
             className="p-1 rounded-md text-gray-400 hover:bg-gray-100 transition-colors"
@@ -104,31 +112,3 @@ const DraftItem: React.FC<DraftItemProps> = ({ data, onClick, onDelete }) => {
     </div>
   );
 };
-
-export default function ResultDraftCard() {
-  const [drafts, setDrafts] = useState<DraftData[]>(MOCK_API_DATA);
-
-  const handleItemClick = (id: string) => {
-    console.log(`${id}번 아이템 클릭됨! 상세 페이지 이동`);
-  };
-
-  const handleDelete = (id: string) => {
-    console.log(`${id}번 아이템 삭제 요청!`);
-    setDrafts((prev) => prev.filter((draft) => draft.id !== id));
-  };
-
-  return (
-    <div className="max-w-4xl mx-auto p-8 bg-gray-50 rounded-3xl border border-dashed border-purple-300">
-      <div className="flex flex-col gap-2">
-        {drafts.map((draft) => (
-          <DraftItem
-            key={draft.id}
-            data={draft}
-            onClick={() => handleItemClick(draft.id)}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}

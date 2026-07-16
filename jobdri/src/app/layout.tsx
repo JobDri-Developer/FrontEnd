@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import LayoutShell from "./LayoutShell";
+// import LayoutShell from "./LayoutShell";
 
 export const metadata: Metadata = {
   title: "JobDri",
@@ -17,9 +17,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/ic_JobDri.svg" />
       </head>
-      <body className="min-h-full bg-line-neutral-assistive">
-        <LayoutShell>{children}</LayoutShell>
-      </body>
+      <body className="min-h-full bg-line-neutral-assistive">{children}</body>
     </html>
   );
 }

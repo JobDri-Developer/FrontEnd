@@ -409,7 +409,10 @@ function LnbSearchBar({
   return (
     <div className="flex items-center gap-2 self-stretch rounded-cta-s border border-line-neutral-default bg-bg-contents-default p-1.5">
       <span className="flex min-w-0 flex-1 items-center gap-2 px-0.5 pt-px pb-0.5">
-        <Icon type="SEARCH" className="h-4 w-4 shrink-0 text-icon-neutral-default" />
+        <Icon
+          type="SEARCH"
+          className="h-4 w-4 shrink-0 text-icon-neutral-default"
+        />
         <input
           ref={inputRef}
           value={searchQuery}
@@ -454,9 +457,7 @@ function RecentItemButton({
       ? titleElement.scrollWidth > titleElement.clientWidth
       : false;
   };
-  const updateTooltipPosition = (
-    event: PointerEvent<HTMLButtonElement>,
-  ) => {
+  const updateTooltipPosition = (event: PointerEvent<HTMLButtonElement>) => {
     if (!isTitleTruncated()) {
       setTooltipPosition(null);
       return;
@@ -846,8 +847,9 @@ export default function Lnb({
   const [creditCount, setCreditCount] = useState<number>(0);
   const [isFold, setIsFold] = useState(false);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
-  const [activeItem, setActiveItem] =
-    useState<LnbItemKey | undefined>(initialActiveItem);
+  const [activeItem, setActiveItem] = useState<LnbItemKey | undefined>(
+    initialActiveItem,
+  );
   const [selectedRecentItemId, setSelectedRecentItemId] = useState<string>(
     recentItems[1]?.id ?? recentItems[0]?.id ?? "",
   );
@@ -902,49 +904,49 @@ export default function Lnb({
     <>
       <aside
         className={clsx(
-          "flex h-screen min-h-[800px] shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out",
+          "sticky top-0 flex h-screen min-h-[800px] shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out",
           isFold ? "w-[52px] items-center" : "w-[280px]",
           className,
         )}
       >
-      <div
-        className={clsx(
-          "flex min-h-0 flex-1 flex-col self-stretch",
-          isFold ? "items-center" : "items-start",
-        )}
-      >
-        <LnbHeader
-          isFold={isFold}
-          onToggleFold={() => setIsFold((prevIsFold) => !prevIsFold)}
-        />
-        <LnbDivider />
-
-        <div className="flex min-h-0 flex-1 flex-col items-start self-stretch">
-          <LnbPrimaryNav
-            activeItem={activeItem}
+        <div
+          className={clsx(
+            "flex min-h-0 flex-1 flex-col self-stretch",
+            isFold ? "items-center" : "items-start",
+          )}
+        >
+          <LnbHeader
             isFold={isFold}
-            onNavItemClick={handleNavItemClick}
+            onToggleFold={() => setIsFold((prevIsFold) => !prevIsFold)}
           />
           <LnbDivider />
-          <LnbSearchMenu
-            isFold={isFold}
-            recentItems={recentItems}
-            defaultRecentOpen={defaultRecentOpen}
-            selectedRecentItemId={selectedRecentItemId}
-            onRecentItemClick={handleRecentItemClick}
-          />
-        </div>
-      </div>
 
-      <LnbFooter
-        isFold={isFold}
-        creditCount={creditCount}
-        email={displayEmail}
-        emailInitial={emailInitial}
-        hasNotification={hasNotification}
-        notificationItems={notificationItems}
-        onLogout={handleLogout}
-      />
+          <div className="flex min-h-0 flex-1 flex-col items-start self-stretch">
+            <LnbPrimaryNav
+              activeItem={activeItem}
+              isFold={isFold}
+              onNavItemClick={handleNavItemClick}
+            />
+            <LnbDivider />
+            <LnbSearchMenu
+              isFold={isFold}
+              recentItems={recentItems}
+              defaultRecentOpen={defaultRecentOpen}
+              selectedRecentItemId={selectedRecentItemId}
+              onRecentItemClick={handleRecentItemClick}
+            />
+          </div>
+        </div>
+
+        <LnbFooter
+          isFold={isFold}
+          creditCount={creditCount}
+          email={displayEmail}
+          emailInitial={emailInitial}
+          hasNotification={hasNotification}
+          notificationItems={notificationItems}
+          onLogout={handleLogout}
+        />
       </aside>
 
       {showComingSoonModal &&
