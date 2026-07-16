@@ -4,28 +4,45 @@ import clsx from "clsx";
 
 export interface ChipTagProps {
   label: string;
+  color?: "default" | "blue" | "green" | "red" | "pink";
   state?: "default" | "proven" | "mentioned" | "fabricated";
   className?: string;
 }
 
-const styles: Record<NonNullable<ChipTagProps["state"]>, string> = {
+const colorStyles: Record<NonNullable<ChipTagProps["color"]>, string> = {
   default:
     "border border-line-neutral-default bg-fill-quaternary-default text-text-neutral-description",
-  proven: "px-1.5 w-fit bg-fill-secondary-default text-text-neutral-title",
-  fabricated: "px-1.5 w-fit bg-text-highlight-fabricated text-white",
-  mentioned: "px-1.5 w-fit bg-text-highlight-mentioned text-white",
+  blue: "bg-fill-primary-assistive text-text-primary-strong",
+  green: "bg-green-300 text-green-800",
+  red: "bg-fill-system-fail-hover text-text-system-fail",
+  pink: "bg-fill-sub-pink-hover text-fill-sub-pink-default",
+};
+
+const stateColorMap: Record<
+  NonNullable<ChipTagProps["state"]>,
+  NonNullable<ChipTagProps["color"]>
+> = {
+  default: "default",
+  proven: "green",
+  mentioned: "pink",
+  fabricated: "red",
 };
 
 export default function ChipTag({
   label,
-  state = "default",
+  color = "default",
+  state,
   className,
 }: ChipTagProps) {
+  // 렌더링 우선순위 결정: state가 지정되어 있다면 state 매핑 컬러를, 아니라면 color prop을 사용
+  const resolvedColor =
+    state && state !== "default" ? stateColorMap[state] : color;
+
   return (
     <div
       className={clsx(
-        "inline-flex items-center justify-center gap-2.5 rounded-chip-s px-1.5 py-1 text-cap12-med tracking-normal [font-feature-settings:'liga'_off,'clig'_off]",
-        styles[state],
+        "inline-flex w-fit items-center justify-center gap-2.5 rounded-chip-s px-1.5 pt-1 pb-[2.6px] text-cap12-semibold",
+        colorStyles[resolvedColor],
         className,
       )}
     >

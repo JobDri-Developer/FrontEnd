@@ -5,6 +5,7 @@ export type TooltipPlacement =
   | "right_mid"
   | "left_mid"
   | "left_up"
+  | "right_up"
   | "up_mid"
   | "up_left"
   | "up_right"
@@ -20,16 +21,33 @@ interface TooltipProps {
   className?: string;
 }
 
-const arrowStyles: Record<TooltipPlacement, string> = {
-  right_mid: "-right-[29px] top-1/2 -translate-y-1/2",
-  left_mid: "-left-[29px] top-1/2 -translate-y-1/2",
-  left_up: "-left-[29px] top-[11.5px]",
-  up_mid: "right-[52px] top-[-11px]",
-  up_left: "left-0 top-[-11px]",
-  up_right: "right-0 top-[-11px]",
-  down_left: "bottom-[-11px] left-0",
-  down_mid: "bottom-[-11px] right-[52px]",
-  down_right: "bottom-[-11px] right-0",
+const containerFlexStyles: Record<TooltipPlacement, string> = {
+  up_left: "flex-col items-start",
+  up_mid: "flex-col items-center",
+  up_right: "flex-col items-end",
+  down_left: "flex-col-reverse items-start",
+  down_mid: "flex-col-reverse items-center",
+  down_right: "flex-col-reverse items-end",
+  right_up: "flex-row-reverse items-start",
+  left_up: "flex-row items-start",
+  left_mid: "flex-row items-center",
+  right_mid: "flex-row-reverse items-center",
+};
+
+const arrowSpacingStyles: Record<TooltipPlacement, string> = {
+  up_left: "ml-[20px] -mb-[1px]",
+  up_mid: "-mb-[1px]",
+  up_right: "mr-[20px] -mb-[1px]",
+
+  down_left: "ml-[20px] -mt-[2px]",
+  down_mid: "-mt-[2px]",
+  down_right: "mr-[20px] -mt-[2px]",
+
+  left_up: "mt-[10px] -mr-[1px]",
+  left_mid: "-mr-[1px]",
+
+  right_up: "mt-[10px]",
+  right_mid: "-ml-[1px]",
 };
 
 const arrowIconStyles: Partial<Record<TooltipPlacement, string>> = {
@@ -55,16 +73,13 @@ export function Tooltip({
   return (
     <div
       role="tooltip"
-      className={clsx(
-        "relative inline-flex max-w-[240px] items-center justify-center gap-0.5 rounded-[8px] bg-fill-tertiary-default px-3 py-2 text-center text-text-neutral-white shadow-card",
-        className,
-      )}
+      className={clsx("inline-flex", containerFlexStyles[placement], className)}
     >
-      <span
+      <div
         aria-hidden="true"
         className={clsx(
-          "absolute flex w-12 flex-col items-center justify-center gap-2.5 text-fill-tertiary-default",
-          arrowStyles[placement],
+          "flex items-center justify-center text-fill-tertiary-default z-10 relative",
+          arrowSpacingStyles[placement],
         )}
       >
         <Icon
@@ -74,23 +89,23 @@ export function Tooltip({
             arrowIconStyles[placement],
           )}
         />
-      </span>
+      </div>
 
-      <span className="flex min-w-0 items-center gap-0.5 text-label14-med [font-feature-settings:'liga'_off,'clig'_off]">
-        <span className="flex min-w-0 flex-col gap-0.5">
-          {contentLines.map((line, index) => (
-            <span
-              key={`${line}-${index}`}
-              className="break-keep [overflow-wrap:anywhere]"
-            >
-              {line}
-            </span>
-          ))}
-        </span>
-        {showIcon && (
+      <div className="flex max-w-[240px] items-center justify-center gap-0.5 rounded-[8px] bg-fill-tertiary-default px-3 py-2 text-text-neutral-white shadow-card relative z-0">
+        <span className="flex min-w-0 items-center gap-0.5 text-label14-med [font-feature-settings:'liga'_off,'clig'_off]">
+          <span className="flex min-w-0 flex-col gap-0.5">
+            {contentLines.map((line, index) => (
+              <span
+                key={`${line}-${index}`}
+                className="break-keep [overflow-wrap:anywhere]"
+              >
+                {line}
+              </span>
+            ))}
+          </span>
           <Icon type="SPARKLE" className="h-4 w-4 shrink-0 text-icon-white" />
-        )}
-      </span>
+        </span>
+      </div>
     </div>
   );
 }
