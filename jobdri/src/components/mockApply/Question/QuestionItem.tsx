@@ -1,3 +1,5 @@
+import Icon from "@/components/common/icons/Icon";
+
 export interface QuestionData {
   id: number;
   title: string;
@@ -9,6 +11,7 @@ interface QuestionItemProps {
   data: QuestionData;
   isActive: boolean;
   onClick: () => void;
+  onDelete?: (id: number) => void;
 }
 
 export const QuestionItem = ({
@@ -16,16 +19,18 @@ export const QuestionItem = ({
   data,
   isActive,
   onClick,
+  onDelete,
 }: QuestionItemProps) => {
   return (
     <div
       onClick={onClick}
       className={`
+        group 
         flex flex-row gap-3 p-4 rounded-card-s w-64 border cursor-pointer transition-colors duration-200
         ${
           isActive
-            ? "border-line-primary-default bg-fill-primary-assistive"
-            : "border-line-neutral-default bg-fill-quaternary-default hover:border-line-primary-default"
+            ? "border-line-primary-default bg-fill-primary-assistive  hover:shadow-chip"
+            : "border-line-neutral-default bg-fill-quaternary-default hover:border-none hover:shadow-chip"
         }
       `}
     >
@@ -33,7 +38,7 @@ export const QuestionItem = ({
         {/* 번호 인디케이터 */}
         <div
           className={`
-          flex items-center justify-center w-8 h-8 rounded-toast-s text-btn16-semibold
+          flex items-center justify-center w-8 h-8 rounded-toast-s text-btn16-semibold shrink-0
           ${isActive ? "bg-fill-primary-default text-text-neutral-white" : "bg-icon-neutral-weak text-text-neutral-description"}
         `}
         >
@@ -41,17 +46,28 @@ export const QuestionItem = ({
         </div>
       </div>
 
-      <div className="flex-1 min-w-0 flex flex-col justify-center min-h-[32px]">
+      <div className="flex-1 flex flex-row min-w-0 items-center justify-between gap-2 min-h-[32px]">
         {data.content ? (
-          <>
-            <p className="text-cap12-semibold text-text-neutral-title truncate ">
-              {data.content}
-            </p>
-          </>
+          <p className="flex-1 text-cap12-semibold text-left text-text-neutral-title line-clamp-2">
+            {data.content}
+          </p>
         ) : (
-          <span className="text-cap12-semibold text-text-neutral-disabled">
+          <span className="flex-1 text-cap12-semibold text-left text-text-neutral-disabled line-clamp-2">
             {data.title}
           </span>
+        )}
+
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(data.id);
+            }}
+            className="hidden group-hover:flex items-center justify-center shrink-0"
+          >
+            <Icon type="TRASH" className="text-text-system-fail" />
+          </button>
         )}
       </div>
     </div>

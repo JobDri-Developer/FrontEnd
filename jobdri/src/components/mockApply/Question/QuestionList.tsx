@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { QuestionItem, type QuestionData } from "./QuestionItem";
-import Icon from "@/components/common/icons/Icon";
 import { Button } from "@/components/common/buttons";
 
 export const QuestionList = () => {
-  // 제네릭을 사용하여 상태의 타입을 명시
   const [questions, setQuestions] = useState<QuestionData[]>([
     {
       id: 1,
@@ -19,14 +17,30 @@ export const QuestionList = () => {
   const handleAddQuestion = () => {
     if (questions.length < MAX_QUESTIONS) {
       const newQuestion: QuestionData = {
-        id: Date.now(), // 실제 환경에서는 uuid나 서버 생성 id 사용 권장
+        id: Date.now(),
         title: "새로운 문항",
         content: "",
       };
 
       setQuestions((prev) => [...prev, newQuestion]);
-      setActiveIndex(questions.length); // 새 문항 추가 시 해당 문항으로 Active 상태 변경
+      setActiveIndex(questions.length);
     }
+  };
+
+  const handleDeleteQuestion = (id: number) => {
+    setQuestions((prev) => {
+      const targetIndex = prev.findIndex((q) => q.id === id);
+
+      const newList = prev.filter((q) => q.id !== id);
+
+      if (activeIndex === targetIndex) {
+        setActiveIndex(Math.max(0, targetIndex - 1));
+      } else if (activeIndex > targetIndex) {
+        setActiveIndex((prevActive) => prevActive - 1);
+      }
+
+      return newList;
+    });
   };
 
   return (
@@ -47,6 +61,7 @@ export const QuestionList = () => {
             data={q}
             isActive={activeIndex === idx}
             onClick={() => setActiveIndex(idx)}
+            onDelete={questions.length > 1 ? handleDeleteQuestion : undefined}
           />
         ))}
 
