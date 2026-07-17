@@ -1,4 +1,5 @@
 import Icon from "@/components/common/icons/Icon";
+import clsx from "clsx";
 
 export interface QuestionData {
   id: number;
@@ -21,21 +22,23 @@ export const QuestionItem = ({
   onClick,
   onDelete,
 }: QuestionItemProps) => {
+  const hasTitle = !!data.title && data.title.trim() !== "";
+
   return (
     <div
       onClick={onClick}
       className={`
         group 
-        flex flex-row gap-3 p-4 rounded-card-s w-full border cursor-pointer transition-colors duration-200
+        flex flex-row gap-3 p-4 rounded-card-s w-full border transition-colors duration-200
+        cursor-pointer select-none
         ${
           isActive
-            ? "border-line-primary-default bg-fill-primary-assistive  hover:shadow-chip"
-            : "border-line-neutral-default bg-fill-quaternary-default hover:border-none hover:shadow-chip"
+            ? "border-line-primary-default bg-fill-primary-assistive hover:shadow-chip"
+            : "border-line-neutral-default bg-fill-quaternary-default hover:border-transparent hover:shadow-chip"
         }
       `}
     >
       <div className="flex items-center gap-3">
-        {/* 번호 인디케이터 */}
         <div
           className={`
           flex items-center justify-center w-8 h-8 rounded-toast-s text-btn16-semibold shrink-0
@@ -47,15 +50,14 @@ export const QuestionItem = ({
       </div>
 
       <div className="flex-1 flex flex-row min-w-0 items-center justify-between gap-2 min-h-[32px]">
-        {data.content ? (
-          <p className="flex-1 text-cap12-semibold text-left text-text-neutral-title line-clamp-2">
-            {data.content}
-          </p>
-        ) : (
-          <span className="flex-1 text-cap12-semibold text-left text-text-neutral-disabled line-clamp-2">
-            {data.title}
-          </span>
-        )}
+        <span
+          className={clsx(
+            "flex-1 text-cap12-semibold text-left line-clamp-2",
+            hasTitle ? "text-text-neutral-title" : "text-text-neutral-disabled",
+          )}
+        >
+          {hasTitle ? data.title : "새로운 문항"}
+        </span>
 
         {onDelete && (
           <button
@@ -64,9 +66,19 @@ export const QuestionItem = ({
               e.stopPropagation();
               onDelete(data.id);
             }}
-            className="hidden group-hover:flex items-center justify-center shrink-0"
+            className={`
+              relative z-10 
+              flex items-center justify-center shrink-0 w-8 h-8 
+              opacity-0 group-hover:opacity-100 transition-opacity duration-200 
+              cursor-pointer bg-transparent
+            `}
           >
-            <Icon type="TRASH" className="text-text-system-fail" />
+            <span
+              className="pointer-events-none w-full h-full flex items-center justify-center"
+              style={{ pointerEvents: "none" }}
+            >
+              <Icon type="TRASH" className="text-text-system-fail" />
+            </span>
           </button>
         )}
       </div>

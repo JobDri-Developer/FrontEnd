@@ -30,7 +30,7 @@ export default function Toast({
         "flex  items-center justify-between shadow-default fixed transition-discrete",
 
         isTop
-          ? "top-10 left-1/2 -translate-x-1/2 rounded-card px-4 py-3 gap-3 w-fit"
+          ? "top-24 left-1/2 -translate-x-1/2 rounded-card px-4 py-3 gap-3 w-fit"
           : "bottom-28 right-5 rounded-card px-4 py-3 pl-5 self-stretch max-w-[400px]",
 
         isDark ? "bg-fill-tertiary-default" : "bg-fill-quaternary-default",

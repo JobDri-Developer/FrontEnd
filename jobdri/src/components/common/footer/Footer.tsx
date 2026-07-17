@@ -60,7 +60,7 @@ export default function Footer({
   return (
     <footer
       className={clsx(
-        "relative left-1/2 flex w-screen shrink-0 -translate-x-1/2 items-center justify-center gap-8 border-t border-line-neutral-default bg-bg-contents-default pt-4 pb-8",
+        " fixed bottom-0 left-1/2 flex w-screen shrink-0 -translate-x-1/2 items-center justify-center gap-8 border-t border-line-neutral-default bg-bg-contents-default pt-4 pb-8",
         className,
       )}
     >
