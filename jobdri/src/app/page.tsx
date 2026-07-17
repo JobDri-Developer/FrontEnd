@@ -108,7 +108,7 @@ export default function Home() {
               styleType="primary"
               size="large"
               iconType="SPARKLE"
-              onClick={() => router.push("/mockApply/apply-type")}
+              onClick={() => router.push("/mockApply/job/create")}
             />
           </div>
 
