@@ -65,7 +65,7 @@ export function Tooltip({
   placement = "up_mid",
   message = "1회 크레딧 무료 증정",
   lines,
-  showIcon = true,
+  showIcon = false,
   className,
 }: TooltipProps) {
   const contentLines = lines ?? [message];
@@ -91,7 +91,7 @@ export function Tooltip({
         />
       </div>
 
-      <div className="flex max-w-[240px] items-center justify-center gap-0.5 rounded-[8px] bg-fill-tertiary-default px-3 py-2 text-text-neutral-white shadow-card relative z-0">
+      <div className="flex w-full items-center justify-center gap-0.5 rounded-[8px] bg-fill-tertiary-default px-3 py-2 text-text-neutral-white shadow-card relative z-0">
         <span className="flex min-w-0 items-center gap-0.5 text-label14-med [font-feature-settings:'liga'_off,'clig'_off]">
           <span className="flex min-w-0 flex-col gap-0.5">
             {contentLines.map((line, index) => (
@@ -103,7 +103,9 @@ export function Tooltip({
               </span>
             ))}
           </span>
-          <Icon type="SPARKLE" className="h-4 w-4 shrink-0 text-icon-white" />
+          {showIcon && (
+            <Icon type="SPARKLE" className="h-4 w-4 shrink-0 text-icon-white" />
+          )}
         </span>
       </div>
     </div>

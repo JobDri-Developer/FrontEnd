@@ -1,47 +1,24 @@
-import React, { useState } from "react";
+import React from "react";
 import { QuestionItem, type QuestionData } from "./QuestionItem";
 import { Button } from "@/components/common/buttons";
+import { type QuestionItem as ApiQuestionItem } from "@/lib/api/questions";
 
-export const QuestionList = () => {
-  const [questions, setQuestions] = useState<QuestionData[]>([
-    {
-      id: 1,
-      title: "새로운 문항",
-      content: "문항 내용 더미텍스트입니다.문항 내용 더미텍스트입니다.",
-    },
-  ]);
-  const [activeIndex, setActiveIndex] = useState<number>(0);
+interface QuestionListProps {
+  questions: ApiQuestionItem[]; // API에서 받아온 전체 문항 배열
+  selectedId: string | null; // 현재 선택된 문항 ID
+  onSelect: (id: string) => void; // 문항 클릭 시 부모에게 알림
+  onAdd: () => void; // 문항 추가 시 부모에게 알림
+  onDelete: (id: string) => void; // 문항 삭제 시 부모에게 알림
+}
 
+export const QuestionList = ({
+  questions,
+  selectedId,
+  onSelect,
+  onAdd,
+  onDelete,
+}: QuestionListProps) => {
   const MAX_QUESTIONS = 5;
-
-  const handleAddQuestion = () => {
-    if (questions.length < MAX_QUESTIONS) {
-      const newQuestion: QuestionData = {
-        id: Date.now(),
-        title: "새로운 문항",
-        content: "",
-      };
-
-      setQuestions((prev) => [...prev, newQuestion]);
-      setActiveIndex(questions.length);
-    }
-  };
-
-  const handleDeleteQuestion = (id: number) => {
-    setQuestions((prev) => {
-      const targetIndex = prev.findIndex((q) => q.id === id);
-
-      const newList = prev.filter((q) => q.id !== id);
-
-      if (activeIndex === targetIndex) {
-        setActiveIndex(Math.max(0, targetIndex - 1));
-      } else if (activeIndex > targetIndex) {
-        setActiveIndex((prevActive) => prevActive - 1);
-      }
-
-      return newList;
-    });
-  };
 
   return (
     <div className="w-full flex flex-col gap-3">
@@ -58,10 +35,16 @@ export const QuestionList = () => {
           <QuestionItem
             key={q.id}
             index={idx}
-            data={q}
-            isActive={activeIndex === idx}
-            onClick={() => setActiveIndex(idx)}
-            onDelete={questions.length > 1 ? handleDeleteQuestion : undefined}
+            data={
+              {
+                id: Number(q.id),
+                title: q.question || "",
+                content: q.answer || "",
+              } as QuestionData
+            }
+            isActive={q.id === selectedId}
+            onClick={() => onSelect(q.id)}
+            onDelete={questions.length > 1 ? () => onDelete(q.id) : undefined}
           />
         ))}
 
@@ -70,7 +53,7 @@ export const QuestionList = () => {
           <Button
             label="문항 추가"
             iconType="ADD_S"
-            onClick={handleAddQuestion}
+            onClick={onAdd}
             styleType="tertiary"
             size="small"
           />
