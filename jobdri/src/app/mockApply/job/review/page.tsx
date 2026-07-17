@@ -157,7 +157,7 @@ export default function JobPostingReviewPage() {
           <LnbScrollbar
             metrics={scrollbarMetrics}
             size="l"
-            className="!top-2.5 !right-1 !bottom-2.5 z-10"
+            className="!top-[10px] !right-1 !bottom-[10px] z-10"
           />
         </div>
 
