@@ -114,6 +114,14 @@ export function JDInput({
     onChange?.(nextValue);
   };
 
+  const handleAdd = () => {
+    if (state === undefined) {
+      setInternalState("default");
+    }
+
+    onAdd?.();
+  };
+
   return (
     <div
       data-fill={fill}
@@ -168,7 +176,7 @@ export function JDInput({
               maxLength={maxLength}
               message=""
               selected
-              onAdd={onAdd}
+              onAdd={handleAdd}
               className="!w-full min-w-0 flex-1 gap-1"
             />
           </div>

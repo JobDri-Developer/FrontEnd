@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import SideHeaderContainer from "@/components/common/header/SideHeaderContainer";
@@ -27,7 +27,7 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="flex min-w-[600px] max-w-[1000px] self-stretch flex-col items-start gap-6 rounded-card bg-bg-contents-default px-5 pt-6 pb-7">
+    <section className="flex w-full min-w-[612px] max-w-[1000px] flex-col items-start gap-6 rounded-card bg-bg-contents-default px-5 pt-6 pb-7">
       <div className="flex items-center justify-center gap-2.5 px-1">
         <h2 className="text-[18px] leading-[26px] font-semibold tracking-[-0.36px] text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
           {title}
@@ -41,7 +41,7 @@ function SectionCard({
   );
 }
 
-function JobProfileRow() {
+function JobProfileRow({ avatarName }: { avatarName: string }) {
   return (
     <div className="flex w-full items-start gap-8 px-2 py-5">
       <div className="flex w-[200px] shrink-0 flex-col items-start justify-center gap-1">
@@ -73,7 +73,7 @@ function JobProfileRow() {
 
       <div className="flex flex-1 items-start py-0.5">
         <Avatar
-          name="토"
+          name={avatarName}
           type="company"
           size="large"
           isEditable
@@ -86,12 +86,18 @@ function JobProfileRow() {
 
 export default function JobPostingReviewPage() {
   const router = useRouter();
+  const [companyName, setCompanyName] = useState("");
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics(true, "job-posting-review", { trackPadding: 28 });
+  const companyAvatarName = useMemo(() => {
+    const trimmedCompanyName = companyName.trim();
+
+    return trimmedCompanyName.length > 0 ? trimmedCompanyName[0] : "T";
+  }, [companyName]);
 
   return (
-    <div className="h-dvh overflow-hidden bg-line-neutral-assistive">
-      <div className="flex h-dvh w-dvw flex-col bg-bg-white">
+    <div className="h-dvh w-dvw overflow-hidden bg-line-neutral-assistive">
+      <div className="flex h-dvh w-dvw min-w-[1100px] flex-col bg-bg-white">
         <Header
           companyName="토스"
           jobTitle="프로덕트 디자이너"
@@ -99,7 +105,7 @@ export default function JobPostingReviewPage() {
           currentStep={1}
           steps={wizardSteps}
           lastSavedAt="17:00"
-          className="shrink-0"
+          className="min-w-[1100px] max-w-none shrink-0 self-stretch"
         />
 
         <div className="relative flex min-h-0 w-full flex-1 items-stretch overflow-visible px-2 pb-0">
@@ -118,9 +124,9 @@ export default function JobPostingReviewPage() {
                   className="shrink-0 self-stretch"
                 />
 
-                <div className="flex [flex:1_0_0] flex-col items-start gap-3 pt-16 pr-[72px] pl-20">
+                <div className="flex [flex:1_0_0] flex-col items-center gap-3 pt-16 pr-[72px] pl-20">
                   <SectionCard title="공고 정보 편집">
-                    <JobProfileRow />
+                    <JobProfileRow avatarName={companyAvatarName} />
                     <JDInput
                       label="공고명"
                       description="이 공고의 이름이에요."
@@ -131,6 +137,8 @@ export default function JobPostingReviewPage() {
                       label="회사명"
                       description="채용 공고를 올린 회사예요."
                       type="company"
+                      value={companyName}
+                      onChange={setCompanyName}
                       className="!w-full"
                     />
                   </SectionCard>
@@ -140,13 +148,22 @@ export default function JobPostingReviewPage() {
                     <JDInput
                       type="task"
                       description="이 직무에서 담당할 업무예요."
+                      required={false}
                       className="!w-full"
                     />
                   </SectionCard>
 
                   <SectionCard title="채용 기준">
-                    <JDInput type="qualification" className="!w-full" />
-                    <JDInput type="prefer" className="!w-full" />
+                    <JDInput
+                      type="qualification"
+                      required={false}
+                      className="!w-full"
+                    />
+                    <JDInput
+                      type="prefer"
+                      required={false}
+                      className="!w-full"
+                    />
                   </SectionCard>
 
                   <div aria-hidden="true" className="h-[108px] shrink-0" />
