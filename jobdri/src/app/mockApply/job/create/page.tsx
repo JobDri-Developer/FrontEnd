@@ -1,12 +1,18 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import { LLMInput } from "@/components/common/input";
 import { ModalNotice } from "@/components/common/modal";
+import { Toast } from "@/components/common/toast";
 import { INTRO_STEPS } from "@/components/mockApply/home/homeSteps";
 import clsx from "clsx";
+import {
+  clearJobPostingDraft,
+  getJobPostingDraft,
+  saveJobPostingDraft,
+} from "../jobPostingDraftStore";
 
 function JobPostingStepCard({
   step,
@@ -71,17 +77,64 @@ function JobPostingStepCard({
 
 export default function JobPostingCreatePage() {
   const router = useRouter();
-  const [isInputActive, setIsInputActive] = useState(false);
-  const [jobPostingInputValue, setJobPostingInputValue] = useState("");
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [initialDraft] = useState(getJobPostingDraft);
+  const [isInputActive, setIsInputActive] = useState(
+    initialDraft.value.trim().length > 0 || initialDraft.files.length > 0,
+  );
+  const [jobPostingInputValue, setJobPostingInputValue] = useState(
+    initialDraft.value,
+  );
+  const [attachedFiles, setAttachedFiles] = useState<File[]>(
+    initialDraft.files,
+  );
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [jobPostingToastMessage, setJobPostingToastMessage] = useState<
+    string | null
+  >(null);
   const hasDraftContent =
     jobPostingInputValue.trim().length > 0 || attachedFiles.length > 0;
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const toastMessage =
+      searchParams.get("analysisCanceled") === "1"
+        ? "공고 분석을 중단했습니다."
+        : searchParams.get("analysisError") === "1"
+          ? "업로드에 실패했습니다."
+          : null;
+
+    if (!toastMessage) {
+      return;
+    }
+
+    const openToastTimer = window.setTimeout(() => {
+      setJobPostingToastMessage(toastMessage);
+      window.history.replaceState(null, "", window.location.pathname);
+    }, 0);
+    const toastTimer = window.setTimeout(() => {
+      setJobPostingToastMessage(null);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(openToastTimer);
+      window.clearTimeout(toastTimer);
+    };
+  }, []);
+
+  const handleSubmit = () => {
+    saveJobPostingDraft({
+      files: attachedFiles,
+      value: jobPostingInputValue,
+    });
+
+    router.push("/mockApply/job/loading");
+  };
 
   const handleHomeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
     if (!hasDraftContent) {
+      clearJobPostingDraft();
       router.push("/");
       return;
     }
@@ -90,7 +143,10 @@ export default function JobPostingCreatePage() {
   };
 
   const closeExitConfirm = () => setShowExitConfirm(false);
-  const leaveWithoutSaving = () => router.push("/");
+  const leaveWithoutSaving = () => {
+    clearJobPostingDraft();
+    router.push("/");
+  };
 
   return (
     <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-line-neutral-assistive">
@@ -130,6 +186,8 @@ export default function JobPostingCreatePage() {
                 onChange={setJobPostingInputValue}
                 onFilesChange={setAttachedFiles}
                 onFocus={() => setIsInputActive(true)}
+                onSubmit={handleSubmit}
+                defaultFiles={initialDraft.files}
               />
             </section>
 
@@ -161,6 +219,15 @@ export default function JobPostingCreatePage() {
             }}
           />
         </div>
+      )}
+
+      {jobPostingToastMessage && (
+        <Toast
+          message={jobPostingToastMessage}
+          variant="warning"
+          onClose={() => setJobPostingToastMessage(null)}
+          className="!right-7 !bottom-7 !max-w-none !rounded-card"
+        />
       )}
     </div>
   );

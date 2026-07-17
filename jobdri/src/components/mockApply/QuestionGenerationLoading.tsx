@@ -1,56 +1,17 @@
 "use client";
 
-import type { ComponentType } from "react";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import dynamic from "next/dynamic";
 import questionLoadingBook from "@/assets/lottie/question-loading-book.json";
 import questionLoadingSparkle from "@/assets/lottie/question-loading-sparkle.json";
 import Header from "@/components/common/header/Header";
 import Icon from "@/components/common/icons/Icon";
+import LoadingGraphic from "./LoadingGraphic";
 
 interface QuestionGenerationLoadingProps {
   companyName: string;
   jobName: string;
   durationMs: number;
-}
-
-type LottieAnimationProps = {
-  animationData: unknown;
-  loop?: boolean;
-  autoplay?: boolean;
-  className?: string;
-  rendererSettings?: {
-    preserveAspectRatio?: string;
-  };
-  "aria-hidden"?: boolean;
-};
-
-const LottiePlayer = dynamic<LottieAnimationProps>(
-  () =>
-    import("lottie-react").then(
-      (mod) => mod.default as ComponentType<LottieAnimationProps>,
-    ),
-  { ssr: false },
-);
-
-function LoadingGraphic({
-  animationData,
-  className,
-}: {
-  animationData: unknown;
-  className: string;
-}) {
-  return (
-    <LottiePlayer
-      aria-hidden
-      animationData={animationData}
-      autoplay
-      className={className}
-      loop
-      rendererSettings={{ preserveAspectRatio: "xMidYMid meet" }}
-    />
-  );
 }
 
 function LoadingStep({
