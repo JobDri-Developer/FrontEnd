@@ -49,6 +49,58 @@ const jdInputTypeConfig: Record<
   },
 };
 
+function getJDInputListItems(value: string) {
+  return value
+    .split(/\r?\n/)
+    .map((item) => item.trim().replace(/^[-•ㆍ·]\s*/, ""))
+    .filter(Boolean);
+}
+
+function JDInputDisplayValue({
+  hasValue,
+  placeholder,
+  value,
+}: {
+  hasValue: boolean;
+  placeholder: string;
+  value: string;
+}) {
+  const listItems = hasValue ? getJDInputListItems(value) : [];
+
+  if (hasValue && listItems.length > 1) {
+    return (
+      <div className="flex flex-1 flex-col items-start gap-2.5 self-stretch py-2">
+        {listItems.map((item, index) => (
+          <div
+            key={`${item}-${index}`}
+            className="flex w-full items-start gap-2.5"
+          >
+            <span className="flex h-[21px] w-[5px] shrink-0 flex-col items-start justify-center">
+              <span className="h-[5px] w-[5px] shrink-0 rounded-badge-round bg-fill-primary-default" />
+            </span>
+            <span className="flex-1 text-sub14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+              {item}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-1 flex-col items-start self-stretch py-2">
+      <span
+        className={clsx(
+          "self-stretch whitespace-pre-line text-sub14-med [font-feature-settings:'liga'_off,'clig'_off]",
+          hasValue ? "text-text-neutral-description" : "text-text-neutral-caption",
+        )}
+      >
+        {hasValue ? value : placeholder}
+      </span>
+    </div>
+  );
+}
+
 export interface JDInputProps {
   className?: string;
   defaultValue?: string;
@@ -183,18 +235,11 @@ export function JDInput({
         </div>
       ) : (
         <div className="flex flex-1 items-start gap-5 self-stretch">
-          <div className="flex flex-1 flex-col items-start self-stretch py-2">
-            <span
-              className={clsx(
-                "self-stretch whitespace-pre-line text-sub14-med [font-feature-settings:'liga'_off,'clig'_off]",
-                hasValue
-                  ? "text-text-neutral-description"
-                  : "text-text-neutral-caption",
-              )}
-            >
-              {hasValue ? resolvedValue : placeholder}
-            </span>
-          </div>
+          <JDInputDisplayValue
+            hasValue={hasValue}
+            placeholder={placeholder}
+            value={resolvedValue}
+          />
 
           <div className="flex w-[72px] shrink-0 items-start justify-end self-stretch py-2">
             {rightContent ?? (

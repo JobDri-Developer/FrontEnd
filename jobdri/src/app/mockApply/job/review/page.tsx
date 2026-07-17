@@ -11,6 +11,7 @@ import {
 } from "@/components/common/lnb/LnbScrollbar";
 import { CtaFooter } from "@/components/common/cta";
 import { JDInput } from "@/components/common/input";
+import { ModalNotice } from "@/components/common/modal";
 import Avatar from "@/components/mockApply/home/Avatar";
 
 const wizardSteps = [
@@ -87,6 +88,8 @@ function JobProfileRow({ avatarName }: { avatarName: string }) {
 export default function JobPostingReviewPage() {
   const router = useRouter();
   const [companyName, setCompanyName] = useState("");
+  const [showBackConfirm, setShowBackConfirm] = useState(false);
+  const [showHomeConfirm, setShowHomeConfirm] = useState(false);
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics(true, "job-posting-review", { trackPadding: 28 });
   const companyAvatarName = useMemo(() => {
@@ -105,6 +108,10 @@ export default function JobPostingReviewPage() {
           currentStep={1}
           steps={wizardSteps}
           lastSavedAt="17:00"
+          homeAction={{
+            label: "홈으로",
+            onClick: () => setShowHomeConfirm(true),
+          }}
           className="min-w-[1100px] max-w-none shrink-0 self-stretch"
         />
 
@@ -183,7 +190,7 @@ export default function JobPostingReviewPage() {
           className="!w-full shrink-0"
           backAction={{
             label: "이전으로",
-            onClick: () => router.push("/mockApply/job/create"),
+            onClick: () => setShowBackConfirm(true),
           }}
           nextAction={{
             label: "다음으로",
@@ -191,6 +198,45 @@ export default function JobPostingReviewPage() {
           }}
         />
       </div>
+
+      {showBackConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            type="confirmationModal"
+            title="공고 입력으로 돌아갈까요?"
+            description="공고 확인에서 수정한 내용은 저장되지 않아요."
+            onClose={() => setShowBackConfirm(false)}
+            secondaryAction={{
+              label: "돌아가기",
+              onClick: () =>
+                router.push("/mockApply/job/create?analysisCanceled=1"),
+            }}
+            primaryAction={{
+              label: "계속 작성",
+              onClick: () => setShowBackConfirm(false),
+            }}
+          />
+        </div>
+      )}
+
+      {showHomeConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            type="confirmationModal"
+            title="페이지를 나가시겠어요?"
+            description="자동 저장 이후 작성된 내용은 저장되지 않아요."
+            onClose={() => setShowHomeConfirm(false)}
+            secondaryAction={{
+              label: "홈으로",
+              onClick: () => router.push("/"),
+            }}
+            primaryAction={{
+              label: "취소",
+              onClick: () => setShowHomeConfirm(false),
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

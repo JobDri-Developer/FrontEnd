@@ -225,6 +225,7 @@ export default function JobPostingCreatePage() {
         <Toast
           message={jobPostingToastMessage}
           variant="warning"
+          showStatusIcon={jobPostingToastMessage !== "공고 분석을 중단했습니다."}
           onClose={() => setJobPostingToastMessage(null)}
           className="!right-7 !bottom-7 !max-w-none !rounded-card"
         />
