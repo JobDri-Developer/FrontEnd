@@ -98,6 +98,8 @@ export default function ModalAdd({ onClose, onAdd }: ModalAddProps) {
 
             {/* 글자수 드롭다운 */}
             <Select
+              title="최대글자수"
+              showInfoIcon
               options={maxLengthOptions}
               value={maxLength}
               onChange={setMaxLength}

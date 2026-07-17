@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
-import Icon, { type IconType } from "@/components/common/icons/Icon";
+import type { IconType } from "@/components/common/icons/Icon";
 import { InputTextAreaAutoGrowS } from "./InputTextAreaAutoGrowS";
 
 export type JDInputState = "default" | "tapped";
@@ -19,33 +19,40 @@ const jdInputTypeConfig: Record<
   {
     iconType: IconType;
     label: string;
+    description: string;
   }
 > = {
   company: {
     iconType: "COMPANY",
     label: "회사명",
+    description: "공고에서 찾는 회사예요.",
   },
   role: {
     iconType: "PROFILE_16",
     label: "직무",
+    description: "공고에서 찾는 직무예요.",
   },
   task: {
     iconType: "APPLY_16",
     label: "주요 업무",
+    description: "공고에서 찾는 주요 업무예요.",
   },
   qualification: {
     iconType: "CIRCLE_CHECK_16",
     label: "자격 요건",
+    description: "공고에서 찾는 자격 요건이에요.",
   },
   prefer: {
     iconType: "GOOD_16",
     label: "우대 사항",
+    description: "공고에서 찾는 우대 사항이에요.",
   },
 };
 
 export interface JDInputProps {
   className?: string;
   defaultValue?: string;
+  description?: string;
   editPlaceholder?: string;
   fill?: boolean;
   iconType?: IconType;
@@ -55,6 +62,7 @@ export interface JDInputProps {
   onChange?: (value: string) => void;
   onEdit?: () => void;
   placeholder?: string;
+  required?: boolean;
   rightContent?: ReactNode;
   state?: JDInputState;
   type?: JDInputType;
@@ -64,23 +72,24 @@ export interface JDInputProps {
 export function JDInput({
   className,
   defaultValue = "",
+  description,
   editPlaceholder = "공고 내용을 입력해주세요.",
   fill = false,
-  iconType,
   label,
   maxLength = 4000,
   onAdd,
   onChange,
   onEdit,
   placeholder = "입력된 내용이 없습니다.",
+  required = true,
   rightContent,
   state,
   type = "company",
   value,
 }: JDInputProps) {
   const typeConfig = jdInputTypeConfig[type];
-  const resolvedIconType = iconType ?? typeConfig.iconType;
   const resolvedLabel = label ?? typeConfig.label;
+  const resolvedDescription = description ?? typeConfig.description;
   const [internalState, setInternalState] = useState<JDInputState>("default");
   const [draftValue, setDraftValue] = useState(value ?? defaultValue);
   const resolvedState = state ?? internalState;
@@ -110,41 +119,66 @@ export function JDInput({
       data-fill={fill}
       data-state={resolvedState}
       className={clsx(
-        "group flex w-[832px] max-w-full items-start gap-6 px-2 py-5",
+        "group flex w-[872px] max-w-full items-start gap-8 px-2 py-5",
         className,
       )}
     >
-      <div className="flex w-[160px] min-w-[104px] max-w-[160px] shrink-0 items-center gap-[9px]">
-        <Icon
-          type={resolvedIconType}
-          className="h-4 w-4 shrink-0 text-icon-neutral-default"
-        />
-        <div className="flex flex-col items-start">
-          <span className="text-label14-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+      <div className="flex w-[200px] shrink-0 flex-col items-start justify-center gap-1">
+        <div className="flex items-center gap-1.5 self-stretch">
+          <span className="text-b16-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
             {resolvedLabel}
           </span>
+          {required && (
+            <svg
+              aria-hidden="true"
+              className="h-[5px] w-[5px] shrink-0"
+              viewBox="0 0 5 5"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="2.5"
+                cy="2.5"
+                r="2"
+                fill="var(--color-fill-system-fail-strong)"
+                stroke="#FF4242"
+              />
+            </svg>
+          )}
         </div>
+
+        {resolvedDescription && (
+          <div className="flex items-center gap-[9px] self-stretch">
+            <span className="text-cap12-med text-text-neutral-disabled [font-feature-settings:'liga'_off,'clig'_off]">
+              {resolvedDescription}
+            </span>
+          </div>
+        )}
       </div>
 
       {isTapped ? (
-        <InputTextAreaAutoGrowS
-          label=""
-          required={false}
-          placeholder={editPlaceholder}
-          value={resolvedValue}
-          onChange={handleChange}
-          maxLength={maxLength}
-          message=""
-          selected
-          onAdd={onAdd}
-          className="!w-full flex-1 gap-1"
-        />
+        <div className="flex flex-1 items-start gap-5 self-stretch">
+          <div className="flex flex-1 flex-col items-start self-stretch py-2">
+            <InputTextAreaAutoGrowS
+              label=""
+              required={false}
+              placeholder={editPlaceholder}
+              value={resolvedValue}
+              onChange={handleChange}
+              maxLength={maxLength}
+              message=""
+              selected
+              onAdd={onAdd}
+              className="!w-full min-w-0 flex-1 gap-1"
+            />
+          </div>
+        </div>
       ) : (
-        <>
-          <div className="flex flex-1 flex-col items-start">
+        <div className="flex flex-1 items-start gap-5 self-stretch">
+          <div className="flex flex-1 flex-col items-start self-stretch py-2">
             <span
               className={clsx(
-                "self-stretch text-sub14-med [font-feature-settings:'liga'_off,'clig'_off]",
+                "self-stretch whitespace-pre-line text-sub14-med [font-feature-settings:'liga'_off,'clig'_off]",
                 hasValue
                   ? "text-text-neutral-description"
                   : "text-text-neutral-caption",
@@ -154,7 +188,7 @@ export function JDInput({
             </span>
           </div>
 
-          <div className="flex h-[21px] w-[72px] shrink-0 items-center justify-end">
+          <div className="flex w-[72px] shrink-0 items-start justify-end self-stretch py-2">
             {rightContent ?? (
               <IconButton
                 iconType="EDIT"
@@ -167,7 +201,7 @@ export function JDInput({
               />
             )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

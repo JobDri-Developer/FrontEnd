@@ -42,7 +42,7 @@ const defaultSteps: ProgressStep[] = [
   { label: "첨삭 결과" },
 ];
 
-const MOCK_APPLICATION_HOME_PATH = "/mockApply";
+const MOCK_APPLICATION_HOME_PATH = "/";
 
 function HeaderLogo({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (

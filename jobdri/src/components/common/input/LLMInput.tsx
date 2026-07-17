@@ -16,6 +16,7 @@ import {
   LnbScrollbar,
   useLnbScrollMetrics,
 } from "@/components/common/lnb/LnbScrollbar";
+import { Toast } from "@/components/common/toast";
 import { LLMInputImagePreview } from "./LLMInputImagePreview";
 import { LLMInputSubmitButton } from "./LLMInputSubmitButton";
 
@@ -79,6 +80,9 @@ export function LLMInput({
   const rootRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imagePreviewsRef = useRef<LLMInputImagePreviewState[]>([]);
+  const imageLimitToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [focused, setFocused] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<
@@ -89,11 +93,13 @@ export function LLMInput({
   const [uploadModeMinHeight, setUploadModeMinHeight] = useState<
     number | undefined
   >();
+  const [showImageLimitToast, setShowImageLimitToast] = useState(false);
   const isControlled = externalValue !== undefined;
   const value = externalValue ?? internalValue;
   const hasValue = value.trim().length > 0;
   const hasContent = hasValue || imagePreviews.length > 0;
-  const canAddImages = !disabled && imagePreviews.length < maxImages;
+  const hasReachedMaxImages = imagePreviews.length >= maxImages;
+  const canAddImages = !disabled && !hasReachedMaxImages;
   const isDragUploadMode = canAddImages && isDragActive;
   const isUploadMode = isDragUploadMode || (canAddImages && isFilePickerOpen);
   const resolvedSubmitDisabled =
@@ -133,6 +139,9 @@ export function LLMInput({
       imagePreviewsRef.current.forEach((imagePreview) => {
         URL.revokeObjectURL(imagePreview.url);
       });
+      if (imageLimitToastTimerRef.current) {
+        clearTimeout(imageLimitToastTimerRef.current);
+      }
     };
   }, []);
 
@@ -182,8 +191,25 @@ export function LLMInput({
     setUploadModeMinHeight(Math.max(Math.ceil(currentHeight), 198));
   };
 
+  const openImageLimitToast = () => {
+    setShowImageLimitToast(true);
+
+    if (imageLimitToastTimerRef.current) {
+      clearTimeout(imageLimitToastTimerRef.current);
+    }
+
+    imageLimitToastTimerRef.current = setTimeout(() => {
+      setShowImageLimitToast(false);
+    }, 3000);
+  };
+
   const handleFileButtonClick = () => {
-    if (!canAddImages) {
+    if (disabled) {
+      return;
+    }
+
+    if (hasReachedMaxImages) {
+      openImageLimitToast();
       return;
     }
 
@@ -193,13 +219,21 @@ export function LLMInput({
   };
 
   const addImageFiles = (incomingFiles: File[]) => {
+    const imageFiles = incomingFiles.filter((file) =>
+      file.type.startsWith("image/"),
+    );
     const remainingImageCount = Math.max(maxImages - imagePreviews.length, 0);
-    const files = incomingFiles
-      .filter((file) => file.type.startsWith("image/"))
-      .slice(0, remainingImageCount);
+    const files = imageFiles.slice(0, remainingImageCount);
 
     if (files.length === 0) {
+      if (imageFiles.length > 0 && hasReachedMaxImages) {
+        openImageLimitToast();
+      }
       return;
+    }
+
+    if (imageFiles.length > files.length) {
+      openImageLimitToast();
     }
 
     const nextImagePreviews = [
@@ -272,9 +306,14 @@ export function LLMInput({
     event.preventDefault();
     setIsDragActive(false);
 
-    if (canAddImages) {
-      addImageFiles(Array.from(event.dataTransfer.files));
+    if (!canAddImages) {
+      if (hasReachedMaxImages) {
+        openImageLimitToast();
+      }
+      return;
     }
+
+    addImageFiles(Array.from(event.dataTransfer.files));
   };
 
   const handleImageLoad = (id: string) => {
@@ -401,7 +440,7 @@ export function LLMInput({
                 size="m"
                 buttonType="transparent"
                 aria-label="파일 추가"
-                disabled={!canAddImages}
+                disabled={disabled}
                 onClick={handleFileButtonClick}
               />
               <input
@@ -442,6 +481,14 @@ export function LLMInput({
             </span>
           </div>
         </div>
+      )}
+      {showImageLimitToast && (
+        <Toast
+          message={`이미지는 최대 ${maxImages}장까지 업로드 할 수 있어요`}
+          variant="warning"
+          position="top"
+          className="!top-[64px]"
+        />
       )}
     </div>
   );

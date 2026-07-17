@@ -10,6 +10,7 @@ type ModalNoticeVariant = "single" | "double";
 
 /** develop 호환용 type 값 → variant 매핑 */
 const TYPE_TO_VARIANT: Record<string, ModalNoticeVariant> = {
+  confirmation: "double",
   confirmationModal: "double",
   alertModal: "single",
 };
@@ -57,7 +58,7 @@ export default function ModalNotice({
     ...secondaryButtonProps
   } = secondaryAction;
 
-  useOutsideClick(modalRef, onClose);
+  useOutsideClick(modalRef, onClose, variant === "single");
 
   return (
     <div
@@ -66,32 +67,32 @@ export default function ModalNotice({
       aria-modal="true"
       aria-label={title}
       className={clsx(
-        "flex w-[400px] flex-col items-center justify-center gap-0 overflow-hidden rounded-card-s bg-fill-quaternary-default pt-12 shadow-modal",
+        "flex w-[380px] flex-col items-center justify-center gap-0 overflow-hidden rounded-card-l bg-bg-contents-default shadow-modal",
         className,
       )}
     >
-      <div className="flex self-stretch flex-col items-center justify-center gap-0 px-8">
-        <div className="flex self-stretch flex-col items-center justify-center gap-4 pb-8">
-          <p className="self-stretch text-center text-b16-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+      <div className="flex self-stretch flex-col items-start gap-4 px-7 pt-7">
+        <div className="flex self-stretch flex-col items-start gap-3">
+          <p className="self-stretch text-left text-t20-semibold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
             {title}
           </p>
-          <p className="self-stretch text-center text-sub14-med tracking-normal text-text-neutral-caption whitespace-pre-line [font-feature-settings:'liga'_off,'clig'_off]">
+          <p className="self-stretch whitespace-pre-line text-left text-sub14-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
             {description}
           </p>
         </div>
       </div>
 
-      <div className="flex self-stretch flex-col items-start gap-2.5 px-8 pb-8">
+      <div className="flex self-stretch items-end justify-end gap-2 px-5 pt-8 pb-5">
         {variant === "single" ? (
           <Button
             label={primaryLabel}
             styleType="secondary"
             size="large"
-            className={clsx("w-full tracking-normal", primaryClassName)}
+            className={clsx("flex-1 tracking-normal", primaryClassName)}
             {...primaryButtonProps}
           />
         ) : (
-          <div className="flex self-stretch items-start gap-3">
+          <>
             <Button
               label={secondaryLabel}
               styleType="quaternary"
@@ -106,7 +107,7 @@ export default function ModalNotice({
               className={clsx("flex-1 tracking-normal", primaryClassName)}
               {...primaryButtonProps}
             />
-          </div>
+          </>
         )}
       </div>
     </div>
