@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+// 🔥 1. React에서 use를 가져옵니다.
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/common/footer";
 import Header from "@/components/common/header/Header";
@@ -18,11 +19,13 @@ import {
 import { ModalCard } from "@/components/common/modal/ModalCard";
 import { Toast } from "@/components/common/toast";
 
-interface QuestionsPageClientProps {
-  id: string; //mockApplyId
-}
+export default function QuestionsPage({
+  params,
+}: {
+  params: Promise<{ mockApplyId: string }>;
+}) {
+  const { mockApplyId } = use(params);
 
-export default function QuestionsPageClient({ id }: QuestionsPageClientProps) {
   const router = useRouter();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
@@ -51,7 +54,7 @@ export default function QuestionsPageClient({ id }: QuestionsPageClientProps) {
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        const data = await fetchSelectedQuestions(Number(id));
+        const data = await fetchSelectedQuestions(Number(mockApplyId));
         setQuestions(data);
 
         if (data && data.length > 0) {
@@ -63,7 +66,7 @@ export default function QuestionsPageClient({ id }: QuestionsPageClientProps) {
     };
 
     loadQuestions();
-  }, [id]);
+  }, [mockApplyId]);
 
   const currentQ = questions.find((q) => q.id === selectedId);
   const mappedQuestionForForm = currentQ
@@ -93,19 +96,18 @@ export default function QuestionsPageClient({ id }: QuestionsPageClientProps) {
   const handleConfirm = async () => {
     try {
       const answersToSubmit = questions.map((q) => ({
-        questionId: q.questionId!, // 실제 DB의 문항 ID
+        questionId: q.questionId!,
         answer: q.answer || "",
       }));
 
-      await saveApply(Number(id), answersToSubmit);
-      router.push(`/mockApply/actual/${id}/jd-review`);
+      await saveApply(Number(mockApplyId), answersToSubmit);
+      router.push(`/mockApply/actual/${mockApplyId}/jd-review`);
     } catch (error) {
       console.error("답변 저장 실패:", error);
       alert("답변 저장에 실패했습니다.");
     }
   };
 
-  // 문항 추가 핸들러
   const handleAddQuestion = () => {
     if (questions.length >= 5) return;
     const newId = `custom-${Date.now()}`;
@@ -184,7 +186,7 @@ export default function QuestionsPageClient({ id }: QuestionsPageClientProps) {
 
       <Footer
         ctaLabel="채점하기"
-        backAction={{ href: `/mockApply/actual/${id}/jd-review` }}
+        backAction={{ href: `/mockApply/actual/${mockApplyId}/jd-review` }}
         ctaAction={{
           onClick: handleConfirm,
           disabled:
