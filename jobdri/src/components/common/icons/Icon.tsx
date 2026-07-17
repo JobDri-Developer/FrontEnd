@@ -74,6 +74,7 @@ import IC_CIRCLE_CHECK from "@/assets/ic_CircleCheck.svg";
 import IC_CIRCLE_CHECK_16 from "@/assets/ic_CircleCheck_16.svg";
 import IC_COMPANY from "@/assets/ic_Company.svg";
 import IC_LOGOUT from "@/assets/ic_Logout.svg";
+import IC_INFO from "@/assets/ic_Info.svg";
 
 const iconMap = {
   EX_L: IC_EX_L,
@@ -155,6 +156,7 @@ const iconMap = {
   CIRCLE_CHECK_16: IC_CIRCLE_CHECK_16,
   COMPANY: IC_COMPANY,
   LOGOUT: IC_LOGOUT,
+  INFO: IC_INFO,
 } as const;
 
 export type IconType = keyof typeof iconMap;

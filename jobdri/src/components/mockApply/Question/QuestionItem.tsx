@@ -26,7 +26,7 @@ export const QuestionItem = ({
       onClick={onClick}
       className={`
         group 
-        flex flex-row gap-3 p-4 rounded-card-s w-64 border cursor-pointer transition-colors duration-200
+        flex flex-row gap-3 p-4 rounded-card-s w-full border cursor-pointer transition-colors duration-200
         ${
           isActive
             ? "border-line-primary-default bg-fill-primary-assistive  hover:shadow-chip"

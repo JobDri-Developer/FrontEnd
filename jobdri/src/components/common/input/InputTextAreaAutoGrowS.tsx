@@ -1,10 +1,6 @@
 "use client";
 
-import type {
-  ChangeEvent,
-  FocusEvent,
-  UIEvent,
-} from "react";
+import type { ChangeEvent, FocusEvent, UIEvent } from "react";
 import { useLayoutEffect, useState } from "react";
 import clsx from "clsx";
 import {
@@ -13,7 +9,7 @@ import {
   useLnbScrollMetrics,
 } from "@/components/common/lnb/LnbScrollbar";
 import {
-  DEFAULT_TEXT_AREA_FIXED_MAX_LENGTH,
+  // DEFAULT_TEXT_AREA_FIXED_MAX_LENGTH,
   getInputTextAreaFixedFieldStateClass,
   InputTextAreaFixedBottom,
   InputTextAreaFixedLabel,
@@ -34,8 +30,8 @@ export function InputTextAreaAutoGrowS({
   value: externalValue,
   defaultValue = "",
   onChange,
-  maxLength = DEFAULT_TEXT_AREA_FIXED_MAX_LENGTH,
-  message = "글자수를 확인해주세요",
+  maxLength,
+  message,
   hasError = false,
   error,
   leadingContent,
@@ -65,7 +61,7 @@ export function InputTextAreaAutoGrowS({
   const hasValue = count > 0;
   const isError = hasError || !!error;
   const isSelected = focused || selected;
-  const helperMessage = error ?? message;
+  const helperMessage = isError ? (error ?? message) : undefined;
   const {
     scrollAreaRef: textareaRef,
     scrollbarMetrics,
@@ -120,7 +116,7 @@ export function InputTextAreaAutoGrowS({
   return (
     <div
       className={clsx(
-        "flex w-[799px] max-w-full flex-col items-start gap-1 rounded-card-s p-0",
+        "flex w-full flex-col items-start gap-1 rounded-card-s p-0",
         className,
       )}
     >

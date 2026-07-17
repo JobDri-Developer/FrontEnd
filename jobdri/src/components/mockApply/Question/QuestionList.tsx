@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { QuestionItem, type QuestionData } from "./QuestionItem";
 import { Button } from "@/components/common/buttons";
 
-export const QuestionList = () => {
+interface QuestionListProps {
+  onSelect: (q: QuestionData) => void;
+}
+
+export const QuestionList = ({ onSelect }: QuestionListProps) => {
   const [questions, setQuestions] = useState<QuestionData[]>([
     {
       id: 1,
@@ -24,6 +28,7 @@ export const QuestionList = () => {
 
       setQuestions((prev) => [...prev, newQuestion]);
       setActiveIndex(questions.length);
+      onSelect(newQuestion);
     }
   };
 
@@ -60,11 +65,13 @@ export const QuestionList = () => {
             index={idx}
             data={q}
             isActive={activeIndex === idx}
-            onClick={() => setActiveIndex(idx)}
+            onClick={() => {
+              setActiveIndex(idx);
+              onSelect(q);
+            }}
             onDelete={questions.length > 1 ? handleDeleteQuestion : undefined}
           />
         ))}
-
         {/* 문항 추가 버튼 */}
         {questions.length < MAX_QUESTIONS && (
           <Button

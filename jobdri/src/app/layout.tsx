@@ -17,7 +17,9 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/ic_JobDri.svg" />
       </head>
-      <body className="min-h-full bg-line-neutral-assistive">{children}</body>
+      <body className="min-h-full max-w-[1920px] bg-line-neutral-assistive">
+        {children}
+      </body>
     </html>
   );
 }

@@ -47,32 +47,29 @@ export default function DropDown({
   };
 
   return (
-    <div className={clsx("relative inline-flex w-[104px]", className)}>
+    <div className={clsx("relative inline-flex w-fit", className)}>
+      {/* 트리거 버튼 */}
       <button
         type="button"
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={listboxId}
         onClick={() => setOpen((current) => !current)}
-        className={clsx(
-          "group flex w-[104px] items-center justify-between rounded-cta-s bg-fill-quaternary-default pt-[15px] pr-3 pb-[14px] pl-4 shadow-card transition-shadow hover:shadow-hover",
-          open && "shadow-hover",
-        )}
+        className="flex w-full items-center   justify-between rounded-8 border border-line-neutral-default bg-fill-quaternary-default pr-3 pl-5 py-2 text-gray-700 hover:bg-gray-50"
       >
-        <span className="text-label14-med tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-          {selectedOption.label}
-        </span>
+        <span className="text-sm font-medium">{selectedOption.label}</span>
         <Icon
           type={open ? "ARROW_UP_M" : "ARROW_DOWN_M"}
-          className="h-6 w-6 shrink-0 text-icon-neutral-assistive group-hover:text-icon-neutral-default"
+          className="shrink-0 text-icon-neutral-default"
         />
       </button>
 
+      {/* 리스트 박스 */}
       {open && (
         <div
           id={listboxId}
           role="listbox"
-          className="absolute top-[calc(100%+8px)] left-0 z-20 flex w-[104px] flex-col items-start overflow-hidden rounded-cta-s bg-bg-contents-default shadow-hover"
+          className="absolute top-[calc(100%+4px)] left-0 z-20 flex w-full flex-col overflow-hidden rounded-cta-s shadow-card border border-gray-200 bg-white"
         >
           {options.map((option, index) => {
             const selected = option.value === selectedValue;
@@ -84,12 +81,16 @@ export default function DropDown({
                   role="option"
                   aria-selected={selected}
                   onClick={() => handleSelect(option.value)}
-                  className="flex w-full items-center gap-1.5 self-stretch bg-bg-contents-default px-4 py-3 text-left text-label14-med tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off] hover:bg-bg-contents-assistive active:bg-bg-default"
+                  className={clsx(
+                    "w-full px-4 py-3 text-left text-label14-med text-text-neutral-description hover:bg-fill-quaternary-default-hover",
+                    selected && "bg-fill-quaternary-default-pressed",
+                  )}
                 >
                   {option.label}
                 </button>
+                {/* 구분선 */}
                 {index < options.length - 1 && (
-                  <span className="h-px self-stretch bg-line-neutral-default" />
+                  <div className="h-px w-full bg-gray-100" />
                 )}
               </div>
             );

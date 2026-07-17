@@ -6,8 +6,10 @@ import clsx from "clsx";
 import { Button } from "../buttons";
 import type { IconType } from "../icons/Icon";
 
-interface HeaderActionProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+interface HeaderActionProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "children"
+> {
   iconType?: IconType;
   label: string;
 }
@@ -195,7 +197,7 @@ export default function Header({
     return (
       <header
         className={clsx(
-          "flex w-full max-w-[1440px] items-center justify-between bg-fill-quaternary-default px-6 py-3",
+          "flex min-w-[1100px] items-center justify-between bg-fill-quaternary-default px-6 py-3",
           className,
         )}
       >
@@ -228,7 +230,7 @@ export default function Header({
   return (
     <header
       className={clsx(
-        "flex w-full max-w-[1440px] items-center justify-between bg-fill-quaternary-default px-6 py-3",
+        "flex w-full min-w-[1100px] items-center justify-between bg-fill-quaternary-default px-6 py-3",
         className,
       )}
     >
