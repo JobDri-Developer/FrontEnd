@@ -91,8 +91,6 @@ export default function JobPostingCreatePage() {
   const [jobPostingToastMessage, setJobPostingToastMessage] = useState<
     string | null
   >(null);
-  const hasDraftContent =
-    jobPostingInputValue.trim().length > 0 || attachedFiles.length > 0;
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -132,12 +130,7 @@ export default function JobPostingCreatePage() {
 
   const handleHomeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-
-    if (!hasDraftContent) {
-      clearJobPostingDraft();
-      router.push("/");
-      return;
-    }
+    event.stopPropagation();
 
     setShowExitConfirm(true);
   };
@@ -225,7 +218,6 @@ export default function JobPostingCreatePage() {
         <Toast
           message={jobPostingToastMessage}
           variant="warning"
-          showStatusIcon={jobPostingToastMessage !== "공고 분석을 중단했습니다."}
           onClose={() => setJobPostingToastMessage(null)}
           className="!right-7 !bottom-7 !max-w-none !rounded-card"
         />

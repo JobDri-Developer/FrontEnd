@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type MouseEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import SideHeaderContainer from "@/components/common/header/SideHeaderContainer";
@@ -97,6 +97,10 @@ export default function JobPostingReviewPage() {
 
     return trimmedCompanyName.length > 0 ? trimmedCompanyName[0] : "T";
   }, [companyName]);
+  const handleHomeClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    setShowHomeConfirm(true);
+  };
 
   return (
     <div className="h-dvh w-dvw overflow-hidden bg-line-neutral-assistive">
@@ -110,7 +114,7 @@ export default function JobPostingReviewPage() {
           lastSavedAt="17:00"
           homeAction={{
             label: "홈으로",
-            onClick: () => setShowHomeConfirm(true),
+            onClick: handleHomeClick,
           }}
           className="min-w-[1100px] max-w-none shrink-0 self-stretch"
         />
