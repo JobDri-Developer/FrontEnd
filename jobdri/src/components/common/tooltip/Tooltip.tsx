@@ -14,6 +14,7 @@ export type TooltipPlacement =
   | "down_right";
 
 interface TooltipProps {
+  id?: string;
   placement?: TooltipPlacement;
   message?: string;
   lines?: string[];
@@ -62,6 +63,7 @@ const arrowIconStyles: Partial<Record<TooltipPlacement, string>> = {
 };
 
 export function Tooltip({
+  id,
   placement = "up_mid",
   message = "1회 크레딧 무료 증정",
   lines,
@@ -72,6 +74,7 @@ export function Tooltip({
 
   return (
     <div
+      id={id}
       role="tooltip"
       className={clsx("inline-flex", containerFlexStyles[placement], className)}
     >
@@ -103,7 +106,9 @@ export function Tooltip({
               </span>
             ))}
           </span>
-          <Icon type="SPARKLE" className="h-4 w-4 shrink-0 text-icon-white" />
+          {showIcon && (
+            <Icon type="SPARKLE" className="h-4 w-4 shrink-0 text-icon-white" />
+          )}
         </span>
       </div>
     </div>
