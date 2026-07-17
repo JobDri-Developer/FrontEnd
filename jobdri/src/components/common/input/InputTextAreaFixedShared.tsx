@@ -89,7 +89,7 @@ export function InputTextAreaFixedLabel({
 
   return (
     <div className="flex self-stretch items-center gap-1.5 py-1 pr-0 pl-0.5">
-      <span className="text-sub14-med text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+      <span className="text-b16-med text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
         {label}
       </span>
       {required && (
