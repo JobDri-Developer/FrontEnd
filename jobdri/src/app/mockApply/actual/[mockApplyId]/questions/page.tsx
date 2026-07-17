@@ -1,9 +1,6 @@
 "use client";
-
-// 🔥 1. React에서 use를 가져옵니다.
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { Footer } from "@/components/common/footer";
 import Header from "@/components/common/header/Header";
 import { QuestionList } from "@/components/mockApply/Question/QuestionList";
 import JDSidePanel from "@/components/mockApply/Question/SidePanel";
@@ -18,6 +15,8 @@ import {
 } from "@/lib/api/questions";
 import { ModalCard } from "@/components/common/modal/ModalCard";
 import { Toast } from "@/components/common/toast";
+import { CtaFooter } from "@/components/common/cta";
+import { fetchCreditBalance } from "@/lib/api/credit";
 
 export default function QuestionsPage({
   params,
@@ -28,6 +27,9 @@ export default function QuestionsPage({
 
   const router = useRouter();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ open: boolean; message: string }>({
@@ -35,6 +37,28 @@ export default function QuestionsPage({
     message: "",
   });
   const [modalTarget, setModalTarget] = useState<string | null>(null);
+  const [lastSavedTime, setLastSavedTime] = useState<string>("저장 전");
+
+  useEffect(() => {
+    if (questions.length === 0) return;
+    const autoSaveTimer = setTimeout(async () => {
+      try {
+        const answersToSubmit = questions.map((q) => ({
+          questionId: q.questionId!,
+          answer: q.answer || "",
+        }));
+        await saveApply(Number(mockApplyId), answersToSubmit);
+        const now = new Date();
+        const timeString = `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
+        setLastSavedTime(timeString);
+
+        console.log("✅ 자동 저장 완료!", timeString);
+      } catch (error) {
+        console.error("자동 저장 실패:", error);
+      }
+    }, 2000);
+    return () => clearTimeout(autoSaveTimer);
+  }, [questions, mockApplyId]);
 
   const performDelete = (targetId: string) => {
     setQuestions((prev) => {
@@ -136,9 +160,33 @@ export default function QuestionsPage({
     }
   };
 
+  const handleOpenConfirmModal = () => {
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleTrySubmit = async () => {
+    try {
+      const currentCredit = await fetchCreditBalance();
+      if (currentCredit > 0) {
+        setIsConfirmModalOpen(false);
+        await handleConfirm();
+      } else {
+        setIsConfirmModalOpen(false);
+        setIsCreditShortModalOpen(true);
+      }
+    } catch (error) {
+      console.error("크레딧 조회 실패:", error);
+      setToast({
+        open: true,
+        message: "크레딧 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.",
+      });
+      setTimeout(() => setToast({ open: false, message: "" }), 3000);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-screen bg-bg-default overflow-hidden">
-      <Header currentStep={4} />
+    <div className="flex flex-col h-dvh bg-bg-default overflow-hidden">
+      <Header currentStep={4} lastSavedAt={lastSavedTime} />
 
       <main
         className={clsx(
@@ -165,7 +213,7 @@ export default function QuestionsPage({
 
         <div
           className={clsx(
-            "flex-1 overflow-y-auto flex flex-col pt-16 pl-16 pb-30 pr-[40px]",
+            "flex-1 overflow-y-auto flex flex-col pt-16 pl-16 pr-[40px]",
             scrollbarClass,
           )}
         >
@@ -184,14 +232,17 @@ export default function QuestionsPage({
         </div>
       </main>
 
-      <Footer
-        ctaLabel="채점하기"
-        backAction={{ href: `/mockApply/actual/${mockApplyId}/jd-review` }}
-        ctaAction={{
-          onClick: handleConfirm,
+      <CtaFooter
+        backAction={{
+          onClick: () => setIsLeaveModalOpen(true),
+        }}
+        nextAction={{
+          label: "채점하기",
+          onClick: handleOpenConfirmModal,
           disabled:
             !mappedQuestionForForm ||
             questions.some((q) => !(q.answer || "").trim()),
+          iconType: "SPARKLE",
         }}
       />
 
@@ -225,6 +276,53 @@ export default function QuestionsPage({
           onClose={() => setToast({ ...toast, open: false })}
           className="absolute top-6"
         />
+      )}
+
+      {isLeaveModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+          <ModalCard
+            title="페이지를 나가시겠어요?"
+            description="자동 저장 이후 작성된 내용은 저장되지 않아요."
+            secondaryBtn="취소"
+            primaryBtn="나가기"
+            onSecondaryClick={() => setIsLeaveModalOpen(false)}
+            onPrimaryClick={() => {
+              setIsLeaveModalOpen(false);
+              router.push(`/mockApply/actual/${mockApplyId}/jd-review`);
+            }}
+          />
+        </div>
+      )}
+
+      {isConfirmModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+          <ModalCard
+            title="이대로 채점할까요?"
+            description="지원 시 1 크레딧이 차감되며, 취소할 수 없어요."
+            secondaryBtn="닫기"
+            primaryBtn="지원하기"
+            onSecondaryClick={() => setIsConfirmModalOpen(false)}
+            onPrimaryClick={() => {
+              setIsConfirmModalOpen(false);
+              handleTrySubmit();
+            }}
+          />
+        </div>
+      )}
+
+      {isCreditShortModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+          <ModalCard
+            title="크레딧이 부족해요"
+            description="크레딧을 충전하고 다시 시도해주세요."
+            secondaryBtn="닫기"
+            primaryBtn="충전하기"
+            onSecondaryClick={() => setIsCreditShortModalOpen(false)}
+            onPrimaryClick={() => {
+              setIsCreditShortModalOpen(false);
+            }}
+          />
+        </div>
       )}
     </div>
   );

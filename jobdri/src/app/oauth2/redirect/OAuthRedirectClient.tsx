@@ -28,7 +28,7 @@ export default function OAuthRedirectClient() {
           getEmailFromAccessToken(accessToken) ||
           undefined,
       );
-      router.replace(ROUTES.APPLY);
+      router.replace(ROUTES.HOME);
       return;
     }
 
