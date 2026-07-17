@@ -27,17 +27,17 @@ export default function Toast({
     <div
       role="status"
       className={clsx(
-        "flex  items-center justify-between shadow-default fixed transition-discrete",
+        "fixed z-50 flex items-center shadow-card transition-discrete",
 
         isTop
-          ? "top-10 left-1/2 -translate-x-1/2 rounded-card px-4 py-3 gap-3 w-fit"
-          : "bottom-28 right-5 rounded-card px-4 py-3 pl-5 self-stretch max-w-[400px]",
+          ? "top-10 left-1/2 w-fit -translate-x-1/2 justify-center gap-3 rounded-card bg-fill-quaternary-default py-3 pr-4 pl-3"
+          : "right-5 bottom-28 max-w-[400px] justify-between self-stretch rounded-card px-4 py-3 pl-5",
 
         isDark ? "bg-fill-tertiary-default" : "bg-fill-quaternary-default",
         className,
       )}
     >
-      <div className="flex min-w-0 items-center gap-[14px]">
+      <div className={clsx("flex min-w-0 items-center", isTop ? "gap-3" : "gap-[14px]")}>
         {/* 아이콘 영역 */}
         {hasStatusIcon && (
           <ToastStatusIcon
@@ -49,7 +49,8 @@ export default function Toast({
         {/* 텍스트 영역 */}
         <span
           className={clsx(
-            "truncate text-cap12-semibold [font-feature-settings:'liga'_off,'clig'_off]",
+            "truncate [font-feature-settings:'liga'_off,'clig'_off]",
+            isTop ? "text-label14-semibold" : "text-cap12-semibold",
             isDark
               ? "text-text-neutral-white"
               : "text-text-neutral-description",
