@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import { LLMInput } from "@/components/common/input";
+import { ModalNotice } from "@/components/common/modal";
 import { INTRO_STEPS } from "@/components/mockApply/home/homeSteps";
 import clsx from "clsx";
 
@@ -68,13 +70,37 @@ function JobPostingStepCard({
 }
 
 export default function JobPostingCreatePage() {
+  const router = useRouter();
   const [isInputActive, setIsInputActive] = useState(false);
+  const [jobPostingInputValue, setJobPostingInputValue] = useState("");
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const hasDraftContent =
+    jobPostingInputValue.trim().length > 0 || attachedFiles.length > 0;
+
+  const handleHomeClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    if (!hasDraftContent) {
+      router.push("/");
+      return;
+    }
+
+    setShowExitConfirm(true);
+  };
+
+  const closeExitConfirm = () => setShowExitConfirm(false);
+  const leaveWithoutSaving = () => router.push("/");
 
   return (
     <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-line-neutral-assistive">
       <Header
         type="apply"
         currentStep={2}
+        homeAction={{
+          label: "홈으로",
+          onClick: handleHomeClick,
+        }}
         className="min-w-[1100px] max-w-none shrink-0 self-stretch"
       />
 
@@ -99,7 +125,12 @@ export default function JobPostingCreatePage() {
                 </p>
               </div>
 
-              <LLMInput onFocus={() => setIsInputActive(true)} />
+              <LLMInput
+                value={jobPostingInputValue}
+                onChange={setJobPostingInputValue}
+                onFilesChange={setAttachedFiles}
+                onFocus={() => setIsInputActive(true)}
+              />
             </section>
 
             {!isInputActive && (
@@ -112,6 +143,25 @@ export default function JobPostingCreatePage() {
           </div>
         </main>
       </div>
+
+      {showExitConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            type="confirmationModal"
+            title="페이지를 나가시겠습니까?"
+            description="작성 중인 내용이 저장되지 않습니다."
+            onClose={closeExitConfirm}
+            secondaryAction={{
+              label: "나가기",
+              onClick: leaveWithoutSaving,
+            }}
+            primaryAction={{
+              label: "계속 작성",
+              onClick: closeExitConfirm,
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
