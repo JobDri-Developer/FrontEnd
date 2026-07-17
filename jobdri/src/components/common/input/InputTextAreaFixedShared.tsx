@@ -17,13 +17,12 @@ import {
   useLnbScrollMetrics,
 } from "@/components/common/lnb/LnbScrollbar";
 
-export const DEFAULT_TEXT_AREA_FIXED_MAX_LENGTH = 2000;
+// export const DEFAULT_TEXT_AREA_FIXED_MAX_LENGTH = 2000;
 
-export interface InputTextAreaFixedSharedProps
-  extends Omit<
-    TextareaHTMLAttributes<HTMLTextAreaElement>,
-    "className" | "defaultValue" | "maxLength" | "onChange" | "value"
-  > {
+export interface InputTextAreaFixedSharedProps extends Omit<
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
+  "className" | "defaultValue" | "maxLength" | "onChange" | "value"
+> {
   label?: string;
   required?: boolean;
   value?: string;
@@ -150,7 +149,7 @@ export function InputTextAreaFixedBottom({
   disabled: boolean;
   hasValue: boolean;
   leadingContent?: ReactNode;
-  maxLength: number;
+  maxLength?: number;
   onAdd?: () => void;
   showAddButton: boolean;
   trailingContent?: ReactNode;
@@ -165,12 +164,21 @@ export function InputTextAreaFixedBottom({
           {leadingContent}
           <div className="flex items-center">
             <div className="flex items-center px-1">
-              <span className="text-center text-[12px] leading-[140%] font-medium tracking-[-0.24px] text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-                {count}
-              </span>
-              <span className="text-center text-[12px] leading-[140%] font-medium tracking-[-0.24px] text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-                /{maxLength}
-              </span>
+              {maxLength ? (
+                <>
+                  <span className="text-center text-[12px] leading-[140%] font-medium tracking-[-0.24px] text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+                    {count}
+                  </span>
+                  <span className="text-center text-[12px] leading-[140%] font-medium tracking-[-0.24px] text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+                    /{maxLength}
+                  </span>
+                </>
+              ) : (
+                <span className="flex flex-row text-center text-cap12-med text-text-neutral-description leading-[140%] tracking-[-0.24px] [font-feature-settings:'liga'_off,'clig'_off]">
+                  {count}자{" "}
+                  <p className="text-text-neutral-caption "> (공백 포함)</p>
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -239,8 +247,8 @@ export function InputTextAreaFixedBase({
   value: externalValue,
   defaultValue = "",
   onChange,
-  maxLength = DEFAULT_TEXT_AREA_FIXED_MAX_LENGTH,
-  message = "글자수를 확인해주세요",
+  maxLength,
+  message,
   hasError = false,
   error,
   leadingContent,
@@ -276,7 +284,7 @@ export function InputTextAreaFixedBase({
   const hasValue = count > 0;
   const isError = hasError || !!error;
   const isSelected = focused || selected;
-  const helperMessage = error ?? message;
+  const helperMessage = isError ? (error ?? message) : undefined;
   const {
     scrollAreaRef: textareaRef,
     scrollbarMetrics,
@@ -311,7 +319,7 @@ export function InputTextAreaFixedBase({
   return (
     <div
       className={clsx(
-        "flex w-[799px] max-w-full flex-col items-start gap-1 rounded-card-s p-0",
+        "flex w-full  flex-col items-start gap-1 rounded-card-s p-0",
         className,
       )}
     >

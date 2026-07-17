@@ -19,7 +19,7 @@ export default function SideHeaderContainer({
   return (
     <div
       className={clsx(
-        "flex flex-col items-start gap-4 transition-all max-w-80",
+        "flex flex-col items-start gap-4 transition-all w-80",
         leading ? "py-16 pl-18" : "py-20 pl-20",
         className,
       )}

@@ -7,6 +7,9 @@ interface ModalCardProps {
   secondaryBtn: string;
   primaryBtn?: string;
   errorBtn?: string;
+  onSecondaryClick?: () => void;
+  onPrimaryClick?: () => void;
+  onErrorClick?: () => void;
 }
 
 export const ModalCard: React.FC<ModalCardProps> = ({
@@ -15,6 +18,9 @@ export const ModalCard: React.FC<ModalCardProps> = ({
   secondaryBtn,
   primaryBtn,
   errorBtn,
+  onSecondaryClick,
+  onPrimaryClick,
+  onErrorClick,
 }) => {
   return (
     <div className="bg-white rounded-modal shadow-modal flex flex-col h-fil w-full max-w-[400px]">
@@ -33,12 +39,23 @@ export const ModalCard: React.FC<ModalCardProps> = ({
           label={secondaryBtn}
           styleType="quaternary"
           className="w-full"
+          onClick={onSecondaryClick}
         />
         {primaryBtn && (
-          <Button label={primaryBtn} styleType="secondary" className="w-full" />
+          <Button
+            label={primaryBtn}
+            styleType="secondary"
+            className="w-full"
+            onClick={onPrimaryClick}
+          />
         )}
         {errorBtn && (
-          <Button label={errorBtn} styleType="error" className="w-full" />
+          <Button
+            label={errorBtn}
+            styleType="error"
+            className="w-full"
+            onClick={onErrorClick}
+          />
         )}
       </div>
     </div>
