@@ -115,12 +115,12 @@ export default function JobPostingLoadingPage() {
       return;
     }
 
-    const errorTimer = window.setTimeout(() => {
-      router.replace("/mockApply/job/create?analysisError=1");
+    const completionTimer = window.setTimeout(() => {
+      router.replace("/mockApply/job/review");
     }, loadingDurationMs);
 
     return () => {
-      window.clearTimeout(errorTimer);
+      window.clearTimeout(completionTimer);
     };
   }, [loadingDurationMs, router, showStopConfirm]);
 
