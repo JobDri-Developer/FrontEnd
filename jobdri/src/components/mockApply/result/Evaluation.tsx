@@ -32,28 +32,36 @@ export default function Evaluation({
       )}
       {...divProps}
     >
-      <div
-        className={clsx(
-          "flex h-11 w-11 items-center justify-center rounded-chip-s",
-          isWarning
-            ? "bg-fill-system-fail-hover text-text-system-fail"
-            : "bg-fill-secondary-assistive text-text-system-complete",
-        )}
-      >
-        {isWarning ? (
-          <Icon type="WARN" className="h-5 w-5" />
-        ) : (
-          <Icon type="GOOD" className="h-5 w-5 text-fill-secondary-default" />
-        )}
+      <div className="flex flex-col items-start gap-3 self-stretch px-1">
+        <div
+          className={clsx(
+            "flex h-[30px] w-[30px] items-center justify-center gap-2.5 rounded-chip-s p-1",
+            isWarning
+              ? "bg-fill-system-fail-hover text-fill-system-fail-strong"
+              : "bg-fill-secondary-assistive text-fill-secondary-default",
+          )}
+        >
+          {isWarning ? (
+            <Icon type="WARN" className="h-4 w-4 shrink-0" />
+          ) : (
+            <Icon type="GOOD" className="h-4 w-4 shrink-0" />
+          )}
+        </div>
+
+        <div className="flex items-center gap-2.5 self-stretch">
+          <h3 className="max-h-[22px] flex-1 overflow-hidden text-btn16-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+            {title}
+          </h3>
+        </div>
       </div>
 
-      <div className="flex w-full flex-col gap-6">
-        <h3 className="text-t20-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-          {title}
-        </h3>
-        <p className="w-full truncate rounded-marker bg-fill-quaternary-assistive px-3 py-2 text-label14-med tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-          예) {quote}
-        </p>
+      <div className="flex h-[30px] items-center gap-1 self-stretch rounded-marker bg-fill-quaternary-assistive px-2 py-1.5">
+        <span className="shrink-0 text-cap12-med tracking-normal text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+          예)
+        </span>
+        <span className="max-h-[17px] flex-1 truncate text-cap12-med tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+          {quote}
+        </span>
       </div>
     </div>
   );

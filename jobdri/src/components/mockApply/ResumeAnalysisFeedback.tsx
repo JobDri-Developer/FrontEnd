@@ -80,11 +80,15 @@ function ScoreMetricRow({
   tone: "primary" | "danger";
 }) {
   return (
-    <div className="flex items-center gap-3 self-stretch">
+    <div className="flex min-w-0 items-center gap-3 self-stretch">
       <span className="w-[92px] shrink-0 text-sub14-med tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
         {label}
       </span>
-      <ScoreBar score={score} tone={tone} className="h-2.5 max-w-[400px]" />
+      <ScoreBar
+        score={score}
+        tone={tone}
+        className="h-2.5 min-w-0 max-w-[400px]"
+      />
       <div className="flex w-[72px] shrink-0 items-baseline justify-end gap-0.5">
         <span className="text-label14-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
           {score}
@@ -99,7 +103,10 @@ function ScoreMetricRow({
 
 function ScoreSummaryCard() {
   return (
-    <article className="flex min-w-[580px] flex-1 flex-col items-start gap-3 rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7">
+    <article
+      className="flex [flex:1_0_0] flex-col items-start gap-3 rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7"
+      style={{ minWidth: "min(580px, calc(100% - 372px))" }}
+    >
       <div className="flex h-9 items-center gap-2 self-stretch pl-1">
         <ScoreSummaryIcon />
         <span className="flex-1 text-label14-semibold tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
@@ -115,7 +122,7 @@ function ScoreSummaryCard() {
             <ScoreCircle score={86} size="medium" />
           </div>
 
-          <div className="flex flex-1 flex-col items-start gap-3">
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-3">
             {scoreItems.map((item) => (
               <ScoreMetricRow
                 key={item.label}
@@ -159,7 +166,7 @@ function ReviewSummaryCard() {
 
   return (
     <aside
-      className="flex min-w-[580px] flex-1 flex-col items-start justify-between self-stretch rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7"
+      className="flex min-w-[360px] max-w-[480px] [flex:1_0_0] flex-col items-start justify-between self-stretch rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7"
       aria-label="총평"
     >
       <div className="flex h-9 items-center gap-2 self-stretch pl-1">
