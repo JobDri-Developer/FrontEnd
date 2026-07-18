@@ -19,9 +19,6 @@ import { ModalCard } from "@/components/common/modal/ModalCard";
 import { Toast } from "@/components/common/toast";
 import { CtaFooter } from "@/components/common/cta";
 import { fetchCreditBalance } from "@/lib/api/credit";
-import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
-
-const RESUME_ANALYSIS_LOADING_DURATION_MS = 316_000;
 
 export default function MockApplyPage({
   params,
@@ -32,7 +29,6 @@ export default function MockApplyPage({
 
   const router = useRouter();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
@@ -203,24 +199,12 @@ export default function MockApplyPage({
       return;
     }
 
-    setIsAnalysisLoading(true);
-
     try {
       await handleConfirm();
     } catch {
-      setIsAnalysisLoading(false);
       alert("답변 저장에 실패했습니다.");
     }
   };
-
-  if (isAnalysisLoading) {
-    return (
-      <ResumeAnalysisLoading
-        durationMs={RESUME_ANALYSIS_LOADING_DURATION_MS}
-        onBack={() => setIsAnalysisLoading(false)}
-      />
-    );
-  }
 
   return (
     <div className="flex flex-col h-dvh bg-bg-default overflow-hidden">

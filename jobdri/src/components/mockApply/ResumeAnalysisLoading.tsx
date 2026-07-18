@@ -84,17 +84,17 @@ export default function ResumeAnalysisLoading({
   );
 
   return (
-    <div className="flex min-h-screen min-w-[1100px] flex-col bg-fill-quaternary-default">
+    <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
       <Header currentStep={5} />
 
-      <div className="flex h-[839px] items-start px-2 pb-2">
+      <div className="flex min-h-0 flex-1 items-start px-2 pb-2">
         <section
-          className="flex flex-1 items-center justify-between self-stretch rounded-card-l bg-bg-default"
+          className="flex min-h-0 flex-1 items-center justify-between self-stretch overflow-hidden rounded-card-l bg-bg-default"
           aria-live="polite"
           aria-busy="true"
         >
-          <main className="flex flex-1 items-center justify-between self-stretch">
-            <aside className="flex w-[360px] shrink-0 flex-col items-start justify-between self-stretch pt-20 pr-0 pb-16 pl-20">
+          <main className="flex min-h-0 flex-1 items-center justify-between self-stretch">
+            <aside className="flex min-h-0 w-[360px] shrink-0 flex-col items-start justify-between self-stretch pt-20 pr-0 pb-16 pl-20">
               <div className="flex flex-col items-start gap-8">
                 <div className="flex flex-col items-start gap-5">
                   <h1 className="whitespace-pre-line text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
@@ -129,10 +129,10 @@ export default function ResumeAnalysisLoading({
               />
             </aside>
 
-            <div className="flex flex-1 flex-col items-center gap-16 self-stretch pt-40">
+            <div className="flex min-h-0 flex-1 flex-col items-center gap-16 self-stretch pt-[clamp(80px,15dvh,160px)]">
               <LoadingGraphic
                 animationData={resumeAnalysisLoading}
-                className="h-[464px] w-[560px] shrink-0 [aspect-ratio:35/29]"
+                className="h-[min(464px,55dvh)] w-[min(560px,50vw)] shrink-0 [aspect-ratio:35/29]"
               />
             </div>
           </main>
