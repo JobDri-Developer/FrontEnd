@@ -40,8 +40,8 @@ export default function CreditRow({
   dateTime = "2026.04.02 오후 10:02",
   typeLabel = "데이터분석",
   content = "자소서 분석 사용",
-  amount = "-1",
-  balance = "32회",
+  amount = "1",
+  balance = "32크레딧",
   className,
   ...props
 }: CreditRowProps) {
