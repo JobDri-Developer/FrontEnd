@@ -76,6 +76,7 @@ import IC_COMPANY from "@/assets/ic_Company.svg";
 import IC_LOGOUT from "@/assets/ic_Logout.svg";
 import IC_INFO from "@/assets/ic_Info.svg";
 import IC_REVIEW_20 from "@/assets/ic_Review_20.svg";
+import IC_SCORE_20 from "@/assets/ic_Score_20.svg";
 
 const iconMap = {
   EX_L: IC_EX_L,
@@ -159,6 +160,7 @@ const iconMap = {
   LOGOUT: IC_LOGOUT,
   INFO: IC_INFO,
   REVIEW_20: IC_REVIEW_20,
+  SCORE_20: IC_SCORE_20,
 } as const;
 
 export type IconType = keyof typeof iconMap;

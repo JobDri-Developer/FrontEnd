@@ -6,6 +6,11 @@ import { CtaFooter } from "@/components/common/cta";
 import Divider from "@/components/common/Divider";
 import Header from "@/components/common/header/Header";
 import Icon from "@/components/common/icons/Icon";
+import {
+  LnbScrollbar,
+  lnbHiddenScrollbarClass,
+  useLnbScrollMetrics,
+} from "@/components/common/lnb/LnbScrollbar";
 import TabMenu from "@/components/common/tabs/TabMenu";
 import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
 import Evaluation from "@/components/mockApply/result/Evaluation";
@@ -51,21 +56,8 @@ const weaknessEvaluations = [
 
 function ScoreSummaryIcon() {
   return (
-    <span
-      className="relative flex h-5 w-5 shrink-0 items-center justify-center text-icon-primary-strong"
-      aria-hidden="true"
-    >
-      <span className="absolute h-[15px] w-[15px] rounded-[4px] bg-blue-200" />
-      <svg
-        viewBox="0 0 20 20"
-        fill="none"
-        className="relative h-5 w-5"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <rect x="6" y="9" width="2" height="5" rx="0.75" fill="currentColor" />
-        <rect x="10" y="6" width="2" height="8" rx="0.75" fill="currentColor" />
-        <rect x="14" y="11" width="2" height="3" rx="0.75" fill="currentColor" />
-      </svg>
+    <span className="flex h-5 w-5 shrink-0" aria-hidden="true">
+      <Icon type="SCORE_20" className="h-5 w-5" />
     </span>
   );
 }
@@ -200,25 +192,39 @@ function ReviewSummaryCard() {
 
 export default function ResumeAnalysisFeedback() {
   const router = useRouter();
+  const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
+    useLnbScrollMetrics<HTMLElement>(true, "resume-analysis-feedback");
 
   return (
     <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
       <Header currentStep={6} />
 
-      <main className="flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto px-2 pb-0">
-        <div className="flex w-full items-start justify-center self-stretch px-2 pb-0">
-          <div className="flex flex-1 flex-col items-center p-0">
-            <AnalysisHeader />
+      <div className="relative flex min-h-0 flex-1 items-stretch self-stretch overflow-visible">
+        <main
+          ref={scrollAreaRef}
+          onScroll={updateScrollbarMetrics}
+          className={`flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden px-2 pb-0 ${lnbHiddenScrollbarClass}`}
+        >
+          <div className="flex w-full items-start justify-center self-stretch px-2 pb-0">
+            <div className="flex flex-1 flex-col items-center p-0">
+              <AnalysisHeader />
 
-            <section className="flex items-center gap-3 self-stretch rounded-card-l bg-fill-quaternary-assistive px-16 pt-8 pb-[120px]">
-              <div className="mx-auto flex w-full max-w-[1320px] flex-1 items-center gap-3 self-stretch">
-                <ScoreSummaryCard />
-                <ReviewSummaryCard />
-              </div>
-            </section>
+              <section className="flex items-center gap-3 self-stretch rounded-card-l bg-fill-quaternary-assistive px-16 pt-8 pb-[120px]">
+                <div className="mx-auto flex w-full max-w-[1320px] flex-1 items-center gap-3 self-stretch">
+                  <ScoreSummaryCard />
+                  <ReviewSummaryCard />
+                </div>
+              </section>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+
+        <LnbScrollbar
+          metrics={scrollbarMetrics}
+          size="l"
+          className="inset-y-0 right-0 z-20 items-end"
+        />
+      </div>
 
       <CtaFooter
         type="result"
