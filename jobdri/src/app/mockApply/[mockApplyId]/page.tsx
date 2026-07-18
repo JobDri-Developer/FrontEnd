@@ -19,6 +19,9 @@ import { ModalCard } from "@/components/common/modal/ModalCard";
 import { Toast } from "@/components/common/toast";
 import { CtaFooter } from "@/components/common/cta";
 import { fetchCreditBalance } from "@/lib/api/credit";
+import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
+
+const RESUME_ANALYSIS_LOADING_DURATION_MS = 316_000;
 
 export default function MockApplyPage({
   params,
@@ -29,8 +32,8 @@ export default function MockApplyPage({
 
   const router = useRouter();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -120,18 +123,13 @@ export default function MockApplyPage({
   };
 
   const handleConfirm = async () => {
-    try {
-      const answersToSubmit = questions.map((q) => ({
-        questionId: q.questionId!,
-        answer: q.answer || "",
-      }));
+    const answersToSubmit = questions.map((q) => ({
+      questionId: q.questionId!,
+      answer: q.answer || "",
+    }));
 
-      await saveApply(Number(mockApplyId), answersToSubmit);
-      router.push(`/mockApply/${mockApplyId}/result/`);
-    } catch (error) {
-      console.error("답변 저장 실패:", error);
-      alert("답변 저장에 실패했습니다.");
-    }
+    await saveApply(Number(mockApplyId), answersToSubmit);
+    router.push(`/mockApply/${mockApplyId}/result/`);
   };
   const handleAddQuestion = async () => {
     if (questions.length >= 5) return;
@@ -182,18 +180,14 @@ export default function MockApplyPage({
     }
   };
 
-  const handleOpenConfirmModal = () => {
-    setIsConfirmModalOpen(true);
-  };
-
   const handleTrySubmit = async () => {
+    let hasCredit = false;
+
     try {
       const currentCredit = await fetchCreditBalance();
-      if (currentCredit > 0) {
-        setIsConfirmModalOpen(false);
-        await handleConfirm();
-      } else {
-        setIsConfirmModalOpen(false);
+      hasCredit = currentCredit > 0;
+
+      if (!hasCredit) {
         setIsCreditShortModalOpen(true);
       }
     } catch (error) {
@@ -204,7 +198,29 @@ export default function MockApplyPage({
       });
       setTimeout(() => setToast({ open: false, message: "" }), 3000);
     }
+
+    if (!hasCredit) {
+      return;
+    }
+
+    setIsAnalysisLoading(true);
+
+    try {
+      await handleConfirm();
+    } catch {
+      setIsAnalysisLoading(false);
+      alert("답변 저장에 실패했습니다.");
+    }
   };
+
+  if (isAnalysisLoading) {
+    return (
+      <ResumeAnalysisLoading
+        durationMs={RESUME_ANALYSIS_LOADING_DURATION_MS}
+        onBack={() => setIsAnalysisLoading(false)}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col h-dvh bg-bg-default overflow-hidden">
@@ -259,8 +275,8 @@ export default function MockApplyPage({
           onClick: () => setIsLeaveModalOpen(true),
         }}
         nextAction={{
-          label: "채점하기",
-          onClick: handleOpenConfirmModal,
+          label: "제출하기",
+          onClick: handleTrySubmit,
           disabled:
             !mappedQuestionForForm ||
             questions.some((q) => !(q.answer || "").trim()),
@@ -311,22 +327,6 @@ export default function MockApplyPage({
             onPrimaryClick={() => {
               setIsLeaveModalOpen(false);
               router.push(`/mockApply/actual/${mockApplyId}/jd-review`);
-            }}
-          />
-        </div>
-      )}
-
-      {isConfirmModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
-          <ModalCard
-            title="이대로 채점할까요?"
-            description="지원 시 1 크레딧이 차감되며, 취소할 수 없어요."
-            secondaryBtn="닫기"
-            primaryBtn="지원하기"
-            onSecondaryClick={() => setIsConfirmModalOpen(false)}
-            onPrimaryClick={() => {
-              setIsConfirmModalOpen(false);
-              handleTrySubmit();
             }}
           />
         </div>
