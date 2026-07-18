@@ -4,6 +4,8 @@ import clsx from "clsx";
 interface ScoreCircleProps {
   score: number;
   maxScore?: number;
+  size?: "large" | "medium";
+  className?: string;
 }
 
 const RADIUS = 45;
@@ -11,10 +13,24 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const STROKE_WIDTH = 10;
 const CORNER_RADIUS = 3;
 
+const sizeStyles = {
+  large: {
+    frame: "h-48 w-48",
+    score: "text-[36px]",
+  },
+  medium: {
+    frame: "h-[136px] w-[136px]",
+    score: "text-[36px]",
+  },
+} as const;
+
 export default function ScoreCircle({
   score,
   maxScore = 100,
+  size = "large",
+  className,
 }: ScoreCircleProps) {
+  const sizeStyle = sizeStyles[size];
   const progress = Math.min(score / maxScore, 1);
   const offset = CIRCUMFERENCE * (1 - progress);
 
@@ -22,7 +38,13 @@ export default function ScoreCircle({
     score >= 60 ? "text-fill-primary-default" : "text-fill-system-fail-strong";
 
   return (
-    <div className="relative flex h-48 w-48 shrink-0 items-center justify-center">
+    <div
+      className={clsx(
+        "relative flex shrink-0 items-center justify-center",
+        sizeStyle.frame,
+        className,
+      )}
+    >
       {/* SVG와 내부 텍스트 영역 */}
       <div className="relative z-10 flex h-full w-full items-center justify-center">
         <svg
@@ -97,7 +119,12 @@ export default function ScoreCircle({
 
         {/* 중앙 텍스트 영역 */}
         <div className="z-10 flex flex-col items-center justify-center text-center">
-          <span className="text-[36px] font-bold tracking-tight text-text-neutral-title">
+          <span
+            className={clsx(
+              "font-bold tracking-normal text-text-neutral-title",
+              sizeStyle.score,
+            )}
+          >
             {score}
           </span>
           <span className="mt-1 text-cap12-med text-text-neutral-caption">

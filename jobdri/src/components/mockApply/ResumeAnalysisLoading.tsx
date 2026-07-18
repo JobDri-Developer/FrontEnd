@@ -10,6 +10,7 @@ import LoadingGraphic from "./LoadingGraphic";
 interface ResumeAnalysisLoadingProps {
   durationMs: number;
   onBack?: () => void;
+  onComplete?: () => void;
 }
 
 function formatRemainingTime(totalSeconds: number) {
@@ -26,6 +27,7 @@ function formatRemainingTime(totalSeconds: number) {
 export default function ResumeAnalysisLoading({
   durationMs,
   onBack,
+  onComplete,
 }: ResumeAnalysisLoadingProps) {
   const initialRemainingSeconds = Math.max(1, Math.ceil(durationMs / 1000));
   const [remainingSeconds, setRemainingSeconds] = useState(
@@ -37,6 +39,10 @@ export default function ResumeAnalysisLoading({
     const countdownTimer = window.setInterval(() => {
       setRemainingSeconds((prev) => Math.max(prev - 1, 0));
     }, 1000);
+
+    const completeTimer = window.setTimeout(() => {
+      onComplete?.();
+    }, durationMs);
 
     const secondStepTimer = window.setTimeout(() => {
       setCurrentStep(2);
@@ -55,11 +61,12 @@ export default function ResumeAnalysisLoading({
 
     return () => {
       window.clearInterval(countdownTimer);
+      window.clearTimeout(completeTimer);
       window.clearTimeout(secondStepTimer);
       window.clearTimeout(thirdStepTimer);
       window.clearTimeout(fourthStepTimer);
     };
-  }, [durationMs]);
+  }, [durationMs, onComplete]);
 
   const progressItems = useMemo(
     () => [

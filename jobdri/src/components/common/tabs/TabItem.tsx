@@ -11,7 +11,7 @@ const TabItemStyle = {
   inactive: "text-text-neutral-caption bg-transparent",
   active: {
     NORMAL: "bg-fill-quaternary-assistive-pressed text-text-neutral-title",
-    STRONG: "bg-fill-tertiary-default text-text-neutral-white",
+    STRONG: "bg-fill-quaternary-default text-text-neutral-title",
   },
   size: {
     S: "text-cap12-semibold",
