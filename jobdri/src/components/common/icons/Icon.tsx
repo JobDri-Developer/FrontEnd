@@ -29,6 +29,7 @@ import IC_ADD from "@/assets/ic_Add.svg";
 import IC_ADD_S from "@/assets/ic_Add_S.svg";
 import IC_TRASH from "@/assets/ic_Trash.svg";
 import IC_WARN from "@/assets/ic_Warning.svg";
+import IC_WARN_16 from "@/assets/ic_Warning_16.svg";
 import IC_WARN_24 from "@/assets/ic_Warning_24.svg";
 import IC_CHECK from "@/assets/ic_Check.svg";
 import IC_CHECK_R from "@/assets/ic_Check_Radio.svg";
@@ -112,6 +113,7 @@ const iconMap = {
   ADD_S: IC_ADD_S,
   TRASH: IC_TRASH,
   WARN: IC_WARN,
+  WARN_16: IC_WARN_16,
   WARN_24: IC_WARN_24,
   CHECK: IC_CHECK,
   CHECK_S: IC_CHECK_S,

@@ -42,9 +42,9 @@ export default function Evaluation({
           )}
         >
           {isWarning ? (
-            <Icon type="WARN" className="h-4 w-4 shrink-0" />
+            <Icon type="WARN_16" className="h-4 w-4 shrink-0" />
           ) : (
-            <Icon type="GOOD" className="h-4 w-4 shrink-0" />
+            <Icon type="GOOD_16" className="h-4 w-4 shrink-0" />
           )}
         </div>
 

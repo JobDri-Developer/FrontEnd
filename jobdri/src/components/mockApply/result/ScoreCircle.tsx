@@ -9,8 +9,6 @@ interface ScoreCircleProps {
   className?: string;
 }
 
-const RING_GRADIENT_STOP_DEGREES = 46.73077046871185;
-
 const sizeStyles = {
   large: {
     frame: "h-48 w-48",
@@ -26,19 +24,21 @@ const sizeStyles = {
   },
 } as const;
 
-function getProgressGradient(progressDegrees: number, isWarning: boolean) {
-  const gradientStop = Math.min(
-    RING_GRADIENT_STOP_DEGREES,
-    progressDegrees,
-  );
+function getRingGradient(progressDegrees: number, isWarning: boolean) {
+  const safeProgressDegrees = Math.min(Math.max(progressDegrees, 0), 360);
   const startColor = isWarning
     ? "var(--color-red-400)"
     : "var(--color-blue-400)";
   const endColor = isWarning
     ? "var(--color-red-600)"
     : "var(--color-blue-700)";
+  const trackColor = "var(--color-fill-quaternary-assistive)";
 
-  return `conic-gradient(from 0deg at 50% 50%, ${startColor} 0deg, ${endColor} ${gradientStop}deg, ${endColor} ${progressDegrees}deg, transparent ${progressDegrees}deg, transparent 360deg)`;
+  if (safeProgressDegrees === 0) {
+    return trackColor;
+  }
+
+  return `conic-gradient(from 0deg at 50% 50%, ${startColor} 0deg, ${endColor} ${safeProgressDegrees}deg, ${trackColor} ${safeProgressDegrees}deg, ${trackColor} 360deg)`;
 }
 
 function getCapPosition({
@@ -111,7 +111,7 @@ export default function ScoreCircle({
         className="absolute inset-0 rounded-full transition-all duration-500 ease-in-out"
         style={{
           ...ringMaskStyle,
-          background: getProgressGradient(progressDegrees, isWarning),
+          background: getRingGradient(progressDegrees, isWarning),
         }}
         aria-hidden="true"
       />

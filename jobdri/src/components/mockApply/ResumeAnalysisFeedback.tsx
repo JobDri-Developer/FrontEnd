@@ -216,8 +216,8 @@ export default function ResumeAnalysisFeedback() {
             <div className="flex flex-1 flex-col items-center p-0">
               <AnalysisHeader />
 
-              <section className="flex items-center gap-3 self-stretch rounded-card-l bg-fill-quaternary-assistive px-16 pt-8 pb-[120px]">
-                <div className="mx-auto flex w-full max-w-[1320px] flex-1 items-center gap-3 self-stretch">
+              <section className="flex items-center justify-center gap-3 self-stretch rounded-card-l bg-fill-quaternary-assistive px-16 pt-8 pb-[120px]">
+                <div className="mx-auto flex w-full max-w-[1320px] items-center gap-3 self-stretch">
                   <ScoreSummaryCard />
                   <ReviewSummaryCard />
                 </div>
