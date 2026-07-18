@@ -129,10 +129,10 @@ export default function ResumeAnalysisLoading({
               />
             </aside>
 
-            <div className="flex min-h-0 flex-1 flex-col items-center gap-16 self-stretch pt-[clamp(80px,15dvh,160px)]">
+            <div className="flex min-h-0 min-w-0 [flex:1_0_0] items-start justify-center gap-16 self-stretch pt-40">
               <LoadingGraphic
                 animationData={resumeAnalysisLoading}
-                className="h-[min(464px,55dvh)] w-[min(560px,50vw)] shrink-0 [aspect-ratio:35/29]"
+                className="aspect-[35/29] w-full max-w-[560px] min-w-0 shrink"
               />
             </div>
           </main>
