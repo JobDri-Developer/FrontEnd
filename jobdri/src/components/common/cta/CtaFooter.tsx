@@ -5,8 +5,10 @@ import type { IconType } from "@/components/common/icons/Icon";
 
 export type CtaFooterType = "wizard" | "result";
 
-export interface CtaFooterActionProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+export interface CtaFooterActionProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "children"
+> {
   label?: string;
   iconType?: IconType;
 }
@@ -76,7 +78,7 @@ export default function CtaFooter({
     return (
       <footer
         className={clsx(
-          "flex w-[1440px] items-center justify-end gap-8 bg-bg-white px-6 py-3",
+          "flex w-full min-w-[1100px] items-center justify-end gap-8 bg-bg-white px-6 py-3",
           className,
         )}
       >
@@ -101,7 +103,7 @@ export default function CtaFooter({
   return (
     <footer
       className={clsx(
-        "flex w-[1440px] items-center justify-between bg-bg-white px-6 py-3",
+        "flex w-full min-w-[1100px] items-center justify-between bg-bg-white px-6 py-3",
         className,
       )}
     >

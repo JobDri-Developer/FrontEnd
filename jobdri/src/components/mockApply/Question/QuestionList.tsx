@@ -38,7 +38,7 @@ export const QuestionList = ({
             data={
               {
                 id: Number(q.id),
-                title: q.question || "",
+                title: (q.question === "새 문항" ? "" : q.question) || "",
                 content: q.answer || "",
               } as QuestionData
             }

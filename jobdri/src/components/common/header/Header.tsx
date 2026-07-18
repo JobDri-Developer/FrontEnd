@@ -201,7 +201,7 @@ export default function Header({
           className,
         )}
       >
-        <div className="flex min-w-0 items-center gap-4">
+        <div className="flex min-w-0 items-center gap-4 max-w-[1440px]">
           <div className="flex flex-col items-start gap-2.5 py-[5px]">
             <span className="flex h-[30px] w-[45px] items-center justify-center overflow-hidden pt-[11.154px] pr-[6.634px] pb-[8.75px] pl-[8.174px]">
               <HeaderLogo
