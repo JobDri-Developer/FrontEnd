@@ -29,6 +29,7 @@ import IC_ADD from "@/assets/ic_Add.svg";
 import IC_ADD_S from "@/assets/ic_Add_S.svg";
 import IC_TRASH from "@/assets/ic_Trash.svg";
 import IC_WARN from "@/assets/ic_Warning.svg";
+import IC_WARN_16 from "@/assets/ic_Warning_16.svg";
 import IC_WARN_24 from "@/assets/ic_Warning_24.svg";
 import IC_CHECK from "@/assets/ic_Check.svg";
 import IC_CHECK_R from "@/assets/ic_Check_Radio.svg";
@@ -75,6 +76,8 @@ import IC_CIRCLE_CHECK_16 from "@/assets/ic_CircleCheck_16.svg";
 import IC_COMPANY from "@/assets/ic_Company.svg";
 import IC_LOGOUT from "@/assets/ic_Logout.svg";
 import IC_INFO from "@/assets/ic_Info.svg";
+import IC_REVIEW_20 from "@/assets/ic_Review_20.svg";
+import IC_SCORE_20 from "@/assets/ic_Score_20.svg";
 
 const iconMap = {
   EX_L: IC_EX_L,
@@ -110,6 +113,7 @@ const iconMap = {
   ADD_S: IC_ADD_S,
   TRASH: IC_TRASH,
   WARN: IC_WARN,
+  WARN_16: IC_WARN_16,
   WARN_24: IC_WARN_24,
   CHECK: IC_CHECK,
   CHECK_S: IC_CHECK_S,
@@ -157,6 +161,8 @@ const iconMap = {
   COMPANY: IC_COMPANY,
   LOGOUT: IC_LOGOUT,
   INFO: IC_INFO,
+  REVIEW_20: IC_REVIEW_20,
+  SCORE_20: IC_SCORE_20,
 } as const;
 
 export type IconType = keyof typeof iconMap;

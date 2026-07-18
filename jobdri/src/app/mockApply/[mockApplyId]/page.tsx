@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import { QuestionList } from "@/components/mockApply/Question/QuestionList";
 import JDSidePanel from "@/components/mockApply/Question/SidePanel";
@@ -10,15 +10,15 @@ import clsx from "clsx";
 import { scrollbarClass } from "@/components/common/scrollbar/scrollbarStyles";
 import {
   fetchSelectedQuestions,
-  createCustomQuestionCandidate,
   saveQuestions,
   saveApply,
   type QuestionItem,
 } from "@/lib/api/questions";
 import { ModalCard } from "@/components/common/modal/ModalCard";
-import { Toast } from "@/components/common/toast";
+import { Toast, type ToastVariant } from "@/components/common/toast";
 import { CtaFooter } from "@/components/common/cta";
 import { fetchCreditBalance } from "@/lib/api/credit";
+import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel";
 
 export default function MockApplyPage({
   params,
@@ -28,18 +28,42 @@ export default function MockApplyPage({
   const { mockApplyId } = use(params);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isRetryMode = searchParams.get("retry") === "1";
+  const sequenceParam = Number(searchParams.get("sequence"));
+  const retrySequence =
+    Number.isFinite(sequenceParam) && sequenceParam > 0 ? sequenceParam : 2;
+  const applicationLabel = isRetryMode
+    ? formatApplicationSequenceLabel(retrySequence)
+    : undefined;
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ open: boolean; message: string }>({
-    open: false,
-    message: "",
-  });
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    variant: ToastVariant;
+  }>(() => ({
+    open: isRetryMode,
+    message: isRetryMode
+      ? "기존 내용이 유지되었어요. 수정하고 다시 채점해 보세요!"
+      : "",
+    variant: isRetryMode ? "check" : "normal",
+  }));
   const [modalTarget, setModalTarget] = useState<string | null>(null);
   const [lastSavedTime, setLastSavedTime] = useState<string>("저장 전");
+
+  useEffect(() => {
+    if (!toast.open || toast.variant !== "check") return;
+
+    const retryToastTimer = window.setTimeout(() => {
+      setToast({ open: false, message: "", variant: "normal" });
+    }, 3000);
+
+    return () => window.clearTimeout(retryToastTimer);
+  }, [toast.open, toast.variant]);
 
   useEffect(() => {
     if (questions.length === 0) return;
@@ -73,8 +97,15 @@ export default function MockApplyPage({
       return newList;
     });
 
-    setToast({ open: true, message: "문항이 삭제되었어요" });
-    setTimeout(() => setToast({ open: false, message: "" }), 3000);
+    setToast({
+      open: true,
+      message: "문항이 삭제되었어요",
+      variant: "normal",
+    });
+    setTimeout(
+      () => setToast({ open: false, message: "", variant: "normal" }),
+      3000,
+    );
   };
 
   useEffect(() => {
@@ -120,18 +151,24 @@ export default function MockApplyPage({
   };
 
   const handleConfirm = async () => {
-    try {
-      const answersToSubmit = questions.map((q) => ({
-        questionId: q.questionId!,
-        answer: q.answer || "",
-      }));
+    const answersToSubmit = questions.map((q) => ({
+      questionId: q.questionId!,
+      answer: q.answer || "",
+    }));
 
-      await saveApply(Number(mockApplyId), answersToSubmit);
-      router.push(`/mockApply/${mockApplyId}/result/`);
-    } catch (error) {
-      console.error("답변 저장 실패:", error);
-      alert("답변 저장에 실패했습니다.");
+    const saveResult = await saveApply(Number(mockApplyId), answersToSubmit);
+
+    if (isRetryMode) {
+      const loadingParams = new URLSearchParams({
+        mockApplyId,
+        sequence: String(saveResult.sequence || retrySequence),
+      });
+
+      router.push(`/mockApply/resume-analysis-loading?${loadingParams}`);
+      return;
     }
+
+    router.push(`/mockApply/${mockApplyId}/result/`);
   };
   const handleAddQuestion = async () => {
     if (questions.length >= 5) return;
@@ -165,6 +202,7 @@ export default function MockApplyPage({
       setToast({
         open: true,
         message: "문항 추가에 실패했어요. 잠시 후 다시 시도해주세요.",
+        variant: "normal",
       });
     }
   };
@@ -182,18 +220,14 @@ export default function MockApplyPage({
     }
   };
 
-  const handleOpenConfirmModal = () => {
-    setIsConfirmModalOpen(true);
-  };
-
   const handleTrySubmit = async () => {
+    let hasCredit = false;
+
     try {
       const currentCredit = await fetchCreditBalance();
-      if (currentCredit > 0) {
-        setIsConfirmModalOpen(false);
-        await handleConfirm();
-      } else {
-        setIsConfirmModalOpen(false);
+      hasCredit = currentCredit > 0;
+
+      if (!hasCredit) {
         setIsCreditShortModalOpen(true);
       }
     } catch (error) {
@@ -201,14 +235,32 @@ export default function MockApplyPage({
       setToast({
         open: true,
         message: "크레딧 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.",
+        variant: "normal",
       });
-      setTimeout(() => setToast({ open: false, message: "" }), 3000);
+      setTimeout(
+        () => setToast({ open: false, message: "", variant: "normal" }),
+        3000,
+      );
+    }
+
+    if (!hasCredit) {
+      return;
+    }
+
+    try {
+      await handleConfirm();
+    } catch {
+      alert("답변 저장에 실패했습니다.");
     }
   };
 
   return (
     <div className="flex flex-col h-dvh bg-bg-default overflow-hidden">
-      <Header currentStep={4} lastSavedAt={lastSavedTime} />
+      <Header
+        currentStep={4}
+        lastSavedAt={lastSavedTime}
+        applicationLabel={applicationLabel}
+      />
 
       <main
         className={clsx(
@@ -259,8 +311,8 @@ export default function MockApplyPage({
           onClick: () => setIsLeaveModalOpen(true),
         }}
         nextAction={{
-          label: "채점하기",
-          onClick: handleOpenConfirmModal,
+          label: isRetryMode ? "채점하기" : "제출하기",
+          onClick: handleTrySubmit,
           disabled:
             !mappedQuestionForForm ||
             questions.some((q) => !(q.answer || "").trim()),
@@ -293,7 +345,7 @@ export default function MockApplyPage({
       {toast.open && (
         <Toast
           message={toast.message}
-          variant="normal"
+          variant={toast.variant}
           position="top"
           onClose={() => setToast({ ...toast, open: false })}
           className="absolute top-6"
@@ -311,22 +363,6 @@ export default function MockApplyPage({
             onPrimaryClick={() => {
               setIsLeaveModalOpen(false);
               router.push(`/mockApply/actual/${mockApplyId}/jd-review`);
-            }}
-          />
-        </div>
-      )}
-
-      {isConfirmModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
-          <ModalCard
-            title="이대로 채점할까요?"
-            description="지원 시 1 크레딧이 차감되며, 취소할 수 없어요."
-            secondaryBtn="닫기"
-            primaryBtn="지원하기"
-            onSecondaryClick={() => setIsConfirmModalOpen(false)}
-            onPrimaryClick={() => {
-              setIsConfirmModalOpen(false);
-              handleTrySubmit();
             }}
           />
         </div>

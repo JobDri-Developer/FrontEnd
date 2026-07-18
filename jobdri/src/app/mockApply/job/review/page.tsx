@@ -87,7 +87,9 @@ function JobProfileRow({ avatarName }: { avatarName: string }) {
 
 export default function JobPostingReviewPage() {
   const router = useRouter();
+  const [jobPostingName, setJobPostingName] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [roleName, setRoleName] = useState("");
   const [showBackConfirm, setShowBackConfirm] = useState(false);
   const [showHomeConfirm, setShowHomeConfirm] = useState(false);
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
@@ -97,6 +99,13 @@ export default function JobPostingReviewPage() {
 
     return trimmedCompanyName.length > 0 ? trimmedCompanyName[0] : "T";
   }, [companyName]);
+  const isNextEnabled = useMemo(
+    () =>
+      [jobPostingName, companyName, roleName].every(
+        (value) => value.trim().length > 0,
+      ),
+    [companyName, jobPostingName, roleName],
+  );
   const handleHomeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setShowHomeConfirm(true);
@@ -142,6 +151,8 @@ export default function JobPostingReviewPage() {
                       label="공고명"
                       description="이 공고의 이름이에요."
                       type="company"
+                      value={jobPostingName}
+                      onChange={setJobPostingName}
                       className="!w-full"
                     />
                     <JDInput
@@ -155,7 +166,12 @@ export default function JobPostingReviewPage() {
                   </SectionCard>
 
                   <SectionCard title="직무 정보">
-                    <JDInput type="role" className="!w-full" />
+                    <JDInput
+                      type="role"
+                      value={roleName}
+                      onChange={setRoleName}
+                      className="!w-full"
+                    />
                     <JDInput
                       type="task"
                       description="이 직무에서 담당할 업무예요."
@@ -198,7 +214,7 @@ export default function JobPostingReviewPage() {
           }}
           nextAction={{
             label: "다음으로",
-            disabled: true,
+            disabled: !isNextEnabled,
           }}
         />
       </div>

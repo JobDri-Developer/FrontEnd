@@ -1,103 +1,153 @@
 "use client";
+import type { CSSProperties } from "react";
 import clsx from "clsx";
 
 interface ScoreCircleProps {
   score: number;
   maxScore?: number;
+  size?: "large" | "medium";
+  className?: string;
 }
 
-const RADIUS = 45;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-const STROKE_WIDTH = 10;
-const CORNER_RADIUS = 3;
+const sizeStyles = {
+  large: {
+    frame: "h-48 w-48",
+    diameter: 192,
+    ringWidth: 18,
+    score: "text-[36px]",
+  },
+  medium: {
+    frame: "h-[136px] w-[136px]",
+    diameter: 136,
+    ringWidth: 14,
+    score: "text-[36px]",
+  },
+} as const;
+
+function getRingGradient(progressDegrees: number, isWarning: boolean) {
+  const safeProgressDegrees = Math.min(Math.max(progressDegrees, 0), 360);
+  const startColor = isWarning
+    ? "var(--color-red-400)"
+    : "var(--color-blue-400)";
+  const endColor = isWarning
+    ? "var(--color-red-600)"
+    : "var(--color-blue-700)";
+  const trackColor = "var(--color-fill-quaternary-assistive)";
+
+  if (safeProgressDegrees === 0) {
+    return trackColor;
+  }
+
+  return `conic-gradient(from 0deg at 50% 50%, ${startColor} 0deg, ${endColor} ${safeProgressDegrees}deg, ${trackColor} ${safeProgressDegrees}deg, ${trackColor} 360deg)`;
+}
+
+function getCapPosition({
+  degrees,
+  diameter,
+  ringWidth,
+}: {
+  degrees: number;
+  diameter: number;
+  ringWidth: number;
+}) {
+  const angleRadians = (degrees * Math.PI) / 180;
+  const center = diameter / 2;
+  const radius = (diameter - ringWidth) / 2;
+
+  return {
+    left: center + radius * Math.sin(angleRadians) - ringWidth / 2,
+    top: center - radius * Math.cos(angleRadians) - ringWidth / 2,
+  };
+}
 
 export default function ScoreCircle({
   score,
   maxScore = 100,
+  size = "large",
+  className,
 }: ScoreCircleProps) {
-  const progress = Math.min(score / maxScore, 1);
-  const offset = CIRCUMFERENCE * (1 - progress);
+  const sizeStyle = sizeStyles[size];
+  const normalizedScore = Math.min(Math.max(score, 0), maxScore);
+  const progress = maxScore > 0 ? normalizedScore / maxScore : 0;
+  const progressDegrees = progress * 360;
+  const isWarning = score < 60;
+  const ringMask = `radial-gradient(farthest-side, transparent calc(100% - ${sizeStyle.ringWidth}px), #000 calc(100% - ${sizeStyle.ringWidth}px))`;
+  const ringMaskStyle = {
+    WebkitMask: ringMask,
+    mask: ringMask,
+  } satisfies CSSProperties;
+  const startCapPosition = getCapPosition({
+    degrees: 0,
+    diameter: sizeStyle.diameter,
+    ringWidth: sizeStyle.ringWidth,
+  });
+  const endCapPosition = getCapPosition({
+    degrees: progressDegrees,
+    diameter: sizeStyle.diameter,
+    ringWidth: sizeStyle.ringWidth,
+  });
 
-  const strokeColorClass =
-    score >= 60 ? "text-fill-primary-default" : "text-fill-system-fail-strong";
+  const capColor = isWarning
+    ? "var(--color-red-600)"
+    : "var(--color-blue-700)";
+  const startCapColor = isWarning
+    ? "var(--color-red-400)"
+    : "var(--color-blue-400)";
 
   return (
-    <div className="relative flex h-48 w-48 shrink-0 items-center justify-center">
-      {/* SVG와 내부 텍스트 영역 */}
+    <div
+      className={clsx(
+        "relative flex shrink-0 items-center justify-center",
+        sizeStyle.frame,
+        className,
+      )}
+    >
+      <div
+        className="absolute inset-0 rounded-full bg-fill-quaternary-assistive"
+        style={ringMaskStyle}
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 rounded-full transition-all duration-500 ease-in-out"
+        style={{
+          ...ringMaskStyle,
+          background: getRingGradient(progressDegrees, isWarning),
+        }}
+        aria-hidden="true"
+      />
+      {progress > 0 && (
+        <>
+          <span
+            className="absolute rounded-full"
+            style={{
+              width: sizeStyle.ringWidth,
+              height: sizeStyle.ringWidth,
+              background: startCapColor,
+              ...startCapPosition,
+            }}
+            aria-hidden="true"
+          />
+          <span
+            className="absolute rounded-full"
+            style={{
+              width: sizeStyle.ringWidth,
+              height: sizeStyle.ringWidth,
+              background: capColor,
+              ...endCapPosition,
+            }}
+            aria-hidden="true"
+          />
+        </>
+      )}
+
       <div className="relative z-10 flex h-full w-full items-center justify-center">
-        <svg
-          viewBox="0 0 100 100"
-          className="absolute inset-0 h-full w-full -rotate-90 overflow-visible"
-        >
-          <circle
-            cx="50"
-            cy="50"
-            r={RADIUS}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={STROKE_WIDTH}
-            className="text-fill-quaternary-assistive"
-          />
-
-          <circle
-            cx="50"
-            cy="50"
-            r={RADIUS}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={STROKE_WIDTH}
-            strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={offset}
-            strokeLinecap="butt"
-            className={clsx(
-              strokeColorClass,
-              "transition-all duration-500 ease-in-out",
-            )}
-          />
-
-          {/* 3. 시작점 둥근 사각형 캡 (고정) */}
-          {progress > 0 && (
-            <rect
-              x={50 + RADIUS - STROKE_WIDTH / 2}
-              y={50 - STROKE_WIDTH / 2}
-              width={STROKE_WIDTH}
-              height={STROKE_WIDTH}
-              rx={CORNER_RADIUS}
-              fill="currentColor"
-              className={clsx(
-                strokeColorClass,
-                "transition-colors duration-500",
-              )}
-            />
-          )}
-
-          {progress > 0 && (
-            <g
-              style={{
-                transform: `rotate(${progress * 360}deg)`,
-                transformOrigin: "50px 50px",
-                transition: "transform 500ms ease-in-out",
-              }}
-            >
-              <rect
-                x={50 + RADIUS - STROKE_WIDTH / 2}
-                y={50 - STROKE_WIDTH / 2}
-                width={STROKE_WIDTH}
-                height={STROKE_WIDTH}
-                rx={CORNER_RADIUS}
-                fill="currentColor"
-                className={clsx(
-                  strokeColorClass,
-                  "transition-colors duration-500",
-                )}
-              />
-            </g>
-          )}
-        </svg>
-
-        {/* 중앙 텍스트 영역 */}
         <div className="z-10 flex flex-col items-center justify-center text-center">
-          <span className="text-[36px] font-bold tracking-tight text-text-neutral-title">
+          <span
+            className={clsx(
+              "font-bold tracking-normal text-text-neutral-title",
+              sizeStyle.score,
+            )}
+          >
             {score}
           </span>
           <span className="mt-1 text-cap12-med text-text-neutral-caption">
