@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CreditTable } from ".";
+import CreditTable from "./CreditTable";
 import {
   fetchCreditTransactions,
   type CreditTransaction,
@@ -10,14 +10,14 @@ import {
 
 const typeLabel: Record<TransactionType, string> = {
   CHARGE: "충전",
-  USE: "사용",
+  USE: "데이터 분석",
   REFUND: "환불",
   COUPON: "쿠폰",
 };
 
 function formatAmount(type: TransactionType, amount: number) {
-  const sign = type === "USE" ? "-" : "+";
-  return `${sign}${amount.toLocaleString()}회`;
+  const sign = type === "USE" ? "" : "+";
+  return `${sign}${amount.toLocaleString()}`;
 }
 
 function formatDateTime(iso: string) {

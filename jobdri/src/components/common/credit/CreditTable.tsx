@@ -21,8 +21,8 @@ const defaultRows: CreditRowData[] = Array.from({ length: 6 }, (_, i) => ({
 
 export default function CreditTable({ rows = defaultRows }: CreditTableProps) {
   return (
-    <section className="flex flex-col gap-4 w-full rounded-card-l shadow-card">
-      <div className="flex flex-col overflow-hidden rounded-xl">
+    <section className="flex flex-col gap-4 w-full rounded-card-l border border-line-neutral-default">
+      <div className="flex flex-col overflow-hidden rounded-card-l border-t border-line-neutral-default">
         <CreditHeader />
         {rows.map((row, index) => (
           <CreditRow
