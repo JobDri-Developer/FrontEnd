@@ -10,6 +10,8 @@ import clsx from "clsx";
 import { scrollbarClass } from "@/components/common/scrollbar/scrollbarStyles";
 import {
   fetchSelectedQuestions,
+  createCustomQuestionCandidate,
+  saveQuestions,
   saveApply,
   type QuestionItem,
 } from "@/lib/api/questions";
@@ -131,20 +133,40 @@ export default function MockApplyPage({
       alert("답변 저장에 실패했습니다.");
     }
   };
-
-  const handleAddQuestion = () => {
+  const handleAddQuestion = async () => {
     if (questions.length >= 5) return;
-    const newId = `custom-${Date.now()}`;
-    const newQuestion: QuestionItem = {
-      id: newId,
-      question: "",
-      answer: "",
-      maxLength: 1000,
-      custom: true,
-    };
 
-    setQuestions((prev) => [...prev, newQuestion]);
-    setSelectedId(newId);
+    try {
+      const newQuestion: QuestionItem = {
+        id: `temp-${Date.now()}`,
+        questionId: 0,
+        question: "새 문항",
+        answer: "",
+        maxLength: 1000,
+        custom: true,
+      };
+
+      const updatedQuestions = [...questions, newQuestion];
+
+      await saveQuestions(Number(mockApplyId), updatedQuestions);
+
+      const refreshedQuestions = await fetchSelectedQuestions(
+        Number(mockApplyId),
+      );
+
+      setQuestions(refreshedQuestions);
+
+      const lastQuestion = refreshedQuestions[refreshedQuestions.length - 1];
+      if (lastQuestion) {
+        setSelectedId(lastQuestion.id);
+      }
+    } catch (error) {
+      console.error("문항 추가에 실패했습니다.", error);
+      setToast({
+        open: true,
+        message: "문항 추가에 실패했어요. 잠시 후 다시 시도해주세요.",
+      });
+    }
   };
 
   const handleDeleteQuestion = (targetId: string) => {

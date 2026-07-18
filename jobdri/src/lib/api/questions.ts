@@ -1,4 +1,8 @@
-import { API_BASE_URL, getAuthHeaders, parseApiResponse } from "@/lib/api/client";
+import {
+  API_BASE_URL,
+  getAuthHeaders,
+  parseApiResponse,
+} from "@/lib/api/client";
 
 export interface QuestionItem {
   id: string;
@@ -30,7 +34,6 @@ export interface AnswerItem {
   questionId: number;
   answer: string;
 }
-
 
 export async function fetchQuestions(
   mockApplyId: number,
@@ -97,7 +100,10 @@ export async function fetchSelectedQuestions(
   );
 
   return (result?.questions ?? []).map(
-    ({ id, questionId, content, charLimit, selected, custom, answer }, index) => ({
+    (
+      { id, questionId, content, charLimit, selected, custom, answer },
+      index,
+    ) => ({
       id: String(index),
       questionId: id ?? questionId,
       question: content,
@@ -133,4 +139,26 @@ export async function saveApply(
     "답변 제출에 실패했습니다.",
   );
   return result!;
+}
+
+export async function createCustomQuestionCandidate(
+  mockApplyId: number,
+  content: string = "",
+  charLimit: number = 1000,
+): Promise<number> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/questions/candidates`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      body: JSON.stringify({ content, charLimit }),
+    },
+  );
+
+  const result = await parseApiResponse<QuestionApiItem>(
+    response,
+    "커스텀 문항 후보 생성에 실패했습니다.",
+  );
+
+  return result!.questionId!;
 }

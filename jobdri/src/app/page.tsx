@@ -130,7 +130,7 @@ export default function Home() {
                     break;
                   case 2:
                     // 2단계 (자소서 작성)에서 멈췄을 때
-                    router.push(`/mockApply/actual/${id}/questions`);
+                    router.push(`/mockApply/${id}`);
                     break;
                   case 3:
                     // 3단계 (채점 중)일 때 (보통 대기 화면이나 결과 화면으로)
