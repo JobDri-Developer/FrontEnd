@@ -10,6 +10,7 @@ interface ToastProps {
   onClose?: () => void;
   className?: string;
   position?: "top" | "bottom";
+  showStatusIcon?: boolean;
 }
 
 export default function Toast({
@@ -18,9 +19,11 @@ export default function Toast({
   onClose,
   className,
   position = "bottom",
+  showStatusIcon = true,
 }: ToastProps) {
   const isDark = variant === "dark";
-  const hasStatusIcon = variant === "check" || variant === "warning";
+  const hasStatusIcon =
+    showStatusIcon && (variant === "check" || variant === "warning");
   const isTop = position === "top";
 
   return (

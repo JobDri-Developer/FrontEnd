@@ -35,6 +35,18 @@ interface LLMInputImagePreviewState {
   loaded: boolean;
 }
 
+function createImagePreviewState(
+  file: File,
+  index: number,
+): LLMInputImagePreviewState {
+  return {
+    id: `${file.name}-${file.size}-${file.lastModified}-${Date.now()}-${index}`,
+    file,
+    url: URL.createObjectURL(file),
+    loaded: false,
+  };
+}
+
 export interface LLMInputProps
   extends Omit<
     TextareaHTMLAttributes<HTMLTextAreaElement>,
@@ -42,6 +54,7 @@ export interface LLMInputProps
   > {
   value?: string;
   defaultValue?: string;
+  defaultFiles?: File[];
   onChange?: (value: string) => void;
   onSubmit?: (value: string) => void;
   onFilesChange?: (files: File[]) => void;
@@ -59,6 +72,7 @@ export function LLMInput({
   placeholder = "직무, 주요업무, 자격요건, 우대사항 등의 내용이 포함되어있으면 좋아요.",
   value: externalValue,
   defaultValue = "",
+  defaultFiles = [],
   onChange,
   onSubmit,
   onFilesChange,
@@ -87,7 +101,7 @@ export function LLMInput({
   const [focused, setFocused] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<
     LLMInputImagePreviewState[]
-  >([]);
+  >(() => defaultFiles.map(createImagePreviewState));
   const [isDragActive, setIsDragActive] = useState(false);
   const [isFilePickerOpen, setIsFilePickerOpen] = useState(false);
   const [uploadModeMinHeight, setUploadModeMinHeight] = useState<
@@ -238,12 +252,7 @@ export function LLMInput({
 
     const nextImagePreviews = [
       ...imagePreviews,
-      ...files.map((file, index) => ({
-        id: `${file.name}-${file.size}-${file.lastModified}-${Date.now()}-${index}`,
-        file,
-        url: URL.createObjectURL(file),
-        loaded: false,
-      })),
+      ...files.map(createImagePreviewState),
     ];
 
     setImagePreviews(nextImagePreviews);
