@@ -70,7 +70,7 @@ export function mapMockApplyToApplication(
   const status =
     section === "completed"
       ? "COMPLETED"
-      : findLocalResumeStatus(item) ?? item.status;
+      : (findLocalResumeStatus(item) ?? item.status);
   const score =
     isCompletedStatus(status) && typeof item.score === "number"
       ? item.score
@@ -158,22 +158,27 @@ export function createRows<T>(items: T[], size: number) {
 }
 
 export function getLatestApplication(applications: ApplicationCardData[]) {
-  return applications.reduce<ApplicationCardData | null>((latest, application) => {
-    if (!latest) {
-      return application;
-    }
+  return applications.reduce<ApplicationCardData | null>(
+    (latest, application) => {
+      if (!latest) {
+        return application;
+      }
 
-    const applicationCreatedAtTime = application.createdAtTime ?? 0;
-    const latestCreatedAtTime = latest.createdAtTime ?? 0;
+      const applicationCreatedAtTime = application.createdAtTime ?? 0;
+      const latestCreatedAtTime = latest.createdAtTime ?? 0;
 
-    if (applicationCreatedAtTime !== latestCreatedAtTime) {
-      return applicationCreatedAtTime > latestCreatedAtTime
+      if (applicationCreatedAtTime !== latestCreatedAtTime) {
+        return applicationCreatedAtTime > latestCreatedAtTime
+          ? application
+          : latest;
+      }
+
+      return application.mockApplyId > latest.mockApplyId
         ? application
         : latest;
-    }
-
-    return application.mockApplyId > latest.mockApplyId ? application : latest;
-  }, null);
+    },
+    null,
+  );
 }
 
 export function isEmptyApplicationStateError(message: string) {
@@ -198,7 +203,7 @@ function normalizeResumePath(
   const resumeStep = trimmedResumePath.replace(/^\/+/, "");
 
   if (RESUME_ROUTE_SEGMENTS.has(resumeStep)) {
-    return `/mockApply/actual/${mockApplyId}/${resumeStep}`;
+    return `/mockApply/${mockApplyId}/${resumeStep}`;
   }
 
   let path = trimmedResumePath;
@@ -215,7 +220,7 @@ function normalizeResumePath(
   path = path.startsWith("/") ? path : `/${path}`;
 
   const routeMatch = path.match(
-    /^\/(?:apply\/virtual|mockApply\/actual)\/[^/]+\/([^/?#]+)([?#].*)?$/,
+    /^\/(?:apply\/virtual|mockApply\/)\/[^/]+\/([^/?#]+)([?#].*)?$/,
   );
   const routeSegment = routeMatch?.[1];
 
@@ -223,7 +228,7 @@ function normalizeResumePath(
     return "";
   }
 
-  return `/mockApply/actual/${mockApplyId}/${routeSegment}${routeMatch[2] ?? ""}`;
+  return `/mockApply/${mockApplyId}/${routeSegment}${routeMatch[2] ?? ""}`;
 }
 
 function withJobPostingId(path: string, jobPostingId: number) {
@@ -254,23 +259,23 @@ export function getResumePath({
   }
 
   if (status === "ANSWER_WRITE") {
-    return `/mockApply/actual/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
+    return `/mockApply/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
   }
 
-  return `/mockApply/actual/${mockApplyId}/questions`;
+  return `/mockApply/${mockApplyId}/questions`;
 }
 
 export function getResultPath({
   jobPostingId,
 }: Pick<ApplicationCardData, "jobPostingId">) {
-  return `/mockApply/actual/result/${jobPostingId}`;
+  return `/mockApply/result/${jobPostingId}`;
 }
 
 export function getRetryPath({
   mockApplyId,
   jobPostingId,
 }: Pick<ApplicationCardData, "mockApplyId" | "jobPostingId">) {
-  return `/mockApply/actual/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
+  return `/mockApply/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
 }
 
 export function saveJdReviewSessionFromJobPosting(

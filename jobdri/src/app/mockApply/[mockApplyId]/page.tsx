@@ -18,7 +18,7 @@ import { Toast } from "@/components/common/toast";
 import { CtaFooter } from "@/components/common/cta";
 import { fetchCreditBalance } from "@/lib/api/credit";
 
-export default function QuestionsPage({
+export default function MockApplyPage({
   params,
 }: {
   params: Promise<{ mockApplyId: string }>;
@@ -125,7 +125,7 @@ export default function QuestionsPage({
       }));
 
       await saveApply(Number(mockApplyId), answersToSubmit);
-      router.push(`/mockApply/actual/${mockApplyId}/jd-review`);
+      router.push(`/mockApply/${mockApplyId}/result/`);
     } catch (error) {
       console.error("답변 저장 실패:", error);
       alert("답변 저장에 실패했습니다.");

@@ -14,13 +14,11 @@ export default function JdPage({ params }: JdPageProps) {
   return (
     <>
       <Header currentStep={2} />
-      <main className="max-w-[1116px] mx-auto">
-        {/* JD 입력 UI */}
-      </main>
+      <main className="max-w-[1116px] mx-auto">{/* JD 입력 UI */}</main>
       <Footer
         ctaLabel="다음"
         backAction={{ href: "/mockApply" }}
-        ctaAction={{ href: `/mockApply/actual/${mockApplyId}/questions` }}
+        ctaAction={{ href: `/mockApply/${mockApplyId}` }}
       />
     </>
   );
