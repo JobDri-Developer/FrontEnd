@@ -11,6 +11,7 @@ interface ResumeAnalysisLoadingProps {
   durationMs: number;
   onBack?: () => void;
   onComplete?: () => void;
+  applicationLabel?: string;
 }
 
 function formatRemainingTime(totalSeconds: number) {
@@ -28,6 +29,7 @@ export default function ResumeAnalysisLoading({
   durationMs,
   onBack,
   onComplete,
+  applicationLabel,
 }: ResumeAnalysisLoadingProps) {
   const initialRemainingSeconds = Math.max(1, Math.ceil(durationMs / 1000));
   const [remainingSeconds, setRemainingSeconds] = useState(
@@ -92,7 +94,7 @@ export default function ResumeAnalysisLoading({
 
   return (
     <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
-      <Header currentStep={5} />
+      <Header currentStep={5} applicationLabel={applicationLabel} />
 
       <div className="flex min-h-0 flex-1 items-start px-2 pb-2">
         <section

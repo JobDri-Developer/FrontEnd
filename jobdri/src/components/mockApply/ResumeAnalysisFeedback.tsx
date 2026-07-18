@@ -11,11 +11,21 @@ import {
   lnbHiddenScrollbarClass,
   useLnbScrollMetrics,
 } from "@/components/common/lnb/LnbScrollbar";
+import { ModalNotice } from "@/components/common/modal";
 import TabMenu from "@/components/common/tabs/TabMenu";
+import { Toast } from "@/components/common/toast";
 import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
 import Evaluation from "@/components/mockApply/result/Evaluation";
 import ScoreBar from "@/components/mockApply/result/ScoreBar";
 import ScoreCircle from "@/components/mockApply/result/ScoreCircle";
+import { useReApply } from "@/hooks/useReApply";
+import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
+import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel";
+
+interface ResumeAnalysisFeedbackProps {
+  mockApplyId?: number;
+  sequence?: number;
+}
 
 const scoreItems = [
   { label: "직무 적합성", score: 86, tone: "primary" },
@@ -197,14 +207,49 @@ function ReviewSummaryCard() {
   );
 }
 
-export default function ResumeAnalysisFeedback() {
+export default function ResumeAnalysisFeedback({
+  mockApplyId,
+  sequence,
+}: ResumeAnalysisFeedbackProps) {
   const router = useRouter();
+  const { reApply, isSaving } = useReApply();
+  const [isRetryModalOpen, setIsRetryModalOpen] = useState(false);
+  const [toast, setToast] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: "",
+  });
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics<HTMLElement>(true, "resume-analysis-feedback");
+  const applicationLabel = formatApplicationSequenceLabel(sequence);
+
+  const closeToast = () => setToast({ open: false, message: "" });
+
+  const showTopToast = (message: string) => {
+    setToast({ open: true, message });
+    window.setTimeout(closeToast, 3000);
+  };
+
+  const handleRetryConfirm = async () => {
+    const resolvedMockApplyId =
+      mockApplyId ?? getMockApplyResumeRecords()[0]?.mockApplyId;
+
+    if (!resolvedMockApplyId) {
+      setIsRetryModalOpen(false);
+      showTopToast("재도전할 지원 정보를 찾지 못했어요.");
+      return;
+    }
+
+    const retryResult = await reApply(resolvedMockApplyId);
+
+    if (!retryResult) {
+      setIsRetryModalOpen(false);
+      showTopToast("재도전을 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
+    }
+  };
 
   return (
     <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
-      <Header currentStep={6} />
+      <Header currentStep={6} applicationLabel={applicationLabel} />
 
       <div className="relative flex min-h-0 flex-1 items-stretch self-stretch overflow-visible">
         <main
@@ -236,12 +281,42 @@ export default function ResumeAnalysisFeedback() {
       <CtaFooter
         type="result"
         retryAction={{
-          onClick: () => router.push("/mockApply/resume-analysis-loading"),
+          onClick: () => setIsRetryModalOpen(true),
         }}
         saveAction={{
           onClick: () => router.push("/"),
         }}
       />
+
+      {isRetryModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            variant="double"
+            title="같은 공고로 다시 도전할까요?"
+            description="현재 내용을 저장하고 자소서 입력 단계로 돌아갑니다."
+            className="!w-[400px]"
+            onClose={() => setIsRetryModalOpen(false)}
+            secondaryAction={{
+              label: "취소",
+              onClick: () => setIsRetryModalOpen(false),
+            }}
+            primaryAction={{
+              label: "재도전 하기",
+              onClick: handleRetryConfirm,
+              disabled: isSaving,
+            }}
+          />
+        </div>
+      )}
+
+      {toast.open && (
+        <Toast
+          message={toast.message}
+          variant="warning"
+          position="top"
+          onClose={closeToast}
+        />
+      )}
     </div>
   );
 }

@@ -1,21 +1,30 @@
-"use client";
+import ResumeAnalysisLoadingPageClient from "./ResumeAnalysisLoadingPageClient";
+import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel";
 
-import { useCallback } from "react";
-import { useRouter } from "next/navigation";
-import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
+interface ResumeAnalysisLoadingPageProps {
+  searchParams: Promise<{
+    sequence?: string;
+  }>;
+}
 
-const RESUME_ANALYSIS_LOADING_DURATION_MS = 316_000;
+function parsePositiveNumber(value?: string) {
+  const parsedValue = Number(value);
 
-export default function ResumeAnalysisLoadingPage() {
-  const router = useRouter();
-  const handleComplete = useCallback(() => {
-    router.replace("/mockApply/resume-analysis-feedback");
-  }, [router]);
+  return Number.isFinite(parsedValue) && parsedValue > 0
+    ? parsedValue
+    : undefined;
+}
+
+export default async function ResumeAnalysisLoadingPage({
+  searchParams,
+}: ResumeAnalysisLoadingPageProps) {
+  const { sequence } = await searchParams;
 
   return (
-    <ResumeAnalysisLoading
-      durationMs={RESUME_ANALYSIS_LOADING_DURATION_MS}
-      onComplete={handleComplete}
+    <ResumeAnalysisLoadingPageClient
+      applicationLabel={formatApplicationSequenceLabel(
+        parsePositiveNumber(sequence),
+      )}
     />
   );
 }
