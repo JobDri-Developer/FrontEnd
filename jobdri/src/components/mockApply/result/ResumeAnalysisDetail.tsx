@@ -5,9 +5,12 @@ import { QuestionList } from "../Question/QuestionList";
 import { type QuestionItem as ApiQuestionItem } from "@/lib/api/questions";
 import { lnbHiddenScrollbarClass } from "@/components/common/lnb/LnbScrollbar";
 import DetailAnnotationPanel from "./DetailAnotationPannel";
-import { scrollbarClassS } from "@/components/common/scrollbar/scrollbarStyles";
+import {
+  scrollbarClassL,
+  scrollbarClassS,
+} from "@/components/common/scrollbar/scrollbarStyles";
 import { QuestionAnalysis, type AnalysisResult } from "@/lib/api/result";
-import { HighlightStatus, highlightStyles } from "./highlightStyles";
+import { HighlightStatus, HighlightStyles } from "./highlightStyles";
 
 interface ResumeAnalysisDetailProps {
   mockApplyId?: number;
@@ -22,6 +25,7 @@ interface QuestionViewerProps {
   answerText?: string;
   analyses?: QuestionAnalysis[];
   selectedAnalysisId?: number | null;
+  hoveredAnalysisId?: number | null;
   onAnalysisClick?: (analysisId: number) => void;
 }
 
@@ -30,6 +34,7 @@ function QuestionViewer({
   questionText = "문항이 선택되지 않았거나 등록된 내용이 없습니다.",
   answerText = "",
   analyses = [],
+  hoveredAnalysisId,
   selectedAnalysisId,
   onAnalysisClick,
 }: QuestionViewerProps) {
@@ -53,14 +58,19 @@ function QuestionViewer({
 
       const status = analysis.status as HighlightStatus;
       const isSelected = selectedAnalysisId === analysis.questionAnalysisId;
-      const styleClass =
-        highlightStyles[status]?.[isSelected ? "selected" : "default"] || "";
+      const isHovered = hoveredAnalysisId === analysis.questionAnalysisId;
 
-      // 3. 하이라이트 처리된 텍스트 렌더링
+      const stateKey: "selected" | "hover" | "default" = isSelected
+        ? "selected"
+        : isHovered
+          ? "hover"
+          : "default";
+      const styleClass = HighlightStyles[status]?.[stateKey] || "";
+
       result.push(
         <span
           key={`highlight-${analysis.questionAnalysisId}`}
-          className={styleClass}
+          className={`cursor-pointer transition-colors ${styleClass}`}
           onClick={() => onAnalysisClick?.(analysis.questionAnalysisId)}
         >
           {answerText.slice(analysis.start, analysis.end)}
@@ -99,11 +109,17 @@ function QuestionViewer({
 }
 
 export default function ResumeAnalysisDetail({
-  mockApplyId,
-  sequence,
-  analysisData, // 🌟 프롭스 받기
+  //   mockApplyId,
+  //   sequence,
+  analysisData,
   children,
 }: ResumeAnalysisDetailProps) {
+  const [selectedAnalysisId, setSelectedAnalysisId] = useState<number | null>(
+    null,
+  );
+  const [hoveredAnalysisId, setHoveredAnalysisId] = useState<number | null>(
+    null,
+  );
   const initialQuestions = analysisData.questions.map((q) => ({
     id: String(q.questionId),
     question: q.questionContent,
@@ -112,7 +128,6 @@ export default function ResumeAnalysisDetail({
 
   const [questions, setQuestions] =
     useState<ApiQuestionItem[]>(initialQuestions);
-  // 첫 번째 문항을 기본 선택 상태로 둠
   const [selectedId, setSelectedId] = useState<string | null>(
     initialQuestions[0]?.id || null,
   );
@@ -152,10 +167,14 @@ export default function ResumeAnalysisDetail({
     analysisData.questions.find((q) => String(q.questionId) === selectedId)
       ?.analyses || [];
 
+  const handleAnalysisClick = (id: number) => {
+    setSelectedAnalysisId((prevId) => (prevId === id ? null : id));
+  };
+
   return (
-    <div className="relative flex min-h-0 flex-1 items-stretch bg-fill-quaternary-assistive self-stretch overflow-visible">
+    <div className="relative flex min-h-0 flex-1 items-stretch bg-fill-quaternary-assistive self-stretch overflow-visible rounded-card-l">
       <main
-        className={`flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden px-2 pb-0 ${lnbHiddenScrollbarClass}`}
+        className={`flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden px-16 pt-6 pb-0 ${scrollbarClassL} overflow-y-auto [scrollbar-gutter:stable_both-edges] mx-1 my-2`}
       >
         <div className="flex w-full items-start justify-center self-stretch px-2 pb-0">
           <div className="flex flex-1 flex-col items-center p-0">
@@ -178,6 +197,9 @@ export default function ResumeAnalysisDetail({
                   questionText={currentQuestion?.question}
                   answerText={currentQuestion?.answer}
                   analyses={currentAnalyses}
+                  selectedAnalysisId={selectedAnalysisId}
+                  hoveredAnalysisId={hoveredAnalysisId}
+                  onAnalysisClick={handleAnalysisClick}
                 />
 
                 <div className="relative w-[360px] shrink-0 bg-bg-contents-default rounded-card-l overflow-hidden flex flex-col max-h-[536px]">
@@ -193,9 +215,15 @@ export default function ResumeAnalysisDetail({
                   <div
                     ref={scrollRef}
                     onScroll={checkScroll}
-                    className={`${scrollbarClassS} overflow-y-auto overflow-x-hidden w-full flex-1 min-h-0 px-3 pb-3`}
+                    className={`${scrollbarClassS} overflow-y-auto [scrollbar-gutter:stable_both-edges] overflow-x-hidden w-full flex-1 min-h-0 px-2 pb-3`}
                   >
-                    <DetailAnnotationPanel analyses={currentAnalyses} />
+                    <DetailAnnotationPanel
+                      analyses={currentAnalyses}
+                      selectedAnalysisId={selectedAnalysisId}
+                      hoveredAnalysisId={hoveredAnalysisId}
+                      onAnalysisClick={handleAnalysisClick}
+                      onAnalysisHover={setHoveredAnalysisId}
+                    />
                   </div>
 
                   {showGradient && (
