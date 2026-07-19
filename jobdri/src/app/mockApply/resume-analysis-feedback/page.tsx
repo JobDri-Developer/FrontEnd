@@ -1,29 +1,136 @@
-import ResumeAnalysisFeedback from "@/components/mockApply/ResumeAnalysisFeedback";
+"use client";
+
+import { use, useState } from "react";
+import { useRouter } from "next/navigation";
+import ResumeAnalysisFeedback from "@/components/mockApply/result/ResumeAnalysisFeedback";
+import ResumeAnalysisDetail from "@/components/mockApply/result/ResumeAnalysisDetail";
+import Header from "@/components/common/header/Header";
+import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
+import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel";
+import { CtaFooter } from "@/components/common/cta";
+import { ModalNotice } from "@/components/common/modal";
+import { Toast } from "@/components/common/toast";
+import { useReApply } from "@/hooks/useReApply";
+import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
 
 interface ResumeAnalysisFeedbackPageProps {
   searchParams: Promise<{
     mockApplyId?: string;
     sequence?: string;
+    tab?: string;
   }>;
 }
 
 function parsePositiveNumber(value?: string) {
   const parsedValue = Number(value);
-
   return Number.isFinite(parsedValue) && parsedValue > 0
     ? parsedValue
     : undefined;
 }
 
-export default async function ResumeAnalysisFeedbackPage({
+export default function ResumeAnalysisFeedbackPage({
   searchParams,
 }: ResumeAnalysisFeedbackPageProps) {
-  const { mockApplyId, sequence } = await searchParams;
+  const { mockApplyId, sequence, tab } = use(searchParams);
+
+  const router = useRouter();
+  const { reApply, isSaving } = useReApply();
+  const [isRetryModalOpen, setIsRetryModalOpen] = useState(false);
+  const [toast, setToast] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: "",
+  });
+
+  const parsedSequence = parsePositiveNumber(sequence);
+  const parsedMockApplyId = parsePositiveNumber(mockApplyId);
+  const applicationLabel = formatApplicationSequenceLabel(parsedSequence);
+
+  const activeTabId = tab === "score-detail" ? "score-detail" : "ai-feedback";
+  const headerComponent = <AnalysisHeader activeTabId={activeTabId} />;
+
+  const closeToast = () => setToast({ open: false, message: "" });
+  const showTopToast = (message: string) => {
+    setToast({ open: true, message });
+    window.setTimeout(closeToast, 3000);
+  };
+
+  const handleRetryConfirm = async () => {
+    const resolvedMockApplyId =
+      parsedMockApplyId ?? getMockApplyResumeRecords()[0]?.mockApplyId;
+
+    if (!resolvedMockApplyId) {
+      setIsRetryModalOpen(false);
+      showTopToast("재도전할 지원 정보를 찾지 못했어요.");
+      return;
+    }
+    try {
+      await reApply(resolvedMockApplyId);
+    } catch (error) {
+      setIsRetryModalOpen(false);
+      showTopToast("재도전을 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
+    }
+  };
 
   return (
-    <ResumeAnalysisFeedback
-      mockApplyId={parsePositiveNumber(mockApplyId)}
-      sequence={parsePositiveNumber(sequence)}
-    />
+    <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
+      <Header currentStep={6} applicationLabel={applicationLabel} />
+
+      {activeTabId === "ai-feedback" ? (
+        <ResumeAnalysisFeedback
+          mockApplyId={parsedMockApplyId}
+          sequence={parsedSequence}
+        >
+          {headerComponent}
+        </ResumeAnalysisFeedback>
+      ) : (
+        <ResumeAnalysisDetail
+          mockApplyId={parsedMockApplyId}
+          sequence={parsedSequence}
+        >
+          {headerComponent}
+        </ResumeAnalysisDetail>
+      )}
+
+      <CtaFooter
+        type="result"
+        retryAction={{
+          onClick: () => setIsRetryModalOpen(true),
+        }}
+        saveAction={{
+          onClick: () => router.push("/"),
+        }}
+      />
+
+      {/* 모달 및 토스트 컴포넌트 렌더링 */}
+      {isRetryModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            variant="double"
+            title="같은 공고로 다시 도전할까요?"
+            description="현재 내용을 저장하고 자소서 입력 단계로 돌아갑니다."
+            className="!w-[400px]"
+            onClose={() => setIsRetryModalOpen(false)}
+            secondaryAction={{
+              label: "취소",
+              onClick: () => setIsRetryModalOpen(false),
+            }}
+            primaryAction={{
+              label: "재도전 하기",
+              onClick: handleRetryConfirm,
+              disabled: isSaving,
+            }}
+          />
+        </div>
+      )}
+
+      {toast.open && (
+        <Toast
+          message={toast.message}
+          variant="warning"
+          position="top"
+          onClose={closeToast}
+        />
+      )}
+    </div>
   );
 }

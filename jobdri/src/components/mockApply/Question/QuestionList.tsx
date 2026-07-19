@@ -9,6 +9,7 @@ interface QuestionListProps {
   onSelect: (id: string) => void; // 문항 클릭 시 부모에게 알림
   onAdd: () => void; // 문항 추가 시 부모에게 알림
   onDelete: (id: string) => void; // 문항 삭제 시 부모에게 알림
+  type?: "result" | "apply";
 }
 
 export const QuestionList = ({
@@ -17,15 +18,22 @@ export const QuestionList = ({
   onSelect,
   onAdd,
   onDelete,
+  type = "apply",
 }: QuestionListProps) => {
   const MAX_QUESTIONS = 5;
 
   return (
     <div className="w-full flex flex-col gap-3">
       {/* 헤더 영역 */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <h3 className="text-sub14-med text-text-neutral-description">
-          자소서 문항 {questions.length}/{MAX_QUESTIONS}
+          {type === "apply" ? (
+            <>
+              자소서 문항 {questions.length}/{MAX_QUESTIONS}
+            </>
+          ) : (
+            <>문항별 피드백</>
+          )}
         </h3>
       </div>
 
@@ -44,12 +52,15 @@ export const QuestionList = ({
             }
             isActive={q.id === selectedId}
             onClick={() => onSelect(q.id)}
-            onDelete={questions.length > 1 ? () => onDelete(q.id) : undefined}
+            onDelete={
+              type === "apply" && questions.length > 1
+                ? () => onDelete(q.id)
+                : undefined
+            }
           />
         ))}
 
-        {/* 문항 추가 버튼 */}
-        {questions.length < MAX_QUESTIONS && (
+        {type === "apply" && questions.length < MAX_QUESTIONS && (
           <Button
             label="문항 추가"
             iconType="ADD_S"

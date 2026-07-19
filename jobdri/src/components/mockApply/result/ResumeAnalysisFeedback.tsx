@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CtaFooter } from "@/components/common/cta";
 import Divider from "@/components/common/Divider";
-import Header from "@/components/common/header/Header";
 import Icon from "@/components/common/icons/Icon";
 import {
   LnbScrollbar,
@@ -14,17 +13,16 @@ import {
 import { ModalNotice } from "@/components/common/modal";
 import TabMenu from "@/components/common/tabs/TabMenu";
 import { Toast } from "@/components/common/toast";
-import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
 import Evaluation from "@/components/mockApply/result/Evaluation";
 import ScoreBar from "@/components/mockApply/result/ScoreBar";
 import ScoreCircle from "@/components/mockApply/result/ScoreCircle";
 import { useReApply } from "@/hooks/useReApply";
 import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
-import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel";
 
 interface ResumeAnalysisFeedbackProps {
   mockApplyId?: number;
   sequence?: number;
+  children?: React.ReactNode; // 추가된 부분: AnalysisHeader 등을 받기 위함
 }
 
 const scoreItems = [
@@ -157,9 +155,9 @@ function ScoreSummaryCard() {
 
           <div className="flex flex-col items-start self-stretch">
             <p className="self-stretch text-justify text-sub14-reg tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-              직무 적합성과 정량적 성과는 강하지만, 회사·직무에 대한
-              구체적 이해와 본인만의 차별점이 더 드러나면 통과 가능성이 한
-              단계 올라가요. 지원 동기와 입사 후 기여 방향을 좀 더 구체적으로
+              직무 적합성과 정량적 성과는 강하지만, 회사·직무에 대한 구체적
+              이해와 본인만의 차별점이 더 드러나면 통과 가능성이 한 단계
+              올라가요. 지원 동기와 입사 후 기여 방향을 좀 더 구체적으로
               서술하면 설득력이 높아집니다.
             </p>
           </div>
@@ -210,47 +208,13 @@ function ReviewSummaryCard() {
 export default function ResumeAnalysisFeedback({
   mockApplyId,
   sequence,
+  children, // 부모로부터 전달받은 컴포넌트
 }: ResumeAnalysisFeedbackProps) {
-  const router = useRouter();
-  const { reApply, isSaving } = useReApply();
-  const [isRetryModalOpen, setIsRetryModalOpen] = useState(false);
-  const [toast, setToast] = useState<{ open: boolean; message: string }>({
-    open: false,
-    message: "",
-  });
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics<HTMLElement>(true, "resume-analysis-feedback");
-  const applicationLabel = formatApplicationSequenceLabel(sequence);
-
-  const closeToast = () => setToast({ open: false, message: "" });
-
-  const showTopToast = (message: string) => {
-    setToast({ open: true, message });
-    window.setTimeout(closeToast, 3000);
-  };
-
-  const handleRetryConfirm = async () => {
-    const resolvedMockApplyId =
-      mockApplyId ?? getMockApplyResumeRecords()[0]?.mockApplyId;
-
-    if (!resolvedMockApplyId) {
-      setIsRetryModalOpen(false);
-      showTopToast("재도전할 지원 정보를 찾지 못했어요.");
-      return;
-    }
-
-    const retryResult = await reApply(resolvedMockApplyId);
-
-    if (!retryResult) {
-      setIsRetryModalOpen(false);
-      showTopToast("재도전을 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
-    }
-  };
 
   return (
-    <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
-      <Header currentStep={6} applicationLabel={applicationLabel} />
-
+    <>
       <div className="relative flex min-h-0 flex-1 items-stretch self-stretch overflow-visible">
         <main
           ref={scrollAreaRef}
@@ -259,7 +223,8 @@ export default function ResumeAnalysisFeedback({
         >
           <div className="flex w-full items-start justify-center self-stretch px-2 pb-0">
             <div className="flex flex-1 flex-col items-center p-0">
-              <AnalysisHeader />
+              {/* 기존 AnalysisHeader가 있던 위치에 children을 렌더링 */}
+              {children}
 
               <section className="flex items-center justify-center gap-3 self-stretch rounded-card-l bg-fill-quaternary-assistive px-16 pt-8 pb-[120px]">
                 <div className="mx-auto flex w-full max-w-[1320px] items-center gap-3 self-stretch">
@@ -277,46 +242,6 @@ export default function ResumeAnalysisFeedback({
           className="inset-y-0 right-0 z-20 items-end"
         />
       </div>
-
-      <CtaFooter
-        type="result"
-        retryAction={{
-          onClick: () => setIsRetryModalOpen(true),
-        }}
-        saveAction={{
-          onClick: () => router.push("/"),
-        }}
-      />
-
-      {isRetryModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
-          <ModalNotice
-            variant="double"
-            title="같은 공고로 다시 도전할까요?"
-            description="현재 내용을 저장하고 자소서 입력 단계로 돌아갑니다."
-            className="!w-[400px]"
-            onClose={() => setIsRetryModalOpen(false)}
-            secondaryAction={{
-              label: "취소",
-              onClick: () => setIsRetryModalOpen(false),
-            }}
-            primaryAction={{
-              label: "재도전 하기",
-              onClick: handleRetryConfirm,
-              disabled: isSaving,
-            }}
-          />
-        </div>
-      )}
-
-      {toast.open && (
-        <Toast
-          message={toast.message}
-          variant="warning"
-          position="top"
-          onClose={closeToast}
-        />
-      )}
-    </div>
+    </>
   );
 }

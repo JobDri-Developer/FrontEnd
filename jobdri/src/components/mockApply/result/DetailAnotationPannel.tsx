@@ -13,7 +13,7 @@ const statusLabel: Record<HighlightStatus, string> = {
   mentioned: "신뢰성 부족",
 };
 
-interface DetailAnnotationPanelProps {
+export interface DetailAnnotationPanelProps {
   analyses: QuestionAnalysis[];
 }
 
@@ -23,9 +23,7 @@ export default function DetailAnnotationPanel({
   const [clickedId, setClickedId] = useState<number | null>(null);
 
   return (
-    <div
-      className={`flex w-fit shrink-0 flex-col gap-8 overflow-y-auto px-8 py-10 ${scrollbarClass}`}
-    >
+    <div className={`flex w-80 shrink-0 flex-col gap-8 overflow-y-auto py-2`}>
       {analyses.map((analysis) => {
         const isClicked = clickedId === analysis.questionAnalysisId;
 
