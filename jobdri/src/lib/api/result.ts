@@ -1,4 +1,8 @@
-import { API_BASE_URL, getAuthHeaders, parseApiResponse as parseApiResponseBase } from "@/lib/api/client";
+import {
+  API_BASE_URL,
+  getAuthHeaders,
+  parseApiResponse as parseApiResponseBase,
+} from "@/lib/api/client";
 
 export class CreditInsufficientError extends Error {
   constructor() {
@@ -12,6 +16,11 @@ export interface SequenceResult {
   mockApplyId: number;
   totalCount: number;
   sequence: number;
+}
+
+export interface MissingKeyword {
+  keyword: string;
+  source: string; // 'mainTask', 'qualification', 'preference' 등 Enum 값
 }
 
 export interface QuestionAnalysis {
@@ -42,6 +51,7 @@ export interface AnalysisResult {
   impact: number;
   completeness: number;
   feedback: string;
+  missingKeywords: MissingKeyword[];
   questions: AnalysisQuestion[];
 }
 
@@ -69,7 +79,6 @@ export async function fetchSequence(
     "순번 조회에 실패했습니다.",
   );
 }
-
 
 export async function fetchAnalysisByJobPosting(
   jobPostingId: number,
@@ -107,5 +116,24 @@ export async function runAnalysis(
   return parseApiResponse<AnalysisResult>(
     response,
     "자소서 분석 실행에 실패했습니다.",
+  );
+}
+
+export async function fetchAnalysisResult(
+  mockApplyId: number,
+  signal?: AbortSignal,
+): Promise<AnalysisResult> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/analysis`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+      signal,
+    },
+  );
+
+  return parseApiResponse<AnalysisResult>(
+    response,
+    "자소서 분석 결과를 불러오는데 실패했습니다.",
   );
 }

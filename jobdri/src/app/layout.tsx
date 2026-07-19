@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import QueryProvider from "@/components/providers/QueryProvider";
 // import LayoutShell from "./LayoutShell";
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export default function RootLayout({
         <link rel="icon" href="/ic_JobDri.svg" />
       </head>
       <body className="min-h-full max-w-[1920px] bg-line-neutral-assistive">
-        {children}
+        <QueryProvider> {children}</QueryProvider>
       </body>
     </html>
   );

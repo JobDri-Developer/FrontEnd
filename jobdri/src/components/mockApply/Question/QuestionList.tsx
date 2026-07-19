@@ -7,8 +7,8 @@ interface QuestionListProps {
   questions: ApiQuestionItem[]; // API에서 받아온 전체 문항 배열
   selectedId: string | null; // 현재 선택된 문항 ID
   onSelect: (id: string) => void; // 문항 클릭 시 부모에게 알림
-  onAdd: () => void; // 문항 추가 시 부모에게 알림
-  onDelete: (id: string) => void; // 문항 삭제 시 부모에게 알림
+  onAdd?: () => void; // 문항 추가 시 부모에게 알림
+  onDelete?: (id: string) => void; // 문항 삭제 시 부모에게 알림
   type?: "result" | "apply";
 }
 
@@ -53,7 +53,7 @@ export const QuestionList = ({
             isActive={q.id === selectedId}
             onClick={() => onSelect(q.id)}
             onDelete={
-              type === "apply" && questions.length > 1
+              onDelete && type === "apply" && questions.length > 1
                 ? () => onDelete(q.id)
                 : undefined
             }

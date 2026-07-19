@@ -24,8 +24,8 @@ const stateColorMap: Record<
 > = {
   default: "default",
   proven: "green",
-  mentioned: "pink",
-  fabricated: "red",
+  mentioned: "red",
+  fabricated: "pink",
 };
 
 export default function ChipTag({

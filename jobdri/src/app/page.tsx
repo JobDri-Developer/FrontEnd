@@ -152,7 +152,7 @@ export default function Home() {
               }}
               onResume={(app) => {
                 // 예시: 결과 상세 페이지로 이동!
-                router.push(`/mockApply/resume-analysis-feedback`);
+                router.push(`/mockApply/${app.mockApplyId}/result`);
               }}
             />
           </div>

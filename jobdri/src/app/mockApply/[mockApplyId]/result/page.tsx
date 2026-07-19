@@ -12,10 +12,13 @@ import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
 import { useReApply } from "@/hooks/useReApply";
 import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
+import { useAnalysisResult } from "@/hooks/useAnalysisResult";
 
-interface ResumeAnalysisFeedbackPageProps {
+interface ResultPageProps {
+  params: Promise<{
+    mockApplyId: string;
+  }>;
   searchParams: Promise<{
-    mockApplyId?: string;
     sequence?: string;
     tab?: string;
   }>;
@@ -28,11 +31,9 @@ function parsePositiveNumber(value?: string) {
     : undefined;
 }
 
-export default function ResumeAnalysisFeedbackPage({
-  searchParams,
-}: ResumeAnalysisFeedbackPageProps) {
-  const { mockApplyId, sequence, tab } = use(searchParams);
-
+export default function ResultPage({ params, searchParams }: ResultPageProps) {
+  const { mockApplyId } = use(params);
+  const { sequence, tab } = use(searchParams);
   const router = useRouter();
   const { reApply, isSaving } = useReApply();
   const [isRetryModalOpen, setIsRetryModalOpen] = useState(false);
@@ -44,7 +45,11 @@ export default function ResumeAnalysisFeedbackPage({
   const parsedSequence = parsePositiveNumber(sequence);
   const parsedMockApplyId = parsePositiveNumber(mockApplyId);
   const applicationLabel = formatApplicationSequenceLabel(parsedSequence);
-
+  const {
+    data: analysisData,
+    isPending,
+    isError,
+  } = useAnalysisResult(parsedMockApplyId);
   const activeTabId = tab === "score-detail" ? "score-detail" : "ai-feedback";
   const headerComponent = <AnalysisHeader activeTabId={activeTabId} />;
 
@@ -75,30 +80,40 @@ export default function ResumeAnalysisFeedbackPage({
     <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
       <Header currentStep={6} applicationLabel={applicationLabel} />
 
-      {activeTabId === "ai-feedback" ? (
-        <ResumeAnalysisFeedback
-          mockApplyId={parsedMockApplyId}
-          sequence={parsedSequence}
-        >
-          {headerComponent}
-        </ResumeAnalysisFeedback>
-      ) : (
-        <ResumeAnalysisDetail
-          mockApplyId={parsedMockApplyId}
-          sequence={parsedSequence}
-        >
-          {headerComponent}
-        </ResumeAnalysisDetail>
-      )}
+      {isPending ? (
+        <div className="flex flex-1 items-center justify-center">
+          <span className="text-text-neutral-description">
+            분석 결과를 불러오는 중...
+          </span>
+        </div>
+      ) : isError ? (
+        <div className="flex flex-1 items-center justify-center text-text-danger-default">
+          데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+        </div>
+      ) : analysisData ? (
+        activeTabId === "ai-feedback" ? (
+          <ResumeAnalysisFeedback
+            mockApplyId={parsedMockApplyId}
+            sequence={parsedSequence}
+            analysisData={analysisData}
+          >
+            {headerComponent}
+          </ResumeAnalysisFeedback>
+        ) : (
+          <ResumeAnalysisDetail
+            mockApplyId={parsedMockApplyId}
+            sequence={parsedSequence}
+            analysisData={analysisData}
+          >
+            {headerComponent}
+          </ResumeAnalysisDetail>
+        )
+      ) : null}
 
       <CtaFooter
         type="result"
-        retryAction={{
-          onClick: () => setIsRetryModalOpen(true),
-        }}
-        saveAction={{
-          onClick: () => router.push("/"),
-        }}
+        retryAction={{ onClick: () => setIsRetryModalOpen(true) }}
+        saveAction={{ onClick: () => router.push("/") }}
       />
 
       {/* 모달 및 토스트 컴포넌트 렌더링 */}
