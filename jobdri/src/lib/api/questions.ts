@@ -123,14 +123,16 @@ export interface SaveApplyResult {
 
 export async function saveApply(
   mockApplyId: number,
-  answers: AnswerItem[],
+  questionsData: QuestionApiItem[],
 ): Promise<SaveApplyResult> {
   const response = await fetch(
     `${API_BASE_URL}/api/mock-applies/${mockApplyId}/questions/answers`,
     {
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify({
+        questions: questionsData,
+      }),
     },
   );
 
