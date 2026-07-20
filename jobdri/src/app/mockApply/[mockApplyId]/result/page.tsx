@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ResumeAnalysisFeedback from "@/components/mockApply/result/ResumeAnalysisFeedback";
 import ResumeAnalysisDetail from "@/components/mockApply/result/ResumeAnalysisDetail";
@@ -13,6 +13,7 @@ import { Toast } from "@/components/common/toast";
 import { useReApply } from "@/hooks/useReApply";
 import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
 import { useAnalysisResult } from "@/hooks/useAnalysisResult";
+import { AnalysisResultResponse, getAnalysisResult } from "@/lib/api/analysis";
 
 interface ResultPageProps {
   params: Promise<{
@@ -52,6 +53,10 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
   } = useAnalysisResult(parsedMockApplyId);
   const activeTabId = tab === "score-detail" ? "score-detail" : "ai-feedback";
   const headerComponent = <AnalysisHeader activeTabId={activeTabId} />;
+  const [resultData, setResultData] = useState<AnalysisResultResponse | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = useState(true);
 
   const closeToast = () => setToast({ open: false, message: "" });
   const showTopToast = (message: string) => {
@@ -75,6 +80,28 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
       showTopToast("재도전을 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
     }
   };
+
+  // useEffect(() => {
+  //   let pollingTimer: NodeJS.Timeout;
+  //   const fetchResult = async () => {
+  //     try {
+  //       const data = await getAnalysisResult(Number(mockApplyId));
+  //       setResultData(data);
+  //       setIsLoading(false);
+  //     } catch (error) {
+  //       if (error instanceof Error && error.message === "ANALYSIS_PENDING") {
+  //         console.log("AI가 아직 채점 중입니다. 3초 뒤에 다시 확인합니다...");
+  //         pollingTimer = setTimeout(fetchResult, 3000);
+  //       } else {
+  //         console.error("진짜 에러 발생:", error);
+  //         setIsLoading(false);
+  //       }
+  //     }
+  //   };
+
+  //   fetchResult();
+  //   return () => clearTimeout(pollingTimer);
+  // }, [mockApplyId]);
 
   return (
     <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">

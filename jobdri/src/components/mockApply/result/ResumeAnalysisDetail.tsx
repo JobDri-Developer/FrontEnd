@@ -205,7 +205,7 @@ export default function ResumeAnalysisDetail({
                   onAnalysisClick={handleAnalysisClick}
                 />
 
-                <div className="relative w-[360px] shrink-0 bg-bg-contents-default rounded-card-l overflow-hidden flex flex-col max-h-[536px] sticky top-8">
+                <div className="relative w-[360px] shrink-0 bg-bg-contents-default rounded-card-l overflow-hidden flex flex-col h-[536px] sticky top-8">
                   <div className="flex items-center gap-2 px-8 pt-6 pb-2 shrink-0">
                     <h3 className="text-sm font-semibold text-text-neutral-title">
                       피드백
