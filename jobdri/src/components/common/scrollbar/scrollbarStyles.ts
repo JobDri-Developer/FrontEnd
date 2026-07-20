@@ -4,7 +4,8 @@ const scrollbarBase =
   "[&::-webkit-scrollbar-thumb]:rounded-full " +
   "[&::-webkit-scrollbar-thumb]:border-solid " +
   "[&::-webkit-scrollbar-thumb]:border-transparent " +
-  "[&::-webkit-scrollbar-thumb]:bg-clip-padding ";
+  "[&::-webkit-scrollbar-thumb]:bg-clip-padding " +
+  "[&::-webkit-scrollbar-track]:![margin-block:4px] ";
 
 // 텍스트 인풋 등 넓은 영역에 사용
 export const scrollbarClassL =

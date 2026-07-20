@@ -11,6 +11,7 @@ import {
 } from "@/components/common/scrollbar/scrollbarStyles";
 import { QuestionAnalysis, type AnalysisResult } from "@/lib/api/result";
 import { HighlightStatus, HighlightStyles } from "./highlightStyles";
+import Icon from "@/components/common/icons/Icon";
 
 interface ResumeAnalysisDetailProps {
   mockApplyId?: number;
@@ -174,14 +175,15 @@ export default function ResumeAnalysisDetail({
   return (
     <div className="relative flex min-h-0 flex-1 items-stretch bg-fill-quaternary-assistive self-stretch overflow-visible rounded-card-l">
       <main
-        className={`flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden px-16 pt-6 pb-0 ${scrollbarClassL} overflow-y-auto [scrollbar-gutter:stable_both-edges] mx-1 my-2`}
+        className={`flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden px-16 pt-6 pb-0 ${scrollbarClassL} overflow-y-auto [scrollbar-gutter:stable_both-edges] mx-1`}
       >
         <div className="flex w-full items-start justify-center self-stretch px-2 pb-0">
           <div className="flex flex-1 flex-col items-center p-0">
             {children}
             <section className="flex items-start justify-center gap-3 self-stretch px-16 pt-8">
               <div className="flex w-full max-w-[1320px] mx-auto gap-6 items-start">
-                <div className="w-62 shrink-0">
+                {/* 🌟 1. 좌측 QuestionList 컨테이너에 sticky와 top-8 추가 */}
+                <div className="w-62 shrink-0 sticky top-8">
                   <QuestionList
                     questions={questions}
                     selectedId={selectedId}
@@ -190,6 +192,7 @@ export default function ResumeAnalysisDetail({
                   />
                 </div>
 
+                {/* 중앙 QuestionViewer는 그대로 둠! */}
                 <QuestionViewer
                   questionNumber={
                     currentQuestionIdx !== -1 ? currentQuestionIdx + 1 : 1
@@ -202,28 +205,42 @@ export default function ResumeAnalysisDetail({
                   onAnalysisClick={handleAnalysisClick}
                 />
 
-                <div className="relative w-[360px] shrink-0 bg-bg-contents-default rounded-card-l overflow-hidden flex flex-col max-h-[536px]">
+                <div className="relative w-[360px] shrink-0 bg-bg-contents-default rounded-card-l overflow-hidden flex flex-col max-h-[536px] sticky top-8">
                   <div className="flex items-center gap-2 px-8 pt-6 pb-2 shrink-0">
                     <h3 className="text-sm font-semibold text-text-neutral-title">
                       피드백
                     </h3>
                     <span className="flex items-center justify-center text-xs font-bold text-text-primary-default bg-fill-quaternary-assistive px-1.5 py-0.5 rounded-chip-s">
-                      {currentAnalyses.length}
+                      {currentAnalyses.length > 0 && currentAnalyses.length}
                     </span>
                   </div>
 
                   <div
                     ref={scrollRef}
                     onScroll={checkScroll}
-                    className={`${scrollbarClassS} overflow-y-auto [scrollbar-gutter:stable_both-edges] overflow-x-hidden w-full flex-1 min-h-0 px-2 pb-3`}
+                    className={`${scrollbarClassS} overflow-y-auto [scrollbar-gutter:stable_both-edges] overflow-x-hidden w-full flex-1 px-2 pb-3`}
                   >
-                    <DetailAnnotationPanel
-                      analyses={currentAnalyses}
-                      selectedAnalysisId={selectedAnalysisId}
-                      hoveredAnalysisId={hoveredAnalysisId}
-                      onAnalysisClick={handleAnalysisClick}
-                      onAnalysisHover={setHoveredAnalysisId}
-                    />
+                    {currentAnalyses.length > 0 ? (
+                      <DetailAnnotationPanel
+                        analyses={currentAnalyses}
+                        selectedAnalysisId={selectedAnalysisId}
+                        hoveredAnalysisId={hoveredAnalysisId}
+                        onAnalysisClick={handleAnalysisClick}
+                        onAnalysisHover={setHoveredAnalysisId}
+                      />
+                    ) : (
+                      <div className="flex flex-col justify-center items-center gap-5 pb-6 mt-3">
+                        <Icon type="EMPTY" />
+                        <div className="flex flex-col justify-center items-center gap-2">
+                          <p className="text-b16-bold text-text-neutral-caption">
+                            모두 잘 작성되었어요!
+                          </p>
+                          <p className=" text-label14-med text-text-neutral-caption">
+                            다른 문항들보다 완성도가 높아요.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {showGradient && (

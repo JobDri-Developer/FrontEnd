@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { type QuestionAnalysis } from "@/lib/api/result";
 import ChipTag from "@/components/common/chips/ChipTag";
-import { type highlightStatus } from "./highlightStyles";
+import { type HighlightStatus } from "./highlightStyles";
 import Icon from "@/components/common/icons/Icon";
 
 const statusLabel: Record<HighlightStatus, string> = {
@@ -14,7 +14,6 @@ const statusLabel: Record<HighlightStatus, string> = {
 
 export interface DetailAnnotationPanelProps {
   analyses: QuestionAnalysis[];
-  // 🌟 부모로부터 상태와 핸들러를 받음
   selectedAnalysisId: number | null;
   hoveredAnalysisId: number | null;
   onAnalysisClick: (id: number) => void;
@@ -40,7 +39,7 @@ export default function DetailAnnotationPanel({
   }, [selectedAnalysisId]);
 
   return (
-    <div className="flex w-80 shrink-0 flex-col gap-8 py-2">
+    <div className="flex w-80 h-full shrink-0 flex-col gap-8 py-2">
       {analyses.map((analysis) => {
         const isSelected = selectedAnalysisId === analysis.questionAnalysisId;
         const isHovered = hoveredAnalysisId === analysis.questionAnalysisId;
@@ -48,11 +47,9 @@ export default function DetailAnnotationPanel({
         return (
           <div
             key={analysis.questionAnalysisId}
-            // 🌟 렌더링 시점에 자기 자신(DOM)을 ref에 저장
             ref={(el) => {
               cardRefs.current[analysis.questionAnalysisId] = el;
             }}
-            // 🌟 이벤트 연결 (클릭 및 호버)
             onClick={() => onAnalysisClick(analysis.questionAnalysisId)}
             onMouseEnter={() => onAnalysisHover(analysis.questionAnalysisId)}
             onMouseLeave={() => onAnalysisHover(null)}
