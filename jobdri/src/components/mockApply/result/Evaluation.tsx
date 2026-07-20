@@ -1,46 +1,67 @@
 "use client";
 
+import type { HTMLAttributes } from "react";
 import Icon from "@/components/common/icons/Icon";
 import clsx from "clsx";
 
-interface EvaluateProps {
-  score: number;
-  evaluate: string;
+interface EvaluateProps extends HTMLAttributes<HTMLDivElement> {
+  score?: number;
+  rating?: "good" | "bad";
+  evaluate?: string;
+  content?: string;
   quote: string;
 }
 
-export default function Evaluation({ score, evaluate, quote }: EvaluateProps) {
-  const isWarning = score < 60;
+export default function Evaluation({
+  score,
+  rating,
+  evaluate,
+  content,
+  quote,
+  className,
+  ...divProps
+}: EvaluateProps) {
+  const isWarning = rating ? rating === "bad" : (score ?? 0) < 60;
+  const title = content ?? evaluate;
 
   return (
     <div
       className={clsx(
-        "flex flex-col items-start border border-line-neutral-assistive gap-3 rounded-card p-5 w-full max-w-[380px]",
+        "flex flex-col items-start gap-6 self-stretch rounded-card-l border border-line-neutral-assistive px-5 pt-5 pb-6",
+        className,
       )}
+      {...divProps}
     >
-      {/* 둥근 아이콘 배경 박스 */}
-      <div
-        className={clsx(
-          "rounded-chip-s w-[30px] h-[30px] flex items-center justify-center ",
-          isWarning
-            ? "bg-fill-system-fail-hover text-text-system-fail"
-            : "bg-fill-secondary-assistive text-text-system-complete",
-        )}
-      >
-        {isWarning ? (
-          <Icon type="WARN" className="" />
-        ) : (
-          <Icon type="GOOD" className=" text-fill-secondary-default" />
-        )}
+      <div className="flex flex-col items-start gap-3 self-stretch px-1">
+        <div
+          className={clsx(
+            "flex h-[30px] w-[30px] items-center justify-center gap-2.5 rounded-chip-s p-1",
+            isWarning
+              ? "bg-fill-system-fail-hover text-fill-system-fail-strong"
+              : "bg-fill-secondary-assistive text-fill-secondary-default",
+          )}
+        >
+          {isWarning ? (
+            <Icon type="WARN_16" className="h-4 w-4 shrink-0" />
+          ) : (
+            <Icon type="GOOD_16" className="h-4 w-4 shrink-0" />
+          )}
+        </div>
+
+        <div className="flex items-center gap-2.5 self-stretch">
+          <h3 className="max-h-[22px] flex-1 overflow-hidden text-btn16-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+            {title}
+          </h3>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-6 w-full">
-        <h3 className="text-btn16-semibold text-text-neutral-title mb-1">
-          {evaluate}
-        </h3>
-        <p className=" truncate w-full text-cap12-med text-text-neutral-description bg-fill-quaternary-assistive rounded-marker py-1.5 px-2 ">
+      <div className="flex h-[30px] items-center gap-1 self-stretch rounded-marker bg-fill-quaternary-assistive px-2 py-1.5">
+        <span className="shrink-0 text-cap12-med tracking-normal text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+          예)
+        </span>
+        <span className="max-h-[17px] flex-1 truncate text-cap12-med tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
           {quote}
-        </p>
+        </span>
       </div>
     </div>
   );

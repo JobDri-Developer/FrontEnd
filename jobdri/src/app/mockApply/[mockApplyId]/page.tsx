@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import { QuestionList } from "@/components/mockApply/Question/QuestionList";
 import JDSidePanel from "@/components/mockApply/Question/SidePanel";
@@ -15,9 +15,10 @@ import {
   type QuestionItem,
 } from "@/lib/api/questions";
 import { ModalCard } from "@/components/common/modal/ModalCard";
-import { Toast } from "@/components/common/toast";
+import { Toast, type ToastVariant } from "@/components/common/toast";
 import { CtaFooter } from "@/components/common/cta";
 import { fetchCreditBalance } from "@/lib/api/credit";
+import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel";
 
 const ModalOverlay = ({ children }: { children: React.ReactNode }) => (
   <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
@@ -72,6 +73,16 @@ export default function MockApplyPage({
   }, [mockApplyId]);
 
   // 자동 저장 타이머
+  useEffect(() => {
+    if (!toast.open || toast.variant !== "check") return;
+
+    const retryToastTimer = window.setTimeout(() => {
+      setToast({ open: false, message: "", variant: "normal" });
+    }, 3000);
+
+    return () => window.clearTimeout(retryToastTimer);
+  }, [toast.open, toast.variant]);
+
   useEffect(() => {
     if (questions.length === 0) return;
 
@@ -159,11 +170,14 @@ export default function MockApplyPage({
       setToast({
         open: true,
         message: "문항 추가에 실패했어요. 잠시 후 다시 시도해주세요.",
+        variant: "normal",
       });
     }
   };
 
   const handleTrySubmit = async () => {
+    let hasCredit = false;
+
     try {
       const currentCredit = await fetchCreditBalance();
       setIsConfirmModalOpen(false);
@@ -180,7 +194,20 @@ export default function MockApplyPage({
         open: true,
         message: "오류가 발생했어요. 잠시 후 다시 시도해주세요.",
       });
-      setTimeout(() => setToast({ open: false, message: "" }), 3000);
+      setTimeout(
+        () => setToast({ open: false, message: "", variant: "normal" }),
+        3000,
+      );
+    }
+
+    if (!hasCredit) {
+      return;
+    }
+
+    try {
+      await handleConfirm();
+    } catch {
+      alert("답변 저장에 실패했습니다.");
     }
   };
 
@@ -196,7 +223,11 @@ export default function MockApplyPage({
 
   return (
     <div className="flex flex-col h-dvh bg-bg-default overflow-hidden">
-      <Header currentStep={4} lastSavedAt={lastSavedTime} />
+      <Header
+        currentStep={4}
+        lastSavedAt={lastSavedTime}
+        applicationLabel={applicationLabel}
+      />
 
       <main
         className={clsx(

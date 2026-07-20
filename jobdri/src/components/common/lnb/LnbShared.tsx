@@ -611,6 +611,8 @@ function CreditTokenIcon() {
   );
 }
 
+import { useRouter } from "next/navigation";
+
 export function LnbDefaultFooter({
   creditCount,
   email,
@@ -628,6 +630,7 @@ export function LnbDefaultFooter({
 }) {
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const router = useRouter();
 
   useOutsideClick(
     accountMenuRef,
@@ -650,6 +653,7 @@ export function LnbDefaultFooter({
           size="small"
           styleType="secondary"
           rightIconType="EX_LINK"
+          onClick={() => router.push("/credit")}
         />
       </div>
 

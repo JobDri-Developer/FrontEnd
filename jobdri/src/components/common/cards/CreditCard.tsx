@@ -27,6 +27,9 @@ export default function CreditCard({
   planCode,
   onPurchase,
   className,
+  discountLabel,
+  creditLabel,
+  currencyLabel,
   ...articleProps
 }: CreditCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,12 +52,12 @@ export default function CreditCard({
       )}
       <article
         className={clsx(
-          "flex w-fit flex-col items-center h-fit rounded-card bg-bg-contents-default px-8 pt-8 pb-7 shadow-card",
+          "flex w-full flex-col items-center h-fit rounded-card bg-bg-contents-default px-8 pt-8 pb-7 shadow-card",
           className,
         )}
         {...articleProps}
       >
-        <div className="flex flex-1 flex-col justify-between gap-8 min-w-62">
+        <div className="flex flex-1 flex-col justify-between gap-8 w-full">
           <div className="flex flex-col  items-center gap-4">
             <div className="flex items-end justify-center gap-1">
               <span className="text-center text-[32px] font-bold leading-[130%] text-text-neutral-title ">
@@ -79,7 +82,7 @@ export default function CreditCard({
                 )}
               >
                 <span className="text-center text-b16-med text-text-primary-strong ">
-                  {discountRate}% 할인
+                  {discountRate} 할인
                 </span>
               </div>
             </div>
