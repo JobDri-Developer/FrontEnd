@@ -14,11 +14,7 @@ import {
   saveJobPostingDraft,
 } from "../jobPostingDraftStore";
 
-function JobPostingStepCard({
-  step,
-}: {
-  step: (typeof INTRO_STEPS)[number];
-}) {
+function JobPostingStepCard({ step }: { step: (typeof INTRO_STEPS)[number] }) {
   const StepImage = step.Image;
   const isStepTwo = step.step === "STEP 02";
   const isStepThree = step.step === "STEP 03";
@@ -131,6 +127,15 @@ export default function JobPostingCreatePage() {
   const handleHomeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
+
+    const hasInputContent = jobPostingInputValue.trim().length > 0;
+    const hasAttachedFiles = attachedFiles.length > 0;
+
+    if (!hasInputContent && !hasAttachedFiles) {
+      clearJobPostingDraft();
+      router.push("/");
+      return;
+    }
 
     setShowExitConfirm(true);
   };

@@ -7,7 +7,7 @@ import JDSidePanel from "@/components/mockApply/Question/SidePanel";
 import SideHeaderContainer from "@/components/common/header/SideHeaderContainer";
 import WritingForm from "@/components/mockApply/Question/WritingForm";
 import clsx from "clsx";
-import { scrollbarClass } from "@/components/common/scrollbar/scrollbarStyles";
+import { scrollbarClassS } from "@/components/common/scrollbar/scrollbarStyles";
 import {
   fetchSelectedQuestions,
   saveQuestions,
@@ -18,7 +18,8 @@ import { ModalCard } from "@/components/common/modal/ModalCard";
 import { Toast, type ToastVariant } from "@/components/common/toast";
 import { CtaFooter } from "@/components/common/cta";
 import { fetchCreditBalance } from "@/lib/api/credit";
-import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel";
+import { requestAnalysis } from "@/lib/api/analysis";
+import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 
 const ModalOverlay = ({ children }: { children: React.ReactNode }) => (
   <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
@@ -39,14 +40,20 @@ export default function MockApplyPage({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [lastSavedTime, setLastSavedTime] = useState<string>("저장 전");
 
-  const [toast, setToast] = useState<{ open: boolean; message: string }>({
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    variant?: string;
+  }>({
     open: false,
     message: "",
+    variant: "normal",
   });
   const [modalTarget, setModalTarget] = useState<string | null>(null);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
+  const [applicationLabel, setApplicationLabel] = useState<string>("");
 
   // 데이터 포맷팅 함수
   const getSubmitPayload = (questionsData: QuestionItem[]) => {
@@ -93,7 +100,7 @@ export default function MockApplyPage({
         const now = new Date();
         const timeString = `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
         setLastSavedTime(timeString);
-        console.log("✅ 자동 저장 완료!", timeString);
+        console.log("자동 저장 완료!", timeString);
       } catch (error) {
         console.error("자동 저장 실패:", error);
       }
@@ -115,6 +122,21 @@ export default function MockApplyPage({
     });
     setToast({ open: true, message: "문항이 삭제되었어요" });
     setTimeout(() => setToast({ open: false, message: "" }), 3000);
+  };
+
+  const handleConfirm = async () => {
+    try {
+      await saveApply(Number(mockApplyId), getSubmitPayload(questions));
+      const response = await requestAnalysis(Number(mockApplyId));
+      const taskId = response.taskId;
+
+      router.push(
+        `/mockApply/${mockApplyId}/result/resume-analysis-loading?taskId=${taskId}`,
+      );
+    } catch (error) {
+      console.error("제출 실패:", error);
+      alert("채점 요청 중 오류가 발생했습니다.");
+    }
   };
 
   const handleDeleteQuestion = (targetId: string) => {
@@ -149,7 +171,7 @@ export default function MockApplyPage({
       const newQuestion: QuestionItem = {
         id: `temp-${Date.now()}`,
         questionId: 0,
-        question: "새 문항",
+        question: "새로운 문항",
         answer: "",
         maxLength: 1000,
         custom: true,
@@ -176,15 +198,12 @@ export default function MockApplyPage({
   };
 
   const handleTrySubmit = async () => {
-    let hasCredit = false;
-
     try {
       const currentCredit = await fetchCreditBalance();
       setIsConfirmModalOpen(false);
 
       if (currentCredit > 0) {
-        await saveApply(Number(mockApplyId), getSubmitPayload(questions));
-        router.push(`/mockApply/${mockApplyId}/result/`);
+        await handleConfirm();
       } else {
         setIsCreditShortModalOpen(true);
       }
@@ -199,16 +218,6 @@ export default function MockApplyPage({
         3000,
       );
     }
-
-    if (!hasCredit) {
-      return;
-    }
-
-    try {
-      await handleConfirm();
-    } catch {
-      alert("답변 저장에 실패했습니다.");
-    }
   };
 
   // 현재 선택된 문항 폼 데이터
@@ -222,142 +231,142 @@ export default function MockApplyPage({
     : null;
 
   return (
-    <div className="flex flex-col h-dvh bg-bg-default overflow-hidden">
-      <Header
-        currentStep={4}
-        lastSavedAt={lastSavedTime}
-        applicationLabel={applicationLabel}
-      />
-
-      <main
-        className={clsx(
-          "flex-1 flex gap-6 transition-all duration-300 ease-in-out",
-          isPanelOpen ? "mr-[300px]" : "mr-0",
-        )}
-      >
-        <div className={clsx("flex flex-col shrink-0 ", scrollbarClass)}>
-          <SideHeaderContainer
-            leading={2}
-            title="자소서를 작성해주세요"
-            subtitle="공고의 문항을 추가하고, 각 문항에 답변을 입력해 주세요."
-            element={
-              <QuestionList
-                questions={questions}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                onAdd={handleAddQuestion}
-                onDelete={handleDeleteQuestion}
-              />
-            }
-          />
-        </div>
-
-        <div
+    <MockApplyTemplate
+      mockApplyId={Number(mockApplyId)}
+      currentStep={4}
+      lastSavedAt={lastSavedTime}
+    >
+      <div className="flex flex-col h-dvh bg-bg-default overflow-hidden">
+        <main
           className={clsx(
-            "flex-1 overflow-y-auto flex flex-col pt-16 pl-16 pr-[40px]",
-            scrollbarClass,
+            "flex-1 flex gap-6 transition-all duration-300 ease-in-out",
+            isPanelOpen ? "mr-[300px]" : "mr-0",
           )}
         >
-          <div className="w-full min-w-[600px] max-w-[1000px]">
-            {mappedQuestionForForm ? (
-              <WritingForm
-                question={mappedQuestionForForm}
-                onChange={handleUpdate}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-text-neutral-assistive">
-                문항을 불러오는 중입니다...
-              </div>
-            )}
+          <div className={clsx("flex flex-col shrink-0 ", scrollbarClassS)}>
+            <SideHeaderContainer
+              leading={2}
+              title="자소서를 작성해주세요"
+              subtitle="공고의 문항을 추가하고, 각 문항에 답변을 입력해 주세요."
+              element={
+                <QuestionList
+                  questions={questions}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                  onAdd={handleAddQuestion}
+                  onDelete={handleDeleteQuestion}
+                />
+              }
+            />
           </div>
-        </div>
-      </main>
 
-      <CtaFooter
-        backAction={{ onClick: () => setIsLeaveModalOpen(true) }}
-        nextAction={{
-          label: "채점하기",
-          onClick: () => setIsConfirmModalOpen(true),
-          disabled:
-            !mappedQuestionForForm ||
-            questions.some((q) => !(q.answer || "").trim()),
-          iconType: "SPARKLE",
-        }}
-      />
+          <div
+            className={clsx(
+              "flex-1 overflow-y-auto flex flex-col pt-16 pl-16 pr-[40px]",
+              scrollbarClassS,
+            )}
+          >
+            <div className="w-full min-w-[600px] max-w-[1000px]">
+              {mappedQuestionForForm ? (
+                <WritingForm
+                  question={mappedQuestionForForm}
+                  onChange={handleUpdate}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-text-neutral-assistive">
+                  문항을 불러오는 중입니다...
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
 
-      <JDSidePanel
-        isOpen={isPanelOpen}
-        onClose={() => setIsPanelOpen(false)}
-        onOpen={() => setIsPanelOpen(true)}
-      />
-
-      {toast.open && (
-        <Toast
-          message={toast.message}
-          variant="normal"
-          position="top"
-          onClose={() => setToast({ ...toast, open: false })}
-          className="absolute top-6"
+        <CtaFooter
+          backAction={{ onClick: () => setIsLeaveModalOpen(true) }}
+          nextAction={{
+            label: "채점하기",
+            onClick: () => setIsConfirmModalOpen(true),
+            disabled:
+              !mappedQuestionForForm ||
+              questions.some((q) => !(q.answer || "").trim()),
+            iconType: "SPARKLE",
+          }}
         />
-      )}
 
-      {modalTarget && (
-        <ModalOverlay>
-          <ModalCard
-            title="문항을 삭제할까요?"
-            description="작성한 내용이 모두 사라집니다."
-            secondaryBtn="취소"
-            errorBtn="삭제"
-            onSecondaryClick={() => setModalTarget(null)}
-            onErrorClick={() => {
-              performDelete(modalTarget);
-              setModalTarget(null);
-            }}
-          />
-        </ModalOverlay>
-      )}
+        <JDSidePanel
+          isOpen={isPanelOpen}
+          onClose={() => setIsPanelOpen(false)}
+          onOpen={() => setIsPanelOpen(true)}
+        />
 
-      {isLeaveModalOpen && (
-        <ModalOverlay>
-          <ModalCard
-            title="페이지를 나가시겠어요?"
-            description="자동 저장 이후 작성된 내용은 저장되지 않아요."
-            secondaryBtn="취소"
-            primaryBtn="나가기"
-            onSecondaryClick={() => setIsLeaveModalOpen(false)}
-            onPrimaryClick={() => {
-              setIsLeaveModalOpen(false);
-              router.push(`/mockApply/actual/${mockApplyId}/jd-review`);
-            }}
+        {toast.open && (
+          <Toast
+            message={toast.message}
+            variant="normal"
+            position="top"
+            onClose={() => setToast({ ...toast, open: false })}
+            className="absolute top-6"
           />
-        </ModalOverlay>
-      )}
+        )}
 
-      {isConfirmModalOpen && (
-        <ModalOverlay>
-          <ModalCard
-            title="이대로 채점할까요?"
-            description="지원 시 1 크레딧이 차감되며, 취소할 수 없어요."
-            secondaryBtn="닫기"
-            primaryBtn="지원하기"
-            onSecondaryClick={() => setIsConfirmModalOpen(false)}
-            onPrimaryClick={handleTrySubmit}
-          />
-        </ModalOverlay>
-      )}
+        {modalTarget && (
+          <ModalOverlay>
+            <ModalCard
+              title="문항을 삭제할까요?"
+              description="작성한 내용이 모두 사라집니다."
+              secondaryBtn="취소"
+              errorBtn="삭제"
+              onSecondaryClick={() => setModalTarget(null)}
+              onErrorClick={() => {
+                performDelete(modalTarget);
+                setModalTarget(null);
+              }}
+            />
+          </ModalOverlay>
+        )}
 
-      {isCreditShortModalOpen && (
-        <ModalOverlay>
-          <ModalCard
-            title="크레딧이 부족해요"
-            description="크레딧을 충전하고 다시 시도해주세요."
-            secondaryBtn="닫기"
-            primaryBtn="충전하기"
-            onSecondaryClick={() => setIsCreditShortModalOpen(false)}
-            onPrimaryClick={() => setIsCreditShortModalOpen(false)}
-          />
-        </ModalOverlay>
-      )}
-    </div>
+        {isLeaveModalOpen && (
+          <ModalOverlay>
+            <ModalCard
+              title="페이지를 나가시겠어요?"
+              description="자동 저장 이후 작성된 내용은 저장되지 않아요."
+              secondaryBtn="취소"
+              primaryBtn="나가기"
+              onSecondaryClick={() => setIsLeaveModalOpen(false)}
+              onPrimaryClick={() => {
+                setIsLeaveModalOpen(false);
+                router.push(`/mockApply/actual/${mockApplyId}/jd-review`);
+              }}
+            />
+          </ModalOverlay>
+        )}
+
+        {isConfirmModalOpen && (
+          <ModalOverlay>
+            <ModalCard
+              title="이대로 채점할까요?"
+              description="지원 시 1 크레딧이 차감되며, 취소할 수 없어요."
+              secondaryBtn="닫기"
+              primaryBtn="지원하기"
+              onSecondaryClick={() => setIsConfirmModalOpen(false)}
+              onPrimaryClick={handleTrySubmit}
+            />
+          </ModalOverlay>
+        )}
+
+        {isCreditShortModalOpen && (
+          <ModalOverlay>
+            <ModalCard
+              title="크레딧이 부족해요"
+              description="크레딧을 충전하고 다시 시도해주세요."
+              secondaryBtn="닫기"
+              primaryBtn="충전하기"
+              onSecondaryClick={() => setIsCreditShortModalOpen(false)}
+              onPrimaryClick={() => setIsCreditShortModalOpen(false)}
+            />
+          </ModalOverlay>
+        )}
+      </div>
+    </MockApplyTemplate>
   );
 }

@@ -146,7 +146,7 @@ export default function Header({
   jobTitle = "프로덕트 디자이너",
   applicationLabel,
   version,
-  lastSavedAt = "17:00",
+  lastSavedAt,
   lastSavedLabel = "마지막 저장",
   homeAction = { label: "홈으로" },
   currentStep = 1,
@@ -305,16 +305,17 @@ export default function Header({
           })}
         </ol>
       </div>
-
       <div className="flex flex-1 items-center justify-end gap-4">
-        <div className="flex h-6 items-center justify-center gap-2.5">
-          <span className="text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-            {lastSavedLabel}
-          </span>
-          <time className="text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-            {lastSavedAt}
-          </time>
-        </div>
+        {lastSavedAt && (
+          <div className="flex h-6 items-center justify-center gap-2.5">
+            <span className="text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+              {lastSavedLabel}
+            </span>
+            <time className="text-[14px] font-semibold leading-[140%] tracking-[-0.28px] text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+              {lastSavedAt}
+            </time>
+          </div>
+        )}
 
         {homeActionButton}
       </div>

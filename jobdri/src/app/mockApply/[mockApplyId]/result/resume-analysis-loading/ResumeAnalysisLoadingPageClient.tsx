@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
 
 const RESUME_ANALYSIS_LOADING_DURATION_MS = 316_000;
@@ -14,10 +14,13 @@ export default function ResumeAnalysisLoadingPageClient({
   applicationLabel,
 }: ResumeAnalysisLoadingPageClientProps) {
   const router = useRouter();
+  const params = useParams();
+  const mockApplyId = params.mockApplyId;
+
   const handleComplete = useCallback(() => {
-    const queryString = window.location.search;
-    router.replace(`/mockApply/resume-analysis-feedback${queryString}`);
-  }, [router]);
+    if (!mockApplyId) return;
+    router.replace(`/mockApply/${mockApplyId}/result`);
+  }, [router, mockApplyId]);
 
   return (
     <ResumeAnalysisLoading

@@ -146,7 +146,7 @@
 
   /* Highlight */
   --color-fill-highlight-proven-default: var(--color-green-150);
-  --color-fill-highlight-proven-hober: var(--color-green-300);
+  --color-fill-highlight-proven-hover: var(--color-green-300);
 
   --color-fill-highlight-fabricated-default: var(--color-pink-100);
   --color-fill-highlight-fabricated-hover: var(--color-pink-200);

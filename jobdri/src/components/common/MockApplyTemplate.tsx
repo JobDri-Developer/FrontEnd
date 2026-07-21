@@ -1,0 +1,111 @@
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import Header from "@/components/common/header/Header";
+import CtaFooter from "@/components/common/cta/CtaFooter";
+import { fetchSequence } from "@/lib/api/result";
+import { LEAVE_MODAL_CONFIG } from "@/constants/modalConfig";
+import { ModalCard } from "./modal/ModalCard";
+
+interface MockApplyTemplateProps {
+  mockApplyId: number;
+  currentStep: number;
+
+  children: React.ReactNode;
+  customHomeModal?: (typeof LEAVE_MODAL_CONFIG)[keyof typeof LEAVE_MODAL_CONFIG];
+  onHomeLeave?: () => void;
+
+  lastSavedAt?: string;
+  onHomeClick?: () => void;
+  onBackClick?: () => void;
+  onNextClick?: () => void;
+  isNextDisabled?: boolean;
+  onRetryClick?: () => void;
+  onSaveAndExitClick?: () => void;
+}
+
+export default function MockApplyTemplate({
+  mockApplyId,
+  children,
+  currentStep,
+  customHomeModal = LEAVE_MODAL_CONFIG.COMMON_HOME,
+  onHomeLeave,
+
+  lastSavedAt,
+  onBackClick,
+  onNextClick,
+  isNextDisabled,
+  onRetryClick,
+  onSaveAndExitClick,
+}: MockApplyTemplateProps) {
+  const router = useRouter();
+  const [showHomeConfirm, setShowHomeConfirm] = useState(false);
+  const pathname = usePathname();
+  const isResultPage = pathname.includes("/result");
+
+  const handleHomeLeave = () => {
+    if (onHomeLeave) onHomeLeave();
+    else router.push("/");
+  };
+
+  const [applicationLabel, setApplicationLabel] =
+    useState<string>("첫 번째 지원");
+
+  useEffect(() => {
+    const loadSequence = async () => {
+      if (!mockApplyId) return;
+      try {
+        const data = await fetchSequence(mockApplyId);
+        setApplicationLabel(`${data.sequence}번째 지원`);
+      } catch (error) {
+        console.error("순번을 불러오지 못했습니다.", error);
+      }
+    };
+
+    loadSequence();
+  }, [mockApplyId]);
+
+  return (
+    <div className="flex flex-col h-dvh bg-bg-default overflow-hidden">
+      <Header
+        currentStep={currentStep}
+        lastSavedAt={lastSavedAt}
+        applicationLabel={applicationLabel}
+        homeAction={{
+          label: "홈으로",
+          onClick: (e) => {
+            e.preventDefault();
+            setShowHomeConfirm(true);
+          },
+        }}
+      />
+
+      <main className="flex-1 overflow-y-auto">{children}</main>
+
+      <CtaFooter
+        type={isResultPage ? "result" : "wizard"}
+        backAction={{ onClick: onBackClick }}
+        nextAction={{
+          label: "채점하기",
+          iconType: "SPARKLE",
+          onClick: onNextClick,
+          disabled: isNextDisabled,
+        }}
+        retryAction={{ onClick: onRetryClick }}
+        saveAction={{ onClick: onSaveAndExitClick }}
+      />
+      {showHomeConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+          <ModalCard
+            title={customHomeModal.title}
+            description={customHomeModal.description}
+            secondaryBtn={customHomeModal.secondaryBtn}
+            primaryBtn={customHomeModal.primaryBtn}
+            onSecondaryClick={handleHomeLeave}
+            onPrimaryClick={() => setShowHomeConfirm(false)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}

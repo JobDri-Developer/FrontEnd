@@ -4,27 +4,23 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CtaFooter } from "@/components/common/cta";
 import Divider from "@/components/common/Divider";
-import Header from "@/components/common/header/Header";
 import Icon from "@/components/common/icons/Icon";
 import {
   LnbScrollbar,
   lnbHiddenScrollbarClass,
   useLnbScrollMetrics,
 } from "@/components/common/lnb/LnbScrollbar";
-import { ModalNotice } from "@/components/common/modal";
 import TabMenu from "@/components/common/tabs/TabMenu";
-import { Toast } from "@/components/common/toast";
-import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
 import Evaluation from "@/components/mockApply/result/Evaluation";
 import ScoreBar from "@/components/mockApply/result/ScoreBar";
 import ScoreCircle from "@/components/mockApply/result/ScoreCircle";
-import { useReApply } from "@/hooks/useReApply";
-import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
-import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel";
+import type { AnalysisResult } from "@/lib/api/result";
 
 interface ResumeAnalysisFeedbackProps {
   mockApplyId?: number;
   sequence?: number;
+  children?: React.ReactNode;
+  analysisData: AnalysisResult;
 }
 
 const scoreItems = [
@@ -111,7 +107,26 @@ function ScoreMetricRow({
   );
 }
 
-function ScoreSummaryCard() {
+function ScoreSummaryCard({ data }: { data: AnalysisResult }) {
+  // API 데이터를 기반으로 점수 항목 생성 (80점 미만이면 danger 톤으로 처리)
+  const scoreItems = [
+    {
+      label: "직무 적합성",
+      score: data.jobFit,
+      tone: data.jobFit >= 80 ? "primary" : "danger",
+    },
+    {
+      label: "정량적 성과",
+      score: data.impact,
+      tone: data.impact >= 80 ? "primary" : "danger",
+    },
+    {
+      label: "논리 구조",
+      score: data.completeness,
+      tone: data.completeness >= 80 ? "primary" : "danger",
+    },
+  ] as const;
+
   return (
     <article
       className="flex [flex:1_0_0] flex-col items-start gap-3 rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7"
@@ -119,7 +134,7 @@ function ScoreSummaryCard() {
     >
       <div className="flex h-9 items-center gap-2 self-stretch pl-1">
         <ScoreSummaryIcon />
-        <span className="flex-1 text-label14-semibold tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+        <span className="flex-1 text-label14-semibold text-text-neutral-description">
           총점
         </span>
       </div>
@@ -129,7 +144,7 @@ function ScoreSummaryCard() {
       <div className="flex flex-col justify-end gap-4 self-stretch">
         <div className="flex items-center gap-12 self-stretch px-4 py-8">
           <div className="flex flex-col items-center justify-center">
-            <ScoreCircle score={86} size="medium" />
+            <ScoreCircle score={data.score} size="medium" />
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col items-start gap-3">
@@ -150,17 +165,16 @@ function ScoreSummaryCard() {
               type="SPARKLE"
               className="h-6 w-6 shrink-0 text-icon-primary-default"
             />
-            <h2 className="text-b16-semibold tracking-normal text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-              강점이 잘 드러나고 있어요
+            <h2 className="text-b16-semibold text-text-neutral-title">
+              {data.score >= 80
+                ? "강점이 잘 드러나고 있어요"
+                : "조금 더 보완이 필요해요"}
             </h2>
           </div>
 
           <div className="flex flex-col items-start self-stretch">
-            <p className="self-stretch text-justify text-sub14-reg tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-              직무 적합성과 정량적 성과는 강하지만, 회사·직무에 대한
-              구체적 이해와 본인만의 차별점이 더 드러나면 통과 가능성이 한
-              단계 올라가요. 지원 동기와 입사 후 기여 방향을 좀 더 구체적으로
-              서술하면 설득력이 높아집니다.
+            <p className="self-stretch text-justify text-sub14-reg text-text-neutral-description whitespace-pre-line">
+              {data.feedback}
             </p>
           </div>
         </div>
@@ -169,19 +183,19 @@ function ScoreSummaryCard() {
   );
 }
 
-function ReviewSummaryCard() {
+function ReviewSummaryCard({ data }: { data: AnalysisResult }) {
   const [activeTabId, setActiveTabId] = useState(reviewTabs[0].id);
   const isStrengthTab = activeTabId === "strengths";
-  const evaluations = isStrengthTab ? strengthEvaluations : weaknessEvaluations;
+
+  const evaluations = isStrengthTab
+    ? data.keyStrengths || []
+    : data.keyWeaknesses || [];
 
   return (
-    <aside
-      className="flex min-w-[360px] max-w-[480px] [flex:1_0_0] flex-col items-start justify-between self-stretch rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7"
-      aria-label="총평"
-    >
+    <aside className="flex min-w-[360px] max-w-[480px] [flex:1_0_0] flex-col items-start justify-between self-stretch rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7">
       <div className="flex h-9 items-center gap-2 self-stretch pl-1">
         <ReviewSummaryIcon />
-        <span className="flex-1 text-label14-semibold tracking-normal text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+        <span className="flex-1 text-label14-semibold text-text-neutral-description">
           총평
         </span>
         <TabMenu
@@ -198,7 +212,7 @@ function ReviewSummaryCard() {
           <Evaluation
             key={`${activeTabId}-${index}`}
             rating={isStrengthTab ? "good" : "bad"}
-            content={evaluation.content}
+            content={evaluation.title}
             quote={evaluation.quote}
           />
         ))}
@@ -210,113 +224,37 @@ function ReviewSummaryCard() {
 export default function ResumeAnalysisFeedback({
   mockApplyId,
   sequence,
+  analysisData,
+  children,
 }: ResumeAnalysisFeedbackProps) {
-  const router = useRouter();
-  const { reApply, isSaving } = useReApply();
-  const [isRetryModalOpen, setIsRetryModalOpen] = useState(false);
-  const [toast, setToast] = useState<{ open: boolean; message: string }>({
-    open: false,
-    message: "",
-  });
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics<HTMLElement>(true, "resume-analysis-feedback");
-  const applicationLabel = formatApplicationSequenceLabel(sequence);
-
-  const closeToast = () => setToast({ open: false, message: "" });
-
-  const showTopToast = (message: string) => {
-    setToast({ open: true, message });
-    window.setTimeout(closeToast, 3000);
-  };
-
-  const handleRetryConfirm = async () => {
-    const resolvedMockApplyId =
-      mockApplyId ?? getMockApplyResumeRecords()[0]?.mockApplyId;
-
-    if (!resolvedMockApplyId) {
-      setIsRetryModalOpen(false);
-      showTopToast("재도전할 지원 정보를 찾지 못했어요.");
-      return;
-    }
-
-    const retryResult = await reApply(resolvedMockApplyId);
-
-    if (!retryResult) {
-      setIsRetryModalOpen(false);
-      showTopToast("재도전을 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
-    }
-  };
 
   return (
-    <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
-      <Header currentStep={6} applicationLabel={applicationLabel} />
+    <div className="relative flex min-h-0 flex-1 items-stretch self-stretch overflow-visible">
+      <main
+        ref={scrollAreaRef}
+        onScroll={updateScrollbarMetrics}
+        className={`flex min-h-0 flex-1  bg-fill-quaternary-assistive items-start justify-center self-stretch overflow-y-auto mx-2 rounded-card-l overflow-x-hidden px-2 pb-0 ${lnbHiddenScrollbarClass}`}
+      >
+        <div className="flex flex-1 flex-col items-center p-0">
+          {children}
 
-      <div className="relative flex min-h-0 flex-1 items-stretch self-stretch overflow-visible">
-        <main
-          ref={scrollAreaRef}
-          onScroll={updateScrollbarMetrics}
-          className={`flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden px-2 pb-0 ${lnbHiddenScrollbarClass}`}
-        >
-          <div className="flex w-full items-start justify-center self-stretch px-2 pb-0">
-            <div className="flex flex-1 flex-col items-center p-0">
-              <AnalysisHeader />
-
-              <section className="flex items-center justify-center gap-3 self-stretch rounded-card-l bg-fill-quaternary-assistive px-16 pt-8 pb-[120px]">
-                <div className="mx-auto flex w-full max-w-[1320px] items-center gap-3 self-stretch">
-                  <ScoreSummaryCard />
-                  <ReviewSummaryCard />
-                </div>
-              </section>
+          <section className="flex items-center justify-center gap-3 self-stretch px-16 pt-8 pb-[120px]">
+            <div className="mx-auto justify-center flex w-full max-w-[1320px] items-start gap-3 self-stretch">
+              {/* 🌟 데이터 내려주기 */}
+              <ScoreSummaryCard data={analysisData} />
+              <ReviewSummaryCard data={analysisData} />
             </div>
-          </div>
-        </main>
-
-        <LnbScrollbar
-          metrics={scrollbarMetrics}
-          size="l"
-          className="inset-y-0 right-0 z-20 items-end"
-        />
-      </div>
-
-      <CtaFooter
-        type="result"
-        retryAction={{
-          onClick: () => setIsRetryModalOpen(true),
-        }}
-        saveAction={{
-          onClick: () => router.push("/"),
-        }}
-      />
-
-      {isRetryModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
-          <ModalNotice
-            variant="double"
-            title="같은 공고로 다시 도전할까요?"
-            description="현재 내용을 저장하고 자소서 입력 단계로 돌아갑니다."
-            className="!w-[400px]"
-            onClose={() => setIsRetryModalOpen(false)}
-            secondaryAction={{
-              label: "취소",
-              onClick: () => setIsRetryModalOpen(false),
-            }}
-            primaryAction={{
-              label: "재도전 하기",
-              onClick: handleRetryConfirm,
-              disabled: isSaving,
-            }}
-          />
+          </section>
         </div>
-      )}
+      </main>
 
-      {toast.open && (
-        <Toast
-          message={toast.message}
-          variant="warning"
-          position="top"
-          onClose={closeToast}
-        />
-      )}
+      <LnbScrollbar
+        metrics={scrollbarMetrics}
+        size="l"
+        className="inset-y-0 right-0 z-20 items-end"
+      />
     </div>
   );
 }
