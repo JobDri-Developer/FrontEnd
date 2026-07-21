@@ -5,7 +5,7 @@ import clsx from "clsx";
 import Avatar from "../home/Avatar";
 import Icon from "@/components/common/icons/Icon";
 import Divider from "@/components/common/Divider";
-import { scrollbarClass } from "@/components/common/scrollbar/scrollbarStyles";
+import { scrollbarClassS } from "@/components/common/scrollbar/scrollbarStyles";
 
 export interface JDSectionItem {
   subtitle: string;
@@ -65,7 +65,7 @@ export default function JDSidePanel({
           ? "fixed right-0 top-1/2 -translate-y-1/2 w-90 h-screen border-l border-line-neutral-assistive"
           : "fixed right-0 top-20 w-fit h-fit rounded-l-chip-s border-l border-t border-b border-line-neutral-assistive cursor-pointer  hover:bg-gray-50",
 
-        scrollbarClass,
+        scrollbarClassS,
       )}
       onClick={!isOpen ? onOpen : undefined}
     >

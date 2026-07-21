@@ -14,11 +14,7 @@ import {
   saveJobPostingDraft,
 } from "../jobPostingDraftStore";
 
-function JobPostingStepCard({
-  step,
-}: {
-  step: (typeof INTRO_STEPS)[number];
-}) {
+function JobPostingStepCard({ step }: { step: (typeof INTRO_STEPS)[number] }) {
   const StepImage = step.Image;
   const isStepTwo = step.step === "STEP 02";
   const isStepThree = step.step === "STEP 03";

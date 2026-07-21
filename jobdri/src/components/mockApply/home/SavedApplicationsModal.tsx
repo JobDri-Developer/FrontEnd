@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { scrollbarClass } from "@/components/common/scrollbar/scrollbarStyles";
+import { scrollbarClassL } from "@/components/common/scrollbar/scrollbarStyles";
 import Icon from "@/components/common/icons/Icon";
 import { ApplicationKebabButton } from "./ApplicationKebabButton";
 import {
@@ -120,7 +120,7 @@ export function SavedApplicationsModal({
 
           <div className="flex min-h-0 flex-1 items-start justify-start self-stretch">
             <div
-              className={`flex h-full min-h-0 flex-1 flex-col items-start gap-2 overflow-y-auto pr-3 ${scrollbarClass}`}
+              className={`flex h-full min-h-0 flex-1 flex-col items-start gap-2 overflow-y-auto pr-3 ${scrollbarClassL}`}
             >
               {applications.map((application) => (
                 <SavedApplicationModalCard
