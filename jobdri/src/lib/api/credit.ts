@@ -19,16 +19,26 @@ interface ApiResponse<T> {
   error: string | null;
 }
 
-function checkResponse(response: Response, fallbackMessage: string): void {
-  if (response.status === 401) handleUnauthorized();
+function checkResponse(
+  response: Response,
+  fallbackMessage: string,
+  redirectOnUnauthorized = true,
+): void {
+  if (response.status === 401 && redirectOnUnauthorized) handleUnauthorized();
   if (!response.ok) throw new Error(fallbackMessage);
 }
 
-export async function fetchCreditBalance(): Promise<number> {
+export async function fetchCreditBalance({
+  redirectOnUnauthorized = true,
+}: { redirectOnUnauthorized?: boolean } = {}): Promise<number> {
   const response = await fetch(`${BASE_URL}/api/payments/credits/me`, {
     headers: getAuthHeaders(),
   });
-  checkResponse(response, "크레딧 잔액 조회에 실패했습니다.");
+  checkResponse(
+    response,
+    "크레딧 잔액 조회에 실패했습니다.",
+    redirectOnUnauthorized,
+  );
   const { result }: ApiResponse<{ creditBalance: number }> =
     await response.json();
   return result.creditBalance;

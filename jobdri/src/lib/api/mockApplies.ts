@@ -102,7 +102,11 @@ export function createApplyFromJobPosting({
 
 export async function fetchMyMockApplies({
   signal,
-}: { signal?: AbortSignal } = {}) {
+  redirectOnUnauthorized = true,
+}: {
+  signal?: AbortSignal;
+  redirectOnUnauthorized?: boolean;
+} = {}) {
   const response = await fetch(`${API_BASE_URL}/api/mock-applies/me`, {
     headers: getAuthHeaders(),
     cache: "no-store",
@@ -112,6 +116,7 @@ export async function fetchMyMockApplies({
   const result = await parseApiResponse<MockApplyHomeList>(
     response,
     "내 지원 데이터를 불러오지 못했습니다.",
+    { redirectOnUnauthorized },
   );
 
   return {

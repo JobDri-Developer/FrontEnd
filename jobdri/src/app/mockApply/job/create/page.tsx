@@ -133,6 +133,15 @@ export default function JobPostingCreatePage() {
     event.preventDefault();
     event.stopPropagation();
 
+    const hasInput =
+      jobPostingInputValue.trim().length > 0 || attachedFiles.length > 0;
+
+    if (!hasInput) {
+      clearJobPostingDraft();
+      router.push("/");
+      return;
+    }
+
     setShowExitConfirm(true);
   };
 

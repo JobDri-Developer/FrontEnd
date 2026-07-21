@@ -172,9 +172,9 @@ export default function JobPostingReviewPage() {
           <div
             ref={scrollAreaRef}
             onScroll={updateScrollbarMetrics}
-            className={`flex min-h-0 w-full flex-1 items-start justify-center overflow-y-auto overflow-x-hidden ${lnbHiddenScrollbarClass}`}
+            className={`flex min-h-0 w-full flex-1 items-start justify-center overflow-y-auto overflow-x-hidden rounded-card-l bg-fill-quaternary-assistive ${lnbHiddenScrollbarClass}`}
           >
-            <div className="flex min-h-0 flex-1 items-start justify-center self-stretch rounded-card-l bg-fill-quaternary-assistive">
+            <div className="flex min-h-full flex-1 items-start justify-center self-stretch bg-fill-quaternary-assistive">
               <main className="flex flex-1 items-start justify-between">
                 <SideHeaderContainer
                   leading={1}

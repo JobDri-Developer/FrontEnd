@@ -57,7 +57,9 @@ export default function Home() {
   useEffect(() => {
     const loadMockApplies = async () => {
       try {
-        const data = await fetchMyMockApplies();
+        const data = await fetchMyMockApplies({
+          redirectOnUnauthorized: false,
+        });
 
         const mappedDrafts = data.inProgress.map((item) => ({
           id: String(item.mockApplyId),
