@@ -13,6 +13,7 @@ import { CtaFooter } from "@/components/common/cta";
 import { JDInput } from "@/components/common/input";
 import { ModalNotice } from "@/components/common/modal";
 import Avatar from "@/components/mockApply/home/Avatar";
+import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 
 const wizardSteps = [
   { label: "공고 확인" },
@@ -85,8 +86,13 @@ function JobProfileRow({ avatarName }: { avatarName: string }) {
   );
 }
 
-export default function JobPostingReviewPage() {
+export default function JobPostingReviewPage({
+  params,
+}: {
+  params: { mockApplyId: string };
+}) {
   const router = useRouter();
+  const { mockApplyId } = params;
   const [jobPostingName, setJobPostingName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [roleName, setRoleName] = useState("");
@@ -112,22 +118,14 @@ export default function JobPostingReviewPage() {
   };
 
   return (
-    <div className="h-dvh w-dvw overflow-hidden bg-line-neutral-assistive">
-      <div className="flex h-dvh w-dvw min-w-[1100px] flex-col bg-bg-white">
-        <Header
-          companyName="토스"
-          jobTitle="프로덕트 디자이너"
-          applicationLabel="첫 번째 지원"
-          currentStep={1}
-          steps={wizardSteps}
-          lastSavedAt="17:00"
-          homeAction={{
-            label: "홈으로",
-            onClick: handleHomeClick,
-          }}
-          className="min-w-[1100px] max-w-none shrink-0 self-stretch"
-        />
-
+    <>
+      <MockApplyTemplate
+        mockApplyId={Number(mockApplyId)}
+        currentStep={1}
+        onBackClick={() => setShowBackConfirm(true)}
+        onNextClick={() => router.push(`/mockApply/${mockApplyId}`)}
+        isNextDisabled={!isNextEnabled}
+      >
         <div className="relative flex min-h-0 w-full flex-1 items-stretch overflow-visible px-2 pb-0">
           <div
             ref={scrollAreaRef}
@@ -149,7 +147,6 @@ export default function JobPostingReviewPage() {
                     <JobProfileRow avatarName={companyAvatarName} />
                     <JDInput
                       label="공고명"
-                      description="이 공고의 이름이에요."
                       type="company"
                       value={jobPostingName}
                       onChange={setJobPostingName}
@@ -157,7 +154,6 @@ export default function JobPostingReviewPage() {
                     />
                     <JDInput
                       label="회사명"
-                      description="채용 공고를 올린 회사예요."
                       type="company"
                       value={companyName}
                       onChange={setCompanyName}
@@ -172,12 +168,7 @@ export default function JobPostingReviewPage() {
                       onChange={setRoleName}
                       className="!w-full"
                     />
-                    <JDInput
-                      type="task"
-                      description="이 직무에서 담당할 업무예요."
-                      required={false}
-                      className="!w-full"
-                    />
+                    <JDInput type="task" required={false} className="!w-full" />
                   </SectionCard>
 
                   <SectionCard title="채용 기준">
@@ -204,20 +195,7 @@ export default function JobPostingReviewPage() {
             className="!top-[10px] !right-1 !bottom-[10px] z-10"
           />
         </div>
-
-        <CtaFooter
-          type="wizard"
-          className="!w-full shrink-0"
-          backAction={{
-            label: "이전으로",
-            onClick: () => setShowBackConfirm(true),
-          }}
-          nextAction={{
-            label: "다음으로",
-            disabled: !isNextEnabled,
-          }}
-        />
-      </div>
+      </MockApplyTemplate>
 
       {showBackConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
@@ -257,6 +235,6 @@ export default function JobPostingReviewPage() {
           />
         </div>
       )}
-    </div>
+    </>
   );
 }

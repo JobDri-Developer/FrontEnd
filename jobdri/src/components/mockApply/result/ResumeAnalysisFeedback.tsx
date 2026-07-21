@@ -241,7 +241,7 @@ export default function ResumeAnalysisFeedback({
           {children}
 
           <section className="flex items-center justify-center gap-3 self-stretch px-16 pt-8 pb-[120px]">
-            <div className="mx-auto flex w-full max-w-[1320px] items-center gap-3 self-stretch">
+            <div className="mx-auto justify-center flex w-full max-w-[1320px] items-start gap-3 self-stretch">
               {/* 🌟 데이터 내려주기 */}
               <ScoreSummaryCard data={analysisData} />
               <ReviewSummaryCard data={analysisData} />
