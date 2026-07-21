@@ -278,7 +278,7 @@ async function uploadImageToPresignedUrl({
   }
 }
 
-export async function ingestJobPostingImage(file: File) {
+export async function uploadJobPostingImage(file: File) {
   const contentType = getImageContentType(file);
   const { objectKey, uploadUrl } =
     await createJobPostingImagePresignedUploadUrl({
@@ -291,6 +291,12 @@ export async function ingestJobPostingImage(file: File) {
     uploadUrl,
     contentType,
   });
+
+  return objectKey;
+}
+
+export async function ingestJobPostingImage(file: File) {
+  const objectKey = await uploadJobPostingImage(file);
 
   return ingestJobPosting({ imageObjectKey: objectKey });
 }

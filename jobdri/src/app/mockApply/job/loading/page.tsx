@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import Header from "@/components/common/header/Header";
@@ -10,7 +10,16 @@ import { ModalNotice } from "@/components/common/modal";
 import LoadingGraphic from "@/components/mockApply/LoadingGraphic";
 import questionLoadingBook from "@/assets/lottie/question-loading-book.json";
 import questionLoadingSparkle from "@/assets/lottie/question-loading-sparkle.json";
-import { clearJobPostingDraft } from "../jobPostingDraftStore";
+import {
+  clearJobPostingDraft,
+  getJobPostingDraft,
+  saveJobPostingAnalysis,
+} from "../jobPostingDraftStore";
+import {
+  ingestJobPosting,
+  uploadJobPostingImage,
+  waitForJobPostingIngest,
+} from "@/lib/api/jobPostings";
 
 const MIN_LOADING_DURATION_MS = 50_000;
 const MAX_LOADING_DURATION_MS = 60_000;
@@ -109,20 +118,49 @@ export default function JobPostingLoadingPage() {
   const router = useRouter();
   const [loadingDurationMs] = useState(createRandomLoadingDurationMs);
   const [showStopConfirm, setShowStopConfirm] = useState(false);
+  const hasStartedAnalysisRef = useRef(false);
 
   useEffect(() => {
-    if (showStopConfirm) {
+    if (hasStartedAnalysisRef.current) {
       return;
     }
+    hasStartedAnalysisRef.current = true;
 
-    const completionTimer = window.setTimeout(() => {
-      router.replace("/mockApply/job/review");
-    }, loadingDurationMs);
+    const analyzeJobPosting = async () => {
+      try {
+        const draft = getJobPostingDraft();
+        const rawText = draft.value.trim() || undefined;
+        const imageObjectKey = draft.files[0]
+          ? await uploadJobPostingImage(draft.files[0])
+          : undefined;
 
-    return () => {
-      window.clearTimeout(completionTimer);
+        if (!rawText && !imageObjectKey) {
+          throw new Error("분석할 채용 공고가 없습니다.");
+        }
+
+        const accepted = await ingestJobPosting({ rawText, imageObjectKey });
+        const status = await waitForJobPostingIngest(accepted.taskId);
+
+        if (!status.result) {
+          throw new Error("채용 공고 분석 결과를 확인할 수 없습니다.");
+        }
+
+        saveJobPostingAnalysis(status.result);
+        router.replace("/mockApply/job/review");
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "채용 공고 분석에 실패했습니다.";
+
+        router.replace(
+          `/mockApply/job/create?analysisError=${encodeURIComponent(message)}`,
+        );
+      }
     };
-  }, [loadingDurationMs, router, showStopConfirm]);
+
+    void analyzeJobPosting();
+  }, [router]);
 
   const closeStopConfirm = () => setShowStopConfirm(false);
   const stopAnalysis = () => {

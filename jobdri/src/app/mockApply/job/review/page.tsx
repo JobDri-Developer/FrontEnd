@@ -13,6 +13,11 @@ import { CtaFooter } from "@/components/common/cta";
 import { JDInput } from "@/components/common/input";
 import { ModalNotice } from "@/components/common/modal";
 import Avatar from "@/components/mockApply/home/Avatar";
+import { getJobPostingAnalysis } from "../jobPostingDraftStore";
+
+function firstNonEmpty(...values: Array<string | null | undefined>) {
+  return values.find((value) => value?.trim())?.trim() ?? "";
+}
 
 const wizardSteps = [
   { label: "공고 확인" },
@@ -87,9 +92,44 @@ function JobProfileRow({ avatarName }: { avatarName: string }) {
 
 export default function JobPostingReviewPage() {
   const router = useRouter();
-  const [jobPostingName, setJobPostingName] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [roleName, setRoleName] = useState("");
+  const [initialValues] = useState(() => {
+    const result = getJobPostingAnalysis();
+    const generated = result?.generated;
+    const extracted = result?.extracted;
+    const saved = result?.saved;
+
+    return {
+      companyName: firstNonEmpty(
+        generated?.companyName,
+        extracted?.companyName,
+        saved?.companyName,
+      ),
+      jobTitle: firstNonEmpty(
+        generated?.jobTitle,
+        extracted?.jobTitle,
+        result?.classification?.detailClassificationName,
+      ),
+      task: firstNonEmpty(generated?.task, extracted?.task, saved?.task),
+      requirements: firstNonEmpty(
+        generated?.requirements,
+        extracted?.requirements,
+        saved?.requirement,
+      ),
+      preferred: firstNonEmpty(
+        generated?.preferredQualifications,
+        extracted?.preferredQualifications,
+        saved?.preferred,
+      ),
+    };
+  });
+  const [jobPostingName, setJobPostingName] = useState(initialValues.jobTitle);
+  const [companyName, setCompanyName] = useState(initialValues.companyName);
+  const [roleName, setRoleName] = useState(initialValues.jobTitle);
+  const [task, setTask] = useState(initialValues.task);
+  const [requirements, setRequirements] = useState(
+    initialValues.requirements,
+  );
+  const [preferred, setPreferred] = useState(initialValues.preferred);
   const [showBackConfirm, setShowBackConfirm] = useState(false);
   const [showHomeConfirm, setShowHomeConfirm] = useState(false);
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
@@ -115,8 +155,8 @@ export default function JobPostingReviewPage() {
     <div className="h-dvh w-dvw overflow-hidden bg-line-neutral-assistive">
       <div className="flex h-dvh w-dvw min-w-[1100px] flex-col bg-bg-white">
         <Header
-          companyName="토스"
-          jobTitle="프로덕트 디자이너"
+          companyName={companyName}
+          jobTitle={roleName}
           applicationLabel="첫 번째 지원"
           currentStep={1}
           steps={wizardSteps}
@@ -176,6 +216,8 @@ export default function JobPostingReviewPage() {
                       type="task"
                       description="이 직무에서 담당할 업무예요."
                       required={false}
+                      value={task}
+                      onChange={setTask}
                       className="!w-full"
                     />
                   </SectionCard>
@@ -184,11 +226,15 @@ export default function JobPostingReviewPage() {
                     <JDInput
                       type="qualification"
                       required={false}
+                      value={requirements}
+                      onChange={setRequirements}
                       className="!w-full"
                     />
                     <JDInput
                       type="prefer"
                       required={false}
+                      value={preferred}
+                      onChange={setPreferred}
                       className="!w-full"
                     />
                   </SectionCard>

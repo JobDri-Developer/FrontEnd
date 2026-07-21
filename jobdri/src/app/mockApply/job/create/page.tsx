@@ -94,12 +94,13 @@ export default function JobPostingCreatePage() {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
+    const analysisError = searchParams.get("analysisError");
     const toastMessage =
       searchParams.get("analysisCanceled") === "1"
         ? "공고 분석을 중단했습니다."
-        : searchParams.get("analysisError") === "1"
+        : analysisError === "1"
           ? "업로드에 실패했습니다."
-          : null;
+          : analysisError;
 
     if (!toastMessage) {
       return;
