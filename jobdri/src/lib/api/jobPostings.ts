@@ -84,13 +84,20 @@ export interface JobPostingIngestStatus {
   status: string;
   message: string;
   error: string | null;
+  failureReason: string | null;
+  workerId: string | null;
+  retryCount: number;
+  maxRetryCount: number;
+  queueLatencyMillis: number;
   createdAt: string;
+  submittedAt: string | null;
+  lastAttemptAt: string | null;
   startedAt: string | null;
   completedAt: string | null;
   result: JobPostingProcessedResult | null;
 }
 
-interface JobPostingRequestInput {
+export interface JobPostingRequestInput {
   rawText?: string;
   sourceUrl?: string;
   imageObjectKey?: string;
@@ -392,13 +399,26 @@ export async function waitForJobPostingIngest(
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const status = await fetchJobPostingIngestStatus(taskId);
 
-    if (status.result || isCompletedStatus(status.status)) {
+    if (status.result) {
       return status;
     }
 
-    if (status.error || isFailedStatus(status.status)) {
+    if (
+      status.error ||
+      status.failureReason ||
+      isFailedStatus(status.status)
+    ) {
       throw new Error(
-        status.error || status.message || "채용 공고 처리에 실패했습니다.",
+        status.failureReason ||
+          status.error ||
+          status.message ||
+          "채용 공고 처리에 실패했습니다.",
+      );
+    }
+
+    if (isCompletedStatus(status.status)) {
+      throw new Error(
+        status.message || "완료된 채용 공고 처리 결과를 확인할 수 없습니다.",
       );
     }
 
