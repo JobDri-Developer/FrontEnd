@@ -41,6 +41,11 @@ export interface AnalysisQuestion {
   improvement: string;
 }
 
+export interface KeyEvaluation {
+  title: string;
+  quote: string;
+}
+
 export interface AnalysisResult {
   mockApplyId: number;
   analysisId: number;
@@ -51,6 +56,8 @@ export interface AnalysisResult {
   impact: number;
   completeness: number;
   feedback: string;
+  keyStrengths?: KeyEvaluation[];
+  keyWeaknesses?: KeyEvaluation[];
   missingKeywords: MissingKeyword[];
   questions: AnalysisQuestion[];
 }

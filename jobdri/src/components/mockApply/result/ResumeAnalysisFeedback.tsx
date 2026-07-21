@@ -10,14 +10,10 @@ import {
   lnbHiddenScrollbarClass,
   useLnbScrollMetrics,
 } from "@/components/common/lnb/LnbScrollbar";
-import { ModalNotice } from "@/components/common/modal";
 import TabMenu from "@/components/common/tabs/TabMenu";
-import { Toast } from "@/components/common/toast";
 import Evaluation from "@/components/mockApply/result/Evaluation";
 import ScoreBar from "@/components/mockApply/result/ScoreBar";
 import ScoreCircle from "@/components/mockApply/result/ScoreCircle";
-import { useReApply } from "@/hooks/useReApply";
-import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
 import type { AnalysisResult } from "@/lib/api/result";
 
 interface ResumeAnalysisFeedbackProps {
@@ -187,11 +183,13 @@ function ScoreSummaryCard({ data }: { data: AnalysisResult }) {
   );
 }
 
-// 총평 카드 (추후 missingKeywords나 questions.analyses 바탕으로 동적 구성 가능)
 function ReviewSummaryCard({ data }: { data: AnalysisResult }) {
   const [activeTabId, setActiveTabId] = useState(reviewTabs[0].id);
   const isStrengthTab = activeTabId === "strengths";
-  const evaluations = isStrengthTab ? strengthEvaluations : weaknessEvaluations;
+
+  const evaluations = isStrengthTab
+    ? data.keyStrengths || []
+    : data.keyWeaknesses || [];
 
   return (
     <aside className="flex min-w-[360px] max-w-[480px] [flex:1_0_0] flex-col items-start justify-between self-stretch rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7">
@@ -214,7 +212,7 @@ function ReviewSummaryCard({ data }: { data: AnalysisResult }) {
           <Evaluation
             key={`${activeTabId}-${index}`}
             rating={isStrengthTab ? "good" : "bad"}
-            content={evaluation.content}
+            content={evaluation.title}
             quote={evaluation.quote}
           />
         ))}
