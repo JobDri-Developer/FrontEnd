@@ -237,20 +237,18 @@ export default function ResumeAnalysisFeedback({
       <main
         ref={scrollAreaRef}
         onScroll={updateScrollbarMetrics}
-        className={`flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden px-2 pb-0 ${lnbHiddenScrollbarClass}`}
+        className={`flex min-h-0 flex-1  bg-fill-quaternary-assistive items-start justify-center self-stretch overflow-y-auto mx-2 rounded-card-l overflow-x-hidden px-2 pb-0 ${lnbHiddenScrollbarClass}`}
       >
-        <div className="flex w-full items-start justify-center self-stretch px-2 pb-0">
-          <div className="flex flex-1 flex-col items-center p-0">
-            {children}
+        <div className="flex flex-1 flex-col items-center p-0">
+          {children}
 
-            <section className="flex items-center justify-center gap-3 self-stretch rounded-card-l bg-fill-quaternary-assistive px-16 pt-8 pb-[120px]">
-              <div className="mx-auto flex w-full max-w-[1320px] items-center gap-3 self-stretch">
-                {/* 🌟 데이터 내려주기 */}
-                <ScoreSummaryCard data={analysisData} />
-                <ReviewSummaryCard data={analysisData} />
-              </div>
-            </section>
-          </div>
+          <section className="flex items-center justify-center gap-3 self-stretch px-16 pt-8 pb-[120px]">
+            <div className="mx-auto flex w-full max-w-[1320px] items-center gap-3 self-stretch">
+              {/* 🌟 데이터 내려주기 */}
+              <ScoreSummaryCard data={analysisData} />
+              <ReviewSummaryCard data={analysisData} />
+            </div>
+          </section>
         </div>
       </main>
 

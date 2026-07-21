@@ -101,7 +101,6 @@ function QuestionViewer({
         </h2>
       </div>
 
-      {/* 🌟 렌더링 로직 적용 (whitespace-pre-line으로 줄바꿈 유지) */}
       <div className="text-sub14-reg text-text-neutral-description leading-relaxed whitespace-pre-line">
         {renderHighlightedText()}
       </div>
@@ -173,16 +172,15 @@ export default function ResumeAnalysisDetail({
   };
 
   return (
-    <div className="relative flex min-h-0 flex-1 items-stretch bg-fill-quaternary-assistive self-stretch overflow-visible rounded-card-l">
+    <div className="relative flex min-h-0 flex-1 items-stretch bg-fill-quaternary-assistive self-stretch overflow-visible rounded-card-l mx-2">
       <main
-        className={`flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden px-16 pt-6 pb-0 ${scrollbarClassL} overflow-y-auto [scrollbar-gutter:stable_both-edges] mx-1`}
+        className={`flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden px-16  pb-0 ${scrollbarClassL} overflow-y-auto [scrollbar-gutter:stable_both-edges]`}
       >
         <div className="flex w-full items-start justify-center self-stretch px-2 pb-0">
           <div className="flex flex-1 flex-col items-center p-0">
             {children}
             <section className="flex items-start justify-center gap-3 self-stretch px-16 pt-8">
               <div className="flex w-full max-w-[1320px] mx-auto gap-6 items-start">
-                {/* 🌟 1. 좌측 QuestionList 컨테이너에 sticky와 top-8 추가 */}
                 <div className="w-62 shrink-0 sticky top-8">
                   <QuestionList
                     questions={questions}
