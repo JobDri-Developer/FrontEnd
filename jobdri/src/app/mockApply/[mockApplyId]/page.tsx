@@ -16,13 +16,15 @@ import {
 } from "@/lib/api/questions";
 import { ModalCard } from "@/components/common/modal/ModalCard";
 import { Toast } from "@/components/common/toast";
-import { fetchCreditBalance } from "@/lib/api/credit";
-import { requestAnalysis } from "@/lib/api/result";
+import {
+  CreditInsufficientError,
+  fetchSequence,
+  requestAnalysis,
+} from "@/lib/api/result";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 import { fetchMyJobPosting } from "@/lib/api/jobPostings";
 import type { JDData } from "@/components/mockApply/Question/SidePanel";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
-import { fetchSequence } from "@/lib/api/result";
 
 const ModalOverlay = ({ children }: { children: React.ReactNode }) => (
   <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
@@ -69,6 +71,7 @@ export default function MockApplyPage({
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // 데이터 포맷팅 함수
   const getSubmitPayload = (questionsData: QuestionItem[]) => {
     return questionsData.map((q) => ({
@@ -277,6 +280,13 @@ export default function MockApplyPage({
   };
 
   const handleConfirm = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setIsConfirmModalOpen(false);
+
     try {
       const savedApply = await saveApply(
         Number(mockApplyId),
@@ -297,8 +307,26 @@ export default function MockApplyPage({
         `/mockApply/${mockApplyId}/result/resume-analysis-loading${loadingQuery}`,
       );
     } catch (error) {
+      setIsSubmitting(false);
+
+      if (error instanceof CreditInsufficientError) {
+        setIsCreditShortModalOpen(true);
+        return;
+      }
+
       console.error("제출 실패:", error);
-      alert("채점 요청 중 오류가 발생했습니다.");
+      setToast({
+        open: true,
+        message:
+          error instanceof Error
+            ? error.message
+            : "채점 요청 중 오류가 발생했습니다.",
+        variant: "normal",
+      });
+      window.setTimeout(
+        () => setToast({ open: false, message: "", variant: "normal" }),
+        3000,
+      );
     }
   };
 
@@ -360,29 +388,6 @@ export default function MockApplyPage({
     }
   };
 
-  const handleTrySubmit = async () => {
-    try {
-      const currentCredit = await fetchCreditBalance();
-      setIsConfirmModalOpen(false);
-
-      if (currentCredit > 0) {
-        await handleConfirm();
-      } else {
-        setIsCreditShortModalOpen(true);
-      }
-    } catch (error) {
-      console.error("크레딧 조회/저장 실패:", error);
-      setToast({
-        open: true,
-        message: "오류가 발생했어요. 잠시 후 다시 시도해주세요.",
-      });
-      setTimeout(
-        () => setToast({ open: false, message: "", variant: "normal" }),
-        3000,
-      );
-    }
-  };
-
   // 현재 선택된 문항 폼 데이터
   const currentQ = questions.find((q) => q.id === selectedId);
   const mappedQuestionForForm = currentQ
@@ -405,7 +410,7 @@ export default function MockApplyPage({
       lastSavedAt={lastSavedTime}
       onBackClick={() => setIsLeaveModalOpen(true)}
       onNextClick={() => setIsConfirmModalOpen(true)}
-      isNextDisabled={isSubmitDisabled}
+      isNextDisabled={isSubmitDisabled || isSubmitting}
     >
       <div className="flex h-full flex-col overflow-hidden bg-bg-default">
         <main
@@ -513,7 +518,7 @@ export default function MockApplyPage({
               secondaryBtn="닫기"
               primaryBtn="지원하기"
               onSecondaryClick={() => setIsConfirmModalOpen(false)}
-              onPrimaryClick={handleTrySubmit}
+              onPrimaryClick={handleConfirm}
             />
           </ModalOverlay>
         )}
@@ -526,7 +531,7 @@ export default function MockApplyPage({
               secondaryBtn="닫기"
               primaryBtn="충전하기"
               onSecondaryClick={() => setIsCreditShortModalOpen(false)}
-              onPrimaryClick={() => setIsCreditShortModalOpen(false)}
+              onPrimaryClick={() => router.push("/credit")}
             />
           </ModalOverlay>
         )}
