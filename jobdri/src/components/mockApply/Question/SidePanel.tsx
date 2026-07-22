@@ -25,36 +25,17 @@ interface JDSidePanelProps {
   data?: JDData;
 }
 
-const defaultJdData: JDData = {
-  companyName: "토스",
-  title: "공고 제목 더미텍스트 공고 제목 더미텍스트공고...",
-  sections: [
-    {
-      subtitle: "직무",
-      content: "프로덕트 디자인 및 UI/UX 인터랙션 설계",
-    },
-    {
-      subtitle: "자격요건",
-      content: [
-        "3년 이상의 프로덕트 디자인 경력",
-        "모바일 앱 디자인 포트폴리오 보유",
-      ],
-    },
-    {
-      subtitle: "우대사항",
-      content: [
-        "3년 이상의 프로덕트 디자인 경력",
-        "모바일 앱 디자인 포트폴리오 보유",
-      ],
-    },
-  ],
+const emptyJdData: JDData = {
+  companyName: "",
+  title: "공고 정보를 불러오는 중입니다.",
+  sections: [],
 };
 
 export default function JDSidePanel({
   isOpen,
   onClose,
   onOpen,
-  data = defaultJdData,
+  data = emptyJdData,
 }: JDSidePanelProps) {
   return (
     <div

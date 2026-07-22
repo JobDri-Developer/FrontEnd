@@ -34,10 +34,14 @@ export function saveJobPostingAnalysis(result: JobPostingProcessedResult) {
   jobPostingAnalysis = result;
 }
 
-export function clearJobPostingDraft() {
+export function clearJobPostingInput() {
   jobPostingDraft = {
     files: [],
     value: "",
   };
+}
+
+export function clearJobPostingDraft() {
+  clearJobPostingInput();
   jobPostingAnalysis = null;
 }

@@ -204,12 +204,10 @@ export default function Home() {
 
                 switch (targetDraft.currentStep) {
                   case 1:
-                    // 1단계 (공고 확인/질문 선택)에서 멈췄을 때
-                    router.push(`/mockApply/question-select/${id}`);
-                    break;
                   case 2:
-                    // 2단계 (자소서 작성)에서 멈췄을 때
-                    router.push(`/mockApply/${id}`);
+                    router.push(
+                      `/mockApply/${targetDraft.mockApplyId}?jobPostingId=${targetDraft.jobPostingId}`,
+                    );
                     break;
                   case 3:
                     // 3단계 (채점 중)일 때 (보통 대기 화면이나 결과 화면으로)

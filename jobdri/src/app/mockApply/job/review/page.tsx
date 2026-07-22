@@ -14,7 +14,7 @@ import { JDInput } from "@/components/common/input";
 import { ModalNotice } from "@/components/common/modal";
 import Avatar from "@/components/mockApply/home/Avatar";
 import {
-  clearJobPostingDraft,
+  clearJobPostingInput,
   getJobPostingAnalysis,
 } from "../jobPostingDraftStore";
 import {
@@ -197,8 +197,10 @@ export default function JobPostingReviewPage() {
         savedJobPosting.jobPostingId,
       );
 
-      clearJobPostingDraft();
-      router.push(`/mockApply/${createdApply.mockApplyId}`);
+      clearJobPostingInput();
+      router.push(
+        `/mockApply/${createdApply.mockApplyId}?jobPostingId=${savedJobPosting.jobPostingId}`,
+      );
     } catch (error) {
       setSaveErrorMessage(
         error instanceof Error

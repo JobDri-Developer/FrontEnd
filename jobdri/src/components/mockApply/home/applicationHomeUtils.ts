@@ -231,38 +231,21 @@ function normalizeResumePath(
   return `/mockApply/${mockApplyId}/${routeSegment}${routeMatch[2] ?? ""}`;
 }
 
-function withJobPostingId(path: string, jobPostingId: number) {
-  const separator = path.includes("?") ? "&" : "?";
-
-  return path.includes("jobPostingId=")
-    ? path
-    : `${path}${separator}jobPostingId=${jobPostingId}`;
-}
-
 export function getResumePath({
   mockApplyId,
   jobPostingId,
   resumePath,
-  status,
 }: Pick<
   ApplicationCardData,
   "mockApplyId" | "jobPostingId" | "resumePath" | "status"
 >) {
   const normalizedResumePath = normalizeResumePath(resumePath, mockApplyId);
 
-  if (normalizedResumePath) {
-    if (normalizedResumePath.includes("/write")) {
-      return withJobPostingId(normalizedResumePath, jobPostingId);
-    }
-
+  if (normalizedResumePath.includes("/result")) {
     return normalizedResumePath;
   }
 
-  if (status === "ANSWER_WRITE") {
-    return `/mockApply/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
-  }
-
-  return `/mockApply/${mockApplyId}/questions`;
+  return `/mockApply/${mockApplyId}?jobPostingId=${jobPostingId}`;
 }
 
 export function getResultPath({
@@ -275,7 +258,7 @@ export function getRetryPath({
   mockApplyId,
   jobPostingId,
 }: Pick<ApplicationCardData, "mockApplyId" | "jobPostingId">) {
-  return `/mockApply/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
+  return `/mockApply/${mockApplyId}?jobPostingId=${jobPostingId}`;
 }
 
 export function saveJdReviewSessionFromJobPosting(
