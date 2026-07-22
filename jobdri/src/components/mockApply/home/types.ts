@@ -19,6 +19,8 @@ export interface ApplicationCardData {
 // types.ts (또는 해당 파일 상단)
 export interface DraftData {
   id: string;
+  jobPostingId: number;
+  mockApplyId?: number;
   companyName: string;
   position: string;
   currentStep: number;

@@ -317,7 +317,31 @@ export async function saveJobPosting(payload: JobPostingSavePayload) {
   );
 }
 
-export async function fetchMyJobPostings() {
+export async function updateJobPosting(
+  jobPostingId: number,
+  payload: JobPostingSavePayload,
+) {
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/api/job-postings/${jobPostingId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  return parseApiResponse<SavedJobPosting>(
+    response,
+    "채용 공고 수정에 실패했습니다.",
+  );
+}
+
+export async function fetchMyJobPostings({
+  redirectOnUnauthorized = true,
+}: { redirectOnUnauthorized?: boolean } = {}) {
   const response = await fetchWithTimeout(`${API_BASE_URL}/api/job-postings/me`, {
     headers: getAuthHeaders(),
     cache: "no-store",
@@ -326,6 +350,7 @@ export async function fetchMyJobPostings() {
   const result = await parseApiResponse<SavedJobPosting[]>(
     response,
     "내 지원 데이터를 불러오지 못했습니다.",
+    { redirectOnUnauthorized },
   );
 
   return result ?? [];

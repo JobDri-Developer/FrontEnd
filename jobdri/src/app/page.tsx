@@ -7,6 +7,12 @@ import { Lnb } from "@/components/common/lnb";
 import ResultDraftList from "@/components/mockApply/home/ResultDraftList";
 import ResultApplicationList from "@/components/mockApply/home/ResultApplicationList";
 import { fetchMyMockApplies } from "@/lib/api/mockApplies";
+import {
+  deleteJobPosting,
+  fetchMyJobPosting,
+  fetchMyJobPostings,
+} from "@/lib/api/jobPostings";
+import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
 import { formatDate } from "@/utils/date";
 import {
   DraftData,
@@ -57,18 +63,55 @@ export default function Home() {
   useEffect(() => {
     const loadMockApplies = async () => {
       try {
-        const data = await fetchMyMockApplies({
-          redirectOnUnauthorized: false,
-        });
+        const [data, jobPostings] = await Promise.all([
+          fetchMyMockApplies({ redirectOnUnauthorized: false }),
+          fetchMyJobPostings({ redirectOnUnauthorized: false }).catch(
+            () => [],
+          ),
+        ]);
+        const jobPostingById = new Map(
+          jobPostings.map((jobPosting) => [
+            jobPosting.jobPostingId,
+            jobPosting,
+          ]),
+        );
 
         const mappedDrafts = data.inProgress.map((item) => ({
           id: String(item.mockApplyId),
-          companyName: item.companyName,
+          jobPostingId: item.jobPostingId,
+          mockApplyId: item.mockApplyId,
+          companyName:
+            item.companyName ||
+            jobPostingById.get(item.jobPostingId)?.companyName ||
+            "회사명 미입력",
           position:
-            item.jobTitle || item.detailClassificationName || "직무 미지정",
+            item.jobTitle ||
+            item.detailClassificationName ||
+            jobPostingById.get(item.jobPostingId)
+              ?.detailClassificationName ||
+            "직무 미지정",
           currentStep: item.status === "ANSWER_WRITE" ? 2 : 1,
           updatedAt: formatDate(item.createdAt),
         }));
+        const linkedJobPostingIds = new Set(
+          [...data.inProgress, ...data.completed].map(
+            (item) => item.jobPostingId,
+          ),
+        );
+        const savedOnlyDrafts = jobPostings
+          .filter(
+            (jobPosting) =>
+              !linkedJobPostingIds.has(jobPosting.jobPostingId),
+          )
+          .map((jobPosting) => ({
+            id: `job-posting-${jobPosting.jobPostingId}`,
+            jobPostingId: jobPosting.jobPostingId,
+            companyName: jobPosting.companyName || "회사명 미입력",
+            position:
+              jobPosting.detailClassificationName || "직무 미지정",
+            currentStep: 1,
+            updatedAt: "-",
+          }));
 
         const mappedResults = data.completed.map((item) => ({
           id: item.mockApplyId,
@@ -82,7 +125,7 @@ export default function Home() {
           version: item.version || 1,
           status: "completed",
         }));
-        setDrafts(mappedDrafts);
+        setDrafts([...savedOnlyDrafts, ...mappedDrafts]);
         setResults(mappedResults);
       } catch (error) {
         console.error("데이터를 불러오는데 실패했습니다.", error);
@@ -91,6 +134,20 @@ export default function Home() {
 
     loadMockApplies();
   }, []);
+
+  const deletePosting = async (jobPostingId: number) => {
+    try {
+      await deleteJobPosting(jobPostingId);
+      setDrafts((current) =>
+        current.filter((draft) => draft.jobPostingId !== jobPostingId),
+      );
+      setResults((current) =>
+        current.filter((result) => result.jobPostingId !== jobPostingId),
+      );
+    } catch (error) {
+      console.error("채용 공고를 삭제하지 못했습니다.", error);
+    }
+  };
   return (
     <div className="flex min-h-screen w-full bg-[#F5F6F9] overflow-x-hidden ">
       <Lnb className="shrink-0" />
@@ -125,6 +182,26 @@ export default function Home() {
 
                 if (!targetDraft) return;
 
+                if (!targetDraft.mockApplyId) {
+                  void fetchMyJobPosting(targetDraft.jobPostingId)
+                    .then((saved) => {
+                      saveJobPostingAnalysis({
+                        savedToDatabase: true,
+                        message: "저장된 채용 공고를 불러왔습니다.",
+                        extracted: null,
+                        candidates: [],
+                        classification: null,
+                        generated: null,
+                        saved,
+                      });
+                      router.push("/mockApply/job/review");
+                    })
+                    .catch((error) => {
+                      console.error("채용 공고를 불러오지 못했습니다.", error);
+                    });
+                  return;
+                }
+
                 switch (targetDraft.currentStep) {
                   case 1:
                     // 1단계 (공고 확인/질문 선택)에서 멈췄을 때
@@ -142,13 +219,19 @@ export default function Home() {
                     router.push(`/mockApply/${id}`);
                 }
               }}
-              onDelete={(id) => console.log(id)}
+              onDelete={(id) => {
+                const targetDraft = drafts.find((draft) => draft.id === id);
+
+                if (targetDraft) {
+                  void deletePosting(targetDraft.jobPostingId);
+                }
+              }}
             />
 
             {/* 분석 완료 섹션 */}
             <ResultApplicationList
               applications={results}
-              onDelete={(app) => console.log(app.id, "삭제")}
+              onDelete={(app) => void deletePosting(app.jobPostingId)}
               onRetry={(app) => {
                 router.push(`/mockApply/retry/${app.jobPostingId}`);
               }}

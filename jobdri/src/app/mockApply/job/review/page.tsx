@@ -13,7 +13,16 @@ import { CtaFooter } from "@/components/common/cta";
 import { JDInput } from "@/components/common/input";
 import { ModalNotice } from "@/components/common/modal";
 import Avatar from "@/components/mockApply/home/Avatar";
-import { getJobPostingAnalysis } from "../jobPostingDraftStore";
+import {
+  clearJobPostingDraft,
+  getJobPostingAnalysis,
+} from "../jobPostingDraftStore";
+import {
+  saveJobPosting,
+  updateJobPosting,
+  type JobPostingSavePayload,
+} from "@/lib/api/jobPostings";
+import { createMockApplyFromJobPosting } from "@/lib/api/mockApplies";
 
 function firstNonEmpty(...values: Array<string | null | undefined>) {
   return values.find((value) => value?.trim())?.trim() ?? "";
@@ -108,6 +117,7 @@ export default function JobPostingReviewPage() {
         generated?.jobTitle,
         extracted?.jobTitle,
         result?.classification?.detailClassificationName,
+        saved?.detailClassificationName,
       ),
       task: firstNonEmpty(generated?.task, extracted?.task, saved?.task),
       requirements: firstNonEmpty(
@@ -120,6 +130,13 @@ export default function JobPostingReviewPage() {
         extracted?.preferredQualifications,
         saved?.preferred,
       ),
+      companySize: saved?.companySize?.trim() || "STARTUP",
+      detailClassificationId:
+        saved?.detailClassificationId ??
+        result?.classification?.detailClassificationId ??
+        result?.candidates?.[0]?.detailClassificationId ??
+        0,
+      jobPostingId: saved?.jobPostingId ?? null,
     };
   });
   const [jobPostingName, setJobPostingName] = useState(initialValues.jobTitle);
@@ -132,6 +149,8 @@ export default function JobPostingReviewPage() {
   const [preferred, setPreferred] = useState(initialValues.preferred);
   const [showBackConfirm, setShowBackConfirm] = useState(false);
   const [showHomeConfirm, setShowHomeConfirm] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveErrorMessage, setSaveErrorMessage] = useState("");
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics(true, "job-posting-review", { trackPadding: 28 });
   const companyAvatarName = useMemo(() => {
@@ -149,6 +168,45 @@ export default function JobPostingReviewPage() {
   const handleHomeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setShowHomeConfirm(true);
+  };
+  const handleNext = async () => {
+    if (!isNextEnabled || isSaving) {
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveErrorMessage("");
+
+    try {
+      if (initialValues.detailClassificationId <= 0) {
+        throw new Error("직무 분류 정보가 없어 공고를 저장할 수 없습니다.");
+      }
+
+      const payload: JobPostingSavePayload = {
+        companyName: companyName.trim(),
+        companySize: initialValues.companySize,
+        detailClassificationId: initialValues.detailClassificationId,
+        task: task.trim(),
+        requirement: requirements.trim(),
+        preferred: preferred.trim(),
+      };
+      const savedJobPosting = initialValues.jobPostingId
+        ? await updateJobPosting(initialValues.jobPostingId, payload)
+        : await saveJobPosting(payload);
+      const createdApply = await createMockApplyFromJobPosting(
+        savedJobPosting.jobPostingId,
+      );
+
+      clearJobPostingDraft();
+      router.push(`/mockApply/${createdApply.mockApplyId}`);
+    } catch (error) {
+      setSaveErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "채용 공고를 저장하지 못했습니다.",
+      );
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -260,7 +318,8 @@ export default function JobPostingReviewPage() {
           }}
           nextAction={{
             label: "다음으로",
-            disabled: !isNextEnabled,
+            disabled: !isNextEnabled || isSaving,
+            onClick: () => void handleNext(),
           }}
         />
       </div>
@@ -299,6 +358,21 @@ export default function JobPostingReviewPage() {
             primaryAction={{
               label: "취소",
               onClick: () => setShowHomeConfirm(false),
+            }}
+          />
+        </div>
+      )}
+
+      {saveErrorMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            type="noticeModal"
+            title="공고를 저장하지 못했습니다."
+            description={saveErrorMessage}
+            onClose={() => setSaveErrorMessage("")}
+            primaryAction={{
+              label: "확인",
+              onClick: () => setSaveErrorMessage(""),
             }}
           />
         </div>
