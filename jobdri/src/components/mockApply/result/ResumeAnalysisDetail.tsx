@@ -46,8 +46,6 @@ function QuestionViewer({
     const sortedAnalyses = [...analyses].sort((a, b) => a.start - b.start);
     const result = [];
     let currentIndex = 0;
-    console.log("들어온 분석 데이터:", analyses);
-
     sortedAnalyses.forEach((analysis, idx) => {
       if (analysis.start > currentIndex) {
         result.push(

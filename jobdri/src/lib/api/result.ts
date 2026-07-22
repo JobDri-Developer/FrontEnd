@@ -1,6 +1,8 @@
 import {
+  type ApiResponse,
   API_BASE_URL,
   getAuthHeaders,
+  handleUnauthorized,
   parseApiResponse as parseApiResponseBase,
 } from "@/lib/api/client";
 
@@ -8,6 +10,13 @@ export class CreditInsufficientError extends Error {
   constructor() {
     super("크레딧이 부족합니다.");
     this.name = "CreditInsufficientError";
+  }
+}
+
+export class AnalysisPendingError extends Error {
+  constructor() {
+    super("자소서 분석이 진행 중입니다.");
+    this.name = "AnalysisPendingError";
   }
 }
 
@@ -38,7 +47,6 @@ export interface AnalysisQuestion {
   questionContent: string;
   answer: string;
   analyses: QuestionAnalysis[];
-  improvement: string;
 }
 
 export interface KeyEvaluation {
@@ -56,10 +64,32 @@ export interface AnalysisResult {
   impact: number;
   completeness: number;
   feedback: string;
-  keyStrengths?: KeyEvaluation[];
-  keyWeaknesses?: KeyEvaluation[];
+  keyStrengths: KeyEvaluation[];
+  keyWeaknesses: KeyEvaluation[];
   missingKeywords: MissingKeyword[];
   questions: AnalysisQuestion[];
+}
+
+export interface RequestAnalysisResponse {
+  taskId: string;
+  status: string;
+  message: string;
+}
+
+export function normalizeAnalysisResult(result: AnalysisResult) {
+  return {
+    ...result,
+    keyStrengths: result.keyStrengths ?? [],
+    keyWeaknesses: result.keyWeaknesses ?? [],
+    missingKeywords: result.missingKeywords ?? [],
+    questions: (result.questions ?? []).map((question) => ({
+      ...question,
+      analyses: (question.analyses ?? []).map((analysis) => ({
+        ...analysis,
+        status: analysis.status.trim().toLowerCase(),
+      })),
+    })),
+  } satisfies AnalysisResult;
 }
 
 async function parseApiResponse<T>(
@@ -103,27 +133,56 @@ export async function fetchAnalysisByJobPosting(
     signal,
   });
 
-  return parseApiResponse<AnalysisResult>(
-    response,
-    "자소서 분석에 실패했습니다.",
+  return normalizeAnalysisResult(
+    await parseApiResponse<AnalysisResult>(
+      response,
+      "자소서 분석에 실패했습니다.",
+    ),
   );
 }
 
-export async function runAnalysis(
-  mockApplyId: number,
-): Promise<AnalysisResult> {
+export async function requestAnalysis(mockApplyId: number) {
   const response = await fetch(
     `${API_BASE_URL}/api/mock-applies/${mockApplyId}/analysis`,
     {
       method: "POST",
-      headers: getAuthHeaders(),
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
     },
   );
 
-  return parseApiResponse<AnalysisResult>(
+  return parseApiResponse<RequestAnalysisResponse>(
     response,
-    "자소서 분석 실행에 실패했습니다.",
+    "자소서 분석 요청에 실패했습니다.",
   );
+}
+
+async function parseAnalysisResultResponse(response: Response) {
+  if (response.status === 401) {
+    handleUnauthorized();
+  }
+
+  let data: ApiResponse<AnalysisResult> | null = null;
+
+  try {
+    data = (await response.json()) as ApiResponse<AnalysisResult>;
+  } catch {
+    throw new Error("자소서 분석 결과 응답을 확인할 수 없습니다.");
+  }
+
+  if (data.code === "ANALYSIS_4041") {
+    throw new AnalysisPendingError();
+  }
+
+  if (!response.ok || !data.isSuccess || !data.result) {
+    throw new Error(
+      data.error || data.message || "자소서 분석 결과를 불러오지 못했습니다.",
+    );
+  }
+
+  return normalizeAnalysisResult(data.result);
 }
 
 export async function fetchAnalysisResult(
@@ -135,12 +194,10 @@ export async function fetchAnalysisResult(
     {
       method: "GET",
       headers: getAuthHeaders(),
+      cache: "no-store",
       signal,
     },
   );
 
-  return parseApiResponse<AnalysisResult>(
-    response,
-    "자소서 분석 결과를 불러오는데 실패했습니다.",
-  );
+  return parseAnalysisResultResponse(response);
 }

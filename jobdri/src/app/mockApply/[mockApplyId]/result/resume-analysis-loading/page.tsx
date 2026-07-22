@@ -19,12 +19,12 @@ export default async function ResumeAnalysisLoadingPage({
   searchParams,
 }: ResumeAnalysisLoadingPageProps) {
   const { sequence } = await searchParams;
+  const parsedSequence = parsePositiveNumber(sequence);
 
   return (
     <ResumeAnalysisLoadingPageClient
-      applicationLabel={formatApplicationSequenceLabel(
-        parsePositiveNumber(sequence),
-      )}
+      initialSequence={parsedSequence}
+      applicationLabel={formatApplicationSequenceLabel(parsedSequence)}
     />
   );
 }

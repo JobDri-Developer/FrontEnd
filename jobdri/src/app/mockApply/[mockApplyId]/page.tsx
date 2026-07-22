@@ -17,7 +17,7 @@ import {
 import { ModalCard } from "@/components/common/modal/ModalCard";
 import { Toast } from "@/components/common/toast";
 import { fetchCreditBalance } from "@/lib/api/credit";
-import { requestAnalysis } from "@/lib/api/analysis";
+import { requestAnalysis } from "@/lib/api/result";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 import { fetchMyJobPosting } from "@/lib/api/jobPostings";
 import type { JDData } from "@/components/mockApply/Question/SidePanel";
@@ -278,12 +278,23 @@ export default function MockApplyPage({
 
   const handleConfirm = async () => {
     try {
-      await saveApply(Number(mockApplyId), getSubmitPayload(questions));
-      const response = await requestAnalysis(Number(mockApplyId));
-      const taskId = response.taskId;
+      const savedApply = await saveApply(
+        Number(mockApplyId),
+        getSubmitPayload(questions),
+      );
+      await requestAnalysis(Number(mockApplyId));
+      const loadingSearchParams = new URLSearchParams();
+
+      if (savedApply.sequence > 0) {
+        loadingSearchParams.set("sequence", String(savedApply.sequence));
+      }
+
+      const loadingQuery = loadingSearchParams.size
+        ? `?${loadingSearchParams.toString()}`
+        : "";
 
       router.push(
-        `/mockApply/${mockApplyId}/result/resume-analysis-loading?taskId=${taskId}`,
+        `/mockApply/${mockApplyId}/result/resume-analysis-loading${loadingQuery}`,
       );
     } catch (error) {
       console.error("제출 실패:", error);

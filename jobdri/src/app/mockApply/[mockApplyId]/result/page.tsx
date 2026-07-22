@@ -11,7 +11,6 @@ import { Toast } from "@/components/common/toast";
 import { useReApply } from "@/hooks/useReApply";
 import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
 import { useAnalysisResult } from "@/hooks/useAnalysisResult";
-import { AnalysisResultResponse } from "@/lib/api/analysis";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 
 interface ResultPageProps {

@@ -200,7 +200,7 @@ export default function MockApplicationJdReviewPage() {
 
   const openBackConfirm = () => setShowBackConfirm(true);
   const closeBackConfirm = () => setShowBackConfirm(false);
-  const goToJdInput = () => router.replace(`/mockApply/actual/${id}/jd-input`);
+  const goToJdInput = () => router.replace(`/mockApply/${id}/jd-input`);
   const closeSaveError = () => setSaveErrorMessage("");
 
   const handleConfirm = async () => {
@@ -250,7 +250,7 @@ export default function MockApplicationJdReviewPage() {
     setIsSaving(true);
 
     try {
-      const createNextApplyId = async () => {
+      const createNextApply = async () => {
         const savedJobPosting = await createSavedJobPosting();
         const createdApply = await createApplyFromJobPosting({
           jobPostingId: savedJobPosting.jobPostingId,
@@ -275,16 +275,21 @@ export default function MockApplicationJdReviewPage() {
           savedJobPosting,
         });
 
-        return nextApplyId;
+        return {
+          jobPostingId: savedJobPosting.jobPostingId,
+          mockApplyId: nextApplyId,
+        };
       };
 
-      const [nextApplyId] = await Promise.all([
-        createNextApplyId(),
+      const [nextApply] = await Promise.all([
+        createNextApply(),
         delay(loadingDurationMs),
       ]);
 
       shouldKeepLoading = true;
-      router.push(`/mockApply/actual/${nextApplyId}/questions`);
+      router.push(
+        `/mockApply/${nextApply.mockApplyId}?jobPostingId=${nextApply.jobPostingId}`,
+      );
     } catch (error) {
       setSaveErrorMessage(
         error instanceof Error

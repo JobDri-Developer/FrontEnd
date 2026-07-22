@@ -6,7 +6,10 @@ import { BusinessFooter } from "@/components/common/footer";
 import { Lnb } from "@/components/common/lnb";
 import ResultDraftList from "@/components/mockApply/home/ResultDraftList";
 import ResultApplicationList from "@/components/mockApply/home/ResultApplicationList";
-import { fetchMyMockApplies } from "@/lib/api/mockApplies";
+import {
+  fetchMyMockApplies,
+  saveSelectedApplyType,
+} from "@/lib/api/mockApplies";
 import {
   deleteJobPosting,
   fetchMyJobPosting,
@@ -18,6 +21,7 @@ import {
   DraftData,
   ApplicationCardData,
 } from "@/components/mockApply/home/types";
+import { useReApply } from "@/hooks/useReApply";
 
 // const DUMMY_DRAFTS = [
 //   {
@@ -57,6 +61,7 @@ import {
 
 export default function Home() {
   const router = useRouter();
+  const { reApply } = useReApply();
   const [drafts, setDrafts] = useState<DraftData[]>([]);
   const [results, setResults] = useState<ApplicationCardData[]>([]);
 
@@ -167,7 +172,10 @@ export default function Home() {
               styleType="primary"
               size="large"
               iconType="SPARKLE"
-              onClick={() => router.push("/mockApply/job/create")}
+              onClick={() => {
+                saveSelectedApplyType("MOCK");
+                router.push("/mockApply/job/create");
+              }}
             />
           </div>
 
@@ -210,8 +218,9 @@ export default function Home() {
                     );
                     break;
                   case 3:
-                    // 3단계 (채점 중)일 때 (보통 대기 화면이나 결과 화면으로)
-                    router.push(`/mockApply/grading/${id}`);
+                    router.push(
+                      `/mockApply/${targetDraft.mockApplyId}/result/resume-analysis-loading`,
+                    );
                     break;
                   default:
                     router.push(`/mockApply/${id}`);
@@ -230,9 +239,7 @@ export default function Home() {
             <ResultApplicationList
               applications={results}
               onDelete={(app) => void deletePosting(app.jobPostingId)}
-              onRetry={(app) => {
-                router.push(`/mockApply/retry/${app.jobPostingId}`);
-              }}
+              onRetry={(app) => void reApply(app.mockApplyId)}
               onResume={(app) => {
                 // 예시: 결과 상세 페이지로 이동!
                 router.push(`/mockApply/${app.mockApplyId}/result`);

@@ -171,29 +171,3 @@ export async function createCustomQuestionCandidate(
 
   return result!.questionId!;
 }
-
-export interface RequestAnalysisResponse {
-  taskId: string;
-  status: string;
-  message: string;
-}
-
-// 2. any 대신 방금 만든 타입 적용!
-export async function requestAnalysis(mockApplyId: number) {
-  const response = await fetch(
-    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/analysis`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeaders(),
-      },
-    },
-  );
-
-  // 제네릭에 any 대신 RequestAnalysisResponse를 넣어줍니다.
-  return await parseApiResponse<RequestAnalysisResponse>(
-    response,
-    "자소서 분석 요청에 실패했습니다.",
-  );
-}

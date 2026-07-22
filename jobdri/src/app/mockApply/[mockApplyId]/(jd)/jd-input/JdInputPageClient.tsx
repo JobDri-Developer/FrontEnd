@@ -144,7 +144,7 @@ const JdInputPageClient = forwardRef<
 >(function JdInputPageClient({ selectedMethod, onMethodChange }, ref) {
   const { mockApplyId: id } = useParams<{ mockApplyId: string }>();
   const router = useRouter();
-  const manualJdReviewPath = `/mockApply/actual/${id}/jd-review?mode=manual`;
+  const manualJdReviewPath = `/mockApply/${id}/jd-review?mode=manual`;
   const activeRequestIdRef = useRef(0);
 
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
@@ -312,7 +312,7 @@ const JdInputPageClient = forwardRef<
       window.sessionStorage.removeItem(getJdReviewSavedStorageKey(id));
     }
 
-    router.push(`/mockApply/actual/${id}/jd-review`);
+    router.push(`/mockApply/${id}/jd-review`);
   };
 
   const processJobPosting = async ({

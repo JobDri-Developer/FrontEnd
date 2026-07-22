@@ -39,7 +39,7 @@ export const navItems: LnbNavItem[] = [
     key: "apply",
     label: "모의 서류 지원",
     iconType: "APPLY",
-    href: "/mockApply",
+    href: "/",
   },
   {
     key: "experience",

@@ -22,7 +22,10 @@ import {
   updateJobPosting,
   type JobPostingSavePayload,
 } from "@/lib/api/jobPostings";
-import { createMockApplyFromJobPosting } from "@/lib/api/mockApplies";
+import {
+  createApplyFromJobPosting,
+  getSelectedApplyType,
+} from "@/lib/api/mockApplies";
 
 function firstNonEmpty(...values: Array<string | null | undefined>) {
   return values.find((value) => value?.trim())?.trim() ?? "";
@@ -193,9 +196,10 @@ export default function JobPostingReviewPage() {
       const savedJobPosting = initialValues.jobPostingId
         ? await updateJobPosting(initialValues.jobPostingId, payload)
         : await saveJobPosting(payload);
-      const createdApply = await createMockApplyFromJobPosting(
-        savedJobPosting.jobPostingId,
-      );
+      const createdApply = await createApplyFromJobPosting({
+        jobPostingId: savedJobPosting.jobPostingId,
+        applyType: getSelectedApplyType(),
+      });
 
       clearJobPostingInput();
       router.push(
