@@ -261,6 +261,7 @@ const JdInputPageClient = forwardRef<
         saved?.companyName,
       ),
       jobTitle: firstNonEmpty(
+        saved?.jobTitle,
         generated?.jobTitle,
         extracted?.jobTitle,
         classification?.detailClassificationName,
@@ -300,6 +301,9 @@ const JdInputPageClient = forwardRef<
       JSON.stringify({
         companySize: saved?.companySize ?? "STARTUP",
         detailClassificationId,
+        profileColor: saved?.profileColor ?? "DEFAULT",
+        postingName: firstNonEmpty(saved?.postingName, jobPosting.jobTitle),
+        jobTitle: jobPosting.jobTitle,
       }),
     );
 

@@ -6,6 +6,7 @@ import Avatar from "../home/Avatar";
 import Icon from "@/components/common/icons/Icon";
 import Divider from "@/components/common/Divider";
 import { scrollbarClassS } from "@/components/common/scrollbar/scrollbarStyles";
+import type { JobPostingProfileColor } from "@/lib/api/jobPostings";
 
 export interface JDSectionItem {
   subtitle: string;
@@ -14,6 +15,7 @@ export interface JDSectionItem {
 
 export interface JDData {
   companyName: string;
+  profileColor?: JobPostingProfileColor;
   title: string;
   sections: JDSectionItem[];
 }
@@ -70,7 +72,11 @@ export default function JDSidePanel({
           <div className="flex-1 flex flex-col px-5 py-4 overflow-y-auto w-full">
             {/* 헤더 (기업 아바타 + 타이틀) */}
             <div className="w-full flex flex-col items-start gap-2 pb-3 px-1">
-              <Avatar type="company" name={data.companyName} />
+              <Avatar
+                type="company"
+                name={data.companyName}
+                color={data.profileColor}
+              />
               <h2 className="text-b16-semibold text-text-neutral-title leading-snug break-keep">
                 {data.title}
               </h2>

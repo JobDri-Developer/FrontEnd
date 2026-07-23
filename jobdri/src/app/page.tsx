@@ -81,23 +81,28 @@ export default function Home() {
           ]),
         );
 
-        const mappedDrafts = data.inProgress.map((item) => ({
-          id: String(item.mockApplyId),
-          jobPostingId: item.jobPostingId,
-          mockApplyId: item.mockApplyId,
-          companyName:
-            item.companyName ||
-            jobPostingById.get(item.jobPostingId)?.companyName ||
-            "회사명 미입력",
-          position:
-            item.jobTitle ||
-            item.detailClassificationName ||
-            jobPostingById.get(item.jobPostingId)
-              ?.detailClassificationName ||
-            "직무 미지정",
-          currentStep: item.status === "ANSWER_WRITE" ? 2 : 1,
-          updatedAt: formatDate(item.createdAt),
-        }));
+        const mappedDrafts = data.inProgress.map((item) => {
+          const jobPosting = jobPostingById.get(item.jobPostingId);
+
+          return {
+            id: String(item.mockApplyId),
+            jobPostingId: item.jobPostingId,
+            mockApplyId: item.mockApplyId,
+            companyName:
+              item.companyName ||
+              jobPosting?.companyName ||
+              "회사명 미입력",
+            profileColor: jobPosting?.profileColor ?? "DEFAULT",
+            position:
+              item.jobTitle ||
+              jobPosting?.jobTitle ||
+              item.detailClassificationName ||
+              jobPosting?.detailClassificationName ||
+              "직무 미지정",
+            currentStep: item.status === "ANSWER_WRITE" ? 2 : 1,
+            updatedAt: formatDate(item.createdAt),
+          };
+        });
         const linkedJobPostingIds = new Set(
           [...data.inProgress, ...data.completed].map(
             (item) => item.jobPostingId,
@@ -112,24 +117,39 @@ export default function Home() {
             id: `job-posting-${jobPosting.jobPostingId}`,
             jobPostingId: jobPosting.jobPostingId,
             companyName: jobPosting.companyName || "회사명 미입력",
+            profileColor: jobPosting.profileColor,
             position:
-              jobPosting.detailClassificationName || "직무 미지정",
+              jobPosting.jobTitle ||
+              jobPosting.detailClassificationName ||
+              "직무 미지정",
             currentStep: 1,
             updatedAt: "-",
           }));
 
-        const mappedResults = data.completed.map((item) => ({
-          id: item.mockApplyId,
-          jobPostingId: item.jobPostingId,
-          mockApplyId: item.mockApplyId,
-          company: item.companyName,
-          position:
-            item.jobTitle || item.detailClassificationName || "직무 미지정",
-          createdAt: formatDate(item.createdAt),
-          score: item.score || 0,
-          version: item.version || 1,
-          status: "completed",
-        }));
+        const mappedResults = data.completed.map((item) => {
+          const jobPosting = jobPostingById.get(item.jobPostingId);
+
+          return {
+            id: item.mockApplyId,
+            jobPostingId: item.jobPostingId,
+            mockApplyId: item.mockApplyId,
+            company:
+              item.companyName ||
+              jobPosting?.companyName ||
+              "회사명 미입력",
+            profileColor: jobPosting?.profileColor ?? "DEFAULT",
+            position:
+              item.jobTitle ||
+              jobPosting?.jobTitle ||
+              item.detailClassificationName ||
+              jobPosting?.detailClassificationName ||
+              "직무 미지정",
+            createdAt: formatDate(item.createdAt),
+            score: item.score || 0,
+            version: item.version || 1,
+            status: "completed",
+          };
+        });
         setDrafts([...savedOnlyDrafts, ...mappedDrafts]);
         setResults(mappedResults);
       } catch (error) {
@@ -241,8 +261,9 @@ export default function Home() {
               onDelete={(app) => void deletePosting(app.jobPostingId)}
               onRetry={(app) => void reApply(app.mockApplyId)}
               onResume={(app) => {
-                // 예시: 결과 상세 페이지로 이동!
-                router.push(`/mockApply/${app.mockApplyId}/result`);
+                router.push(
+                  `/mockApply/${app.mockApplyId}/result?jobPostingId=${app.jobPostingId}`,
+                );
               }}
             />
           </div>

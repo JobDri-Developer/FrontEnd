@@ -3,6 +3,7 @@ import {
   getAuthHeaders,
   parseApiResponse,
 } from "@/lib/api/client";
+import type { JobPostingProfileColor } from "@/lib/api/jobPostings";
 
 export type JobPostingApplyType = "MOCK" | "ACTUAL";
 export type MockApplyProgressStatus =
@@ -39,6 +40,8 @@ export interface MockApplyHomeItem {
   jobPostingId: number;
   status: MockApplyProgressStatus | string;
   companyName: string;
+  profileColor?: JobPostingProfileColor | null;
+  postingName?: string | null;
   detailClassificationName?: string | null;
   jobTitle?: string | null;
   createdAt: string;

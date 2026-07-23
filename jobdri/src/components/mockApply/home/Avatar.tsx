@@ -15,11 +15,12 @@ export type AvatarColor =
   | "lightblue"
   | "blue"
   | "pink";
+export type AvatarColorValue = AvatarColor | Uppercase<AvatarColor>;
 
 interface AvatarProps {
   name: string;
   type?: AvatarType;
-  color?: AvatarColor;
+  color?: AvatarColorValue;
   size?: AvatarSize;
   className?: string;
   isEditable?: boolean;
@@ -44,6 +45,26 @@ export const sizeStyles: Record<AvatarSize, string> = {
   xsmall: "w-6 h-6 text-[12px] rounded-chip-s",
 };
 
+const avatarColors: AvatarColor[] = [
+  "default",
+  "red",
+  "orange",
+  "green",
+  "lightblue",
+  "blue",
+  "pink",
+];
+
+export function normalizeAvatarColor(
+  color?: AvatarColorValue | null,
+): AvatarColor {
+  const normalizedColor = color?.toLowerCase() as AvatarColor | undefined;
+
+  return normalizedColor && avatarColors.includes(normalizedColor)
+    ? normalizedColor
+    : "default";
+}
+
 export default function Avatar({
   name,
   type = "company",
@@ -54,9 +75,9 @@ export default function Avatar({
   onChange,
 }: AvatarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentColor, setCurrentColor] = useState<AvatarColor>(color);
   const containerRef = useRef<HTMLDivElement>(null);
   const firstLetter = name.trim().charAt(0).toUpperCase();
+  const currentColor = normalizeAvatarColor(color);
 
   // 바깥 영역 클릭 시 말풍선 닫기
   useEffect(() => {
@@ -119,8 +140,7 @@ export default function Avatar({
           name={name}
           selectedColor={currentColor}
           onColorSelect={(newColor) => {
-            setCurrentColor(newColor);
-            if (onChange) onChange(newColor);
+            onChange?.(newColor);
             setIsOpen(false);
           }}
         />

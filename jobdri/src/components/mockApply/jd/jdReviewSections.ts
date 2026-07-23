@@ -1,3 +1,5 @@
+import type { JobPostingProfileColor } from "@/lib/api/jobPostings";
+
 export interface JdReviewSection {
   id: string;
   label: string;
@@ -15,6 +17,9 @@ export interface JdReviewJobPostingData {
 export interface JdReviewMetadata {
   companySize?: string | null;
   detailClassificationId?: number | null;
+  profileColor?: JobPostingProfileColor | null;
+  postingName?: string | null;
+  jobTitle?: string | null;
 }
 
 export const JD_REVIEW_STORAGE_KEY_PREFIX = "jobdri.jdReviewSections";

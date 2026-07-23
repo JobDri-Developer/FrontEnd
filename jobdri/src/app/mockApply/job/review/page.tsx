@@ -12,7 +12,9 @@ import {
 import { CtaFooter } from "@/components/common/cta";
 import { JDInput } from "@/components/common/input";
 import { ModalNotice } from "@/components/common/modal";
-import Avatar from "@/components/mockApply/home/Avatar";
+import Avatar, {
+  type AvatarColor,
+} from "@/components/mockApply/home/Avatar";
 import {
   clearJobPostingInput,
   getJobPostingAnalysis,
@@ -21,6 +23,7 @@ import {
   saveJobPosting,
   updateJobPosting,
   type JobPostingSavePayload,
+  type JobPostingProfileColor,
 } from "@/lib/api/jobPostings";
 import {
   createApplyFromJobPosting,
@@ -59,7 +62,15 @@ function SectionCard({
   );
 }
 
-function JobProfileRow({ avatarName }: { avatarName: string }) {
+function JobProfileRow({
+  avatarName,
+  profileColor,
+  onProfileColorChange,
+}: {
+  avatarName: string;
+  profileColor: JobPostingProfileColor;
+  onProfileColorChange: (color: JobPostingProfileColor) => void;
+}) {
   return (
     <div className="flex w-full items-start gap-8 px-2 py-5">
       <div className="flex w-[200px] shrink-0 flex-col items-start justify-center gap-1">
@@ -93,8 +104,14 @@ function JobProfileRow({ avatarName }: { avatarName: string }) {
         <Avatar
           name={avatarName}
           type="company"
+          color={profileColor}
           size="large"
           isEditable
+          onChange={(color: AvatarColor) =>
+            onProfileColorChange(
+              color.toUpperCase() as JobPostingProfileColor,
+            )
+          }
           className="!h-11 !w-11"
         />
       </div>
@@ -112,11 +129,20 @@ export default function JobPostingReviewPage() {
 
     return {
       companyName: firstNonEmpty(
+        saved?.companyName,
         generated?.companyName,
         extracted?.companyName,
-        saved?.companyName,
+      ),
+      postingName: firstNonEmpty(
+        saved?.postingName,
+        generated?.jobTitle,
+        extracted?.jobTitle,
+        saved?.jobTitle,
+        result?.classification?.detailClassificationName,
+        saved?.detailClassificationName,
       ),
       jobTitle: firstNonEmpty(
+        saved?.jobTitle,
         generated?.jobTitle,
         extracted?.jobTitle,
         result?.classification?.detailClassificationName,
@@ -134,6 +160,7 @@ export default function JobPostingReviewPage() {
         saved?.preferred,
       ),
       companySize: saved?.companySize?.trim() || "STARTUP",
+      profileColor: saved?.profileColor ?? "DEFAULT",
       detailClassificationId:
         saved?.detailClassificationId ??
         result?.classification?.detailClassificationId ??
@@ -142,7 +169,11 @@ export default function JobPostingReviewPage() {
       jobPostingId: saved?.jobPostingId ?? null,
     };
   });
-  const [jobPostingName, setJobPostingName] = useState(initialValues.jobTitle);
+  const [profileColor, setProfileColor] =
+    useState<JobPostingProfileColor>(initialValues.profileColor);
+  const [jobPostingName, setJobPostingName] = useState(
+    initialValues.postingName,
+  );
   const [companyName, setCompanyName] = useState(initialValues.companyName);
   const [roleName, setRoleName] = useState(initialValues.jobTitle);
   const [task, setTask] = useState(initialValues.task);
@@ -186,8 +217,11 @@ export default function JobPostingReviewPage() {
       }
 
       const payload: JobPostingSavePayload = {
+        profileColor,
+        postingName: jobPostingName.trim(),
         companyName: companyName.trim(),
         companySize: initialValues.companySize,
+        jobTitle: roleName.trim(),
         detailClassificationId: initialValues.detailClassificationId,
         task: task.trim(),
         requirement: requirements.trim(),
@@ -250,7 +284,11 @@ export default function JobPostingReviewPage() {
 
                 <div className="flex [flex:1_0_0] flex-col items-center gap-3 pt-16 pr-[72px] pl-20">
                   <SectionCard title="공고 정보 편집">
-                    <JobProfileRow avatarName={companyAvatarName} />
+                    <JobProfileRow
+                      avatarName={companyAvatarName}
+                      profileColor={profileColor}
+                      onProfileColorChange={setProfileColor}
+                    />
                     <JDInput
                       label="공고명"
                       description="이 공고의 이름이에요."

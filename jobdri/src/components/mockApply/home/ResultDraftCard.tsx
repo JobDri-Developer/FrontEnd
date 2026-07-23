@@ -60,7 +60,11 @@ export const ResultDraftCard: React.FC<ResultDraftCardProps> = ({
       {/* 1. 왼쪽 영역: 무조건 전체의 2/3 (66.6%) 고정 */}
       {/* 💡 flex-1을 빼고 shrink-0을 넣어서 크기가 줄어들지 않게 꽉 잡아줍니다. */}
       <div className="flex items-center w-2/3 gap-4 shrink-0 min-w-0">
-        <Avatar name={data.companyName} size="medium" />
+        <Avatar
+          name={data.companyName}
+          color={data.profileColor}
+          size="medium"
+        />
 
         <div className="flex flex-col gap-0.5 min-w-0">
           <div className="flex items-center gap-1 text-label14-semibold min-w-0">

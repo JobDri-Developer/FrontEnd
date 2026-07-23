@@ -74,6 +74,7 @@ function createSavePayload(
   metadata?: JdReviewMetadata,
 ): JobPostingSavePayload {
   const companyName = getSectionValue(sections, "company");
+  const jobTitle = getSectionValue(sections, "job");
   const detailClassificationId = metadata?.detailClassificationId;
 
   if (!companyName) {
@@ -86,9 +87,16 @@ function createSavePayload(
     );
   }
 
+  if (!jobTitle) {
+    throw new Error("직무명을 입력해주세요.");
+  }
+
   return {
+    profileColor: metadata?.profileColor ?? "DEFAULT",
+    postingName: metadata?.postingName?.trim() || jobTitle,
     companyName,
     companySize: metadata?.companySize?.trim() || "STARTUP",
+    jobTitle,
     detailClassificationId,
     task: getSectionValue(sections, "main-task"),
     requirement: getSectionValue(sections, "qualification"),
@@ -164,6 +172,9 @@ function saveJdReviewSessionData({
     JSON.stringify({
       companySize: savedJobPosting.companySize,
       detailClassificationId: savedJobPosting.detailClassificationId,
+      profileColor: savedJobPosting.profileColor,
+      postingName: savedJobPosting.postingName,
+      jobTitle: savedJobPosting.jobTitle,
     }),
   );
 }

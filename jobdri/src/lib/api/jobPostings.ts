@@ -41,12 +41,24 @@ export interface JobPostingGenerated {
   summary: string;
 }
 
+export type JobPostingProfileColor =
+  | "DEFAULT"
+  | "RED"
+  | "ORANGE"
+  | "GREEN"
+  | "LIGHTBLUE"
+  | "BLUE"
+  | "PINK";
+
 export interface SavedJobPosting {
   jobPostingId: number;
   userId: number;
+  profileColor: JobPostingProfileColor;
+  postingName: string;
   companyId: number;
   companyName: string;
   companySize: string;
+  jobTitle: string;
   detailClassificationId: number;
   detailClassificationName: string;
   task: string;
@@ -55,8 +67,11 @@ export interface SavedJobPosting {
 }
 
 export interface JobPostingSavePayload {
+  profileColor: JobPostingProfileColor;
+  postingName: string;
   companyName: string;
   companySize: string;
+  jobTitle: string;
   detailClassificationId: number;
   task: string;
   requirement: string;

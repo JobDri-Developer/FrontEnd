@@ -81,7 +81,8 @@ export function mapMockApplyToApplication(
     jobPostingId: item.jobPostingId,
     company: companyName || "회사명 미입력",
     hasCompanyName: companyName.length > 0,
-    position: item.detailClassificationName || item.jobTitle || "직무 미분류",
+    profileColor: item.profileColor ?? "DEFAULT",
+    position: item.jobTitle || item.detailClassificationName || "직무 미분류",
     createdAt: formatCreatedAt(item.createdAt),
     createdAtTime: getCreatedAtTime(item.createdAt),
     score,
@@ -268,6 +269,9 @@ export function saveJdReviewSessionFromJobPosting(
   const {
     companyName,
     companySize,
+    profileColor,
+    postingName,
+    jobTitle,
     detailClassificationId,
     detailClassificationName,
     task,
@@ -277,7 +281,7 @@ export function saveJdReviewSessionFromJobPosting(
   const storageApplyId = String(applyId);
   const sections = createJdReviewSectionsFromJobPosting({
     companyName,
-    jobTitle: detailClassificationName,
+    jobTitle: jobTitle || detailClassificationName,
     task,
     requirements: requirement,
     preferredQualifications: preferred,
@@ -296,6 +300,9 @@ export function saveJdReviewSessionFromJobPosting(
     JSON.stringify({
       companySize,
       detailClassificationId,
+      profileColor,
+      postingName,
+      jobTitle,
     }),
   );
 }

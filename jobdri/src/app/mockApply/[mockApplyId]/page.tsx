@@ -202,11 +202,17 @@ export default function MockApplyPage({
 
         setJdData({
           companyName: jobPosting.companyName,
-          title: jobPosting.detailClassificationName || "채용 공고",
+          profileColor: jobPosting.profileColor,
+          title:
+            jobPosting.jobTitle ||
+            jobPosting.detailClassificationName ||
+            "채용 공고",
           sections: [
             {
               subtitle: "직무",
-              content: jobPosting.detailClassificationName,
+              content:
+                jobPosting.jobTitle ||
+                jobPosting.detailClassificationName,
             },
             { subtitle: "주요 업무", content: jobPosting.task },
             { subtitle: "자격요건", content: jobPosting.requirement },
