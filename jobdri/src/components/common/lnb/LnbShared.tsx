@@ -699,6 +699,8 @@ export function LnbDefaultFooter({
         <LnbNotificationButton
           hasNotification={hasNotification}
           notificationItems={notificationItems}
+          onMarkAllRead={onMarkAllRead}
+          onReadItem={onReadItem}
         />
       </div>
     </div>

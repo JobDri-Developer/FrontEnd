@@ -298,8 +298,8 @@ export default function Lnb({
             }
             onToggleFold={handleToggleFold}
             onToggleRecentOpen={() => setIsRecentOpen((prev) => !prev)}
-            onMarkAllRead={handleMarkAllRead} // 👈 추가
-            onReadItem={handleReadItem} // 👈 추가
+            onMarkAllRead={handleMarkAllRead}
+            onReadItem={handleReadItem}
           />
         )}
       </aside>
