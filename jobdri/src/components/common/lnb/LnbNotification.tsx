@@ -110,7 +110,15 @@ function mapNotificationType(apiType?: string): "normal" | "fail" | "complete" {
   if (apiType.includes("FAILED") || apiType.includes("ERROR")) {
     return "fail";
   }
-  if (apiType.includes("SUCCEEDED") || apiType.includes("COMPLETE")) {
+
+  if (apiType === "ANALYSIS_ASYNC_SUCCEEDED" || apiType === "GENERAL") {
+    return "normal";
+  }
+
+  if (
+    apiType === "JOB_POSTING_ASYNC_SUCCEEDED" ||
+    apiType.includes("COMPLETE")
+  ) {
     return "complete";
   }
 
@@ -365,7 +373,7 @@ function LnbNotificationEmptyState() {
   );
 }
 
-function LnbNotificationListItem({
+export function LnbNotificationListItem({
   notificationItem,
   onReadItem,
 }: {
@@ -408,18 +416,16 @@ function LnbNotificationListItem({
         break;
 
       case "ANALYSIS_ASYNC_FAILED":
-        -router.push(
-          `/mockApply/${mockApplyId}/result/resume-analysis-loading`,
+        router.push(
+          `/mockApply/${mockApplyId}/result/resume-analysis-loading?error=true`,
         );
         break;
 
       default:
-        // 일반(GENERAL) 알림이거나 기타 경우
         router.push(`/mockApply/${mockApplyId}/result`);
         break;
     }
   };
-
   return (
     <article
       onClick={handleNotificationClick}
