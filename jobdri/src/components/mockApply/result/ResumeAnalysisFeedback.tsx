@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { CtaFooter } from "@/components/common/cta";
+import clsx from "clsx";
 import Divider from "@/components/common/Divider";
 import Icon from "@/components/common/icons/Icon";
 import {
@@ -158,9 +157,15 @@ function ReviewSummaryCard({ data }: { data: AnalysisResult }) {
   const evaluations = isStrengthTab
     ? data.keyStrengths
     : data.keyWeaknesses;
+  const hasSingleEvaluation = evaluations.length === 1;
 
   return (
-    <aside className="flex min-w-[360px] max-w-[480px] [flex:1_0_0] flex-col items-start justify-between self-stretch rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7">
+    <aside
+      className={clsx(
+        "flex min-w-[360px] max-w-[480px] [flex:1_0_0] flex-col items-start self-stretch rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7",
+        hasSingleEvaluation ? "justify-start gap-5" : "justify-between",
+      )}
+    >
       <div className="flex h-9 items-center gap-2 self-stretch pl-1">
         <ReviewSummaryIcon />
         <span className="flex-1 text-label14-semibold text-text-neutral-description">
@@ -190,8 +195,6 @@ function ReviewSummaryCard({ data }: { data: AnalysisResult }) {
 }
 
 export default function ResumeAnalysisFeedback({
-  mockApplyId,
-  sequence,
   analysisData,
   children,
 }: ResumeAnalysisFeedbackProps) {
