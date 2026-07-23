@@ -81,7 +81,8 @@ export function mapMockApplyToApplication(
     jobPostingId: item.jobPostingId,
     company: companyName || "회사명 미입력",
     hasCompanyName: companyName.length > 0,
-    position: item.detailClassificationName || item.jobTitle || "직무 미분류",
+    profileColor: item.profileColor ?? "DEFAULT",
+    position: item.jobTitle || item.detailClassificationName || "직무 미분류",
     createdAt: formatCreatedAt(item.createdAt),
     createdAtTime: getCreatedAtTime(item.createdAt),
     score,
@@ -231,38 +232,21 @@ function normalizeResumePath(
   return `/mockApply/${mockApplyId}/${routeSegment}${routeMatch[2] ?? ""}`;
 }
 
-function withJobPostingId(path: string, jobPostingId: number) {
-  const separator = path.includes("?") ? "&" : "?";
-
-  return path.includes("jobPostingId=")
-    ? path
-    : `${path}${separator}jobPostingId=${jobPostingId}`;
-}
-
 export function getResumePath({
   mockApplyId,
   jobPostingId,
   resumePath,
-  status,
 }: Pick<
   ApplicationCardData,
   "mockApplyId" | "jobPostingId" | "resumePath" | "status"
 >) {
   const normalizedResumePath = normalizeResumePath(resumePath, mockApplyId);
 
-  if (normalizedResumePath) {
-    if (normalizedResumePath.includes("/write")) {
-      return withJobPostingId(normalizedResumePath, jobPostingId);
-    }
-
+  if (normalizedResumePath.includes("/result")) {
     return normalizedResumePath;
   }
 
-  if (status === "ANSWER_WRITE") {
-    return `/mockApply/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
-  }
-
-  return `/mockApply/${mockApplyId}/questions`;
+  return `/mockApply/${mockApplyId}?jobPostingId=${jobPostingId}`;
 }
 
 export function getResultPath({
@@ -275,7 +259,7 @@ export function getRetryPath({
   mockApplyId,
   jobPostingId,
 }: Pick<ApplicationCardData, "mockApplyId" | "jobPostingId">) {
-  return `/mockApply/${mockApplyId}/write?jobPostingId=${jobPostingId}`;
+  return `/mockApply/${mockApplyId}?jobPostingId=${jobPostingId}`;
 }
 
 export function saveJdReviewSessionFromJobPosting(
@@ -285,6 +269,9 @@ export function saveJdReviewSessionFromJobPosting(
   const {
     companyName,
     companySize,
+    profileColor,
+    postingName,
+    jobTitle,
     detailClassificationId,
     detailClassificationName,
     task,
@@ -294,7 +281,7 @@ export function saveJdReviewSessionFromJobPosting(
   const storageApplyId = String(applyId);
   const sections = createJdReviewSectionsFromJobPosting({
     companyName,
-    jobTitle: detailClassificationName,
+    jobTitle: jobTitle || detailClassificationName,
     task,
     requirements: requirement,
     preferredQualifications: preferred,
@@ -313,6 +300,9 @@ export function saveJdReviewSessionFromJobPosting(
     JSON.stringify({
       companySize,
       detailClassificationId,
+      profileColor,
+      postingName,
+      jobTitle,
     }),
   );
 }

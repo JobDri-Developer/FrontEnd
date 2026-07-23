@@ -94,6 +94,9 @@ export function LLMInput({
   const rootRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imagePreviewsRef = useRef<LLMInputImagePreviewState[]>([]);
+  const previewCleanupTimerRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
   const imageLimitToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -149,10 +152,22 @@ export function LLMInput({
   }, [imagePreviews]);
 
   useEffect(() => {
+    if (previewCleanupTimerRef.current) {
+      clearTimeout(previewCleanupTimerRef.current);
+      previewCleanupTimerRef.current = null;
+    }
+
     return () => {
-      imagePreviewsRef.current.forEach((imagePreview) => {
-        URL.revokeObjectURL(imagePreview.url);
-      });
+      const previewUrls = imagePreviewsRef.current.map(
+        (imagePreview) => imagePreview.url,
+      );
+
+      previewCleanupTimerRef.current = setTimeout(() => {
+        previewUrls.forEach((previewUrl) => {
+          URL.revokeObjectURL(previewUrl);
+        });
+      }, 0);
+
       if (imageLimitToastTimerRef.current) {
         clearTimeout(imageLimitToastTimerRef.current);
       }

@@ -3,6 +3,7 @@ import {
   getAuthHeaders,
   parseApiResponse,
 } from "@/lib/api/client";
+import type { JobPostingProfileColor } from "@/lib/api/jobPostings";
 
 export type JobPostingApplyType = "MOCK" | "ACTUAL";
 export type MockApplyProgressStatus =
@@ -39,6 +40,8 @@ export interface MockApplyHomeItem {
   jobPostingId: number;
   status: MockApplyProgressStatus | string;
   companyName: string;
+  profileColor?: JobPostingProfileColor | null;
+  postingName?: string | null;
   detailClassificationName?: string | null;
   jobTitle?: string | null;
   createdAt: string;
@@ -102,7 +105,11 @@ export function createApplyFromJobPosting({
 
 export async function fetchMyMockApplies({
   signal,
-}: { signal?: AbortSignal } = {}) {
+  redirectOnUnauthorized = true,
+}: {
+  signal?: AbortSignal;
+  redirectOnUnauthorized?: boolean;
+} = {}) {
   const response = await fetch(`${API_BASE_URL}/api/mock-applies/me`, {
     headers: getAuthHeaders(),
     cache: "no-store",
@@ -112,6 +119,7 @@ export async function fetchMyMockApplies({
   const result = await parseApiResponse<MockApplyHomeList>(
     response,
     "내 지원 데이터를 불러오지 못했습니다.",
+    { redirectOnUnauthorized },
   );
 
   return {

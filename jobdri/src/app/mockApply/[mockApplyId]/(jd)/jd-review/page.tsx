@@ -74,6 +74,7 @@ function createSavePayload(
   metadata?: JdReviewMetadata,
 ): JobPostingSavePayload {
   const companyName = getSectionValue(sections, "company");
+  const jobTitle = getSectionValue(sections, "job");
   const detailClassificationId = metadata?.detailClassificationId;
 
   if (!companyName) {
@@ -86,9 +87,16 @@ function createSavePayload(
     );
   }
 
+  if (!jobTitle) {
+    throw new Error("직무명을 입력해주세요.");
+  }
+
   return {
+    profileColor: metadata?.profileColor ?? "DEFAULT",
+    postingName: metadata?.postingName?.trim() || jobTitle,
     companyName,
     companySize: metadata?.companySize?.trim() || "STARTUP",
+    jobTitle,
     detailClassificationId,
     task: getSectionValue(sections, "main-task"),
     requirement: getSectionValue(sections, "qualification"),
@@ -164,6 +172,9 @@ function saveJdReviewSessionData({
     JSON.stringify({
       companySize: savedJobPosting.companySize,
       detailClassificationId: savedJobPosting.detailClassificationId,
+      profileColor: savedJobPosting.profileColor,
+      postingName: savedJobPosting.postingName,
+      jobTitle: savedJobPosting.jobTitle,
     }),
   );
 }
@@ -200,7 +211,7 @@ export default function MockApplicationJdReviewPage() {
 
   const openBackConfirm = () => setShowBackConfirm(true);
   const closeBackConfirm = () => setShowBackConfirm(false);
-  const goToJdInput = () => router.replace(`/mockApply/actual/${id}/jd-input`);
+  const goToJdInput = () => router.replace(`/mockApply/${id}/jd-input`);
   const closeSaveError = () => setSaveErrorMessage("");
 
   const handleConfirm = async () => {
@@ -250,7 +261,7 @@ export default function MockApplicationJdReviewPage() {
     setIsSaving(true);
 
     try {
-      const createNextApplyId = async () => {
+      const createNextApply = async () => {
         const savedJobPosting = await createSavedJobPosting();
         const createdApply = await createApplyFromJobPosting({
           jobPostingId: savedJobPosting.jobPostingId,
@@ -275,16 +286,21 @@ export default function MockApplicationJdReviewPage() {
           savedJobPosting,
         });
 
-        return nextApplyId;
+        return {
+          jobPostingId: savedJobPosting.jobPostingId,
+          mockApplyId: nextApplyId,
+        };
       };
 
-      const [nextApplyId] = await Promise.all([
-        createNextApplyId(),
+      const [nextApply] = await Promise.all([
+        createNextApply(),
         delay(loadingDurationMs),
       ]);
 
       shouldKeepLoading = true;
-      router.push(`/mockApply/actual/${nextApplyId}/questions`);
+      router.push(
+        `/mockApply/${nextApply.mockApplyId}?jobPostingId=${nextApply.jobPostingId}`,
+      );
     } catch (error) {
       setSaveErrorMessage(
         error instanceof Error

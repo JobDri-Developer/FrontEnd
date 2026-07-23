@@ -1,24 +1,25 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ResumeAnalysisFeedback from "@/components/mockApply/result/ResumeAnalysisFeedback";
 import ResumeAnalysisDetail from "@/components/mockApply/result/ResumeAnalysisDetail";
 import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
-import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel";
 import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
 import { useReApply } from "@/hooks/useReApply";
 import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
 import { useAnalysisResult } from "@/hooks/useAnalysisResult";
-import { AnalysisResultResponse } from "@/lib/api/analysis";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
+import { fetchMyJobPosting } from "@/lib/api/jobPostings";
+import { fetchSequence } from "@/lib/api/result";
 
 interface ResultPageProps {
   params: Promise<{
     mockApplyId: string;
   }>;
   searchParams: Promise<{
+    jobPostingId?: string;
     sequence?: string;
     tab?: string;
   }>;
@@ -33,7 +34,7 @@ function parsePositiveNumber(value?: string) {
 
 export default function ResultPage({ params, searchParams }: ResultPageProps) {
   const { mockApplyId } = use(params);
-  const { sequence, tab } = use(searchParams);
+  const { jobPostingId, sequence, tab } = use(searchParams);
   const router = useRouter();
   const { reApply, isSaving } = useReApply();
   const [isRetryModalOpen, setIsRetryModalOpen] = useState(false);
@@ -41,19 +42,64 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
     open: false,
     message: "",
   });
+  const [jobPostingHeader, setJobPostingHeader] = useState({
+    companyName: "",
+    jobTitle: "",
+  });
 
+  const parsedJobPostingId = parsePositiveNumber(jobPostingId);
   const parsedSequence = parsePositiveNumber(sequence);
   const parsedMockApplyId = parsePositiveNumber(mockApplyId);
-  const applicationLabel = formatApplicationSequenceLabel(parsedSequence);
 
   const {
     data: analysisData,
     isPending,
     isError,
-  } = useAnalysisResult(parsedMockApplyId);
+  } = useAnalysisResult(
+    parsedMockApplyId,
+    parsedJobPostingId,
+    parsedSequence,
+  );
 
   const activeTabId = tab === "score-detail" ? "score-detail" : "ai-feedback";
   const headerComponent = <AnalysisHeader activeTabId={activeTabId} />;
+
+  useEffect(() => {
+    if (!parsedMockApplyId) {
+      return;
+    }
+
+    let ignore = false;
+
+    const loadJobPostingHeader = async () => {
+      try {
+        const resolvedJobPostingId =
+          parsedJobPostingId ??
+          (await fetchSequence(parsedMockApplyId)).jobPostingId;
+        const jobPosting = await fetchMyJobPosting(resolvedJobPostingId);
+
+        if (!ignore) {
+          setJobPostingHeader({
+            companyName: jobPosting.companyName,
+            jobTitle:
+              jobPosting.jobTitle ||
+              jobPosting.detailClassificationName ||
+              "",
+          });
+        }
+      } catch (error) {
+        if (!ignore) {
+          console.error("채용 공고 정보를 불러오지 못했습니다.", error);
+        }
+      }
+    };
+
+    void loadJobPostingHeader();
+
+    return () => {
+      ignore = true;
+    };
+  }, [parsedJobPostingId, parsedMockApplyId]);
 
   const closeToast = () => setToast({ open: false, message: "" });
   const showTopToast = (message: string) => {
@@ -72,7 +118,7 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
     }
     try {
       await reApply(resolvedMockApplyId);
-    } catch (error) {
+    } catch {
       setIsRetryModalOpen(false);
       showTopToast("재도전을 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
     }
@@ -83,6 +129,8 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
       <MockApplyTemplate
         mockApplyId={Number(mockApplyId)}
         currentStep={6}
+        companyName={jobPostingHeader.companyName}
+        jobTitle={jobPostingHeader.jobTitle}
         onRetryClick={() => setIsRetryModalOpen(true)}
         onSaveAndExitClick={() => router.push("/")}
       >

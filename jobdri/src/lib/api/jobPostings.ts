@@ -41,12 +41,24 @@ export interface JobPostingGenerated {
   summary: string;
 }
 
+export type JobPostingProfileColor =
+  | "DEFAULT"
+  | "RED"
+  | "ORANGE"
+  | "GREEN"
+  | "LIGHTBLUE"
+  | "BLUE"
+  | "PINK";
+
 export interface SavedJobPosting {
   jobPostingId: number;
   userId: number;
+  profileColor: JobPostingProfileColor;
+  postingName: string;
   companyId: number;
   companyName: string;
   companySize: string;
+  jobTitle: string;
   detailClassificationId: number;
   detailClassificationName: string;
   task: string;
@@ -55,8 +67,11 @@ export interface SavedJobPosting {
 }
 
 export interface JobPostingSavePayload {
+  profileColor: JobPostingProfileColor;
+  postingName: string;
   companyName: string;
   companySize: string;
+  jobTitle: string;
   detailClassificationId: number;
   task: string;
   requirement: string;
@@ -84,13 +99,20 @@ export interface JobPostingIngestStatus {
   status: string;
   message: string;
   error: string | null;
+  failureReason: string | null;
+  workerId: string | null;
+  retryCount: number;
+  maxRetryCount: number;
+  queueLatencyMillis: number;
   createdAt: string;
+  submittedAt: string | null;
+  lastAttemptAt: string | null;
   startedAt: string | null;
   completedAt: string | null;
   result: JobPostingProcessedResult | null;
 }
 
-interface JobPostingRequestInput {
+export interface JobPostingRequestInput {
   rawText?: string;
   sourceUrl?: string;
   imageObjectKey?: string;
@@ -271,7 +293,7 @@ async function uploadImageToPresignedUrl({
   }
 }
 
-export async function ingestJobPostingImage(file: File) {
+export async function uploadJobPostingImage(file: File) {
   const contentType = getImageContentType(file);
   const { objectKey, uploadUrl } =
     await createJobPostingImagePresignedUploadUrl({
@@ -284,6 +306,12 @@ export async function ingestJobPostingImage(file: File) {
     uploadUrl,
     contentType,
   });
+
+  return objectKey;
+}
+
+export async function ingestJobPostingImage(file: File) {
+  const objectKey = await uploadJobPostingImage(file);
 
   return ingestJobPosting({ imageObjectKey: objectKey });
 }
@@ -304,7 +332,31 @@ export async function saveJobPosting(payload: JobPostingSavePayload) {
   );
 }
 
-export async function fetchMyJobPostings() {
+export async function updateJobPosting(
+  jobPostingId: number,
+  payload: JobPostingSavePayload,
+) {
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/api/job-postings/${jobPostingId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  return parseApiResponse<SavedJobPosting>(
+    response,
+    "채용 공고 수정에 실패했습니다.",
+  );
+}
+
+export async function fetchMyJobPostings({
+  redirectOnUnauthorized = true,
+}: { redirectOnUnauthorized?: boolean } = {}) {
   const response = await fetchWithTimeout(`${API_BASE_URL}/api/job-postings/me`, {
     headers: getAuthHeaders(),
     cache: "no-store",
@@ -313,6 +365,7 @@ export async function fetchMyJobPostings() {
   const result = await parseApiResponse<SavedJobPosting[]>(
     response,
     "내 지원 데이터를 불러오지 못했습니다.",
+    { redirectOnUnauthorized },
   );
 
   return result ?? [];
@@ -392,13 +445,26 @@ export async function waitForJobPostingIngest(
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const status = await fetchJobPostingIngestStatus(taskId);
 
-    if (status.result || isCompletedStatus(status.status)) {
+    if (status.result) {
       return status;
     }
 
-    if (status.error || isFailedStatus(status.status)) {
+    if (
+      status.error ||
+      status.failureReason ||
+      isFailedStatus(status.status)
+    ) {
       throw new Error(
-        status.error || status.message || "채용 공고 처리에 실패했습니다.",
+        status.failureReason ||
+          status.error ||
+          status.message ||
+          "채용 공고 처리에 실패했습니다.",
+      );
+    }
+
+    if (isCompletedStatus(status.status)) {
+      throw new Error(
+        status.message || "완료된 채용 공고 처리 결과를 확인할 수 없습니다.",
       );
     }
 

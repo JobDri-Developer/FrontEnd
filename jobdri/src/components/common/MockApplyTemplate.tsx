@@ -10,6 +10,8 @@ import { ModalCard } from "./modal/ModalCard";
 interface MockApplyTemplateProps {
   mockApplyId: number;
   currentStep: number;
+  companyName?: string;
+  jobTitle?: string;
 
   children: React.ReactNode;
   customHomeModal?: (typeof LEAVE_MODAL_CONFIG)[keyof typeof LEAVE_MODAL_CONFIG];
@@ -28,6 +30,8 @@ export default function MockApplyTemplate({
   mockApplyId,
   children,
   currentStep,
+  companyName,
+  jobTitle,
   customHomeModal = LEAVE_MODAL_CONFIG.COMMON_HOME,
   onHomeLeave,
 
@@ -68,6 +72,8 @@ export default function MockApplyTemplate({
   return (
     <div className="flex flex-col h-dvh bg-bg-default overflow-hidden">
       <Header
+        companyName={companyName}
+        jobTitle={jobTitle}
         currentStep={currentStep}
         lastSavedAt={lastSavedAt}
         applicationLabel={applicationLabel}

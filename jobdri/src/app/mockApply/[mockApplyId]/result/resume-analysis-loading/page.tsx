@@ -3,6 +3,8 @@ import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel
 
 interface ResumeAnalysisLoadingPageProps {
   searchParams: Promise<{
+    taskId?: string;
+    jobPostingId?: string;
     sequence?: string;
   }>;
 }
@@ -18,13 +20,16 @@ function parsePositiveNumber(value?: string) {
 export default async function ResumeAnalysisLoadingPage({
   searchParams,
 }: ResumeAnalysisLoadingPageProps) {
-  const { sequence } = await searchParams;
+  const { taskId, jobPostingId, sequence } = await searchParams;
+  const parsedJobPostingId = parsePositiveNumber(jobPostingId);
+  const parsedSequence = parsePositiveNumber(sequence);
 
   return (
     <ResumeAnalysisLoadingPageClient
-      applicationLabel={formatApplicationSequenceLabel(
-        parsePositiveNumber(sequence),
-      )}
+      taskId={taskId?.trim()}
+      jobPostingId={parsedJobPostingId}
+      initialSequence={parsedSequence}
+      applicationLabel={formatApplicationSequenceLabel(parsedSequence)}
     />
   );
 }

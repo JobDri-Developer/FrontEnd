@@ -37,7 +37,7 @@ export default function ApplyTypePageClient() {
   const handleSubmit = () => {
     if (selectedType === "real") {
       saveSelectedApplyType("ACTUAL");
-      router.push("/mockApply/actual/new/jd-input");
+      router.push("/mockApply/job/create");
       return;
     }
 

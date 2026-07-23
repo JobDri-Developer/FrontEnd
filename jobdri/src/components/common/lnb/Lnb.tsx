@@ -95,7 +95,9 @@ export default function Lnb({
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await fetchMyMockApplies();
+        const data = await fetchMyMockApplies({
+          redirectOnUnauthorized: false,
+        });
         const allItems = [...data.inProgress, ...data.completed];
 
         const mappedItems: LnbRecentItem[] = allItems.map((item) => ({
@@ -122,7 +124,7 @@ export default function Lnb({
   // Credit Fetch
   useEffect(() => {
     if (disableCreditFetch) return;
-    fetchCreditBalance()
+    fetchCreditBalance({ redirectOnUnauthorized: false })
       .then(setCreditCount)
       .catch(() => {});
   }, [disableCreditFetch]);
