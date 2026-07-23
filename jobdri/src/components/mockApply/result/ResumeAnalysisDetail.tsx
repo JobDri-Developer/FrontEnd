@@ -12,6 +12,7 @@ import {
 import { QuestionAnalysis, type AnalysisResult } from "@/lib/api/result";
 import { HighlightStatus, HighlightStyles } from "./highlightStyles";
 import Icon from "@/components/common/icons/Icon";
+import { useScrollGradient } from "@/hooks/useScrollGradient";
 
 interface ResumeAnalysisDetailProps {
   mockApplyId?: number;
@@ -109,8 +110,6 @@ function QuestionViewer({
 }
 
 export default function ResumeAnalysisDetail({
-  //   mockApplyId,
-  //   sequence,
   analysisData,
   children,
 }: ResumeAnalysisDetailProps) {
@@ -120,6 +119,7 @@ export default function ResumeAnalysisDetail({
   const [hoveredAnalysisId, setHoveredAnalysisId] = useState<number | null>(
     null,
   );
+
   const initialQuestions = analysisData.questions.map((q) => ({
     id: String(q.questionId),
     question: q.questionContent,
@@ -132,33 +132,9 @@ export default function ResumeAnalysisDetail({
     initialQuestions[0]?.id || null,
   );
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [showGradient, setShowGradient] = useState(false);
-
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollHeight, clientHeight, scrollTop } = scrollRef.current;
-      const isScrollable = scrollHeight - clientHeight > 2;
-      const isNotAtBottom =
-        Math.ceil(scrollTop + clientHeight) < scrollHeight - 2;
-      setShowGradient(isScrollable && isNotAtBottom);
-    }
-  };
-
-  useEffect(() => {
-    const timer = setTimeout(checkScroll, 50);
-    const observer = new ResizeObserver(() => checkScroll());
-    if (scrollRef.current) {
-      observer.observe(scrollRef.current);
-    }
-    window.addEventListener("resize", checkScroll);
-
-    return () => {
-      clearTimeout(timer);
-      observer.disconnect();
-      window.removeEventListener("resize", checkScroll);
-    };
-  }, [selectedId, questions]);
+  // 👇 커스텀 훅 적용 (deps로 selectedId, questions 전달)
+  const { scrollRef, showGradient, checkScroll } =
+    useScrollGradient<HTMLDivElement>([selectedId, questions]);
 
   const currentQuestionIdx = questions.findIndex((q) => q.id === selectedId);
   const currentQuestion = questions[currentQuestionIdx];
