@@ -6,6 +6,7 @@ import CtaFooter from "@/components/common/cta/CtaFooter";
 import { fetchSequence } from "@/lib/api/result";
 import { LEAVE_MODAL_CONFIG } from "@/constants/modalConfig";
 import { ModalCard } from "./modal/ModalCard";
+import { type IconType } from "@/components/common/icons/Icon"; // 👈 아이콘 타입 임포트 추가
 
 interface MockApplyTemplateProps {
   mockApplyId: number;
@@ -22,6 +23,8 @@ interface MockApplyTemplateProps {
   isNextDisabled?: boolean;
   onRetryClick?: () => void;
   onSaveAndExitClick?: () => void;
+  nextLabel?: string;
+  nextIconType?: IconType;
 }
 
 export default function MockApplyTemplate({
@@ -37,6 +40,8 @@ export default function MockApplyTemplate({
   isNextDisabled,
   onRetryClick,
   onSaveAndExitClick,
+  nextLabel = "다음으로",
+  nextIconType,
 }: MockApplyTemplateProps) {
   const router = useRouter();
   const [showHomeConfirm, setShowHomeConfirm] = useState(false);
@@ -86,14 +91,15 @@ export default function MockApplyTemplate({
         type={isResultPage ? "result" : "wizard"}
         backAction={{ onClick: onBackClick }}
         nextAction={{
-          label: "채점하기",
-          iconType: "SPARKLE",
+          label: nextLabel,
+          iconType: nextIconType,
           onClick: onNextClick,
           disabled: isNextDisabled,
         }}
         retryAction={{ onClick: onRetryClick }}
         saveAction={{ onClick: onSaveAndExitClick }}
       />
+
       {showHomeConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
           <ModalCard
