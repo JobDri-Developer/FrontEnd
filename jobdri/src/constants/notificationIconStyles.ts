@@ -1,4 +1,4 @@
-import { LnbNotificationItem } from "@/components/common/lnb";
+import { LnbNotificationItem } from "@/lib/api/notification";
 import { IconType } from "@/components/common/icons/Icon";
 
 const notificationIconStyles: Record<

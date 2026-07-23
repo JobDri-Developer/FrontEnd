@@ -17,13 +17,13 @@ import {
   NotificationResponse,
   fetchNotifications,
   subscribeToNotificationStream,
+  LnbNotificationItem,
 } from "@/lib/api/notification";
 import LnbDefault from "./LnbDefault";
 import LnbFolded from "./LnbFolded";
 import {
   // defaultNotificationItems,
   mapApiToLnbItem,
-  type LnbNotificationItem,
 } from "./LnbNotification";
 import {
   type LnbItemKey,
@@ -239,6 +239,23 @@ export default function Lnb({
     router.replace("/login");
   };
 
+  const handleReadItem = (id: string) => {
+    setNotificationItems((prev) => {
+      const updated = prev.map((item) =>
+        item.id === id ? { ...item, read: true } : item,
+      );
+      setHasNotification(updated.some((item) => !item.read));
+      return updated;
+    });
+  };
+
+  const handleMarkAllRead = () => {
+    setNotificationItems((prev) =>
+      prev.map((item) => ({ ...item, read: true })),
+    );
+    setHasNotification(false);
+  };
+
   return (
     <>
       <aside
@@ -258,6 +275,8 @@ export default function Lnb({
             onNavItemClick={handleNavItemClick}
             onSearchQueryChange={setSearchQuery}
             onToggleFold={handleToggleFold}
+            // onMarkAllRead={handleMarkAllRead}
+            // onReadItem={handleReadItem}
           />
         ) : (
           <LnbDefault
@@ -274,9 +293,13 @@ export default function Lnb({
             onLogout={handleLogout}
             onNavItemClick={handleNavItemClick}
             onRecentItemClick={(item) => setSelectedRecentItemId(item.id)}
-            onSearchQueryChange={setSearchQuery}
+            onSearchQueryChange={(searchQuerySetter) =>
+              setSearchQuery(searchQuerySetter)
+            }
             onToggleFold={handleToggleFold}
             onToggleRecentOpen={() => setIsRecentOpen((prev) => !prev)}
+            onMarkAllRead={handleMarkAllRead} // 👈 추가
+            onReadItem={handleReadItem} // 👈 추가
           />
         )}
       </aside>

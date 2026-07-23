@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
@@ -15,19 +16,13 @@ import {
 import {
   ApiNotificationItem,
   NotificationResponse,
+  LnbNotificationItem,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
 } from "@/lib/api/notification";
 import { formatDate } from "@/utils/date";
 import { scrollbarClassS } from "../scrollbar/scrollbarStyles";
 import { useScrollGradient } from "@/hooks/useScrollGradient";
-
-export interface LnbNotificationItem {
-  id: string;
-  title: string;
-  description: string;
-  timestamp: string;
-  type?: "normal" | "fail" | "complete";
-  read?: boolean;
-}
 
 // export const defaultNotificationItems: LnbNotificationItem[] = [
 //   {
@@ -108,12 +103,10 @@ const notificationIconStyles: Record<
 };
 
 function mapNotificationType(apiType?: string): "normal" | "fail" | "complete" {
-  // 🛡️ 방어막: 만약 백엔드가 type을 안 줬으면(undefined), 그냥 "normal"로 치고 넘어갑니다!
   if (!apiType) {
     return "normal";
   }
 
-  // 이제 apiType이 확실히 글자라는 걸 아니까 안심하고 includes를 씁니다.
   if (apiType.includes("FAILED") || apiType.includes("ERROR")) {
     return "fail";
   }
@@ -124,26 +117,38 @@ function mapNotificationType(apiType?: string): "normal" | "fail" | "complete" {
   return "normal";
 }
 
-// API 아이템 -> UI 아이템 변환 함수
 export function mapApiToLnbItem(
   item: ApiNotificationItem,
 ): LnbNotificationItem {
+  const mockApplyId =
+    item.payload?.mockApplyId !== undefined &&
+    item.payload?.mockApplyId !== null
+      ? String(item.payload.mockApplyId)
+      : undefined;
+
   return {
-    id: String(item.id),
+    id: item.id ? String(item.id) : crypto.randomUUID(),
     title: item.title,
     description: item.body,
     timestamp: formatDate(item.createdAt),
     type: mapNotificationType(item.type),
     read: item.isRead,
+    targetType: item.targetType,
+    mockApplyId,
+    apiType: item.type,
   };
 }
 
 export function LnbNotificationButton({
   hasNotification,
   notificationItems,
+  onMarkAllRead,
+  onReadItem,
 }: {
   hasNotification: boolean;
   notificationItems: LnbNotificationItem[];
+  onMarkAllRead?: () => void;
+  onReadItem?: (id: string) => void;
 }) {
   const notificationMenuRef = useRef<HTMLSpanElement>(null);
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
@@ -183,8 +188,9 @@ export function LnbNotificationButton({
 
       {isNotificationPanelOpen && (
         <LnbNotificationPanel
-          // 상태로 관리되는 notificationItems를 패널로 넘겨줍니다.
           notificationItems={notificationItems}
+          onMarkAllRead={onMarkAllRead}
+          onReadItem={onReadItem}
           className="absolute bottom-0 left-[38px] z-[80]"
         />
       )}
@@ -195,9 +201,13 @@ export function LnbNotificationButton({
 export function LnbNotificationPanel({
   notificationItems,
   className,
+  onMarkAllRead,
+  onReadItem,
 }: {
   notificationItems: LnbNotificationItem[];
   className?: string;
+  onMarkAllRead?: () => void;
+  onReadItem?: (id: string) => void;
 }) {
   const hasNotificationItems = notificationItems.length > 0;
   const menuRef = useRef<HTMLDivElement>(null);
@@ -247,7 +257,13 @@ export function LnbNotificationPanel({
                   role="menuitem"
                   itemClassName="w-full"
                   label="모두 읽음 표시"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    // 1. 서버에 전체 읽음 API 호출 (백그라운드)
+                    markAllNotificationsAsRead().catch(console.error);
+                    // 2. 부모에게 알려서 화면 즉시 갱신
+                    if (onMarkAllRead) onMarkAllRead();
+                  }}
                 />
               </div>
             )}
@@ -256,7 +272,10 @@ export function LnbNotificationPanel({
       </header>
 
       {hasNotificationItems ? (
-        <LnbNotificationList notificationItems={notificationItems} />
+        <LnbNotificationList
+          notificationItems={notificationItems}
+          onReadItem={onReadItem}
+        />
       ) : (
         <LnbNotificationEmptyState />
       )}
@@ -266,14 +285,25 @@ export function LnbNotificationPanel({
 
 function LnbNotificationList({
   notificationItems,
+  onReadItem,
 }: {
   notificationItems: LnbNotificationItem[];
+  onReadItem?: (id: string) => void;
 }) {
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics(true, notificationItems.length);
 
   const { scrollRef, showGradient, checkScroll } =
     useScrollGradient<HTMLDivElement>([notificationItems]);
+
+  const sortedItems = [...notificationItems].sort((a, b) => {
+    const aRead = a.read ?? false;
+    const bRead = b.read ?? false;
+    if (!aRead && bRead) return -1;
+    if (aRead && !bRead) return 1;
+    return 0;
+  });
+
   return (
     <div className="flex h-[318px] w-[460px] shrink-0 flex-col items-start gap-0 pt-2 pr-1.5 pb-4 pl-1.5">
       <div className="relative flex min-h-0 flex-1 flex-col items-start self-stretch px-1">
@@ -282,7 +312,7 @@ function LnbNotificationList({
             if (scrollAreaRef) scrollAreaRef.current = node;
             if (scrollRef) scrollRef.current = node;
           }}
-          onScroll={(e) => {
+          onScroll={() => {
             updateScrollbarMetrics();
             checkScroll();
           }}
@@ -292,12 +322,19 @@ function LnbNotificationList({
           )}
         >
           <div className="flex min-w-0 flex-col items-start self-stretch">
-            {notificationItems.map((notificationItem) => (
-              <LnbNotificationListItem
-                key={notificationItem.id}
-                notificationItem={notificationItem}
-              />
-            ))}
+            {sortedItems.map((notificationItem) => {
+              if (!notificationItem.id || notificationItem.id === "undefined") {
+                return null;
+              }
+
+              return (
+                <LnbNotificationListItem
+                  key={notificationItem.id}
+                  notificationItem={notificationItem}
+                  onReadItem={onReadItem}
+                />
+              );
+            })}
           </div>
         </div>
 
@@ -330,17 +367,65 @@ function LnbNotificationEmptyState() {
 
 function LnbNotificationListItem({
   notificationItem,
+  onReadItem,
 }: {
   notificationItem: LnbNotificationItem;
+  onReadItem?: (id: string) => void;
 }) {
+  const router = useRouter();
   const notificationType = notificationItem.type ?? "normal";
   const iconStyle = notificationIconStyles[notificationType];
 
+  const handleNotificationClick = () => {
+    // 🚨 어떤 녀석을 클릭했는지 원본 데이터를 통째로 찍어봅니다!
+    console.log("클릭한 알림 전체 데이터:", notificationItem);
+
+    const { id, targetType, mockApplyId, read, apiType } = notificationItem;
+
+    if (!read) {
+      markNotificationAsRead(id).catch(console.error);
+      if (onReadItem) onReadItem(id);
+    }
+
+    // 만약 여기서 걸린다면 어떤 알림인지 콘솔 창에 찍힙니다.
+    if (!mockApplyId) {
+      console.warn("⚠️ 이 알림에는 mockApplyId가 없습니다!", notificationItem);
+      router.push("/apply"); // ID가 없으면 안전하게 목록으로 이동
+      return;
+    }
+
+    switch (apiType) {
+      case "JOB_POSTING_ASYNC_SUCCEEDED":
+        router.push(`/job-posting/${mockApplyId}`);
+        break;
+
+      case "JOB_POSTING_ASYNC_FAILED":
+        router.push(`/job-posting/${mockApplyId}`);
+        break;
+
+      case "ANALYSIS_ASYNC_SUCCEEDED":
+        router.push(`/mockApply/${mockApplyId}/result`);
+        break;
+
+      case "ANALYSIS_ASYNC_FAILED":
+        -router.push(
+          `/mockApply/${mockApplyId}/result/resume-analysis-loading`,
+        );
+        break;
+
+      default:
+        // 일반(GENERAL) 알림이거나 기타 경우
+        router.push(`/mockApply/${mockApplyId}/result`);
+        break;
+    }
+  };
+
   return (
     <article
+      onClick={handleNotificationClick}
       className={clsx(
         "flex shrink-0 items-center gap-2 self-stretch rounded-card-s px-3 py-2",
-        // 🚨 기존에 여기에 있던 mix-blend-luminosity를 제거합니다. (텍스트는 색상 유지)
+        "cursor-pointer transition-colors hover:bg-fill-neutral-muted",
       )}
     >
       <div

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
 import { BusinessFooter } from "@/components/common/footer";
-import { Lnb } from "@/components/common/lnb";
+import Lnb from "@/components/common/lnb/Lnb";
 import ResultDraftList from "@/components/mockApply/home/ResultDraftList";
 import ResultApplicationList from "@/components/mockApply/home/ResultApplicationList";
 import { fetchMyMockApplies } from "@/lib/api/mockApplies";
