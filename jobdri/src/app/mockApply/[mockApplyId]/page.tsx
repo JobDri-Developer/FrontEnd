@@ -292,11 +292,39 @@ export default function MockApplyPage({
         Number(mockApplyId),
         getSubmitPayload(questions),
       );
-      await requestAnalysis(Number(mockApplyId));
+      const acceptedAnalysis = await requestAnalysis(Number(mockApplyId));
+      const analysisTaskId = acceptedAnalysis.taskId?.trim();
+
+      if (!analysisTaskId) {
+        throw new Error("자소서 분석 작업 번호를 확인할 수 없습니다.");
+      }
+
+      let resolvedJobPostingId = jobPostingId;
+
+      if (!resolvedJobPostingId || resolvedJobPostingId <= 0) {
+        try {
+          const sequenceResult = await fetchSequence(Number(mockApplyId));
+          resolvedJobPostingId = sequenceResult.jobPostingId;
+        } catch (error) {
+          console.warn(
+            "분석 결과에 연결할 채용 공고를 확인하지 못했습니다.",
+            error,
+          );
+        }
+      }
+
       const loadingSearchParams = new URLSearchParams();
+      loadingSearchParams.set("taskId", analysisTaskId);
 
       if (savedApply.sequence > 0) {
         loadingSearchParams.set("sequence", String(savedApply.sequence));
+      }
+
+      if (resolvedJobPostingId && resolvedJobPostingId > 0) {
+        loadingSearchParams.set(
+          "jobPostingId",
+          String(resolvedJobPostingId),
+        );
       }
 
       const loadingQuery = loadingSearchParams.size
@@ -497,15 +525,15 @@ export default function MockApplyPage({
         {isLeaveModalOpen && (
           <ModalOverlay>
             <ModalCard
-              title="페이지를 나가시겠어요?"
-              description="자동 저장 이후 작성된 내용은 저장되지 않아요."
-              secondaryBtn="취소"
-              primaryBtn="나가기"
-              onSecondaryClick={() => setIsLeaveModalOpen(false)}
-              onPrimaryClick={() => {
+              title="공고 확인으로 돌아갈까요?"
+              description="지금까지 작성한 내용이 모두 삭제돼요."
+              secondaryBtn="돌아가기"
+              primaryBtn="계속 작성"
+              onSecondaryClick={() => {
                 setIsLeaveModalOpen(false);
                 router.push("/mockApply/job/review");
               }}
+              onPrimaryClick={() => setIsLeaveModalOpen(false)}
             />
           </ModalOverlay>
         )}

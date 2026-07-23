@@ -7,26 +7,60 @@ import { ModalNotice } from "@/components/common/modal";
 import {
   AnalysisPendingError,
   fetchAnalysisResult,
+  fetchAnalysisTaskStatus,
+  subscribeAnalysisTaskStream,
 } from "@/lib/api/result";
 
 const RESUME_ANALYSIS_LOADING_DURATION_MS = 316_000;
 const ANALYSIS_POLL_INTERVAL_MS = 2_500;
 const ANALYSIS_POLL_TIMEOUT_MS = 10 * 60 * 1000;
+const MAX_CONSECUTIVE_STATUS_ERRORS = 3;
+const INVALID_MOCK_APPLY_MESSAGE =
+  "지원 정보를 확인할 수 없어요. 홈에서 다시 시도해주세요.";
 
 interface ResumeAnalysisLoadingPageClientProps {
+  taskId?: string;
+  jobPostingId?: number;
   applicationLabel?: string;
   initialSequence?: number;
 }
 
+function isFailedTaskStatus(status: string) {
+  const normalizedStatus = status.trim().toUpperCase();
+
+  return (
+    normalizedStatus.includes("FAIL") ||
+    normalizedStatus.includes("ERROR") ||
+    normalizedStatus.includes("CANCEL")
+  );
+}
+
+function isCompletedTaskStatus(status: string) {
+  const normalizedStatus = status.trim().toUpperCase();
+
+  return (
+    normalizedStatus.includes("COMPLETE") ||
+    normalizedStatus.includes("SUCCESS") ||
+    normalizedStatus.includes("SUCCEED") ||
+    normalizedStatus.includes("DONE")
+  );
+}
+
 export default function ResumeAnalysisLoadingPageClient({
+  taskId,
+  jobPostingId,
   applicationLabel,
   initialSequence,
 }: ResumeAnalysisLoadingPageClientProps) {
   const router = useRouter();
   const params = useParams();
   const mockApplyId = Number(params.mockApplyId);
+  const isValidMockApplyId =
+    Number.isInteger(mockApplyId) && mockApplyId > 0;
   const [pollingRetryKey, setPollingRetryKey] = useState(0);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(
+    isValidMockApplyId ? "" : INVALID_MOCK_APPLY_MESSAGE,
+  );
 
   const moveToResult = useCallback(
     (sequence?: number) => {
@@ -35,102 +69,208 @@ export default function ResumeAnalysisLoadingPageClient({
       }
 
       const resolvedSequence = sequence ?? initialSequence;
-      const sequenceQuery = resolvedSequence
-        ? `?sequence=${resolvedSequence}`
+      const resultSearchParams = new URLSearchParams();
+
+      if (jobPostingId) {
+        resultSearchParams.set("jobPostingId", String(jobPostingId));
+      }
+
+      if (resolvedSequence) {
+        resultSearchParams.set("sequence", String(resolvedSequence));
+      }
+
+      const resultQuery = resultSearchParams.size
+        ? `?${resultSearchParams.toString()}`
         : "";
 
-      router.replace(`/mockApply/${mockApplyId}/result${sequenceQuery}`);
+      router.replace(`/mockApply/${mockApplyId}/result${resultQuery}`);
     },
-    [initialSequence, mockApplyId, router],
+    [initialSequence, jobPostingId, mockApplyId, router],
   );
 
+  const moveBackToResume = useCallback(() => {
+    const jobPostingQuery = jobPostingId
+      ? `?jobPostingId=${jobPostingId}`
+      : "";
+
+    router.replace(`/mockApply/${mockApplyId}${jobPostingQuery}`);
+  }, [jobPostingId, mockApplyId, router]);
+
   useEffect(() => {
-    if (!Number.isInteger(mockApplyId) || mockApplyId <= 0) {
+    if (!isValidMockApplyId) {
       return;
     }
 
     let cancelled = false;
-    let pollTimer: ReturnType<typeof window.setTimeout> | undefined;
-    const startedAt = Date.now();
-
-    const scheduleNextPoll = () => {
-      if (cancelled) {
-        return;
-      }
-
-      if (Date.now() - startedAt >= ANALYSIS_POLL_TIMEOUT_MS) {
-        setErrorMessage(
-          "분석 시간이 예상보다 길어지고 있어요. 잠시 후 다시 확인해주세요.",
-        );
-        return;
-      }
-
-      pollTimer = window.setTimeout(() => {
-        void pollAnalysis();
-      }, ANALYSIS_POLL_INTERVAL_MS);
-    };
+    let isStatusRequestInFlight = false;
+    let isFinished = false;
+    let consecutiveStatusErrors = 0;
+    const abortController = new AbortController();
 
     const pollAnalysis = async () => {
+      if (cancelled || isFinished || isStatusRequestInFlight) {
+        return;
+      }
+
+      isStatusRequestInFlight = true;
+
       try {
-        const result = await fetchAnalysisResult(mockApplyId);
+        if (!taskId) {
+          const legacyResult = await fetchAnalysisResult(
+            mockApplyId,
+            abortController.signal,
+          );
+
+          if (!cancelled) {
+            isFinished = true;
+            abortController.abort();
+            moveToResult(legacyResult.sequence);
+          }
+          return;
+        }
+
+        const task = await fetchAnalysisTaskStatus(
+          mockApplyId,
+          taskId,
+          abortController.signal,
+        );
+        consecutiveStatusErrors = 0;
 
         if (cancelled) {
           return;
         }
 
-        const normalizedStatus = result.status?.toUpperCase() ?? "";
+        const resultMockApplyId = task.result?.mockApplyId ?? 0;
+        const hasMismatchedTask =
+          (Boolean(task.taskId) && task.taskId !== taskId) ||
+          (task.mockApplyId > 0 && task.mockApplyId !== mockApplyId) ||
+          (resultMockApplyId > 0 && resultMockApplyId !== mockApplyId);
+
+        if (hasMismatchedTask) {
+          isFinished = true;
+          abortController.abort();
+          setErrorMessage(
+            "요청한 지원서와 분석 작업 정보가 일치하지 않아요.",
+          );
+          return;
+        }
 
         if (
-          ["FAILED", "ERROR"].includes(normalizedStatus) ||
-          normalizedStatus.endsWith("_FAILED")
+          task.error ||
+          task.failureReason ||
+          isFailedTaskStatus(task.status)
         ) {
-          setErrorMessage("자소서 분석에 실패했어요. 다시 시도해주세요.");
+          isFinished = true;
+          abortController.abort();
+          setErrorMessage(
+            task.failureReason ||
+              task.error ||
+              task.message ||
+              "자소서 분석에 실패했어요. 다시 시도해주세요.",
+          );
           return;
         }
 
-        const isCompleted = [
-          "COMPLETED",
-          "SUCCESS",
-          "SUCCEEDED",
-          "DONE",
-        ].includes(normalizedStatus) || normalizedStatus.endsWith("_COMPLETED");
-
-        if (isCompleted) {
-          moveToResult(result.sequence);
+        if (task.result) {
+          isFinished = true;
+          abortController.abort();
+          moveToResult(task.result.sequence);
           return;
         }
 
-        scheduleNextPoll();
+        if (isCompletedTaskStatus(task.status)) {
+          isFinished = true;
+          abortController.abort();
+          setErrorMessage(
+            task.message || "완료된 자소서 분석 결과를 확인할 수 없어요.",
+          );
+        }
       } catch (error) {
-        if (cancelled) {
+        if (cancelled || abortController.signal.aborted) {
           return;
         }
 
         if (error instanceof AnalysisPendingError) {
-          scheduleNextPoll();
+          consecutiveStatusErrors = 0;
           return;
         }
 
-        console.error("분석 결과 조회에 실패했습니다.", error);
+        consecutiveStatusErrors += 1;
+        console.warn(
+          `분석 상태 조회에 실패했습니다. (${consecutiveStatusErrors}/${MAX_CONSECUTIVE_STATUS_ERRORS})`,
+          error,
+        );
+
+        if (
+          consecutiveStatusErrors < MAX_CONSECUTIVE_STATUS_ERRORS
+        ) {
+          return;
+        }
+
+        isFinished = true;
+        abortController.abort();
         setErrorMessage(
           error instanceof Error
             ? error.message
             : "분석 결과를 불러오지 못했어요.",
         );
+      } finally {
+        isStatusRequestInFlight = false;
       }
     };
 
+    const pollTimer = window.setInterval(() => {
+      void pollAnalysis();
+    }, ANALYSIS_POLL_INTERVAL_MS);
+    const timeoutTimer = window.setTimeout(() => {
+      if (cancelled || isFinished) {
+        return;
+      }
+
+      isFinished = true;
+      abortController.abort();
+      setErrorMessage(
+        "분석 시간이 예상보다 길어지고 있어요. 잠시 후 다시 확인해주세요.",
+      );
+    }, ANALYSIS_POLL_TIMEOUT_MS);
+
     void pollAnalysis();
+    if (taskId) {
+      void subscribeAnalysisTaskStream(mockApplyId, taskId, {
+        signal: abortController.signal,
+        onEvent: () => {
+          void pollAnalysis();
+        },
+      }).catch((error) => {
+        if (!cancelled && !abortController.signal.aborted) {
+          console.warn(
+            "실시간 분석 상태 연결이 종료되어 상태 조회를 계속합니다.",
+            error,
+          );
+        }
+      });
+    }
 
     return () => {
       cancelled = true;
-      if (pollTimer !== undefined) {
-        window.clearTimeout(pollTimer);
-      }
+      abortController.abort();
+      window.clearInterval(pollTimer);
+      window.clearTimeout(timeoutTimer);
     };
-  }, [mockApplyId, moveToResult, pollingRetryKey]);
+  }, [
+    isValidMockApplyId,
+    mockApplyId,
+    moveToResult,
+    pollingRetryKey,
+    taskId,
+  ]);
 
   const handleRetry = () => {
+    if (!isValidMockApplyId) {
+      setErrorMessage(INVALID_MOCK_APPLY_MESSAGE);
+      return;
+    }
+
     setErrorMessage("");
     setPollingRetryKey((current) => current + 1);
   };
@@ -139,7 +279,7 @@ export default function ResumeAnalysisLoadingPageClient({
     <>
       <ResumeAnalysisLoading
         durationMs={RESUME_ANALYSIS_LOADING_DURATION_MS}
-        onBack={() => router.replace(`/mockApply/${mockApplyId}`)}
+        onBack={moveBackToResume}
         applicationLabel={applicationLabel}
       />
 
@@ -152,7 +292,7 @@ export default function ResumeAnalysisLoadingPageClient({
             onClose={handleRetry}
             secondaryAction={{
               label: "자소서로 돌아가기",
-              onClick: () => router.replace(`/mockApply/${mockApplyId}`),
+              onClick: moveBackToResume,
             }}
             primaryAction={{
               label: "다시 확인",

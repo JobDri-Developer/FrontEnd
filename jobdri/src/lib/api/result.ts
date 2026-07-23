@@ -76,6 +76,32 @@ export interface RequestAnalysisResponse {
   message: string;
 }
 
+export interface AnalysisTaskStatus {
+  taskId: string;
+  mockApplyId: number;
+  status: string;
+  message: string;
+  error: string | null;
+  failureReason: string | null;
+  workerId: string | null;
+  retryCount: number;
+  maxRetryCount: number;
+  queueLatencyMillis: number;
+  createdAt: string | null;
+  submittedAt: string | null;
+  lastAttemptAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  result: AnalysisResult | null;
+}
+
+export interface AnalysisTaskStreamEvent {
+  event?: string;
+  id?: string;
+  retry?: number;
+  data: string;
+}
+
 export function normalizeAnalysisResult(result: AnalysisResult) {
   return {
     ...result,
@@ -157,6 +183,178 @@ export async function requestAnalysis(mockApplyId: number) {
     response,
     "자소서 분석 요청에 실패했습니다.",
   );
+}
+
+export async function fetchAnalysisTaskStatus(
+  mockApplyId: number,
+  taskId: string,
+  signal?: AbortSignal,
+): Promise<AnalysisTaskStatus> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/analysis/async/${encodeURIComponent(taskId)}`,
+    {
+      headers: getAuthHeaders(),
+      cache: "no-store",
+      signal,
+    },
+  );
+  const task = await parseApiResponse<AnalysisTaskStatus>(
+    response,
+    "자소서 분석 상태를 조회하지 못했습니다.",
+  );
+
+  return {
+    ...task,
+    result: task.result ? normalizeAnalysisResult(task.result) : null,
+  };
+}
+
+function parseAnalysisTaskStreamEvent(
+  eventBlock: string,
+): AnalysisTaskStreamEvent | null {
+  const dataLines: string[] = [];
+  let event: string | undefined;
+  let id: string | undefined;
+  let retry: number | undefined;
+
+  eventBlock
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .split("\n")
+    .forEach((line) => {
+      if (!line || line.startsWith(":")) {
+        return;
+      }
+
+      const separatorIndex = line.indexOf(":");
+      const field =
+        separatorIndex === -1 ? line : line.slice(0, separatorIndex);
+      const rawValue =
+        separatorIndex === -1 ? "" : line.slice(separatorIndex + 1);
+      const value = rawValue.startsWith(" ") ? rawValue.slice(1) : rawValue;
+
+      if (field === "data") {
+        dataLines.push(value);
+      } else if (field === "event") {
+        event = value;
+      } else if (field === "id") {
+        id = value;
+      } else if (field === "retry") {
+        const parsedRetry = Number(value);
+        if (Number.isFinite(parsedRetry)) {
+          retry = parsedRetry;
+        }
+      }
+    });
+
+  if (dataLines.length === 0 && !event && !id) {
+    return null;
+  }
+
+  return {
+    event,
+    id,
+    retry,
+    data: dataLines.join("\n"),
+  };
+}
+
+function findAnalysisTaskStreamEventBoundary(value: string) {
+  const separators = ["\r\n\r\n", "\n\n", "\r\r"];
+  let firstMatch: { index: number; length: number } | null = null;
+
+  for (const separator of separators) {
+    const index = value.indexOf(separator);
+
+    if (index === -1 || (firstMatch && index >= firstMatch.index)) {
+      continue;
+    }
+
+    firstMatch = { index, length: separator.length };
+  }
+
+  return firstMatch;
+}
+
+export async function subscribeAnalysisTaskStream(
+  mockApplyId: number,
+  taskId: string,
+  {
+    signal,
+    onEvent,
+  }: {
+    signal?: AbortSignal;
+    onEvent: (event: AnalysisTaskStreamEvent) => void;
+  },
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/analysis/async/${encodeURIComponent(taskId)}/stream`,
+    {
+      headers: {
+        Accept: "text/event-stream",
+        ...getAuthHeaders(),
+      },
+      cache: "no-store",
+      signal,
+    },
+  );
+
+  if (response.status === 401) {
+    handleUnauthorized();
+  }
+
+  if (!response.ok) {
+    throw new Error("자소서 분석 실시간 상태 연결에 실패했습니다.");
+  }
+
+  if (!response.body) {
+    throw new Error("자소서 분석 실시간 상태 응답을 확인할 수 없습니다.");
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  const emitBufferedEvents = (flush = false) => {
+    let boundary = findAnalysisTaskStreamEventBoundary(buffer);
+
+    while (boundary) {
+      const eventBlock = buffer.slice(0, boundary.index);
+      buffer = buffer.slice(boundary.index + boundary.length);
+      const event = parseAnalysisTaskStreamEvent(eventBlock);
+
+      if (event) {
+        onEvent(event);
+      }
+
+      boundary = findAnalysisTaskStreamEventBoundary(buffer);
+    }
+
+    if (flush && buffer.trim()) {
+      const event = parseAnalysisTaskStreamEvent(buffer);
+      if (event) {
+        onEvent(event);
+      }
+      buffer = "";
+    }
+  };
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        buffer += decoder.decode();
+        emitBufferedEvents(true);
+        return;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+      emitBufferedEvents();
+    }
+  } finally {
+    reader.releaseLock();
+  }
 }
 
 async function parseAnalysisResultResponse(response: Response) {

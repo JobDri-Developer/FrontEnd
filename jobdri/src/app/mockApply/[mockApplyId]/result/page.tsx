@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import ResumeAnalysisFeedback from "@/components/mockApply/result/ResumeAnalysisFeedback";
 import ResumeAnalysisDetail from "@/components/mockApply/result/ResumeAnalysisDetail";
 import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
-import { formatApplicationSequenceLabel } from "@/lib/mockApply/applicationLabel";
 import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
 import { useReApply } from "@/hooks/useReApply";
@@ -18,6 +17,7 @@ interface ResultPageProps {
     mockApplyId: string;
   }>;
   searchParams: Promise<{
+    jobPostingId?: string;
     sequence?: string;
     tab?: string;
   }>;
@@ -32,7 +32,7 @@ function parsePositiveNumber(value?: string) {
 
 export default function ResultPage({ params, searchParams }: ResultPageProps) {
   const { mockApplyId } = use(params);
-  const { sequence, tab } = use(searchParams);
+  const { jobPostingId, sequence, tab } = use(searchParams);
   const router = useRouter();
   const { reApply, isSaving } = useReApply();
   const [isRetryModalOpen, setIsRetryModalOpen] = useState(false);
@@ -41,15 +41,19 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
     message: "",
   });
 
+  const parsedJobPostingId = parsePositiveNumber(jobPostingId);
   const parsedSequence = parsePositiveNumber(sequence);
   const parsedMockApplyId = parsePositiveNumber(mockApplyId);
-  const applicationLabel = formatApplicationSequenceLabel(parsedSequence);
 
   const {
     data: analysisData,
     isPending,
     isError,
-  } = useAnalysisResult(parsedMockApplyId);
+  } = useAnalysisResult(
+    parsedMockApplyId,
+    parsedJobPostingId,
+    parsedSequence,
+  );
 
   const activeTabId = tab === "score-detail" ? "score-detail" : "ai-feedback";
   const headerComponent = <AnalysisHeader activeTabId={activeTabId} />;
@@ -71,7 +75,7 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
     }
     try {
       await reApply(resolvedMockApplyId);
-    } catch (error) {
+    } catch {
       setIsRetryModalOpen(false);
       showTopToast("재도전을 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
     }

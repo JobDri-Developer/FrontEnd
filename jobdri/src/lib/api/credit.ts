@@ -1,6 +1,8 @@
-import { getAuthHeaders, handleUnauthorized } from "@/lib/api/client";
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+import {
+  API_BASE_URL,
+  getAuthHeaders,
+  handleUnauthorized,
+} from "@/lib/api/client";
 
 export type TransactionType = "CHARGE" | "USE" | "REFUND" | "COUPON";
 
@@ -31,7 +33,7 @@ function checkResponse(
 export async function fetchCreditBalance({
   redirectOnUnauthorized = true,
 }: { redirectOnUnauthorized?: boolean } = {}): Promise<number> {
-  const response = await fetch(`${BASE_URL}/api/payments/credits/me`, {
+  const response = await fetch(`${API_BASE_URL}/api/payments/credits/me`, {
     headers: getAuthHeaders(),
   });
   checkResponse(
@@ -47,7 +49,9 @@ export async function fetchCreditBalance({
 export async function fetchCreditTransactions(
   type?: TransactionType,
 ): Promise<CreditTransaction[]> {
-  const url = new URL(`${BASE_URL}/api/payments/credits/me/transactions`);
+  const url = new URL(
+    `${API_BASE_URL}/api/payments/credits/me/transactions`,
+  );
   if (type) url.searchParams.set("type", type);
 
   const response = await fetch(url.toString(), {
@@ -69,7 +73,7 @@ export interface CreditPlan {
 }
 
 export async function fetchCreditPlans(): Promise<CreditPlan[]> {
-  const response = await fetch(`${BASE_URL}/api/payments/plans`, {
+  const response = await fetch(`${API_BASE_URL}/api/payments/plans`, {
     headers: getAuthHeaders(),
   });
   checkResponse(response, "크레딧 플랜 조회에 실패했습니다.");
@@ -90,7 +94,7 @@ export interface PreparePaymentResult {
 export async function preparePurchase(
   planCode: PlanCode,
 ): Promise<PreparePaymentResult> {
-  const response = await fetch(`${BASE_URL}/api/payments/prepare`, {
+  const response = await fetch(`${API_BASE_URL}/api/payments/prepare`, {
     method: "POST",
     headers: {
       ...getAuthHeaders(),
@@ -108,7 +112,7 @@ export async function confirmPurchase(
   orderId: string,
   amount: number,
 ): Promise<void> {
-  const response = await fetch(`${BASE_URL}/api/payments/confirm`, {
+  const response = await fetch(`${API_BASE_URL}/api/payments/confirm`, {
     method: "POST",
     headers: {
       ...getAuthHeaders(),
