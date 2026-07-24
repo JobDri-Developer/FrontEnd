@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
 import { BusinessFooter } from "@/components/common/footer";
-import { Lnb } from "@/components/common/lnb";
+import Lnb from "@/components/common/lnb/Lnb";
 import ResultDraftList from "@/components/mockApply/home/ResultDraftList";
 import ResultApplicationList from "@/components/mockApply/home/ResultApplicationList";
 import {
@@ -70,9 +70,7 @@ export default function Home() {
       try {
         const [data, jobPostings] = await Promise.all([
           fetchMyMockApplies({ redirectOnUnauthorized: false }),
-          fetchMyJobPostings({ redirectOnUnauthorized: false }).catch(
-            () => [],
-          ),
+          fetchMyJobPostings({ redirectOnUnauthorized: false }).catch(() => []),
         ]);
         const jobPostingById = new Map(
           jobPostings.map((jobPosting) => [
@@ -89,9 +87,7 @@ export default function Home() {
             jobPostingId: item.jobPostingId,
             mockApplyId: item.mockApplyId,
             companyName:
-              item.companyName ||
-              jobPosting?.companyName ||
-              "회사명 미입력",
+              item.companyName || jobPosting?.companyName || "회사명 미입력",
             profileColor: jobPosting?.profileColor ?? "DEFAULT",
             position:
               item.jobTitle ||
@@ -110,8 +106,7 @@ export default function Home() {
         );
         const savedOnlyDrafts = jobPostings
           .filter(
-            (jobPosting) =>
-              !linkedJobPostingIds.has(jobPosting.jobPostingId),
+            (jobPosting) => !linkedJobPostingIds.has(jobPosting.jobPostingId),
           )
           .map((jobPosting) => ({
             id: `job-posting-${jobPosting.jobPostingId}`,
@@ -134,9 +129,7 @@ export default function Home() {
             jobPostingId: item.jobPostingId,
             mockApplyId: item.mockApplyId,
             company:
-              item.companyName ||
-              jobPosting?.companyName ||
-              "회사명 미입력",
+              item.companyName || jobPosting?.companyName || "회사명 미입력",
             profileColor: jobPosting?.profileColor ?? "DEFAULT",
             position:
               item.jobTitle ||
@@ -175,8 +168,8 @@ export default function Home() {
   };
   return (
     <div className="flex min-h-screen w-full bg-[#F5F6F9] overflow-x-hidden ">
-      <Lnb className="shrink-0" />
-      <div className="flex min-w-0 h-screen flex-1 flex-col self-stretch relative mx-auto items-center">
+      <Lnb className="shrink-0 z-50" />
+      <div className="z-10 flex min-w-0 h-screen flex-1 flex-col self-stretch relative mx-auto items-center">
         <main className="flex-1 w-full max-w-[1320px] min-w-[912px] px-18 pt-12 pb-60">
           <div className="flex items-start justify-between mb-16">
             <div className="flex flex-col gap-2">

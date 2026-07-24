@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import ProgressPanelRow from "@/components/common/progress/ProgressPanelRow";
 import { TextButton } from "@/components/common/buttons";
 import resumeAnalysisLoading from "@/assets/lottie/resume-analysis-loading.json";
 import LoadingGraphic from "./LoadingGraphic";
+import { ModalCard } from "@/components/common/modal/ModalCard";
 
 interface ResumeAnalysisLoadingProps {
   durationMs: number;
   onBack?: () => void;
   onComplete?: () => void;
   applicationLabel?: string;
+  isFailed?: boolean;
+  onErrorConfirm?: () => void;
 }
 
 function formatRemainingTime(totalSeconds: number) {
@@ -30,14 +34,18 @@ export default function ResumeAnalysisLoading({
   onBack,
   onComplete,
   applicationLabel,
+  isFailed = false,
 }: ResumeAnalysisLoadingProps) {
   const initialRemainingSeconds = Math.max(1, Math.ceil(durationMs / 1000));
   const [remainingSeconds, setRemainingSeconds] = useState(
     initialRemainingSeconds,
   );
   const [currentStep, setCurrentStep] = useState(1);
+  const router = useRouter();
 
   useEffect(() => {
+    if (isFailed) return;
+
     const countdownTimer = window.setInterval(() => {
       setRemainingSeconds((prev) => Math.max(prev - 1, 0));
     }, 1000);
@@ -68,7 +76,7 @@ export default function ResumeAnalysisLoading({
       window.clearTimeout(thirdStepTimer);
       window.clearTimeout(fourthStepTimer);
     };
-  }, [durationMs, onComplete]);
+  }, [durationMs, onComplete, isFailed]);
 
   const progressItems = useMemo(
     () => [
@@ -93,7 +101,7 @@ export default function ResumeAnalysisLoading({
   );
 
   return (
-    <div className="flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
+    <div className="relative flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
       <Header currentStep={5} applicationLabel={applicationLabel} />
 
       <div className="flex min-h-0 flex-1 items-start px-2 pb-2">
@@ -147,6 +155,17 @@ export default function ResumeAnalysisLoading({
           </main>
         </section>
       </div>
+
+      {isFailed && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40  backdrop-blur-sm">
+          <ModalCard
+            title="나중에 다시 시도해주세요."
+            description="응답 대기 시간이 길어져 작업을 멈췄어요. 소모된 크레딧이 복구됐어요."
+            secondaryBtn="확인"
+            onSecondaryClick={() => router.replace("/")}
+          />
+        </div>
+      )}
     </div>
   );
 }

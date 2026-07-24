@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
 import { ModalNotice } from "@/components/common/modal";
 import {
@@ -53,10 +53,10 @@ export default function ResumeAnalysisLoadingPageClient({
   initialSequence,
 }: ResumeAnalysisLoadingPageClientProps) {
   const router = useRouter();
+
   const params = useParams();
   const mockApplyId = Number(params.mockApplyId);
-  const isValidMockApplyId =
-    Number.isInteger(mockApplyId) && mockApplyId > 0;
+  const isValidMockApplyId = Number.isInteger(mockApplyId) && mockApplyId > 0;
   const [pollingRetryKey, setPollingRetryKey] = useState(0);
   const [errorMessage, setErrorMessage] = useState(
     isValidMockApplyId ? "" : INVALID_MOCK_APPLY_MESSAGE,
@@ -89,9 +89,7 @@ export default function ResumeAnalysisLoadingPageClient({
   );
 
   const moveBackToResume = useCallback(() => {
-    const jobPostingQuery = jobPostingId
-      ? `?jobPostingId=${jobPostingId}`
-      : "";
+    const jobPostingQuery = jobPostingId ? `?jobPostingId=${jobPostingId}` : "";
 
     router.replace(`/mockApply/${mockApplyId}${jobPostingQuery}`);
   }, [jobPostingId, mockApplyId, router]);
@@ -149,9 +147,7 @@ export default function ResumeAnalysisLoadingPageClient({
         if (hasMismatchedTask) {
           isFinished = true;
           abortController.abort();
-          setErrorMessage(
-            "요청한 지원서와 분석 작업 정보가 일치하지 않아요.",
-          );
+          setErrorMessage("요청한 지원서와 분석 작업 정보가 일치하지 않아요.");
           return;
         }
 
@@ -201,9 +197,7 @@ export default function ResumeAnalysisLoadingPageClient({
           error,
         );
 
-        if (
-          consecutiveStatusErrors < MAX_CONSECUTIVE_STATUS_ERRORS
-        ) {
+        if (consecutiveStatusErrors < MAX_CONSECUTIVE_STATUS_ERRORS) {
           return;
         }
 
@@ -257,13 +251,7 @@ export default function ResumeAnalysisLoadingPageClient({
       window.clearInterval(pollTimer);
       window.clearTimeout(timeoutTimer);
     };
-  }, [
-    isValidMockApplyId,
-    mockApplyId,
-    moveToResult,
-    pollingRetryKey,
-    taskId,
-  ]);
+  }, [isValidMockApplyId, mockApplyId, moveToResult, pollingRetryKey, taskId]);
 
   const handleRetry = () => {
     if (!isValidMockApplyId) {

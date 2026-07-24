@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
@@ -12,68 +13,69 @@ import {
   LnbScrollbar,
   useLnbScrollMetrics,
 } from "./LnbScrollbar";
+import {
+  ApiNotificationItem,
+  NotificationResponse,
+  LnbNotificationItem,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from "@/lib/api/notification";
+import { formatDate } from "@/utils/date";
+import { scrollbarClassS } from "../scrollbar/scrollbarStyles";
+import { useScrollGradient } from "@/hooks/useScrollGradient";
 
-export interface LnbNotificationItem {
-  id: string;
-  title: string;
-  description: string;
-  timestamp: string;
-  type?: "normal" | "fail" | "complete";
-  read?: boolean;
-}
-
-export const defaultNotificationItems: LnbNotificationItem[] = [
-  {
-    id: "resume-analysis-complete",
-    title: "자소서 분석이 완료되었어요",
-    description: "<토스 | UX리서처> 결과 보러가기.",
-    timestamp: "26.07.14",
-    type: "normal",
-  },
-  {
-    id: "analysis-error",
-    title: "분석중 문제가 발생했어요",
-    description: "<토스 | UX리서처> 분석을 다시 시도해주세요.",
-    timestamp: "26.07.14",
-    type: "fail",
-  },
-  {
-    id: "job-posting-imported",
-    title: "공고 입력이 완료되었어요",
-    description: "<토스 | UX리서처> 자소서 쓰러 가기.",
-    timestamp: "26.07.14",
-    type: "complete",
-  },
-  {
-    id: "notification-sample-1",
-    title: "알림 제목 영역입니다. 알림 제목 영역입니다.",
-    description: "알림 내용 최대 25자 알림 내용 최대 25자",
-    timestamp: "26.07.08",
-  },
-  {
-    id: "notification-sample-2",
-    title: "알림 제목 영역입니다. 알림 제목 영역입니다.",
-    description: "알림 내용 최대 25자 알림 내용 최대 25자",
-    timestamp: "YY.MM.DD",
-    read: true,
-  },
-  {
-    id: "notification-sample-3",
-    title: "알림 제목 영역입니다. 알림 제목 영역입니다.",
-    description: "알림 내용 최대 25자 알림 내용 최대 25자",
-    timestamp: "YY.MM.DD",
-    type: "fail",
-    read: true,
-  },
-  {
-    id: "notification-sample-4",
-    title: "알림 제목 영역입니다. 알림 제목 영역입니다.",
-    description: "알림 내용 최대 25자 알림 내용 최대 25자",
-    timestamp: "YY.MM.DD",
-    type: "complete",
-    read: true,
-  },
-];
+// export const defaultNotificationItems: LnbNotificationItem[] = [
+//   {
+//     id: "resume-analysis-complete",
+//     title: "자소서 분석이 완료되었어요",
+//     description: "<토스 | UX리서처> 결과 보러가기.",
+//     timestamp: "26.07.14",
+//     type: "normal",
+//   },
+//   {
+//     id: "analysis-error",
+//     title: "분석중 문제가 발생했어요",
+//     description: "<토스 | UX리서처> 분석을 다시 시도해주세요.",
+//     timestamp: "26.07.14",
+//     type: "fail",
+//   },
+//   {
+//     id: "job-posting-imported",
+//     title: "공고 입력이 완료되었어요",
+//     description: "<토스 | UX리서처> 자소서 쓰러 가기.",
+//     timestamp: "26.07.14",
+//     type: "complete",
+//   },
+//   {
+//     id: "notification-sample-1",
+//     title: "알림 제목 영역입니다. 알림 제목 영역입니다.",
+//     description: "알림 내용 최대 25자 알림 내용 최대 25자",
+//     timestamp: "26.07.08",
+//   },
+//   {
+//     id: "notification-sample-2",
+//     title: "알림 제목 영역입니다. 알림 제목 영역입니다.",
+//     description: "알림 내용 최대 25자 알림 내용 최대 25자",
+//     timestamp: "YY.MM.DD",
+//     read: true,
+//   },
+//   {
+//     id: "notification-sample-3",
+//     title: "알림 제목 영역입니다. 알림 제목 영역입니다.",
+//     description: "알림 내용 최대 25자 알림 내용 최대 25자",
+//     timestamp: "YY.MM.DD",
+//     type: "fail",
+//     read: true,
+//   },
+//   {
+//     id: "notification-sample-4",
+//     title: "알림 제목 영역입니다. 알림 제목 영역입니다.",
+//     description: "알림 내용 최대 25자 알림 내용 최대 25자",
+//     timestamp: "YY.MM.DD",
+//     type: "complete",
+//     read: true,
+//   },
+// ];
 
 const notificationIconStyles: Record<
   NonNullable<LnbNotificationItem["type"]>,
@@ -100,16 +102,65 @@ const notificationIconStyles: Record<
   },
 };
 
+function mapNotificationType(apiType?: string): "normal" | "fail" | "complete" {
+  if (!apiType) {
+    return "normal";
+  }
+
+  if (apiType.includes("FAILED") || apiType.includes("ERROR")) {
+    return "fail";
+  }
+
+  if (apiType === "ANALYSIS_ASYNC_SUCCEEDED" || apiType === "GENERAL") {
+    return "normal";
+  }
+
+  if (
+    apiType === "JOB_POSTING_ASYNC_SUCCEEDED" ||
+    apiType.includes("COMPLETE")
+  ) {
+    return "complete";
+  }
+
+  return "normal";
+}
+
+export function mapApiToLnbItem(
+  item: ApiNotificationItem,
+): LnbNotificationItem {
+  const mockApplyId =
+    item.payload?.mockApplyId !== undefined &&
+    item.payload?.mockApplyId !== null
+      ? String(item.payload.mockApplyId)
+      : undefined;
+
+  return {
+    id: item.id ? String(item.id) : crypto.randomUUID(),
+    title: item.title,
+    description: item.body,
+    timestamp: formatDate(item.createdAt),
+    type: mapNotificationType(item.type),
+    read: item.isRead,
+    readAt: item.readAt,
+    targetType: item.targetType,
+    mockApplyId,
+    apiType: item.type,
+  };
+}
+
 export function LnbNotificationButton({
   hasNotification,
   notificationItems,
+  onMarkAllRead,
+  onReadItem,
 }: {
   hasNotification: boolean;
   notificationItems: LnbNotificationItem[];
+  onMarkAllRead?: () => void;
+  onReadItem?: (id: string) => void;
 }) {
   const notificationMenuRef = useRef<HTMLSpanElement>(null);
-  const [isNotificationPanelOpen, setIsNotificationPanelOpen] =
-    useState(false);
+  const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
 
   useOutsideClick(
     notificationMenuRef,
@@ -120,7 +171,7 @@ export function LnbNotificationButton({
   return (
     <span
       ref={notificationMenuRef}
-      className="relative flex h-6 w-6 shrink-0 items-center justify-center"
+      className="relative flex h-6 w-6 shrink-0 items-center justify-center z-50"
     >
       <IconButton
         iconType="BELL"
@@ -130,12 +181,14 @@ export function LnbNotificationButton({
         aria-label="알림"
         aria-expanded={isNotificationPanelOpen}
         aria-haspopup="dialog"
-        onClick={() =>
-          setIsNotificationPanelOpen(
-            (prevIsNotificationPanelOpen) => !prevIsNotificationPanelOpen,
-          )
-        }
+        onClick={() => {
+          setIsNotificationPanelOpen((prev) => !prev);
+          // (선택 사항) 패널을 열 때마다 최신 알림을 다시 불러오고 싶다면 여기에 추가
+          // if (!isNotificationPanelOpen) { fetchNotifications(); }
+        }}
       />
+
+      {/* 안 읽은 알림이 있으면 빨간 점 표시 */}
       {hasNotification && (
         <span className="absolute top-px right-px flex items-center justify-center">
           <span className="h-[5px] w-[5px] rounded-full bg-icon-primary-strong" />
@@ -145,6 +198,8 @@ export function LnbNotificationButton({
       {isNotificationPanelOpen && (
         <LnbNotificationPanel
           notificationItems={notificationItems}
+          onMarkAllRead={onMarkAllRead}
+          onReadItem={onReadItem}
           className="absolute bottom-0 left-[38px] z-[80]"
         />
       )}
@@ -155,9 +210,13 @@ export function LnbNotificationButton({
 export function LnbNotificationPanel({
   notificationItems,
   className,
+  onMarkAllRead,
+  onReadItem,
 }: {
   notificationItems: LnbNotificationItem[];
   className?: string;
+  onMarkAllRead?: () => void;
+  onReadItem?: (id: string) => void;
 }) {
   const hasNotificationItems = notificationItems.length > 0;
   const menuRef = useRef<HTMLDivElement>(null);
@@ -192,7 +251,9 @@ export function LnbNotificationPanel({
                 aria-label="알림 메뉴"
                 aria-expanded={isMenuOpen}
                 aria-haspopup="menu"
-                onClick={() => setIsMenuOpen((prevIsMenuOpen) => !prevIsMenuOpen)}
+                onClick={() =>
+                  setIsMenuOpen((prevIsMenuOpen) => !prevIsMenuOpen)
+                }
               />
             </div>
 
@@ -205,7 +266,13 @@ export function LnbNotificationPanel({
                   role="menuitem"
                   itemClassName="w-full"
                   label="모두 읽음 표시"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    // 1. 서버에 전체 읽음 API 호출 (백그라운드)
+                    markAllNotificationsAsRead().catch(console.error);
+                    // 2. 부모에게 알려서 화면 즉시 갱신
+                    if (onMarkAllRead) onMarkAllRead();
+                  }}
                 />
               </div>
             )}
@@ -214,7 +281,10 @@ export function LnbNotificationPanel({
       </header>
 
       {hasNotificationItems ? (
-        <LnbNotificationList notificationItems={notificationItems} />
+        <LnbNotificationList
+          notificationItems={notificationItems}
+          onReadItem={onReadItem}
+        />
       ) : (
         <LnbNotificationEmptyState />
       )}
@@ -224,41 +294,93 @@ export function LnbNotificationPanel({
 
 function LnbNotificationList({
   notificationItems,
+  onReadItem,
 }: {
   notificationItems: LnbNotificationItem[];
+  onReadItem?: (id: string) => void;
 }) {
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics(true, notificationItems.length);
+
+  const { scrollRef, showGradient, checkScroll } =
+    useScrollGradient<HTMLDivElement>([notificationItems]);
+
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setNow(Date.now());
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const sortedItems = useMemo(() => {
+    let filteredItems = notificationItems;
+
+    if (now !== null) {
+      const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+
+      filteredItems = notificationItems.filter((item) => {
+        if (!item.read) return true;
+        if (!item.readAt) return true;
+
+        const readTime = new Date(item.readAt).getTime();
+        return readTime >= sevenDaysAgo;
+      });
+    }
+
+    return [...filteredItems].sort((a, b) => {
+      const aRead = a.read ?? false;
+      const bRead = b.read ?? false;
+      if (!aRead && bRead) return -1;
+      if (aRead && !bRead) return 1;
+      return 0;
+    });
+  }, [notificationItems, now]);
 
   return (
     <div className="flex h-[318px] w-[460px] shrink-0 flex-col items-start gap-0 pt-2 pr-1.5 pb-4 pl-1.5">
       <div className="relative flex min-h-0 flex-1 flex-col items-start self-stretch px-1">
         <div
-          ref={scrollAreaRef}
-          onScroll={updateScrollbarMetrics}
+          ref={(node) => {
+            if (scrollAreaRef) scrollAreaRef.current = node;
+            if (scrollRef) scrollRef.current = node;
+          }}
+          onScroll={() => {
+            updateScrollbarMetrics();
+            checkScroll();
+          }}
           className={clsx(
             "flex min-h-0 min-w-0 flex-1 flex-col items-start self-stretch overflow-y-auto overflow-x-hidden",
-            lnbHiddenScrollbarClass,
+            scrollbarClassS,
           )}
         >
           <div className="flex min-w-0 flex-col items-start self-stretch">
-            {notificationItems.map((notificationItem) => (
-              <LnbNotificationListItem
-                key={notificationItem.id}
-                notificationItem={notificationItem}
-              />
-            ))}
+            {/* 💡 정렬과 필터링이 모두 완료된 sortedItems를 매핑합니다 */}
+            {sortedItems.map((notificationItem) => {
+              if (!notificationItem.id || notificationItem.id === "undefined") {
+                return null;
+              }
+
+              return (
+                <LnbNotificationListItem
+                  key={notificationItem.id}
+                  notificationItem={notificationItem}
+                  onReadItem={onReadItem}
+                />
+              );
+            })}
           </div>
         </div>
 
-        <LnbScrollbar metrics={scrollbarMetrics} className="z-20" />
-
-        <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(255,255,255,0)_90.87%,var(--color-bg-contents-default)_100%)]" />
+        {showGradient && (
+          <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(255,255,255,0)_90.87%,var(--color-bg-contents-default)_100%)]" />
+        )}
       </div>
     </div>
   );
 }
-
 function LnbNotificationEmptyState() {
   return (
     <div className="flex h-[318px] w-[460px] flex-col items-center justify-center gap-5 px-4 py-2">
@@ -278,25 +400,72 @@ function LnbNotificationEmptyState() {
   );
 }
 
-function LnbNotificationListItem({
+export function LnbNotificationListItem({
   notificationItem,
+  onReadItem,
 }: {
   notificationItem: LnbNotificationItem;
+  onReadItem?: (id: string) => void;
 }) {
+  const router = useRouter();
   const notificationType = notificationItem.type ?? "normal";
   const iconStyle = notificationIconStyles[notificationType];
 
+  const handleNotificationClick = () => {
+    // 🚨 어떤 녀석을 클릭했는지 원본 데이터를 통째로 찍어봅니다!
+    console.log("클릭한 알림 전체 데이터:", notificationItem);
+
+    const { id, targetType, mockApplyId, read, apiType } = notificationItem;
+
+    if (!read) {
+      markNotificationAsRead(id).catch(console.error);
+      if (onReadItem) onReadItem(id);
+    }
+
+    // 만약 여기서 걸린다면 어떤 알림인지 콘솔 창에 찍힙니다.
+    if (!mockApplyId) {
+      console.warn("⚠️ 이 알림에는 mockApplyId가 없습니다!", notificationItem);
+      router.push("/apply"); // ID가 없으면 안전하게 목록으로 이동
+      return;
+    }
+
+    switch (apiType) {
+      case "JOB_POSTING_ASYNC_SUCCEEDED":
+        router.push(`/job-posting/${mockApplyId}`);
+        break;
+
+      case "JOB_POSTING_ASYNC_FAILED":
+        router.push(`/job-posting/${mockApplyId}`);
+        break;
+
+      case "ANALYSIS_ASYNC_SUCCEEDED":
+        router.push(`/mockApply/${mockApplyId}/result`);
+        break;
+
+      case "ANALYSIS_ASYNC_FAILED":
+        router.push(
+          `/mockApply/${mockApplyId}/result/resume-analysis-loading?error=true`,
+        );
+        break;
+
+      default:
+        router.push(`/mockApply/${mockApplyId}/result`);
+        break;
+    }
+  };
   return (
     <article
+      onClick={handleNotificationClick}
       className={clsx(
         "flex shrink-0 items-center gap-2 self-stretch rounded-card-s px-3 py-2",
-        notificationItem.read && "mix-blend-luminosity",
+        "cursor-pointer transition-colors hover:bg-fill-neutral-muted",
       )}
     >
       <div
         className={clsx(
           "flex shrink-0 items-center justify-center rounded-icon-default p-2.5",
           iconStyle.frameClassName,
+          notificationItem.read && "grayscale opacity-60 mix-blend-luminosity",
         )}
       >
         <Icon

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { LnbNotificationItem } from "@/components/common/lnb";
+import { LnbNotificationItem } from "@/lib/api/notification";
 
 export function useNotifications() {
   const queryClient = useQueryClient();

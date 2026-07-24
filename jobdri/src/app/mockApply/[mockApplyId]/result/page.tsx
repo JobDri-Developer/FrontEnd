@@ -55,11 +55,7 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
     data: analysisData,
     isPending,
     isError,
-  } = useAnalysisResult(
-    parsedMockApplyId,
-    parsedJobPostingId,
-    parsedSequence,
-  );
+  } = useAnalysisResult(parsedMockApplyId, parsedJobPostingId, parsedSequence);
 
   const activeTabId = tab === "score-detail" ? "score-detail" : "ai-feedback";
   const headerComponent = <AnalysisHeader activeTabId={activeTabId} />;
@@ -82,9 +78,7 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
           setJobPostingHeader({
             companyName: jobPosting.companyName,
             jobTitle:
-              jobPosting.jobTitle ||
-              jobPosting.detailClassificationName ||
-              "",
+              jobPosting.jobTitle || jobPosting.detailClassificationName || "",
           });
         }
       } catch (error) {
