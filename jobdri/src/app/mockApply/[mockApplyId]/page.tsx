@@ -348,7 +348,12 @@ export default function MockApplyPage({
       nextLabel="채점하기"
       nextIconType="SPARKLE"
     >
-      <div className="flex h-full flex-col overflow-hidden bg-bg-default">
+      <div
+        className={clsx(
+          "flex h-full flex-col overflow-hidden bg-bg-defaul",
+          scrollbarClassS,
+        )}
+      >
         <main
           className={clsx(
             "flex-1 flex gap-6 transition-all duration-300 ease-in-out",
