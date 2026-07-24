@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { QuestionList } from "@/components/mockApply/Question/QuestionList";
 import JDSidePanel from "@/components/mockApply/Question/SidePanel";
@@ -7,12 +7,14 @@ import WritingForm from "@/components/mockApply/Question/WritingForm";
 import clsx from "clsx";
 import { scrollbarClassS } from "@/components/common/scrollbar/scrollbarStyles";
 import {
+  fetchQuestions,
   fetchSelectedQuestions,
   saveQuestions,
   saveApply,
   type QuestionItem,
 } from "@/lib/api/questions";
 import { ModalCard } from "@/components/common/modal/ModalCard";
+import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
 import {
   CreditInsufficientError,
@@ -24,6 +26,64 @@ import { fetchMockApplyJobPosting } from "@/lib/api/mockApplies";
 import type { JDData } from "@/components/mockApply/Question/SidePanel";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
+
+const getSubmitPayload = (questionsData: QuestionItem[]) =>
+  questionsData.map((question) => {
+    const payload = {
+      content: question.question,
+      charLimit: question.maxLength ?? 1000,
+      answer: question.answer || "",
+    };
+
+    if (
+      question.questionId !== undefined &&
+      Number.isInteger(question.questionId) &&
+      question.questionId > 0
+    ) {
+      return { ...payload, questionId: question.questionId };
+    }
+
+    return payload;
+  });
+
+const getCurrentTime = () => {
+  const now = new Date();
+  return `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
+};
+
+const mergeLocalQuestionEdits = (
+  canonicalQuestions: QuestionItem[],
+  desiredQuestions: QuestionItem[],
+  liveQuestions: QuestionItem[],
+) =>
+  canonicalQuestions.map((canonicalQuestion, index) => {
+    const desiredQuestion = desiredQuestions[index];
+    const latestQuestion = desiredQuestion
+      ? liveQuestions.find(
+          (question) =>
+            question.id === desiredQuestion.id ||
+            (question.questionId !== undefined &&
+              question.questionId === desiredQuestion.questionId),
+        )
+      : undefined;
+
+    return {
+      ...canonicalQuestion,
+      question:
+        latestQuestion?.question ??
+        desiredQuestion?.question ??
+        canonicalQuestion.question,
+      maxLength:
+        latestQuestion?.maxLength ??
+        desiredQuestion?.maxLength ??
+        canonicalQuestion.maxLength,
+      answer:
+        latestQuestion?.answer ??
+        desiredQuestion?.answer ??
+        canonicalQuestion.answer ??
+        "",
+    };
+  });
 
 export default function MockApplyPage({
   params,
@@ -63,14 +123,111 @@ export default function MockApplyPage({
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const getSubmitPayload = (questionsData: QuestionItem[]) => {
-    return questionsData.map((q) => ({
-      questionId: q.questionId,
-      content: q.question,
-      charLimit: q.maxLength ?? 1000,
-      answer: q.answer || "",
-    }));
-  };
+  const questionsRef = useRef<QuestionItem[]>([]);
+  const questionSaveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const questionSaveRevisionRef = useRef(0);
+  const isQuestionStructureSavingRef = useRef(false);
+
+  const replaceQuestions = useCallback((nextQuestions: QuestionItem[]) => {
+    questionsRef.current = nextQuestions;
+    setQuestions(nextQuestions);
+  }, []);
+
+  const enqueueQuestionSave = useCallback(
+    <T,>(operation: () => Promise<T>): Promise<T> => {
+      const queuedOperation = questionSaveQueueRef.current.then(operation);
+      questionSaveQueueRef.current = queuedOperation.then(
+        () => undefined,
+        () => undefined,
+      );
+      return queuedOperation;
+    },
+    [],
+  );
+
+  const syncQuestionStructure = useCallback(
+    async (desiredQuestions: QuestionItem[]) => {
+      if (isQuestionStructureSavingRef.current) {
+        throw new Error("문항을 저장하고 있습니다. 잠시 후 다시 시도해주세요.");
+      }
+
+      isQuestionStructureSavingRef.current = true;
+      const revision = ++questionSaveRevisionRef.current;
+      let canonicalFallback: QuestionItem[] | null = null;
+
+      try {
+        const savedQuestions = await enqueueQuestionSave(async () => {
+          const canonicalQuestions = await saveQuestions(
+            Number(mockApplyId),
+            desiredQuestions,
+          );
+
+          if (canonicalQuestions.length !== desiredQuestions.length) {
+            throw new Error("저장된 문항 목록을 확인하지 못했습니다.");
+          }
+
+          const questionsWithLocalEdits = mergeLocalQuestionEdits(
+            canonicalQuestions,
+            desiredQuestions,
+            questionsRef.current,
+          );
+          canonicalFallback = questionsWithLocalEdits;
+
+          if (questionsWithLocalEdits.length === 0) {
+            return [];
+          }
+
+          const savedApply = await saveApply(
+            Number(mockApplyId),
+            getSubmitPayload(questionsWithLocalEdits),
+          );
+          const persistedQuestions =
+            savedApply.questions.length === questionsWithLocalEdits.length
+              ? savedApply.questions
+              : questionsWithLocalEdits;
+
+          return mergeLocalQuestionEdits(
+            persistedQuestions,
+            desiredQuestions,
+            questionsRef.current,
+          );
+        });
+
+        if (revision === questionSaveRevisionRef.current) {
+          replaceQuestions(savedQuestions);
+        }
+
+        return savedQuestions;
+      } catch (error) {
+        if (
+          canonicalFallback &&
+          revision === questionSaveRevisionRef.current
+        ) {
+          const reconciledQuestions = mergeLocalQuestionEdits(
+            canonicalFallback,
+            desiredQuestions,
+            questionsRef.current,
+          );
+          replaceQuestions(reconciledQuestions);
+          console.error(
+            "문항 구성은 저장됐지만 답변 저장을 다시 시도해야 합니다.",
+            error,
+          );
+          return reconciledQuestions;
+        }
+        throw error;
+      } finally {
+        if (revision === questionSaveRevisionRef.current) {
+          isQuestionStructureSavingRef.current = false;
+        }
+      }
+    },
+    [enqueueQuestionSave, mockApplyId, replaceQuestions],
+  );
+
+  useEffect(() => {
+    questionsRef.current = questions;
+  }, [questions]);
 
   // 1. 초기 데이터 불러오기
   useEffect(() => {
@@ -81,7 +238,66 @@ export default function MockApplyPage({
         setIsQuestionsLoading(true);
         setQuestionsErrorMessage("");
 
-        let data = await fetchSelectedQuestions(Number(mockApplyId));
+        const parsedMockApplyId = Number(mockApplyId);
+        let data = await fetchSelectedQuestions(parsedMockApplyId);
+
+        if (ignore) {
+          return;
+        }
+
+        if (data.length === 0) {
+          const candidates = await fetchQuestions(parsedMockApplyId);
+
+          if (ignore) {
+            return;
+          }
+
+          const seenQuestionIds = new Set<number>();
+          const seenQuestionContents = new Set<string>();
+          const validCandidates = candidates.filter((question) => {
+            const normalizedContent = question.question
+              .trim()
+              .replace(/\s+/g, " ");
+            const questionId = question.questionId;
+
+            if (!normalizedContent) {
+              return false;
+            }
+            if (
+              (questionId && seenQuestionIds.has(questionId)) ||
+              seenQuestionContents.has(normalizedContent)
+            ) {
+              return false;
+            }
+
+            if (questionId) {
+              seenQuestionIds.add(questionId);
+            }
+            seenQuestionContents.add(normalizedContent);
+            return true;
+          });
+          const preselectedCandidates = validCandidates.filter(
+            (question) => question.selected,
+          );
+          const initialQuestions = (
+            preselectedCandidates.length > 0
+              ? preselectedCandidates
+              : validCandidates
+          ).slice(0, 5);
+
+          if (initialQuestions.length > 0) {
+            const savedQuestions = await saveQuestions(
+              parsedMockApplyId,
+              initialQuestions,
+            );
+
+            if (savedQuestions.length === 0) {
+              throw new Error("저장된 자소서 문항을 확인하지 못했습니다.");
+            }
+
+            data = savedQuestions;
+          }
+        }
 
         if (data.length > 5) {
           data = data.slice(0, 5);
@@ -91,12 +307,12 @@ export default function MockApplyPage({
           return;
         }
 
-        setQuestions(data);
+        replaceQuestions(data);
         setSelectedId(data[0]?.id ?? null);
 
         if (data.length === 0) {
           setQuestionsErrorMessage(
-            "공고에 맞는 자소서 문항을 불러오지 못했습니다.",
+            "등록된 문항이 없습니다. 문항 추가 버튼을 눌러 작성해주세요.",
           );
         }
       } catch (error) {
@@ -105,7 +321,7 @@ export default function MockApplyPage({
         }
 
         console.error("문항을 불러오지 못했습니다.", error);
-        setQuestions([]);
+        replaceQuestions([]);
         setSelectedId(null);
         setQuestionsErrorMessage(
           error instanceof Error
@@ -124,7 +340,7 @@ export default function MockApplyPage({
     return () => {
       ignore = true;
     };
-  }, [mockApplyId]);
+  }, [mockApplyId, replaceQuestions]);
 
   // 2. 연결된 채용 공고 불러오기
   useEffect(() => {
@@ -179,46 +395,77 @@ export default function MockApplyPage({
     };
   }, [mockApplyId]);
 
-  // 4. 토스트 타이머
+  // 4. 토스트 자동 닫힘
   useEffect(() => {
-    if (!toast.open || toast.variant !== "check") return;
-    const retryToastTimer = window.setTimeout(() => {
+    if (!toast.open) return;
+
+    const toastTimer = window.setTimeout(() => {
       setToast({ open: false, message: "", variant: "normal" });
     }, 3000);
-    return () => window.clearTimeout(retryToastTimer);
-  }, [toast.open, toast.variant]);
+
+    return () => window.clearTimeout(toastTimer);
+  }, [toast.open, toast.message]);
 
   useEffect(() => {
-    if (questions.length === 0) return;
+    if (
+      questions.length === 0 ||
+      isQuestionStructureSavingRef.current
+    ) {
+      return;
+    }
 
-    const autoSaveTimer = window.setTimeout(async () => {
-      try {
-        await saveApply(Number(mockApplyId), getSubmitPayload(questions));
+    const revision = questionSaveRevisionRef.current;
+    const questionsSnapshot = questions;
+    const autoSaveTimer = window.setTimeout(() => {
+      void enqueueQuestionSave(async () => {
+        if (
+          revision !== questionSaveRevisionRef.current ||
+          isQuestionStructureSavingRef.current
+        ) {
+          return;
+        }
 
-        const now = new Date();
-        const timeString = `${now.getHours()}:${String(
-          now.getMinutes(),
-        ).padStart(2, "0")}`;
-        setLastSavedTime(timeString);
-      } catch (error) {
-        console.error("자동 저장 실패:", error);
-      }
+        await saveApply(
+          Number(mockApplyId),
+          getSubmitPayload(questionsSnapshot),
+        );
+
+        if (revision === questionSaveRevisionRef.current) {
+          setLastSavedTime(getCurrentTime());
+        }
+      }).catch((error) => {
+        if (revision === questionSaveRevisionRef.current) {
+          console.error("자동 저장 실패:", error);
+        }
+      });
     }, 2000);
 
     return () => window.clearTimeout(autoSaveTimer);
-  }, [questions, mockApplyId]);
+  }, [enqueueQuestionSave, questions, mockApplyId]);
 
   // --- 이벤트 핸들러 모음 ---
 
   const handleConfirm = async () => {
     if (isSubmitting) return;
+    if (isQuestionStructureSavingRef.current) {
+      setToast({
+        open: true,
+        message: "문항 저장이 끝난 뒤 다시 시도해주세요.",
+        variant: "normal",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     setIsConfirmModalOpen(false);
+    questionSaveRevisionRef.current += 1;
 
     try {
-      const savedApply = await saveApply(
-        Number(mockApplyId),
-        getSubmitPayload(questions),
+      const savedApply = await enqueueQuestionSave(() =>
+        saveApply(
+          Number(mockApplyId),
+          getSubmitPayload(questionsRef.current),
+        ),
       );
       const acceptedAnalysis = await requestAnalysis(Number(mockApplyId));
       const analysisTaskId = acceptedAnalysis.taskId?.trim();
@@ -267,34 +514,61 @@ export default function MockApplyPage({
             : "채점 요청 중 오류가 발생했습니다.",
         variant: "normal",
       });
-      window.setTimeout(
-        () => setToast({ open: false, message: "", variant: "normal" }),
-        3000,
-      );
     }
   };
 
-  const performDelete = (targetId: string) => {
-    setQuestions((previousQuestions) => {
-      const targetIndex = previousQuestions.findIndex(
-        (question) => question.id === targetId,
-      );
-      const nextQuestions = previousQuestions.filter(
-        (question) => question.id !== targetId,
-      );
+  const performDelete = async (targetId: string) => {
+    if (isQuestionStructureSavingRef.current) {
+      setToast({
+        open: true,
+        message: "문항을 저장하고 있어요. 잠시 후 다시 시도해주세요.",
+        variant: "normal",
+      });
+      return;
+    }
 
-      if (selectedId === targetId) {
-        const nextSelectedIndex = Math.max(0, targetIndex - 1);
-        setSelectedId(nextQuestions[nextSelectedIndex]?.id ?? null);
+    const previousQuestions = questionsRef.current;
+    const targetIndex = previousQuestions.findIndex(
+      (question) => question.id === targetId,
+    );
+    if (targetIndex < 0) return;
+
+    const selectedIndex = previousQuestions.findIndex(
+      (question) => question.id === selectedId,
+    );
+    const desiredQuestions = previousQuestions.filter(
+      (question) => question.id !== targetId,
+    );
+
+    try {
+      const savedQuestions = await syncQuestionStructure(desiredQuestions);
+      let nextSelectedIndex = selectedIndex;
+
+      if (selectedIndex === targetIndex) {
+        nextSelectedIndex = Math.max(0, targetIndex - 1);
+      } else if (selectedIndex > targetIndex) {
+        nextSelectedIndex = selectedIndex - 1;
       }
 
-      return nextQuestions;
-    });
-    setToast({
-      open: true,
-      message: "문항이 삭제되었어요",
-      variant: "normal",
-    });
+      setSelectedId(savedQuestions[nextSelectedIndex]?.id ?? null);
+      setQuestionsErrorMessage(
+        savedQuestions.length === 0
+          ? "등록된 문항이 없습니다. 문항 추가 버튼을 눌러 작성해주세요."
+          : "",
+      );
+      setToast({
+        open: true,
+        message: "문항이 삭제되었어요",
+        variant: "normal",
+      });
+    } catch (error) {
+      console.error("문항 삭제 실패:", error);
+      setToast({
+        open: true,
+        message: "문항 삭제에 실패했어요. 잠시 후 다시 시도해주세요.",
+        variant: "normal",
+      });
+    }
   };
 
   const handleDeleteQuestion = (targetId: string) => {
@@ -306,42 +580,52 @@ export default function MockApplyPage({
     if (hasContent) {
       setModalTarget(targetId);
     } else {
-      performDelete(targetId);
+      void performDelete(targetId);
     }
   };
 
   const handleUpdate = (field: string, value: string) => {
     if (!selectedId) return;
-    setQuestions((prev) =>
-      prev.map((q) => {
+    setQuestions((previousQuestions) => {
+      const nextQuestions = previousQuestions.map((q) => {
         if (q.id !== selectedId) return q;
         if (field === "title") return { ...q, question: value };
         if (field === "answer") return { ...q, answer: value };
         if (field === "maxLength") return { ...q, maxLength: Number(value) };
         return q;
-      }),
-    );
+      });
+      questionsRef.current = nextQuestions;
+      return nextQuestions;
+    });
   };
 
   const handleAddQuestion = async () => {
+    if (
+      questionsRef.current.length >= 5 ||
+      isQuestionStructureSavingRef.current
+    ) {
+      return;
+    }
+
     try {
       const newQuestion: QuestionItem = {
-        id: `temp-${Date.now()}`, // 임시 ID
-        questionId: 0,
-        question: "",
+        id: `temp-${Date.now()}`,
+        question: "새로운 문항",
         answer: "",
         maxLength: 1000,
+        custom: true,
       };
 
-      const updatedQuestions = [...questions, newQuestion];
-      await saveQuestions(Number(mockApplyId), updatedQuestions);
+      const desiredQuestions = [...questionsRef.current, newQuestion];
+      const savedQuestions = await syncQuestionStructure(desiredQuestions);
 
-      const refreshedQuestions = await fetchSelectedQuestions(
-        Number(mockApplyId),
-      );
-      setQuestions(refreshedQuestions);
+      if (savedQuestions.length !== desiredQuestions.length) {
+        throw new Error("추가된 자소서 문항을 확인하지 못했습니다.");
+      }
 
-      const lastQuestion = refreshedQuestions[refreshedQuestions.length - 1];
+      setQuestionsErrorMessage("");
+
+      const lastQuestion = savedQuestions[savedQuestions.length - 1];
       if (lastQuestion) setSelectedId(lastQuestion.id);
     } catch (error) {
       console.error("문항 추가 실패:", error);
@@ -378,21 +662,16 @@ export default function MockApplyPage({
       nextLabel="채점하기"
       nextIconType="SPARKLE"
     >
-      <div
-        className={clsx(
-          "flex h-full flex-col overflow-hidden bg-bg-default",
-          scrollbarClassS,
-        )}
-      >
+      <div className="flex h-full min-h-0 flex-col overflow-hidden bg-bg-default">
         <main
           className={clsx(
-            "flex-1 flex gap-6 transition-all duration-300 ease-in-out",
+            "flex min-h-0 min-w-0 flex-1 gap-6 overflow-hidden transition-all duration-300 ease-in-out",
             isPanelOpen ? "mr-[300px]" : "mr-0",
           )}
         >
-          <div className="flex min-h-0 flex-1 items-center justify-between self-stretch w-full">
-            <aside className="flex min-h-0 w-[360px] shrink-0 flex-col items-start justify-between self-stretch pt-20 pr-0 pb-16 pl-20">
-              <div className="flex w-full flex-col items-start gap-8">
+          <div className="flex min-h-0 w-full min-w-0 flex-1 items-stretch justify-between self-stretch overflow-hidden">
+            <aside className="flex min-h-0 w-[360px] shrink-0 flex-col items-start justify-between self-stretch overflow-hidden pt-20 pr-0 pb-16 pl-20">
+              <div className="flex w-full min-w-0 flex-col items-start gap-8">
                 <div className="flex flex-col items-start gap-5">
                   <h1 className="whitespace-pre-line text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
                     {"지원한 회사 기준으로\n채점하고 있어요"}
@@ -411,7 +690,7 @@ export default function MockApplyPage({
 
             <div
               className={clsx(
-                "flex-1 overflow-y-auto flex flex-col pt-16 pl-16 pr-[40px] items-center",
+                "flex min-h-0 min-w-0 flex-1 flex-col items-center self-stretch overflow-y-auto overflow-x-hidden pt-16 pr-[40px] pb-16 pl-16",
                 scrollbarClassS,
               )}
             >
@@ -453,19 +732,26 @@ export default function MockApplyPage({
         )}
 
         {modalTarget && (
-          <ModalOverlay>
-            <ModalCard
-              title="문항을 삭제할까요?"
-              description="작성한 내용이 모두 사라집니다."
-              secondaryBtn="취소"
-              errorBtn="삭제"
-              onSecondaryClick={() => setModalTarget(null)}
-              onErrorClick={() => {
-                performDelete(modalTarget);
-                setModalTarget(null);
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+            <ModalNotice
+              type="confirmation"
+              title="정말로 문항을 삭제할까요?"
+              description="삭제된 내용은 복구되지 않아요."
+              onClose={() => setModalTarget(null)}
+              secondaryAction={{
+                label: "취소",
+                onClick: () => setModalTarget(null),
+              }}
+              primaryAction={{
+                label: "삭제하기",
+                styleType: "error",
+                onClick: () => {
+                  void performDelete(modalTarget);
+                  setModalTarget(null);
+                },
               }}
             />
-          </ModalOverlay>
+          </div>
         )}
 
         {isLeaveModalOpen && (
@@ -485,16 +771,23 @@ export default function MockApplyPage({
         )}
 
         {isConfirmModalOpen && (
-          <ModalOverlay>
-            <ModalCard
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+            <ModalNotice
+              type="confirmation"
               title="이대로 채점할까요?"
               description="지원 시 1 크레딧이 차감되며, 취소할 수 없어요."
-              secondaryBtn="닫기"
-              primaryBtn="지원하기"
-              onSecondaryClick={() => setIsConfirmModalOpen(false)}
-              onPrimaryClick={handleConfirm}
+              onClose={() => setIsConfirmModalOpen(false)}
+              secondaryAction={{
+                label: "닫기",
+                onClick: () => setIsConfirmModalOpen(false),
+              }}
+              primaryAction={{
+                label: "지원하기",
+                onClick: () => void handleConfirm(),
+                disabled: isSubmitting,
+              }}
             />
-          </ModalOverlay>
+          </div>
         )}
 
         {isCreditShortModalOpen && (

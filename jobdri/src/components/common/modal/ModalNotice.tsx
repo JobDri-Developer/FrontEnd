@@ -3,7 +3,7 @@
 import type { ButtonHTMLAttributes } from "react";
 import { useRef } from "react";
 import clsx from "clsx";
-import { Button } from "@/components/common/buttons";
+import { Button, type ButtonStyle } from "@/components/common/buttons";
 import useOutsideClick from "@/hooks/useOutsideClick";
 
 type ModalNoticeVariant = "single" | "double";
@@ -20,6 +20,7 @@ interface ModalNoticeActionProps extends Omit<
   "children"
 > {
   label?: string;
+  styleType?: ButtonStyle;
 }
 
 interface ModalNoticeProps {
@@ -46,14 +47,17 @@ export default function ModalNotice({
   className,
 }: ModalNoticeProps) {
   const modalRef = useRef<HTMLDivElement>(null);
-  const variant = variantProp ?? (type ? (TYPE_TO_VARIANT[type] ?? "single") : "single");
+  const variant =
+    variantProp ?? (type ? (TYPE_TO_VARIANT[type] ?? "single") : "single");
   const {
     label: primaryLabel = variant === "single" ? "닫기" : "입력하기",
+    styleType: primaryStyleType = "secondary",
     className: primaryClassName,
     ...primaryButtonProps
   } = primaryAction;
   const {
     label: secondaryLabel = "닫기",
+    styleType: secondaryStyleType = "quaternary",
     className: secondaryClassName,
     ...secondaryButtonProps
   } = secondaryAction;
@@ -86,7 +90,7 @@ export default function ModalNotice({
         {variant === "single" ? (
           <Button
             label={primaryLabel}
-            styleType="secondary"
+            styleType={primaryStyleType}
             size="large"
             className={clsx("flex-1 tracking-normal", primaryClassName)}
             {...primaryButtonProps}
@@ -95,14 +99,14 @@ export default function ModalNotice({
           <>
             <Button
               label={secondaryLabel}
-              styleType="quaternary"
+              styleType={secondaryStyleType}
               size="large"
               className={clsx("flex-1 tracking-normal", secondaryClassName)}
               {...secondaryButtonProps}
             />
             <Button
               label={primaryLabel}
-              styleType="secondary"
+              styleType={primaryStyleType}
               size="large"
               className={clsx("flex-1 tracking-normal", primaryClassName)}
               {...primaryButtonProps}
