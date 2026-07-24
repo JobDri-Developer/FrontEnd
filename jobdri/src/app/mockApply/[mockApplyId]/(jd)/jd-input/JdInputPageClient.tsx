@@ -144,7 +144,7 @@ const JdInputPageClient = forwardRef<
 >(function JdInputPageClient({ selectedMethod, onMethodChange }, ref) {
   const { mockApplyId: id } = useParams<{ mockApplyId: string }>();
   const router = useRouter();
-  const manualJdReviewPath = `/mockApply/actual/${id}/jd-review?mode=manual`;
+  const manualJdReviewPath = `/mockApply/${id}/jd-review?mode=manual`;
   const activeRequestIdRef = useRef(0);
 
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
@@ -248,15 +248,47 @@ const JdInputPageClient = forwardRef<
 
   const moveToJdReviewWithResult = (status: JobPostingIngestStatus) => {
     const result = status.result;
-    const jobPosting = result?.generated ?? result?.extracted;
+    const generated = result?.generated;
+    const extracted = result?.extracted;
+    const saved = result?.saved;
+    const classification = result?.classification;
+    const firstNonEmpty = (...values: Array<string | null | undefined>) =>
+      values.find((value) => value?.trim())?.trim() ?? "";
+    const jobPosting = {
+      companyName: firstNonEmpty(
+        generated?.companyName,
+        extracted?.companyName,
+        saved?.companyName,
+      ),
+      jobTitle: firstNonEmpty(
+        saved?.jobTitle,
+        generated?.jobTitle,
+        extracted?.jobTitle,
+        classification?.detailClassificationName,
+      ),
+      task: firstNonEmpty(generated?.task, extracted?.task, saved?.task),
+      requirements: firstNonEmpty(
+        generated?.requirements,
+        extracted?.requirements,
+        saved?.requirement,
+      ),
+      preferredQualifications: firstNonEmpty(
+        generated?.preferredQualifications,
+        extracted?.preferredQualifications,
+        saved?.preferred,
+      ),
+    };
 
-    if (!jobPosting) {
-      throw new Error("추출된 공고 정보를 확인할 수 없습니다.");
+    if (!Object.values(jobPosting).some(Boolean)) {
+      throw new Error(
+        result?.message ||
+          "이미지에서 공고 정보를 추출하지 못했습니다. 더 선명한 이미지를 사용해주세요.",
+      );
     }
 
     const detailClassificationId =
-      result?.saved?.detailClassificationId ??
-      result?.classification?.detailClassificationId ??
+      saved?.detailClassificationId ??
+      classification?.detailClassificationId ??
       result?.candidates?.[0]?.detailClassificationId ??
       0;
 
@@ -267,21 +299,24 @@ const JdInputPageClient = forwardRef<
     window.sessionStorage.setItem(
       getJdReviewMetadataStorageKey(id),
       JSON.stringify({
-        companySize: result?.saved?.companySize ?? "STARTUP",
+        companySize: saved?.companySize ?? "STARTUP",
         detailClassificationId,
+        profileColor: saved?.profileColor ?? "DEFAULT",
+        postingName: firstNonEmpty(saved?.postingName, jobPosting.jobTitle),
+        jobTitle: jobPosting.jobTitle,
       }),
     );
 
-    if (result?.saved) {
+    if (saved) {
       window.sessionStorage.setItem(
         getJdReviewSavedStorageKey(id),
-        JSON.stringify(result.saved),
+        JSON.stringify(saved),
       );
     } else {
       window.sessionStorage.removeItem(getJdReviewSavedStorageKey(id));
     }
 
-    router.push(`/mockApply/actual/${id}/jd-review`);
+    router.push(`/mockApply/${id}/jd-review`);
   };
 
   const processJobPosting = async ({

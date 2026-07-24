@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import {
-  CreatedAt,
-  handleApplicationCardKeyDown,
-} from "./ApplicationCardShared";
+import { handleApplicationCardKeyDown } from "./ApplicationCardShared";
 import type { ApplicationCardData } from "./types";
 import Avatar from "./Avatar";
 import Icon from "@/components/common/icons/Icon";
@@ -12,6 +9,7 @@ import { DropDownMenu } from "@/components/common/dropdown";
 
 export function ResultApplicationCard({
   company,
+  profileColor,
   position,
   createdAt,
   score,
@@ -69,7 +67,12 @@ export function ResultApplicationCard({
       <div className="flex flex-col self-stretch w-full">
         <div className="flex items-center justify-between self-stretch mb-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <Avatar name={company} type="company" size="small" />
+            <Avatar
+              name={company}
+              type="company"
+              color={profileColor}
+              size="small"
+            />
             <span className="max-w-full truncate text-b16-semibold text-text-neutral-title">
               {company}
             </span>

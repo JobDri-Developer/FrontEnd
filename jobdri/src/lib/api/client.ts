@@ -32,8 +32,9 @@ export function handleUnauthorized(): never {
 export async function parseApiResponse<T>(
   response: Response,
   fallbackMessage: string,
+  { redirectOnUnauthorized = true } = {},
 ): Promise<T> {
-  if (response.status === 401) {
+  if (response.status === 401 && redirectOnUnauthorized) {
     handleUnauthorized();
   }
 

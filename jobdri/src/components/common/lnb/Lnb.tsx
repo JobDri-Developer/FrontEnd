@@ -207,7 +207,7 @@ export default function Lnb({
   // Credit Fetch
   useEffect(() => {
     if (disableCreditFetch) return;
-    fetchCreditBalance()
+    fetchCreditBalance({ redirectOnUnauthorized: false })
       .then(setCreditCount)
       .catch(() => {});
   }, [disableCreditFetch]);

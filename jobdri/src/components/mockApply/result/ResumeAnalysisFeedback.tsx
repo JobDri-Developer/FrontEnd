@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { CtaFooter } from "@/components/common/cta";
+import clsx from "clsx";
 import Divider from "@/components/common/Divider";
 import Icon from "@/components/common/icons/Icon";
 import {
@@ -23,41 +22,9 @@ interface ResumeAnalysisFeedbackProps {
   analysisData: AnalysisResult;
 }
 
-const scoreItems = [
-  { label: "직무 적합성", score: 86, tone: "primary" },
-  { label: "정량적 성과", score: 72, tone: "danger" },
-  { label: "논리 구조", score: 86, tone: "primary" },
-] as const;
-
 const reviewTabs = [
   { id: "strengths", label: "핵심 강점" },
   { id: "weaknesses", label: "핵심 약점" },
-];
-
-const strengthEvaluations = [
-  {
-    content: "직무 연관 경험이 명확하게 드러나요",
-    quote:
-      '"UX 리서치를 통해 핵심 불편 지점을 발굴하고, 이를 기능 개선으로 연결한 경..."',
-  },
-  {
-    content: "수치 기반 성과 서술이 신뢰감을 줘요",
-    quote:
-      '"리텐션율 23% 개선, MAU 15% 증가라는 정량적 결과를 이끌어낸 경험이..."',
-  },
-];
-
-const weaknessEvaluations = [
-  {
-    content: "멘트 더미텍스트입니다. 최대 한 줄",
-    quote:
-      "자소서 본문 인용 더미텍스트입니다. 최대 한 줄, 자소서 본문 인용 더미텍스트...",
-  },
-  {
-    content: "멘트 더미텍스트입니다. 최대 한 줄",
-    quote:
-      "자소서 본문 인용 더미텍스트입니다. 최대 한 줄, 자소서 본문 인용 더미텍스트...",
-  },
 ];
 
 function ScoreSummaryIcon() {
@@ -188,11 +155,17 @@ function ReviewSummaryCard({ data }: { data: AnalysisResult }) {
   const isStrengthTab = activeTabId === "strengths";
 
   const evaluations = isStrengthTab
-    ? data.keyStrengths || []
-    : data.keyWeaknesses || [];
+    ? data.keyStrengths
+    : data.keyWeaknesses;
+  const hasSingleEvaluation = evaluations.length === 1;
 
   return (
-    <aside className="flex min-w-[360px] max-w-[480px] [flex:1_0_0] flex-col items-start justify-between self-stretch rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7">
+    <aside
+      className={clsx(
+        "flex min-w-[360px] max-w-[480px] [flex:1_0_0] flex-col items-start self-stretch rounded-card-l bg-bg-contents-default px-6 pt-4 pb-7",
+        hasSingleEvaluation ? "justify-start gap-5" : "justify-between",
+      )}
+    >
       <div className="flex h-9 items-center gap-2 self-stretch pl-1">
         <ReviewSummaryIcon />
         <span className="flex-1 text-label14-semibold text-text-neutral-description">
@@ -222,8 +195,6 @@ function ReviewSummaryCard({ data }: { data: AnalysisResult }) {
 }
 
 export default function ResumeAnalysisFeedback({
-  mockApplyId,
-  sequence,
   analysisData,
   children,
 }: ResumeAnalysisFeedbackProps) {

@@ -6,6 +6,7 @@ import Avatar from "../home/Avatar";
 import Icon from "@/components/common/icons/Icon";
 import Divider from "@/components/common/Divider";
 import { scrollbarClassS } from "@/components/common/scrollbar/scrollbarStyles";
+import type { JobPostingProfileColor } from "@/lib/api/jobPostings";
 
 export interface JDSectionItem {
   subtitle: string;
@@ -14,6 +15,7 @@ export interface JDSectionItem {
 
 export interface JDData {
   companyName: string;
+  profileColor?: JobPostingProfileColor;
   title: string;
   sections: JDSectionItem[];
 }
@@ -25,36 +27,17 @@ interface JDSidePanelProps {
   data?: JDData;
 }
 
-const defaultJdData: JDData = {
-  companyName: "토스",
-  title: "공고 제목 더미텍스트 공고 제목 더미텍스트공고...",
-  sections: [
-    {
-      subtitle: "직무",
-      content: "프로덕트 디자인 및 UI/UX 인터랙션 설계",
-    },
-    {
-      subtitle: "자격요건",
-      content: [
-        "3년 이상의 프로덕트 디자인 경력",
-        "모바일 앱 디자인 포트폴리오 보유",
-      ],
-    },
-    {
-      subtitle: "우대사항",
-      content: [
-        "3년 이상의 프로덕트 디자인 경력",
-        "모바일 앱 디자인 포트폴리오 보유",
-      ],
-    },
-  ],
+const emptyJdData: JDData = {
+  companyName: "",
+  title: "공고 정보를 불러오는 중입니다.",
+  sections: [],
 };
 
 export default function JDSidePanel({
   isOpen,
   onClose,
   onOpen,
-  data = defaultJdData,
+  data = emptyJdData,
 }: JDSidePanelProps) {
   return (
     <div
@@ -89,7 +72,11 @@ export default function JDSidePanel({
           <div className="flex-1 flex flex-col px-5 py-4 overflow-y-auto w-full">
             {/* 헤더 (기업 아바타 + 타이틀) */}
             <div className="w-full flex flex-col items-start gap-2 pb-3 px-1">
-              <Avatar type="company" name={data.companyName} />
+              <Avatar
+                type="company"
+                name={data.companyName}
+                color={data.profileColor}
+              />
               <h2 className="text-b16-semibold text-text-neutral-title leading-snug break-keep">
                 {data.title}
               </h2>
