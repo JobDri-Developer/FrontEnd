@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
@@ -141,6 +141,7 @@ export function mapApiToLnbItem(
     timestamp: formatDate(item.createdAt),
     type: mapNotificationType(item.type),
     read: item.isRead,
+    readAt: item.readAt,
     targetType: item.targetType,
     mockApplyId,
     apiType: item.type,
@@ -304,13 +305,39 @@ function LnbNotificationList({
   const { scrollRef, showGradient, checkScroll } =
     useScrollGradient<HTMLDivElement>([notificationItems]);
 
-  const sortedItems = [...notificationItems].sort((a, b) => {
-    const aRead = a.read ?? false;
-    const bRead = b.read ?? false;
-    if (!aRead && bRead) return -1;
-    if (aRead && !bRead) return 1;
-    return 0;
-  });
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setNow(Date.now());
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const sortedItems = useMemo(() => {
+    let filteredItems = notificationItems;
+
+    if (now !== null) {
+      const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+
+      filteredItems = notificationItems.filter((item) => {
+        if (!item.read) return true;
+        if (!item.readAt) return true;
+
+        const readTime = new Date(item.readAt).getTime();
+        return readTime >= sevenDaysAgo;
+      });
+    }
+
+    return [...filteredItems].sort((a, b) => {
+      const aRead = a.read ?? false;
+      const bRead = b.read ?? false;
+      if (!aRead && bRead) return -1;
+      if (aRead && !bRead) return 1;
+      return 0;
+    });
+  }, [notificationItems, now]);
 
   return (
     <div className="flex h-[318px] w-[460px] shrink-0 flex-col items-start gap-0 pt-2 pr-1.5 pb-4 pl-1.5">
@@ -330,6 +357,7 @@ function LnbNotificationList({
           )}
         >
           <div className="flex min-w-0 flex-col items-start self-stretch">
+            {/* 💡 정렬과 필터링이 모두 완료된 sortedItems를 매핑합니다 */}
             {sortedItems.map((notificationItem) => {
               if (!notificationItem.id || notificationItem.id === "undefined") {
                 return null;
@@ -353,7 +381,6 @@ function LnbNotificationList({
     </div>
   );
 }
-
 function LnbNotificationEmptyState() {
   return (
     <div className="flex h-[318px] w-[460px] flex-col items-center justify-center gap-5 px-4 py-2">

@@ -7,6 +7,7 @@ export interface ApiNotificationItem {
   title: string;
   body: string;
   isRead: boolean;
+  readAt: string;
   createdAt: string;
   targetType?: string;
   targetId?: string;
@@ -28,6 +29,7 @@ export interface LnbNotificationItem {
   targetId?: string;
   mockApplyId?: string;
   apiType?: string;
+  readAt?: string;
 }
 
 export interface NotificationResponse {
