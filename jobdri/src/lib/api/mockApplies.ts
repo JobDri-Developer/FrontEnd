@@ -2,11 +2,9 @@ import {
   API_BASE_URL,
   getAuthHeaders,
   parseApiResponse,
+  parseApiResponseAllowNull,
 } from "@/lib/api/client";
-import type {
-  JobPostingProfileColor,
-  SavedJobPosting,
-} from "@/lib/api/jobPostings";
+import type { SavedJobPosting } from "@/lib/api/jobPostings";
 
 export type JobPostingApplyType = "MOCK" | "ACTUAL";
 export type MockApplyProgressStatus =
@@ -45,18 +43,16 @@ export interface MockApplyResumeRecord {
 
 export interface MockApplyHomeItem {
   mockApplyId: number;
-  resumePath?: string | null;
+  resumePath: string;
   jobPostingId: number;
+  sequence: number;
   status: MockApplyProgressStatus | string;
   companyName: string;
-  profileColor?: JobPostingProfileColor | null;
-  postingName?: string | null;
-  detailClassificationName?: string | null;
-  jobTitle?: string | null;
+  detailClassificationName: string;
+  jobTitle: string;
   createdAt: string;
   applyType: JobPostingApplyType;
-  score?: number | null;
-  version: number;
+  score: number;
 }
 
 export interface MockApplyHomeList {
@@ -65,6 +61,7 @@ export interface MockApplyHomeList {
 }
 
 export const APPLY_TYPE_STORAGE_KEY = "jobdri.applyType";
+export const MOCK_APPLY_DELETED_EVENT = "jobdri:mock-apply-deleted";
 const MOCK_APPLY_RESUME_STORAGE_KEY = "jobdri.mockApplyResumeRecords";
 
 async function postMockApplyFromJobPosting(
@@ -141,6 +138,32 @@ export async function fetchMyMockApplies({
     inProgress: result.inProgress ?? [],
     completed: result.completed ?? [],
   };
+}
+
+export async function deleteMockApply(mockApplyId: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    },
+  );
+  const result = await parseApiResponseAllowNull<unknown>(
+    response,
+    "모의 서류 지원 삭제에 실패했습니다.",
+  );
+
+  removeMockApplyResumeRecord(mockApplyId);
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent<number>(MOCK_APPLY_DELETED_EVENT, {
+        detail: mockApplyId,
+      }),
+    );
+  }
+
+  return result;
 }
 
 export async function fetchMockApplyJobPosting(
@@ -244,6 +267,26 @@ export function saveMockApplyResumeRecord({
         record.mockApplyId !== mockApplyId,
     ),
   ];
+
+  window.localStorage.setItem(
+    MOCK_APPLY_RESUME_STORAGE_KEY,
+    JSON.stringify(nextRecords),
+  );
+}
+
+export function removeMockApplyResumeRecord(mockApplyId: number) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const nextRecords = getMockApplyResumeRecords().filter(
+    (record) => record.mockApplyId !== mockApplyId,
+  );
+
+  if (nextRecords.length === 0) {
+    window.localStorage.removeItem(MOCK_APPLY_RESUME_STORAGE_KEY);
+    return;
+  }
 
   window.localStorage.setItem(
     MOCK_APPLY_RESUME_STORAGE_KEY,

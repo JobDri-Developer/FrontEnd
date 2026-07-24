@@ -81,7 +81,7 @@ export function mapMockApplyToApplication(
     jobPostingId: item.jobPostingId,
     company: companyName || "회사명 미입력",
     hasCompanyName: companyName.length > 0,
-    profileColor: item.profileColor ?? "DEFAULT",
+    profileColor: "DEFAULT",
     position: item.jobTitle || item.detailClassificationName || "직무 미분류",
     createdAt: formatCreatedAt(item.createdAt),
     createdAtTime: getCreatedAtTime(item.createdAt),
@@ -90,7 +90,7 @@ export function mapMockApplyToApplication(
     resumePath: item.resumePath,
     status,
     applyType: item.applyType,
-    version: item.version ?? 1,
+    version: item.sequence ?? 1,
   };
 }
 

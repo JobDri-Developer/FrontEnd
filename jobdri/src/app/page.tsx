@@ -7,6 +7,7 @@ import { Lnb } from "@/components/common/lnb";
 import ResultDraftList from "@/components/mockApply/home/ResultDraftList";
 import ResultApplicationList from "@/components/mockApply/home/ResultApplicationList";
 import {
+  deleteMockApply,
   fetchMyMockApplies,
   saveSelectedApplyType,
 } from "@/lib/api/mockApplies";
@@ -146,7 +147,7 @@ export default function Home() {
               "직무 미지정",
             createdAt: formatDate(item.createdAt),
             score: item.score || 0,
-            version: item.version || 1,
+            version: item.sequence ?? 1,
             status: "completed",
           };
         });
@@ -173,6 +174,21 @@ export default function Home() {
       console.error("채용 공고를 삭제하지 못했습니다.", error);
     }
   };
+
+  const deleteApplication = async (mockApplyId: number) => {
+    try {
+      await deleteMockApply(mockApplyId);
+      setDrafts((current) =>
+        current.filter((draft) => draft.mockApplyId !== mockApplyId),
+      );
+      setResults((current) =>
+        current.filter((result) => result.mockApplyId !== mockApplyId),
+      );
+    } catch (error) {
+      console.error("모의 서류 지원을 삭제하지 못했습니다.", error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen w-full bg-[#F5F6F9] overflow-x-hidden ">
       <Lnb className="shrink-0" />
@@ -249,7 +265,11 @@ export default function Home() {
               onDelete={(id) => {
                 const targetDraft = drafts.find((draft) => draft.id === id);
 
-                if (targetDraft) {
+                if (!targetDraft) return;
+
+                if (typeof targetDraft.mockApplyId === "number") {
+                  void deleteApplication(targetDraft.mockApplyId);
+                } else {
                   void deletePosting(targetDraft.jobPostingId);
                 }
               }}
@@ -258,7 +278,7 @@ export default function Home() {
             {/* 분석 완료 섹션 */}
             <ResultApplicationList
               applications={results}
-              onDelete={(app) => void deletePosting(app.jobPostingId)}
+              onDelete={(app) => void deleteApplication(app.mockApplyId)}
               onRetry={(app) => void reApply(app.mockApplyId)}
               onResume={(app) => {
                 router.push(

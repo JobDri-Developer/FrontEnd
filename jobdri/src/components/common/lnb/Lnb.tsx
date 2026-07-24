@@ -12,7 +12,10 @@ import {
   requestLogout,
 } from "@/lib/auth";
 import { fetchCreditBalance } from "@/lib/api/credit";
-import { fetchMyMockApplies } from "@/lib/api/mockApplies";
+import {
+  fetchMyMockApplies,
+  MOCK_APPLY_DELETED_EVENT,
+} from "@/lib/api/mockApplies";
 import LnbDefault from "./LnbDefault";
 import LnbFolded from "./LnbFolded";
 import {
@@ -105,7 +108,7 @@ export default function Lnb({
           companyName: item.companyName,
           jobTitle:
             item.jobTitle || item.detailClassificationName || "직무 미지정",
-          version: item.version ?? 1,
+          version: item.sequence ?? 1,
         }));
 
         setRecentItems(mappedItems);
@@ -119,6 +122,31 @@ export default function Lnb({
     };
 
     loadData();
+  }, []);
+
+  useEffect(() => {
+    const handleMockApplyDeleted = (event: Event) => {
+      const mockApplyId = (event as CustomEvent<number>).detail;
+
+      setRecentItems((current) =>
+        current.filter((item) => item.id !== String(mockApplyId)),
+      );
+      setSelectedRecentItemId((current) =>
+        current === String(mockApplyId) ? "" : current,
+      );
+    };
+
+    window.addEventListener(
+      MOCK_APPLY_DELETED_EVENT,
+      handleMockApplyDeleted,
+    );
+
+    return () => {
+      window.removeEventListener(
+        MOCK_APPLY_DELETED_EVENT,
+        handleMockApplyDeleted,
+      );
+    };
   }, []);
 
   // Credit Fetch
