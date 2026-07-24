@@ -1,14 +1,4 @@
 "use client";
-<<<<<<< HEAD
-
-import { useEffect, useMemo, useState } from "react";
-import Header from "@/components/common/header/Header";
-import ProgressPanelRow from "@/components/common/progress/ProgressPanelRow";
-import { TextButton } from "@/components/common/buttons";
-import resumeAnalysisLoading from "@/assets/lottie/resume-analysis-loading.json";
-import LoadingGraphic from "@/components/mockApply/LoadingGraphic";
-import { ModalCard } from "@/components/common/modal/ModalCard";
-=======
 import { useState, useEffect, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { QuestionList } from "@/components/mockApply/Question/QuestionList";
@@ -35,43 +25,8 @@ import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 import { fetchMyJobPosting } from "@/lib/api/jobPostings";
 import type { JDData } from "@/components/mockApply/Question/SidePanel";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
->>>>>>> develop
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 
-interface ResumeAnalysisLoadingProps {
-  durationMs: number;
-  onBack?: () => void;
-  onComplete?: () => void;
-  applicationLabel?: string;
-  isFailed?: boolean;
-  onErrorConfirm?: () => void;
-}
-
-<<<<<<< HEAD
-function formatRemainingTime(totalSeconds: number) {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-
-  if (minutes === 0) {
-    return `${seconds}초`;
-  }
-
-  return `${minutes}분 ${seconds}초`;
-}
-
-export default function ResumeAnalysisLoading({
-  durationMs,
-  onBack,
-  onComplete,
-  applicationLabel,
-  isFailed = false,
-  onErrorConfirm,
-}: ResumeAnalysisLoadingProps) {
-  const initialRemainingSeconds = Math.max(1, Math.ceil(durationMs / 1000));
-  const [remainingSeconds, setRemainingSeconds] = useState(
-    initialRemainingSeconds,
-  );
-  const [currentStep, setCurrentStep] = useState(1);
-=======
 export default function MockApplyPage({
   params,
 }: {
@@ -102,17 +57,14 @@ export default function MockApplyPage({
     open: boolean;
     message: string;
     variant?: string;
-  }>({
-    open: false,
-    message: "",
-    variant: "normal",
-  });
+  }>({ open: false, message: "", variant: "normal" });
+
   const [modalTarget, setModalTarget] = useState<string | null>(null);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // 데이터 포맷팅 함수
+
   const getSubmitPayload = (questionsData: QuestionItem[]) => {
     return questionsData.map((q) => ({
       questionId: q.questionId,
@@ -122,10 +74,9 @@ export default function MockApplyPage({
     }));
   };
 
-  // 초기 데이터 불러오기
+  // 1. 초기 데이터 불러오기
   useEffect(() => {
     let ignore = false;
-
     const loadQuestions = async () => {
       try {
         setIsQuestionsLoading(true);
@@ -139,14 +90,10 @@ export default function MockApplyPage({
           selectedResult.status === "fulfilled" ? selectedResult.value : [];
 
         if (data.length === 0) {
-          if (candidatesResult.status === "rejected") {
+          if (candidatesResult.status === "rejected")
             throw candidatesResult.reason;
-          }
-
           const candidates = candidatesResult.value;
-          const preselectedCandidates = candidates.filter(
-            (question) => question.selected,
-          );
+          const preselectedCandidates = candidates.filter((q) => q.selected);
           const initialQuestions = (
             preselectedCandidates.length > 0
               ? preselectedCandidates
@@ -158,29 +105,20 @@ export default function MockApplyPage({
             const savedQuestions = await fetchSelectedQuestions(
               Number(mockApplyId),
             ).catch(() => []);
-            data = savedQuestions.length > 0
-              ? savedQuestions
-              : initialQuestions;
+            data =
+              savedQuestions.length > 0 ? savedQuestions : initialQuestions;
           }
         }
 
-        if (ignore) {
-          return;
-        }
-
+        if (ignore) return;
         setQuestions(data);
         setSelectedId(data[0]?.id ?? null);
-
-        if (data.length === 0) {
+        if (data.length === 0)
           setQuestionsErrorMessage(
             "공고에 맞는 자소서 문항을 불러오지 못했습니다.",
           );
-        }
       } catch (error) {
-        if (ignore) {
-          return;
-        }
-
+        if (ignore) return;
         console.error("문항을 불러오지 못했습니다.", error);
         setQuestions([]);
         setSelectedId(null);
@@ -190,56 +128,39 @@ export default function MockApplyPage({
             : "자소서 문항을 불러오지 못했습니다.",
         );
       } finally {
-        if (!ignore) {
-          setIsQuestionsLoading(false);
-        }
+        if (!ignore) setIsQuestionsLoading(false);
       }
     };
-
     void loadQuestions();
-
     return () => {
       ignore = true;
     };
   }, [mockApplyId]);
 
+  // 2. 공고 시퀀스 불러오기
   useEffect(() => {
-    if (hasRequestedJobPostingId) {
-      return;
-    }
-
+    if (hasRequestedJobPostingId) return;
     let ignore = false;
-
     fetchSequence(Number(mockApplyId))
       .then((sequence) => {
-        if (!ignore) {
-          setSequenceJobPostingId(sequence.jobPostingId);
-        }
+        if (!ignore) setSequenceJobPostingId(sequence.jobPostingId);
       })
       .catch((error) => {
-        if (!ignore) {
+        if (!ignore)
           console.error("연결된 채용 공고를 확인하지 못했습니다.", error);
-        }
       });
-
     return () => {
       ignore = true;
     };
   }, [hasRequestedJobPostingId, mockApplyId]);
 
+  // 3. JD 데이터 불러오기
   useEffect(() => {
-    if (!jobPostingId) {
-      return;
-    }
-
+    if (!jobPostingId) return;
     let ignore = false;
-
     fetchMyJobPosting(jobPostingId)
       .then((jobPosting) => {
-        if (ignore) {
-          return;
-        }
-
+        if (ignore) return;
         setJdData({
           companyName: jobPosting.companyName,
           profileColor: jobPosting.profileColor,
@@ -251,8 +172,7 @@ export default function MockApplyPage({
             {
               subtitle: "직무",
               content:
-                jobPosting.jobTitle ||
-                jobPosting.detailClassificationName,
+                jobPosting.jobTitle || jobPosting.detailClassificationName,
             },
             { subtitle: "주요 업무", content: jobPosting.task },
             { subtitle: "자격요건", content: jobPosting.requirement },
@@ -270,59 +190,26 @@ export default function MockApplyPage({
         });
       })
       .catch((error) => {
-        if (!ignore) {
-          console.error("채용 공고를 불러오지 못했습니다.", error);
-        }
+        if (!ignore) console.error("채용 공고를 불러오지 못했습니다.", error);
       });
-
     return () => {
       ignore = true;
     };
   }, [jobPostingId]);
 
-  // 자동 저장 타이머
+  // 4. 토스트 타이머
   useEffect(() => {
     if (!toast.open || toast.variant !== "check") return;
-
     const retryToastTimer = window.setTimeout(() => {
       setToast({ open: false, message: "", variant: "normal" });
     }, 3000);
-
     return () => window.clearTimeout(retryToastTimer);
   }, [toast.open, toast.variant]);
->>>>>>> develop
 
-  useEffect(() => {
-    if (isFailed) return;
+  // --- 이벤트 핸들러 모음 ---
 
-    const countdownTimer = window.setInterval(() => {
-      setRemainingSeconds((prev) => Math.max(prev - 1, 0));
-    }, 1000);
-
-    const completeTimer = window.setTimeout(() => {
-      onComplete?.();
-    }, durationMs);
-
-    const secondStepTimer = window.setTimeout(() => {
-      setCurrentStep(2);
-    }, durationMs / 4);
-
-    const thirdStepTimer = window.setTimeout(() => {
-      setCurrentStep(3);
-    }, durationMs / 2);
-
-<<<<<<< HEAD
-    const fourthStepTimer = window.setTimeout(
-      () => {
-        setCurrentStep(4);
-      },
-      (durationMs / 4) * 3,
-=======
   const handleConfirm = async () => {
-    if (isSubmitting) {
-      return;
-    }
-
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setIsConfirmModalOpen(false);
 
@@ -334,12 +221,10 @@ export default function MockApplyPage({
       const acceptedAnalysis = await requestAnalysis(Number(mockApplyId));
       const analysisTaskId = acceptedAnalysis.taskId?.trim();
 
-      if (!analysisTaskId) {
+      if (!analysisTaskId)
         throw new Error("자소서 분석 작업 번호를 확인할 수 없습니다.");
-      }
 
       let resolvedJobPostingId = jobPostingId;
-
       if (!resolvedJobPostingId || resolvedJobPostingId <= 0) {
         try {
           const sequenceResult = await fetchSequence(Number(mockApplyId));
@@ -354,33 +239,23 @@ export default function MockApplyPage({
 
       const loadingSearchParams = new URLSearchParams();
       loadingSearchParams.set("taskId", analysisTaskId);
-
-      if (savedApply.sequence > 0) {
+      if (savedApply.sequence > 0)
         loadingSearchParams.set("sequence", String(savedApply.sequence));
-      }
-
-      if (resolvedJobPostingId && resolvedJobPostingId > 0) {
-        loadingSearchParams.set(
-          "jobPostingId",
-          String(resolvedJobPostingId),
-        );
-      }
+      if (resolvedJobPostingId && resolvedJobPostingId > 0)
+        loadingSearchParams.set("jobPostingId", String(resolvedJobPostingId));
 
       const loadingQuery = loadingSearchParams.size
         ? `?${loadingSearchParams.toString()}`
         : "";
-
       router.push(
         `/mockApply/${mockApplyId}/result/resume-analysis-loading${loadingQuery}`,
       );
     } catch (error) {
       setIsSubmitting(false);
-
       if (error instanceof CreditInsufficientError) {
         setIsCreditShortModalOpen(true);
         return;
       }
-
       console.error("제출 실패:", error);
       setToast({
         open: true,
@@ -395,6 +270,10 @@ export default function MockApplyPage({
         3000,
       );
     }
+  };
+
+  const performDelete = async (targetId: string) => {
+    setQuestions(questions.filter((q) => q.id !== targetId));
   };
 
   const handleDeleteQuestion = (targetId: string) => {
@@ -420,51 +299,19 @@ export default function MockApplyPage({
         if (field === "maxLength") return { ...q, maxLength: Number(value) };
         return q;
       }),
->>>>>>> develop
     );
+  };
 
-    return () => {
-      window.clearInterval(countdownTimer);
-      window.clearTimeout(completeTimer);
-      window.clearTimeout(secondStepTimer);
-      window.clearTimeout(thirdStepTimer);
-      window.clearTimeout(fourthStepTimer);
-    };
-  }, [durationMs, onComplete, isFailed]);
+  const handleAddQuestion = async () => {
+    try {
+      const newQuestion: QuestionItem = {
+        id: `temp-${Date.now()}`, // 임시 ID
+        questionId: 0,
+        question: "",
+        answer: "",
+        maxLength: 1000,
+      };
 
-<<<<<<< HEAD
-  const progressItems = useMemo(
-    () => [
-      {
-        title: "내용 구조 파악",
-        description: "작성해주신 내용을 확인하고 의미를 분석합니다.",
-      },
-      {
-        title: "자소서 평가",
-        description: "직무 스킬을 매칭하고 적합도를 평가합니다.",
-      },
-      {
-        title: "지원자 간 비교",
-        description: "동일 회사 및 직무의 지원자와 비교 평가합니다.",
-      },
-      {
-        title: "리포트 생성",
-        description: "분석 결과를 토대로 약점 리포트를 생성합니다.",
-      },
-    ],
-    [],
-  );
-
-  return (
-    <div className="relative flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
-      <Header currentStep={5} applicationLabel={applicationLabel} />
-
-      <div className="flex min-h-0 flex-1 items-start px-2 pb-2">
-        <section
-          className="flex min-h-0 flex-1 items-center justify-between self-stretch overflow-hidden rounded-card-l bg-bg-default"
-          aria-live="polite"
-          aria-busy="true"
-=======
       const updatedQuestions = [...questions, newQuestion];
       await saveQuestions(Number(mockApplyId), updatedQuestions);
 
@@ -485,7 +332,6 @@ export default function MockApplyPage({
     }
   };
 
-  // 현재 선택된 문항 폼 데이터
   const currentQ = questions.find((q) => q.id === selectedId);
   const mappedQuestionForForm = currentQ
     ? {
@@ -515,75 +361,48 @@ export default function MockApplyPage({
             "flex-1 flex gap-6 transition-all duration-300 ease-in-out",
             isPanelOpen ? "mr-[300px]" : "mr-0",
           )}
->>>>>>> develop
         >
-          <main className="flex min-h-0 flex-1 items-center justify-between self-stretch">
+          <div className="flex min-h-0 flex-1 items-center justify-between self-stretch w-full">
             <aside className="flex min-h-0 w-[360px] shrink-0 flex-col items-start justify-between self-stretch pt-20 pr-0 pb-16 pl-20">
-              <div className="flex flex-col items-start gap-8">
+              <div className="flex w-full flex-col items-start gap-8">
                 <div className="flex flex-col items-start gap-5">
                   <h1 className="whitespace-pre-line text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
                     {"지원한 회사 기준으로\n채점하고 있어요"}
                   </h1>
-
-<<<<<<< HEAD
-                  <div className="flex items-start gap-1">
-                    <span className="text-b16-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-                      {formatRemainingTime(remainingSeconds)}
-                    </span>
-                    <span className="text-b16-med text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-                      남음
-                    </span>
-                  </div>
                 </div>
 
-                <ProgressPanelRow
-                  itemCount={4}
-                  currentStep={currentStep}
-                  items={progressItems}
-                  className="gap-1 self-stretch"
-                  itemClassName="!w-[224px]"
+                <QuestionList
+                  questions={questions}
+                  selectedId={selectedId}
+                  onSelect={(id) => setSelectedId(id)}
+                  onDelete={handleDeleteQuestion}
+                  onAdd={handleAddQuestion}
                 />
               </div>
-
-              <TextButton
-                label="돌아가기"
-                size="large"
-                styleType="secondary"
-                iconPosition="left"
-                onClick={onBack}
-              />
             </aside>
 
-            <div className="flex min-h-0 min-w-0 [flex:1_0_0] items-start justify-center gap-16 self-stretch pt-40">
-              <LoadingGraphic
-                animationData={resumeAnalysisLoading}
-                className="aspect-[35/29] w-full max-w-[560px] min-w-0 shrink"
-              />
-            </div>
-          </main>
-        </section>
-=======
-          <div
-            className={clsx(
-              "flex-1 overflow-y-auto flex flex-col pt-16 pl-16 pr-[40px]",
-              scrollbarClassS,
-            )}
-          >
-            <div className="w-full min-w-[600px] max-w-[1000px]">
-              {mappedQuestionForForm ? (
-                <WritingForm
-                  question={mappedQuestionForForm}
-                  onChange={handleUpdate}
-                />
-              ) : isQuestionsLoading ? (
-                <div className="flex h-full items-center justify-center text-text-neutral-assistive">
-                  문항을 불러오는 중입니다...
-                </div>
-              ) : (
-                <div className="flex h-full items-center justify-center text-text-neutral-assistive">
-                  {questionsErrorMessage}
-                </div>
+            <div
+              className={clsx(
+                "flex-1 overflow-y-auto flex flex-col pt-16 pl-16 pr-[40px] items-center",
+                scrollbarClassS,
               )}
+            >
+              <div className="w-full min-w-[600px] max-w-[1000px]">
+                {mappedQuestionForForm ? (
+                  <WritingForm
+                    question={mappedQuestionForForm}
+                    onChange={handleUpdate}
+                  />
+                ) : isQuestionsLoading ? (
+                  <div className="flex h-full items-center justify-center text-text-neutral-assistive">
+                    문항을 불러오는 중입니다...
+                  </div>
+                ) : (
+                  <div className="flex h-full items-center justify-center text-text-neutral-assistive">
+                    {questionsErrorMessage}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </main>
@@ -662,19 +481,7 @@ export default function MockApplyPage({
             />
           </ModalOverlay>
         )}
->>>>>>> develop
       </div>
-
-      {isFailed && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <ModalCard
-            title="나중에 다시 시도해주세요."
-            description="응답 대기 시간이 길어져 작업을 멈췄어요. 소모된 크레딧이 복구됐어요."
-            secondaryBtn="확인"
-            onSecondaryClick={onErrorConfirm || onBack}
-          />
-        </div>
-      )}
-    </div>
+    </MockApplyTemplate>
   );
 }
