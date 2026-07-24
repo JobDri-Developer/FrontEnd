@@ -77,48 +77,35 @@ export default function MockApplyPage({
   // 1. 초기 데이터 불러오기
   useEffect(() => {
     let ignore = false;
+
     const loadQuestions = async () => {
       try {
         setIsQuestionsLoading(true);
         setQuestionsErrorMessage("");
 
-        const [selectedResult, candidatesResult] = await Promise.allSettled([
-          fetchSelectedQuestions(Number(mockApplyId)),
-          fetchQuestions(Number(mockApplyId)),
-        ]);
-        let data =
-          selectedResult.status === "fulfilled" ? selectedResult.value : [];
+        let data = await fetchSelectedQuestions(Number(mockApplyId));
 
-        if (data.length === 0) {
-          if (candidatesResult.status === "rejected")
-            throw candidatesResult.reason;
-          const candidates = candidatesResult.value;
-          const preselectedCandidates = candidates.filter((q) => q.selected);
-          const initialQuestions = (
-            preselectedCandidates.length > 0
-              ? preselectedCandidates
-              : candidates
-          ).slice(0, 5);
-
-          if (initialQuestions.length > 0) {
-            await saveQuestions(Number(mockApplyId), initialQuestions);
-            const savedQuestions = await fetchSelectedQuestions(
-              Number(mockApplyId),
-            ).catch(() => []);
-            data =
-              savedQuestions.length > 0 ? savedQuestions : initialQuestions;
-          }
+        if (data.length > 5) {
+          data = data.slice(0, 5);
         }
 
-        if (ignore) return;
+        if (ignore) {
+          return;
+        }
+
         setQuestions(data);
         setSelectedId(data[0]?.id ?? null);
-        if (data.length === 0)
+
+        if (data.length === 0) {
           setQuestionsErrorMessage(
             "공고에 맞는 자소서 문항을 불러오지 못했습니다.",
           );
+        }
       } catch (error) {
-        if (ignore) return;
+        if (ignore) {
+          return;
+        }
+
         console.error("문항을 불러오지 못했습니다.", error);
         setQuestions([]);
         setSelectedId(null);
@@ -128,10 +115,14 @@ export default function MockApplyPage({
             : "자소서 문항을 불러오지 못했습니다.",
         );
       } finally {
-        if (!ignore) setIsQuestionsLoading(false);
+        if (!ignore) {
+          setIsQuestionsLoading(false);
+        }
       }
     };
+
     void loadQuestions();
+
     return () => {
       ignore = true;
     };
@@ -354,6 +345,8 @@ export default function MockApplyPage({
       onBackClick={() => setIsLeaveModalOpen(true)}
       onNextClick={() => setIsConfirmModalOpen(true)}
       isNextDisabled={isSubmitDisabled || isSubmitting}
+      nextLabel="채점하기"
+      nextIconType="SPARKLE"
     >
       <div className="flex h-full flex-col overflow-hidden bg-bg-default">
         <main
