@@ -110,7 +110,10 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
       return;
     }
     try {
-      await reApply(resolvedMockApplyId);
+      await reApply(resolvedMockApplyId, {
+        getRedirectPath: (result) =>
+          `/mockApply/${result.mockApplyId}?retry=1&sequence=${result.sequence}`,
+      });
     } catch {
       setIsRetryModalOpen(false);
       showTopToast("재도전을 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
@@ -164,10 +167,9 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
       {isRetryModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            variant="double"
+            type="confirmation"
             title="같은 공고로 다시 도전할까요?"
             description="현재 내용을 저장하고 자소서 입력 단계로 돌아갑니다."
-            className="!w-[400px]"
             onClose={() => setIsRetryModalOpen(false)}
             secondaryAction={{
               label: "취소",

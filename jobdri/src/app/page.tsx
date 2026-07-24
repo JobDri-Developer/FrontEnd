@@ -62,7 +62,7 @@ import { useReApply } from "@/hooks/useReApply";
 
 export default function Home() {
   const router = useRouter();
-  const { reApply } = useReApply();
+  const { reApply, isSaving: isRetrying } = useReApply();
   const [drafts, setDrafts] = useState<DraftData[]>([]);
   const [results, setResults] = useState<ApplicationCardData[]>([]);
 
@@ -183,9 +183,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-[#F5F6F9] overflow-x-hidden ">
-      <Lnb className="shrink-0 z-50" />
-      <div className="z-10 flex min-w-0 h-screen flex-1 flex-col self-stretch relative mx-auto items-center">
+    <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
+      <Lnb className="z-50 shrink-0" />
+      <div className="relative z-10 mx-auto flex h-full min-h-0 min-w-0 flex-1 flex-col items-center overflow-x-hidden overflow-y-auto">
         <main className="flex-1 w-full max-w-[1320px] min-w-[912px] px-18 pt-12 pb-60">
           <div className="flex items-start justify-between mb-16">
             <div className="flex flex-col gap-2">
@@ -271,6 +271,7 @@ export default function Home() {
             {/* 분석 완료 섹션 */}
             <ResultApplicationList
               applications={results}
+              isRetrying={isRetrying}
               onDelete={(app) => void deleteApplication(app.mockApplyId)}
               onRetry={(app) => void reApply(app.mockApplyId)}
               onResume={(app) => {

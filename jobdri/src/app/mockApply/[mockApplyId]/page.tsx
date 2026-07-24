@@ -13,9 +13,8 @@ import {
   saveApply,
   type QuestionItem,
 } from "@/lib/api/questions";
-import { ModalCard } from "@/components/common/modal/ModalCard";
 import { ModalNotice } from "@/components/common/modal";
-import { Toast } from "@/components/common/toast";
+import { Toast, type ToastVariant } from "@/components/common/toast";
 import {
   CreditInsufficientError,
   fetchSequence,
@@ -25,7 +24,6 @@ import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 import { fetchMockApplyJobPosting } from "@/lib/api/mockApplies";
 import type { JDData } from "@/components/mockApply/Question/SidePanel";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
-import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 
 const getSubmitPayload = (questionsData: QuestionItem[]) =>
   questionsData.map((question) => {
@@ -96,6 +94,7 @@ export default function MockApplyPage({
   const requestedJobPostingId = Number(searchParams.get("jobPostingId"));
   const hasRequestedJobPostingId =
     Number.isInteger(requestedJobPostingId) && requestedJobPostingId > 0;
+  const isRetryEntry = searchParams.get("retry") === "1";
 
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
@@ -114,7 +113,7 @@ export default function MockApplyPage({
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
-    variant?: string;
+    variant: ToastVariant;
   }>({ open: false, message: "", variant: "normal" });
 
   const [modalTarget, setModalTarget] = useState<string | null>(null);
@@ -127,6 +126,7 @@ export default function MockApplyPage({
   const questionSaveQueueRef = useRef<Promise<void>>(Promise.resolve());
   const questionSaveRevisionRef = useRef(0);
   const isQuestionStructureSavingRef = useRef(false);
+  const retryToastShownForRef = useRef<string | null>(null);
 
   const replaceQuestions = useCallback((nextQuestions: QuestionItem[]) => {
     questionsRef.current = nextQuestions;
@@ -228,6 +228,22 @@ export default function MockApplyPage({
   useEffect(() => {
     questionsRef.current = questions;
   }, [questions]);
+
+  useEffect(() => {
+    if (
+      !isRetryEntry ||
+      retryToastShownForRef.current === mockApplyId
+    ) {
+      return;
+    }
+
+    retryToastShownForRef.current = mockApplyId;
+    setToast({
+      open: true,
+      message: "기존 내용이 유지되었어요. 수정하고 다시 채점해 보세요!",
+      variant: "check",
+    });
+  }, [isRetryEntry, mockApplyId]);
 
   // 1. 초기 데이터 불러오기
   useEffect(() => {
@@ -724,7 +740,7 @@ export default function MockApplyPage({
         {toast.open && (
           <Toast
             message={toast.message}
-            variant="normal"
+            variant={toast.variant}
             position="top"
             onClose={() => setToast({ ...toast, open: false })}
             className="absolute top-6"
@@ -755,19 +771,25 @@ export default function MockApplyPage({
         )}
 
         {isLeaveModalOpen && (
-          <ModalOverlay>
-            <ModalCard
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+            <ModalNotice
+              type="confirmation"
               title="공고 확인으로 돌아갈까요?"
               description="지금까지 작성한 내용이 모두 삭제돼요."
-              secondaryBtn="돌아가기"
-              primaryBtn="계속 작성"
-              onSecondaryClick={() => {
-                setIsLeaveModalOpen(false);
-                router.push("/mockApply/job/review");
+              onClose={() => setIsLeaveModalOpen(false)}
+              secondaryAction={{
+                label: "돌아가기",
+                onClick: () => {
+                  setIsLeaveModalOpen(false);
+                  router.push("/mockApply/job/review");
+                },
               }}
-              onPrimaryClick={() => setIsLeaveModalOpen(false)}
+              primaryAction={{
+                label: "계속 작성",
+                onClick: () => setIsLeaveModalOpen(false),
+              }}
             />
-          </ModalOverlay>
+          </div>
         )}
 
         {isConfirmModalOpen && (
@@ -791,16 +813,22 @@ export default function MockApplyPage({
         )}
 
         {isCreditShortModalOpen && (
-          <ModalOverlay>
-            <ModalCard
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+            <ModalNotice
+              type="confirmation"
               title="크레딧이 부족해요"
               description="크레딧을 충전하고 다시 시도해주세요."
-              secondaryBtn="닫기"
-              primaryBtn="충전하기"
-              onSecondaryClick={() => setIsCreditShortModalOpen(false)}
-              onPrimaryClick={() => router.push("/credit")}
+              onClose={() => setIsCreditShortModalOpen(false)}
+              secondaryAction={{
+                label: "닫기",
+                onClick: () => setIsCreditShortModalOpen(false),
+              }}
+              primaryAction={{
+                label: "충전하기",
+                onClick: () => router.push("/credit"),
+              }}
             />
-          </ModalOverlay>
+          </div>
         )}
       </div>
     </MockApplyTemplate>

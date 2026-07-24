@@ -17,6 +17,7 @@ export interface SearchBarProps {
   inputClassName?: string;
   collapsedLabel?: string;
   collapsedTooltip?: string;
+  onCollapsedClick?: () => void;
 }
 
 function CollapsedSearchIcon() {
@@ -55,6 +56,7 @@ export function SearchBar({
   inputClassName,
   collapsedLabel = "검색",
   collapsedTooltip = collapsedLabel,
+  onCollapsedClick,
 }: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [internalValue, setInternalValue] = useState(defaultValue);
@@ -94,6 +96,7 @@ export function SearchBar({
           type="button"
           className="flex h-9 w-9 items-center justify-center rounded-cta-l px-2 text-icon-neutral-default hover:bg-fill-state-hover-light active:bg-fill-state-hover-light"
           aria-label={collapsedLabel}
+          onClick={onCollapsedClick}
         >
           <CollapsedSearchIcon />
         </button>

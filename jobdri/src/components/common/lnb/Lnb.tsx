@@ -1,6 +1,11 @@
 ﻿"use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
@@ -14,8 +19,10 @@ import {
 import { fetchCreditBalance } from "@/lib/api/credit";
 import {
   fetchMyMockApplies,
+  MOCK_APPLY_CHANGED_EVENT,
   MOCK_APPLY_DELETED_EVENT,
 } from "@/lib/api/mockApplies";
+import { getResumePath } from "@/components/mockApply/home/applicationHomeUtils";
 import {
   fetchNotifications,
   subscribeToNotificationStream,
@@ -172,34 +179,71 @@ export default function Lnb({
   //   };
   // }, []);
 
-  useEffect(() => {
-    const loadRecentItems = async () => {
-      try {
-        const data = await fetchMyMockApplies({
-          redirectOnUnauthorized: false,
-        });
-        const allItems = [...data.inProgress, ...data.completed];
+  const loadRecentItems = useCallback(async () => {
+    try {
+      const data = await fetchMyMockApplies({
+        redirectOnUnauthorized: false,
+      });
+      const allItems = [
+        ...data.inProgress.map((item) => ({ item, isCompleted: false })),
+        ...data.completed.map((item) => ({ item, isCompleted: true })),
+      ].sort((a, b) => {
+        const aTime = new Date(a.item.createdAt).getTime();
+        const bTime = new Date(b.item.createdAt).getTime();
 
-        const mappedItems: LnbRecentItem[] = allItems.map((item) => ({
+        if (Number.isNaN(aTime) || Number.isNaN(bTime)) {
+          return b.item.mockApplyId - a.item.mockApplyId;
+        }
+        return bTime - aTime;
+      });
+
+      const mappedItems: LnbRecentItem[] = allItems.map(
+        ({ item, isCompleted }) => ({
           id: String(item.mockApplyId),
           companyName: item.companyName,
           jobTitle:
             item.jobTitle || item.detailClassificationName || "직무 미지정",
           version: item.sequence ?? 1,
-        }));
+          href: isCompleted
+            ? `/mockApply/${item.mockApplyId}/result?jobPostingId=${item.jobPostingId}&sequence=${item.sequence ?? 1}`
+            : getResumePath(item),
+        }),
+      );
 
-        setRecentItems(mappedItems);
-        if (mappedItems.length > 0) {
-          setSelectedRecentItemId(mappedItems[0].id);
-        }
-      } catch (error) {
-        console.error("최근 모의지원 목록 로드 실패:", error);
-        setRecentItems([]);
-      }
+      setRecentItems(mappedItems);
+      setSelectedRecentItemId((current) =>
+        mappedItems.some((item) => item.id === current)
+          ? current
+          : (mappedItems[0]?.id ?? ""),
+      );
+    } catch (error) {
+      console.error("최근 모의지원 목록 로드 실패:", error);
+      setRecentItems([]);
+      setSelectedRecentItemId("");
+    }
+  }, []);
+
+  useEffect(() => {
+    const initialLoadTimer = window.setTimeout(() => {
+      void loadRecentItems();
+    }, 0);
+
+    return () => window.clearTimeout(initialLoadTimer);
+  }, [loadRecentItems]);
+
+  useEffect(() => {
+    const refreshRecentItems = () => {
+      void loadRecentItems();
     };
 
-    void loadRecentItems();
-  }, []);
+    window.addEventListener(MOCK_APPLY_CHANGED_EVENT, refreshRecentItems);
+    window.addEventListener("focus", refreshRecentItems);
+
+    return () => {
+      window.removeEventListener(MOCK_APPLY_CHANGED_EVENT, refreshRecentItems);
+      window.removeEventListener("focus", refreshRecentItems);
+    };
+  }, [loadRecentItems]);
 
   useEffect(() => {
     const loadInitialNotifications = async () => {
@@ -222,6 +266,10 @@ export default function Lnb({
         const mappedNewItem = mapApiToLnbItem(newNotification);
         setNotificationItems((prev) => [mappedNewItem, ...prev]);
         setHasNotification(true);
+
+        if (newNotification.type.startsWith("ANALYSIS_ASYNC_")) {
+          void loadRecentItems();
+        }
       },
       // 에러가 났을 때
       (error) => {
@@ -232,7 +280,7 @@ export default function Lnb({
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [loadRecentItems]);
 
   useEffect(() => {
     const handleMockApplyDeleted = (event: Event) => {
@@ -315,7 +363,7 @@ export default function Lnb({
     <>
       <aside
         className={clsx(
-          "sticky top-0 flex h-screen min-h-[800px] shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out",
+          "sticky top-0 flex h-dvh max-h-dvh min-h-0 shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out",
           isFold ? "w-[52px] items-center" : "w-[280px]",
           className,
         )}
@@ -327,11 +375,14 @@ export default function Lnb({
             hasNotification={hasNotification}
             notificationItems={notificationItems}
             searchQuery={searchQuery}
+            onActivateSearch={() => setIsFold(false)}
+            onCreditClick={() => router.push("/credit")}
+            onLogout={handleLogout}
             onNavItemClick={handleNavItemClick}
+            onMarkAllRead={handleMarkAllRead}
+            onReadItem={handleReadItem}
             onSearchQueryChange={setSearchQuery}
             onToggleFold={handleToggleFold}
-            // onMarkAllRead={handleMarkAllRead}
-            // onReadItem={handleReadItem}
           />
         ) : (
           <LnbDefault
@@ -347,7 +398,12 @@ export default function Lnb({
             selectedRecentItemId={selectedRecentItemId}
             onLogout={handleLogout}
             onNavItemClick={handleNavItemClick}
-            onRecentItemClick={(item) => setSelectedRecentItemId(item.id)}
+            onRecentItemClick={(item) => {
+              setSelectedRecentItemId(item.id);
+              if (item.href) {
+                router.push(item.href);
+              }
+            }}
             onSearchQueryChange={(searchQuerySetter) =>
               setSearchQuery(searchQuerySetter)
             }
@@ -363,8 +419,13 @@ export default function Lnb({
         createPortal(
           <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50">
             <ModalNotice
+              variant="single"
+              layout="centered"
               title="아직 준비중인 서비스입니다"
-              description="더 나은 서비스를 위해 노력하고 있습니다!\n조금만 기다려 주세요"
+              description={[
+                "더 나은 서비스를 위해 노력하고 있습니다!",
+                "조금만 기다려 주세요",
+              ].join("\n")}
               onClose={() => setShowComingSoonModal(false)}
               primaryAction={{
                 label: "확인",

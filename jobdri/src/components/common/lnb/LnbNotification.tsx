@@ -8,18 +8,15 @@ import Icon, { type IconType } from "@/components/common/icons/Icon";
 import { SelectListItem } from "@/components/common/select";
 import useOutsideClick from "@/hooks/useOutsideClick";
 import EmptyNotificationImage from "@/assets/ic_Image.svg";
-import {
-  lnbHiddenScrollbarClass,
-  LnbScrollbar,
-  useLnbScrollMetrics,
-} from "./LnbScrollbar";
+import { useLnbScrollMetrics } from "./LnbScrollbar";
 import {
   ApiNotificationItem,
-  NotificationResponse,
   LnbNotificationItem,
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from "@/lib/api/notification";
+import { fetchJobPostingIngestStatus } from "@/lib/api/jobPostings";
+import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
 import { formatDate } from "@/utils/date";
 import { scrollbarClassS } from "../scrollbar/scrollbarStyles";
 import { useScrollGradient } from "@/hooks/useScrollGradient";
@@ -143,7 +140,9 @@ export function mapApiToLnbItem(
     read: item.isRead,
     readAt: item.readAt,
     targetType: item.targetType,
+    targetId: item.targetId,
     mockApplyId,
+    taskId: item.payload?.taskId,
     apiType: item.type,
   };
 }
@@ -299,8 +298,10 @@ function LnbNotificationList({
   notificationItems: LnbNotificationItem[];
   onReadItem?: (id: string) => void;
 }) {
-  const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
-    useLnbScrollMetrics(true, notificationItems.length);
+  const { scrollAreaRef, updateScrollbarMetrics } = useLnbScrollMetrics(
+    true,
+    notificationItems.length,
+  );
 
   const { scrollRef, showGradient, checkScroll } =
     useScrollGradient<HTMLDivElement>([notificationItems]);
@@ -411,51 +412,97 @@ export function LnbNotificationListItem({
   const notificationType = notificationItem.type ?? "normal";
   const iconStyle = notificationIconStyles[notificationType];
 
-  const handleNotificationClick = () => {
-    // 🚨 어떤 녀석을 클릭했는지 원본 데이터를 통째로 찍어봅니다!
-    console.log("클릭한 알림 전체 데이터:", notificationItem);
-
-    const { id, targetType, mockApplyId, read, apiType } = notificationItem;
+  const handleNotificationClick = async () => {
+    const {
+      id,
+      targetId,
+      mockApplyId,
+      taskId,
+      read,
+      apiType,
+      description,
+    } = notificationItem;
 
     if (!read) {
-      markNotificationAsRead(id).catch(console.error);
-      if (onReadItem) onReadItem(id);
+      void markNotificationAsRead(id);
+      onReadItem?.(id);
     }
 
-    // 만약 여기서 걸린다면 어떤 알림인지 콘솔 창에 찍힙니다.
-    if (!mockApplyId) {
-      console.warn("⚠️ 이 알림에는 mockApplyId가 없습니다!", notificationItem);
-      router.push("/apply"); // ID가 없으면 안전하게 목록으로 이동
-      return;
-    }
+    const notificationMockApplyId =
+      mockApplyId ??
+      (targetId && /^\d+$/.test(targetId) ? targetId : undefined);
 
     switch (apiType) {
-      case "JOB_POSTING_ASYNC_SUCCEEDED":
-        router.push(`/job-posting/${mockApplyId}`);
+      case "JOB_POSTING_ASYNC_SUCCEEDED": {
+        const jobPostingTaskId = taskId || targetId;
+
+        if (!jobPostingTaskId) {
+          router.push("/mockApply/job/create");
+          break;
+        }
+
+        try {
+          const status = await fetchJobPostingIngestStatus(jobPostingTaskId);
+
+          if (!status.result) {
+            throw new Error(
+              status.failureReason ||
+                status.error ||
+                status.message ||
+                "채용 공고 분석 결과를 확인할 수 없습니다.",
+            );
+          }
+
+          saveJobPostingAnalysis(status.result);
+          router.push("/mockApply/job/review");
+        } catch (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "채용 공고 분석 결과를 불러오지 못했습니다.";
+          router.push(
+            `/mockApply/job/create?analysisError=${encodeURIComponent(message)}`,
+          );
+        }
         break;
+      }
 
       case "JOB_POSTING_ASYNC_FAILED":
-        router.push(`/job-posting/${mockApplyId}`);
+        router.push(
+          `/mockApply/job/create?analysisError=${encodeURIComponent(
+            description || "채용 공고 분석에 실패했습니다.",
+          )}`,
+        );
         break;
 
       case "ANALYSIS_ASYNC_SUCCEEDED":
-        router.push(`/mockApply/${mockApplyId}/result`);
+        router.push(
+          notificationMockApplyId
+            ? `/mockApply/${notificationMockApplyId}/result`
+            : "/",
+        );
         break;
 
       case "ANALYSIS_ASYNC_FAILED":
         router.push(
-          `/mockApply/${mockApplyId}/result/resume-analysis-loading?error=true`,
+          notificationMockApplyId
+            ? `/mockApply/${notificationMockApplyId}`
+            : "/",
         );
         break;
 
       default:
-        router.push(`/mockApply/${mockApplyId}/result`);
+        router.push(
+          notificationMockApplyId
+            ? `/mockApply/${notificationMockApplyId}/result`
+            : "/",
+        );
         break;
     }
   };
   return (
     <article
-      onClick={handleNotificationClick}
+      onClick={() => void handleNotificationClick()}
       className={clsx(
         "flex shrink-0 items-center gap-2 self-stretch rounded-card-s px-3 py-2",
         "cursor-pointer transition-colors hover:bg-fill-neutral-muted",

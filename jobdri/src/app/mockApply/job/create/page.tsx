@@ -204,7 +204,7 @@ export default function JobPostingCreatePage() {
       {showExitConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            type="confirmationModal"
+            type="confirmation"
             title="페이지를 나가시겠습니까?"
             description="작성 중인 내용이 저장되지 않습니다."
             onClose={closeExitConfirm}

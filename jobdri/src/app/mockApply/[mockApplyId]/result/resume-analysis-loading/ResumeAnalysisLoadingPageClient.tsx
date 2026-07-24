@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
 import { ModalNotice } from "@/components/common/modal";
 import {
@@ -274,7 +274,7 @@ export default function ResumeAnalysisLoadingPageClient({
       {errorMessage && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            type="confirmationModal"
+            type="confirmation"
             title="분석 결과를 불러오지 못했어요"
             description={errorMessage}
             onClose={handleRetry}

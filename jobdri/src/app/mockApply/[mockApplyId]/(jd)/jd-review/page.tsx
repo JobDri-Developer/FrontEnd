@@ -347,7 +347,7 @@ export default function MockApplicationJdReviewPage() {
       {showBackConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            type="confirmationModal"
+            type="confirmation"
             title="공고 내용을 다시 업로드 하시겠습니까?"
             description="기존 정보는 저장되지 않고 삭제됩니다."
             onClose={closeBackConfirm}

@@ -62,7 +62,18 @@ export interface MockApplyHomeList {
 
 export const APPLY_TYPE_STORAGE_KEY = "jobdri.applyType";
 export const MOCK_APPLY_DELETED_EVENT = "jobdri:mock-apply-deleted";
+export const MOCK_APPLY_CHANGED_EVENT = "jobdri:mock-apply-changed";
 const MOCK_APPLY_RESUME_STORAGE_KEY = "jobdri.mockApplyResumeRecords";
+const retryMockApplyRequests = new Map<
+  number,
+  Promise<MockApplyRetryResult>
+>();
+
+export function notifyMockApplyChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(MOCK_APPLY_CHANGED_EVENT));
+  }
+}
 
 async function postMockApplyFromJobPosting(
   path: string,
@@ -78,7 +89,13 @@ async function postMockApplyFromJobPosting(
     body: JSON.stringify(payload),
   });
 
-  return parseApiResponse<MockApplyFromJobPosting>(response, fallbackMessage);
+  const result = await parseApiResponse<MockApplyFromJobPosting>(
+    response,
+    fallbackMessage,
+  );
+
+  notifyMockApplyChanged();
+  return result;
 }
 
 export function createMockApplyFromJobPosting(
@@ -162,6 +179,7 @@ export async function deleteMockApply(mockApplyId: number) {
       }),
     );
   }
+  notifyMockApplyChanged();
 
   return result;
 }
@@ -317,19 +335,45 @@ export function updateMockApplyResumeStatus(
   });
 }
 
-export async function retryMockApply(
+export function retryMockApply(
   mockApplyId: number,
 ): Promise<MockApplyRetryResult> {
-  const response = await fetch(
+  const ongoingRequest = retryMockApplyRequests.get(mockApplyId);
+  if (ongoingRequest) {
+    return ongoingRequest;
+  }
+
+  const request = fetch(
     `${API_BASE_URL}/api/mock-applies/${mockApplyId}/retry`,
     {
       method: "POST",
       headers: getAuthHeaders(),
     },
+  )
+    .then((response) =>
+      parseApiResponse<MockApplyRetryResult>(
+        response,
+        "재도전 모의 서류 지원 생성에 실패했습니다.",
+      ),
+    )
+    .then((result) => {
+      notifyMockApplyChanged();
+      return result;
+    });
+
+  retryMockApplyRequests.set(mockApplyId, request);
+  void request.then(
+    () => {
+      if (retryMockApplyRequests.get(mockApplyId) === request) {
+        retryMockApplyRequests.delete(mockApplyId);
+      }
+    },
+    () => {
+      if (retryMockApplyRequests.get(mockApplyId) === request) {
+        retryMockApplyRequests.delete(mockApplyId);
+      }
+    },
   );
 
-  return parseApiResponse<MockApplyRetryResult>(
-    response,
-    "재도전 모의 서류 지원 생성에 실패했습니다.",
-  );
+  return request;
 }

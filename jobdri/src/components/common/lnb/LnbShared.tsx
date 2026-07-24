@@ -30,6 +30,7 @@ export interface LnbRecentItem {
   companyName: string;
   jobTitle: string;
   version: number;
+  href?: string;
 }
 
 export const navItems: LnbNavItem[] = [
@@ -567,9 +568,11 @@ export function LnbDefaultSearchMenu({
 export function LnbFoldedSearchMenu({
   searchQuery,
   onSearchQueryChange,
+  onActivateSearch,
 }: {
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
+  onActivateSearch: () => void;
 }) {
   return (
     <div className="flex items-start gap-1 self-stretch px-2 py-3">
@@ -578,6 +581,7 @@ export function LnbFoldedSearchMenu({
           collapsed
           value={searchQuery}
           onChange={onSearchQueryChange}
+          onCollapsedClick={onActivateSearch}
         />
       </div>
     </div>
@@ -711,11 +715,28 @@ export function LnbFoldedFooter({
   emailInitial,
   hasNotification,
   notificationItems,
+  onCreditClick,
+  onLogout,
+  onMarkAllRead,
+  onReadItem,
 }: {
   emailInitial: string;
   hasNotification: boolean;
   notificationItems: LnbNotificationItem[];
+  onCreditClick: () => void;
+  onLogout: () => void;
+  onMarkAllRead?: () => void;
+  onReadItem?: (id: string) => void;
 }) {
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+
+  useOutsideClick(
+    accountMenuRef,
+    () => setIsAccountMenuOpen(false),
+    isAccountMenuOpen,
+  );
+
   return (
     <div className="flex flex-col items-start gap-0 self-stretch px-2 py-3">
       <div className="flex items-center justify-center self-stretch py-2">
@@ -725,6 +746,7 @@ export function LnbFoldedFooter({
           size="s"
           buttonType="transparent"
           aria-label="크레딧"
+          onClick={onCreditClick}
         />
       </div>
 
@@ -732,13 +754,38 @@ export function LnbFoldedFooter({
         <LnbNotificationButton
           hasNotification={hasNotification}
           notificationItems={notificationItems}
+          onMarkAllRead={onMarkAllRead}
+          onReadItem={onReadItem}
         />
       </div>
 
       <div className="flex items-center justify-center self-stretch py-3">
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-icon-neutral-default px-1.5 text-sub14-med text-text-neutral-white [font-feature-settings:'liga'_off,'clig'_off]">
-          {emailInitial}
-        </span>
+        <div ref={accountMenuRef} className="relative">
+          {isAccountMenuOpen && (
+            <div className="absolute bottom-0 left-[calc(100%+12px)] z-50 flex w-[124px] flex-col items-start rounded-toast-s border border-line-neutral-default bg-bg-lightbox-light p-1 shadow-card backdrop-blur-[2px]">
+              <TextButton
+                label="로그아웃"
+                size="small"
+                styleType="secondary"
+                leftIconType="LOGOUT"
+                className="!flex w-full self-stretch justify-start"
+                onClick={onLogout}
+              />
+            </div>
+          )}
+
+          <button
+            type="button"
+            aria-label="계정 메뉴"
+            aria-expanded={isAccountMenuOpen}
+            onClick={() => setIsAccountMenuOpen((current) => !current)}
+            className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-fill-state-hover-light"
+          >
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-icon-neutral-default px-1.5 text-sub14-med text-text-neutral-white [font-feature-settings:'liga'_off,'clig'_off]">
+              {emailInitial}
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );

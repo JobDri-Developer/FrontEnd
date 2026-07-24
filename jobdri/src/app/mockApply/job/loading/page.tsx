@@ -218,7 +218,7 @@ export default function JobPostingLoadingPage() {
       {showStopConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            type="confirmationModal"
+            type="confirmation"
             title="분석을 중단하시겠습니까?"
             description="분석을 중단하고 공고 입력으로 돌아갑니다."
             onClose={closeStopConfirm}
