@@ -1,6 +1,6 @@
 "use client";
 
-import type { LnbNotificationItem } from "./LnbNotification";
+import { LnbNotificationItem } from "@/lib/api/notification";
 import {
   LnbDivider,
   LnbFoldedFooter,

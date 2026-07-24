@@ -1,6 +1,6 @@
 "use client";
 
-import type { LnbNotificationItem } from "./LnbNotification";
+import { LnbNotificationItem } from "@/lib/api/notification";
 import {
   LnbDefaultFooter,
   LnbDefaultHeader,
@@ -29,6 +29,8 @@ export interface LnbDefaultProps {
   onSearchQueryChange: (value: string) => void;
   onToggleFold: () => void;
   onToggleRecentOpen: () => void;
+  onMarkAllRead?: () => void;
+  onReadItem?: (id: string) => void;
 }
 
 export default function LnbDefault({
@@ -48,6 +50,8 @@ export default function LnbDefault({
   onSearchQueryChange,
   onToggleFold,
   onToggleRecentOpen,
+  onMarkAllRead,
+  onReadItem,
 }: LnbDefaultProps) {
   return (
     <>
@@ -80,6 +84,8 @@ export default function LnbDefault({
         hasNotification={hasNotification}
         notificationItems={notificationItems}
         onLogout={onLogout}
+        onMarkAllRead={onMarkAllRead}
+        onReadItem={onReadItem}
       />
     </>
   );

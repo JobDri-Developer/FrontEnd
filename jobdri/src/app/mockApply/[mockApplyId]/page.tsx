@@ -3,12 +3,10 @@ import { useState, useEffect, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { QuestionList } from "@/components/mockApply/Question/QuestionList";
 import JDSidePanel from "@/components/mockApply/Question/SidePanel";
-import SideHeaderContainer from "@/components/common/header/SideHeaderContainer";
 import WritingForm from "@/components/mockApply/Question/WritingForm";
 import clsx from "clsx";
 import { scrollbarClassS } from "@/components/common/scrollbar/scrollbarStyles";
 import {
-  fetchQuestions,
   fetchSelectedQuestions,
   saveQuestions,
   saveApply,
@@ -25,12 +23,7 @@ import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 import { fetchMockApplyJobPosting } from "@/lib/api/mockApplies";
 import type { JDData } from "@/components/mockApply/Question/SidePanel";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
-
-const ModalOverlay = ({ children }: { children: React.ReactNode }) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
-    {children}
-  </div>
-);
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 
 export default function MockApplyPage({
   params,
@@ -62,17 +55,14 @@ export default function MockApplyPage({
     open: boolean;
     message: string;
     variant?: string;
-  }>({
-    open: false,
-    message: "",
-    variant: "normal",
-  });
+  }>({ open: false, message: "", variant: "normal" });
+
   const [modalTarget, setModalTarget] = useState<string | null>(null);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // 데이터 포맷팅 함수
+
   const getSubmitPayload = (questionsData: QuestionItem[]) => {
     return questionsData.map((q) => ({
       questionId: q.questionId,
@@ -82,7 +72,7 @@ export default function MockApplyPage({
     }));
   };
 
-  // 초기 데이터 불러오기
+  // 1. 초기 데이터 불러오기
   useEffect(() => {
     let ignore = false;
 
@@ -91,37 +81,10 @@ export default function MockApplyPage({
         setIsQuestionsLoading(true);
         setQuestionsErrorMessage("");
 
-        const [selectedResult, candidatesResult] = await Promise.allSettled([
-          fetchSelectedQuestions(Number(mockApplyId)),
-          fetchQuestions(Number(mockApplyId)),
-        ]);
-        let data =
-          selectedResult.status === "fulfilled" ? selectedResult.value : [];
+        let data = await fetchSelectedQuestions(Number(mockApplyId));
 
-        if (data.length === 0) {
-          if (candidatesResult.status === "rejected") {
-            throw candidatesResult.reason;
-          }
-
-          const candidates = candidatesResult.value;
-          const preselectedCandidates = candidates.filter(
-            (question) => question.selected,
-          );
-          const initialQuestions = (
-            preselectedCandidates.length > 0
-              ? preselectedCandidates
-              : candidates
-          ).slice(0, 5);
-
-          if (initialQuestions.length > 0) {
-            await saveQuestions(Number(mockApplyId), initialQuestions);
-            const savedQuestions = await fetchSelectedQuestions(
-              Number(mockApplyId),
-            ).catch(() => []);
-            data = savedQuestions.length > 0
-              ? savedQuestions
-              : initialQuestions;
-          }
+        if (data.length > 5) {
+          data = data.slice(0, 5);
         }
 
         if (ignore) {
@@ -163,6 +126,7 @@ export default function MockApplyPage({
     };
   }, [mockApplyId]);
 
+  // 2. 연결된 채용 공고 불러오기
   useEffect(() => {
     const parsedMockApplyId = Number(mockApplyId);
 
@@ -190,8 +154,7 @@ export default function MockApplyPage({
             {
               subtitle: "직무",
               content:
-                jobPosting.jobTitle ||
-                jobPosting.detailClassificationName,
+                jobPosting.jobTitle || jobPosting.detailClassificationName,
             },
             { subtitle: "주요 업무", content: jobPosting.task },
             { subtitle: "자격요건", content: jobPosting.requirement },
@@ -209,66 +172,46 @@ export default function MockApplyPage({
         });
       })
       .catch((error) => {
-        if (!ignore) {
-          console.error("채용 공고를 불러오지 못했습니다.", error);
-        }
+        if (!ignore) console.error("채용 공고를 불러오지 못했습니다.", error);
       });
-
     return () => {
       ignore = true;
     };
   }, [mockApplyId]);
 
-  // 자동 저장 타이머
+  // 4. 토스트 타이머
   useEffect(() => {
     if (!toast.open || toast.variant !== "check") return;
-
     const retryToastTimer = window.setTimeout(() => {
       setToast({ open: false, message: "", variant: "normal" });
     }, 3000);
-
     return () => window.clearTimeout(retryToastTimer);
   }, [toast.open, toast.variant]);
 
   useEffect(() => {
     if (questions.length === 0) return;
 
-    const autoSaveTimer = setTimeout(async () => {
+    const autoSaveTimer = window.setTimeout(async () => {
       try {
         await saveApply(Number(mockApplyId), getSubmitPayload(questions));
 
         const now = new Date();
-        const timeString = `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
+        const timeString = `${now.getHours()}:${String(
+          now.getMinutes(),
+        ).padStart(2, "0")}`;
         setLastSavedTime(timeString);
-        console.log("자동 저장 완료!", timeString);
       } catch (error) {
         console.error("자동 저장 실패:", error);
       }
     }, 2000);
 
-    return () => clearTimeout(autoSaveTimer);
+    return () => window.clearTimeout(autoSaveTimer);
   }, [questions, mockApplyId]);
 
-  // 핸들러
-  const performDelete = (targetId: string) => {
-    setQuestions((prev) => {
-      const targetIndex = prev.findIndex((q) => q.id === targetId);
-      const newList = prev.filter((q) => q.id !== targetId);
-      if (selectedId === targetId && newList.length > 0) {
-        const newSelectedIndex = Math.max(0, targetIndex - 1);
-        setSelectedId(newList[newSelectedIndex].id);
-      }
-      return newList;
-    });
-    setToast({ open: true, message: "문항이 삭제되었어요" });
-    setTimeout(() => setToast({ open: false, message: "" }), 3000);
-  };
+  // --- 이벤트 핸들러 모음 ---
 
   const handleConfirm = async () => {
-    if (isSubmitting) {
-      return;
-    }
-
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setIsConfirmModalOpen(false);
 
@@ -280,12 +223,10 @@ export default function MockApplyPage({
       const acceptedAnalysis = await requestAnalysis(Number(mockApplyId));
       const analysisTaskId = acceptedAnalysis.taskId?.trim();
 
-      if (!analysisTaskId) {
+      if (!analysisTaskId)
         throw new Error("자소서 분석 작업 번호를 확인할 수 없습니다.");
-      }
 
       let resolvedJobPostingId = jobPostingId;
-
       if (!resolvedJobPostingId || resolvedJobPostingId <= 0) {
         try {
           const sequenceResult = await fetchSequence(Number(mockApplyId));
@@ -300,33 +241,23 @@ export default function MockApplyPage({
 
       const loadingSearchParams = new URLSearchParams();
       loadingSearchParams.set("taskId", analysisTaskId);
-
-      if (savedApply.sequence > 0) {
+      if (savedApply.sequence > 0)
         loadingSearchParams.set("sequence", String(savedApply.sequence));
-      }
-
-      if (resolvedJobPostingId && resolvedJobPostingId > 0) {
-        loadingSearchParams.set(
-          "jobPostingId",
-          String(resolvedJobPostingId),
-        );
-      }
+      if (resolvedJobPostingId && resolvedJobPostingId > 0)
+        loadingSearchParams.set("jobPostingId", String(resolvedJobPostingId));
 
       const loadingQuery = loadingSearchParams.size
         ? `?${loadingSearchParams.toString()}`
         : "";
-
       router.push(
         `/mockApply/${mockApplyId}/result/resume-analysis-loading${loadingQuery}`,
       );
     } catch (error) {
       setIsSubmitting(false);
-
       if (error instanceof CreditInsufficientError) {
         setIsCreditShortModalOpen(true);
         return;
       }
-
       console.error("제출 실패:", error);
       setToast({
         open: true,
@@ -341,6 +272,29 @@ export default function MockApplyPage({
         3000,
       );
     }
+  };
+
+  const performDelete = (targetId: string) => {
+    setQuestions((previousQuestions) => {
+      const targetIndex = previousQuestions.findIndex(
+        (question) => question.id === targetId,
+      );
+      const nextQuestions = previousQuestions.filter(
+        (question) => question.id !== targetId,
+      );
+
+      if (selectedId === targetId) {
+        const nextSelectedIndex = Math.max(0, targetIndex - 1);
+        setSelectedId(nextQuestions[nextSelectedIndex]?.id ?? null);
+      }
+
+      return nextQuestions;
+    });
+    setToast({
+      open: true,
+      message: "문항이 삭제되었어요",
+      variant: "normal",
+    });
   };
 
   const handleDeleteQuestion = (targetId: string) => {
@@ -370,15 +324,13 @@ export default function MockApplyPage({
   };
 
   const handleAddQuestion = async () => {
-    if (questions.length >= 5) return;
     try {
       const newQuestion: QuestionItem = {
-        id: `temp-${Date.now()}`,
+        id: `temp-${Date.now()}`, // 임시 ID
         questionId: 0,
-        question: "새로운 문항",
+        question: "",
         answer: "",
         maxLength: 1000,
-        custom: true,
       };
 
       const updatedQuestions = [...questions, newQuestion];
@@ -401,7 +353,6 @@ export default function MockApplyPage({
     }
   };
 
-  // 현재 선택된 문항 폼 데이터
   const currentQ = questions.find((q) => q.id === selectedId);
   const mappedQuestionForForm = currentQ
     ? {
@@ -424,52 +375,62 @@ export default function MockApplyPage({
       onBackClick={() => setIsLeaveModalOpen(true)}
       onNextClick={() => setIsConfirmModalOpen(true)}
       isNextDisabled={isSubmitDisabled || isSubmitting}
+      nextLabel="채점하기"
+      nextIconType="SPARKLE"
     >
-      <div className="flex h-full flex-col overflow-hidden bg-bg-default">
+      <div
+        className={clsx(
+          "flex h-full flex-col overflow-hidden bg-bg-default",
+          scrollbarClassS,
+        )}
+      >
         <main
           className={clsx(
             "flex-1 flex gap-6 transition-all duration-300 ease-in-out",
             isPanelOpen ? "mr-[300px]" : "mr-0",
           )}
         >
-          <div className={clsx("flex flex-col shrink-0 ", scrollbarClassS)}>
-            <SideHeaderContainer
-              leading={2}
-              title="자소서를 작성해주세요"
-              subtitle="공고의 문항을 추가하고, 각 문항에 답변을 입력해 주세요."
-              element={
+          <div className="flex min-h-0 flex-1 items-center justify-between self-stretch w-full">
+            <aside className="flex min-h-0 w-[360px] shrink-0 flex-col items-start justify-between self-stretch pt-20 pr-0 pb-16 pl-20">
+              <div className="flex w-full flex-col items-start gap-8">
+                <div className="flex flex-col items-start gap-5">
+                  <h1 className="whitespace-pre-line text-h24-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+                    {"지원한 회사 기준으로\n채점하고 있어요"}
+                  </h1>
+                </div>
+
                 <QuestionList
                   questions={questions}
                   selectedId={selectedId}
-                  onSelect={setSelectedId}
-                  onAdd={handleAddQuestion}
+                  onSelect={(id) => setSelectedId(id)}
                   onDelete={handleDeleteQuestion}
+                  onAdd={handleAddQuestion}
                 />
-              }
-            />
-          </div>
+              </div>
+            </aside>
 
-          <div
-            className={clsx(
-              "flex-1 overflow-y-auto flex flex-col pt-16 pl-16 pr-[40px]",
-              scrollbarClassS,
-            )}
-          >
-            <div className="w-full min-w-[600px] max-w-[1000px]">
-              {mappedQuestionForForm ? (
-                <WritingForm
-                  question={mappedQuestionForForm}
-                  onChange={handleUpdate}
-                />
-              ) : isQuestionsLoading ? (
-                <div className="flex h-full items-center justify-center text-text-neutral-assistive">
-                  문항을 불러오는 중입니다...
-                </div>
-              ) : (
-                <div className="flex h-full items-center justify-center text-text-neutral-assistive">
-                  {questionsErrorMessage}
-                </div>
+            <div
+              className={clsx(
+                "flex-1 overflow-y-auto flex flex-col pt-16 pl-16 pr-[40px] items-center",
+                scrollbarClassS,
               )}
+            >
+              <div className="w-full min-w-[600px] max-w-[1000px]">
+                {mappedQuestionForForm ? (
+                  <WritingForm
+                    question={mappedQuestionForForm}
+                    onChange={handleUpdate}
+                  />
+                ) : isQuestionsLoading ? (
+                  <div className="flex h-full items-center justify-center text-text-neutral-assistive">
+                    문항을 불러오는 중입니다...
+                  </div>
+                ) : (
+                  <div className="flex h-full items-center justify-center text-text-neutral-assistive">
+                    {questionsErrorMessage}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </main>

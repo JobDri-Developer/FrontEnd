@@ -8,10 +8,8 @@ import { SearchBar } from "@/components/common/searchbar";
 import { Tooltip } from "@/components/common/tooltip";
 import useOutsideClick from "@/hooks/useOutsideClick";
 import Logo from "@/assets/ic_LOGO_minimum_favi.svg";
-import {
-  LnbNotificationButton,
-  type LnbNotificationItem,
-} from "./LnbNotification";
+import { LnbNotificationButton } from "./LnbNotification";
+import { LnbNotificationItem } from "@/lib/api/notification";
 import {
   lnbHiddenScrollbarClass,
   LnbScrollbar,
@@ -620,6 +618,8 @@ export function LnbDefaultFooter({
   hasNotification,
   notificationItems,
   onLogout,
+  onMarkAllRead,
+  onReadItem,
 }: {
   creditCount: number;
   email: string;
@@ -627,6 +627,8 @@ export function LnbDefaultFooter({
   hasNotification: boolean;
   notificationItems: LnbNotificationItem[];
   onLogout: () => void;
+  onMarkAllRead?: () => void;
+  onReadItem?: (id: string) => void;
 }) {
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -697,6 +699,8 @@ export function LnbDefaultFooter({
         <LnbNotificationButton
           hasNotification={hasNotification}
           notificationItems={notificationItems}
+          onMarkAllRead={onMarkAllRead}
+          onReadItem={onReadItem}
         />
       </div>
     </div>
