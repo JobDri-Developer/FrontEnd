@@ -22,7 +22,7 @@ import {
   requestAnalysis,
 } from "@/lib/api/result";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
-import { fetchMyJobPosting } from "@/lib/api/jobPostings";
+import { fetchMockApplyJobPosting } from "@/lib/api/mockApplies";
 import type { JDData } from "@/components/mockApply/Question/SidePanel";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
 
@@ -49,12 +49,12 @@ export default function MockApplyPage({
   const [isQuestionsLoading, setIsQuestionsLoading] = useState(true);
   const [questionsErrorMessage, setQuestionsErrorMessage] = useState("");
   const [jdData, setJdData] = useState<JDData | null>(null);
-  const [sequenceJobPostingId, setSequenceJobPostingId] = useState<
-    number | null
-  >(null);
-  const jobPostingId = hasRequestedJobPostingId
-    ? requestedJobPostingId
-    : sequenceJobPostingId;
+  const [linkedJobPostingId, setLinkedJobPostingId] = useState<number | null>(
+    null,
+  );
+  const jobPostingId =
+    linkedJobPostingId ??
+    (hasRequestedJobPostingId ? requestedJobPostingId : null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [lastSavedTime, setLastSavedTime] = useState<string>("저장 전");
 
@@ -164,42 +164,21 @@ export default function MockApplyPage({
   }, [mockApplyId]);
 
   useEffect(() => {
-    if (hasRequestedJobPostingId) {
+    const parsedMockApplyId = Number(mockApplyId);
+
+    if (!Number.isInteger(parsedMockApplyId) || parsedMockApplyId <= 0) {
       return;
     }
 
     let ignore = false;
 
-    fetchSequence(Number(mockApplyId))
-      .then((sequence) => {
-        if (!ignore) {
-          setSequenceJobPostingId(sequence.jobPostingId);
-        }
-      })
-      .catch((error) => {
-        if (!ignore) {
-          console.error("연결된 채용 공고를 확인하지 못했습니다.", error);
-        }
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [hasRequestedJobPostingId, mockApplyId]);
-
-  useEffect(() => {
-    if (!jobPostingId) {
-      return;
-    }
-
-    let ignore = false;
-
-    fetchMyJobPosting(jobPostingId)
+    fetchMockApplyJobPosting(parsedMockApplyId)
       .then((jobPosting) => {
         if (ignore) {
           return;
         }
 
+        setLinkedJobPostingId(jobPosting.jobPostingId);
         setJdData({
           companyName: jobPosting.companyName,
           profileColor: jobPosting.profileColor,
@@ -238,7 +217,7 @@ export default function MockApplyPage({
     return () => {
       ignore = true;
     };
-  }, [jobPostingId]);
+  }, [mockApplyId]);
 
   // 자동 저장 타이머
   useEffect(() => {

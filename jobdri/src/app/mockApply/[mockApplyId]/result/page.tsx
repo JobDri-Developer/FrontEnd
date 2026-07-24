@@ -8,11 +8,12 @@ import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
 import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
 import { useReApply } from "@/hooks/useReApply";
-import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
+import {
+  fetchMockApplyJobPosting,
+  getMockApplyResumeRecords,
+} from "@/lib/api/mockApplies";
 import { useAnalysisResult } from "@/hooks/useAnalysisResult";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
-import { fetchMyJobPosting } from "@/lib/api/jobPostings";
-import { fetchSequence } from "@/lib/api/result";
 
 interface ResultPageProps {
   params: Promise<{
@@ -73,10 +74,8 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
 
     const loadJobPostingHeader = async () => {
       try {
-        const resolvedJobPostingId =
-          parsedJobPostingId ??
-          (await fetchSequence(parsedMockApplyId)).jobPostingId;
-        const jobPosting = await fetchMyJobPosting(resolvedJobPostingId);
+        const jobPosting =
+          await fetchMockApplyJobPosting(parsedMockApplyId);
 
         if (!ignore) {
           setJobPostingHeader({
@@ -99,7 +98,7 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
     return () => {
       ignore = true;
     };
-  }, [parsedJobPostingId, parsedMockApplyId]);
+  }, [parsedMockApplyId]);
 
   const closeToast = () => setToast({ open: false, message: "" });
   const showTopToast = (message: string) => {

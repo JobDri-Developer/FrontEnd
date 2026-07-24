@@ -3,7 +3,10 @@ import {
   getAuthHeaders,
   parseApiResponse,
 } from "@/lib/api/client";
-import type { JobPostingProfileColor } from "@/lib/api/jobPostings";
+import type {
+  JobPostingProfileColor,
+  SavedJobPosting,
+} from "@/lib/api/jobPostings";
 
 export type JobPostingApplyType = "MOCK" | "ACTUAL";
 export type MockApplyProgressStatus =
@@ -16,6 +19,12 @@ export interface MockApplyFromJobPosting {
   jobPostingId: number;
   mockApplyId: number;
   applyType: JobPostingApplyType;
+  sequence: number;
+}
+
+export interface MockApplyFromJobPostingPayload {
+  jobPostingId: number;
+  sequence?: number;
 }
 
 export interface MockApplyRetryResult {
@@ -60,7 +69,7 @@ const MOCK_APPLY_RESUME_STORAGE_KEY = "jobdri.mockApplyResumeRecords";
 
 async function postMockApplyFromJobPosting(
   path: string,
-  jobPostingId: number,
+  payload: MockApplyFromJobPostingPayload,
   fallbackMessage: string,
 ) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -69,24 +78,28 @@ async function postMockApplyFromJobPosting(
       "Content-Type": "application/json",
       ...getAuthHeaders(),
     },
-    body: JSON.stringify({ jobPostingId }),
+    body: JSON.stringify(payload),
   });
 
   return parseApiResponse<MockApplyFromJobPosting>(response, fallbackMessage);
 }
 
-export function createMockApplyFromJobPosting(jobPostingId: number) {
+export function createMockApplyFromJobPosting(
+  payload: MockApplyFromJobPostingPayload,
+) {
   return postMockApplyFromJobPosting(
     "/api/mock-applies/mock/from-job-posting",
-    jobPostingId,
+    payload,
     "모의 서류 지원 생성에 실패했습니다.",
   );
 }
 
-export function createActualApplyFromJobPosting(jobPostingId: number) {
+export function createActualApplyFromJobPosting(
+  payload: MockApplyFromJobPostingPayload,
+) {
   return postMockApplyFromJobPosting(
     "/api/mock-applies/actual",
-    jobPostingId,
+    payload,
     "실제 공고 기반 서류 지원 생성에 실패했습니다.",
   );
 }
@@ -94,13 +107,15 @@ export function createActualApplyFromJobPosting(jobPostingId: number) {
 export function createApplyFromJobPosting({
   jobPostingId,
   applyType,
+  sequence,
 }: {
   jobPostingId: number;
   applyType: JobPostingApplyType;
+  sequence?: number;
 }) {
   return applyType === "MOCK"
-    ? createMockApplyFromJobPosting(jobPostingId)
-    : createActualApplyFromJobPosting(jobPostingId);
+    ? createMockApplyFromJobPosting({ jobPostingId, sequence })
+    : createActualApplyFromJobPosting({ jobPostingId, sequence });
 }
 
 export async function fetchMyMockApplies({
@@ -126,6 +141,23 @@ export async function fetchMyMockApplies({
     inProgress: result.inProgress ?? [],
     completed: result.completed ?? [],
   };
+}
+
+export async function fetchMockApplyJobPosting(
+  mockApplyId: number,
+): Promise<SavedJobPosting> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/job-posting`,
+    {
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    },
+  );
+
+  return parseApiResponse<SavedJobPosting>(
+    response,
+    "연결된 채용 공고를 불러오지 못했습니다.",
+  );
 }
 
 export function saveSelectedApplyType(applyType: JobPostingApplyType) {
