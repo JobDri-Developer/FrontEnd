@@ -10,7 +10,6 @@ import {
   type CreditPlan,
 } from "@/lib/api/credit";
 import { Lnb } from "@/components/common/lnb";
-import Header from "@/components/common/header/Header";
 import PageHeader from "@/components/common/PageHeader";
 
 function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
@@ -44,28 +43,30 @@ export default function CreditPage() {
     plans.find((p) => p.planCode === "ONE_TIME")?.price ?? 2500;
 
   return (
-    <div className="flex min-h-screen w-full bg-[#F5F6F9] overflow-x-hidden ">
-      <Lnb />
-      <main className="flex-1 w-full max-w-[1320px] min-w-[1060px] px-18 pt-12 pb-60 mx-auto">
-        <PageHeader />
-        <section className="flex flex-row gap-4 w-full mt-8 mb-16 mx-auto">
-          {plans.map((plan) => (
-            <CreditCard
-              key={plan.planCode}
-              creditCount={plan.creditAmount}
-              price={plan.price.toLocaleString()}
-              planCode={plan.planCode}
-              discountRate={calcDiscountRate(plan, basePricePerUnit)}
-              discountLabel={
-                calcDiscountRate(plan, basePricePerUnit) ? "할인" : ""
-              }
-            />
-          ))}
-        </section>
-        <div className="min-w-265">
-          <Useage />
-        </div>
-      </main>
+    <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
+      <Lnb className="z-50 shrink-0" />
+      <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
+        <main className="mx-auto w-full max-w-[1320px] min-w-[1060px] px-18 pt-12 pb-60">
+          <PageHeader />
+          <section className="mx-auto mt-8 mb-16 flex w-full flex-row gap-4">
+            {plans.map((plan) => (
+              <CreditCard
+                key={plan.planCode}
+                creditCount={plan.creditAmount}
+                price={plan.price.toLocaleString()}
+                planCode={plan.planCode}
+                discountRate={calcDiscountRate(plan, basePricePerUnit)}
+                discountLabel={
+                  calcDiscountRate(plan, basePricePerUnit) ? "할인" : ""
+                }
+              />
+            ))}
+          </section>
+          <div className="min-w-265">
+            <Useage />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

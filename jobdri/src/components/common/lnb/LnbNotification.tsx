@@ -160,6 +160,9 @@ export function LnbNotificationButton({
 }) {
   const notificationMenuRef = useRef<HTMLSpanElement>(null);
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
+  const hasUnreadNotification =
+    hasNotification ||
+    notificationItems.some((notificationItem) => !notificationItem.read);
 
   useOutsideClick(
     notificationMenuRef,
@@ -177,7 +180,7 @@ export function LnbNotificationButton({
         styleType={isNotificationPanelOpen ? "normal" : "weak"}
         size="s"
         buttonType="transparent"
-        aria-label="알림"
+        aria-label={hasUnreadNotification ? "새 알림 있음" : "알림"}
         aria-expanded={isNotificationPanelOpen}
         aria-haspopup="dialog"
         onClick={() => {
@@ -187,11 +190,11 @@ export function LnbNotificationButton({
         }}
       />
 
-      {/* 안 읽은 알림이 있으면 빨간 점 표시 */}
-      {hasNotification && (
-        <span className="absolute top-px right-px flex items-center justify-center">
-          <span className="h-[5px] w-[5px] rounded-full bg-icon-primary-strong" />
-        </span>
+      {hasUnreadNotification && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute top-px right-px z-10 h-[5px] w-[5px] rounded-full bg-fill-primary-default"
+        />
       )}
 
       {isNotificationPanelOpen && (
