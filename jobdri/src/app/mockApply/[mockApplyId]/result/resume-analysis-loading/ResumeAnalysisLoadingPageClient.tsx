@@ -23,6 +23,7 @@ interface ResumeAnalysisLoadingPageClientProps {
   jobPostingId?: number;
   applicationLabel?: string;
   initialSequence?: number;
+  isError?: boolean;
 }
 
 function isFailedTaskStatus(status: string) {
@@ -51,6 +52,7 @@ export default function ResumeAnalysisLoadingPageClient({
   jobPostingId,
   applicationLabel,
   initialSequence,
+  isError,
 }: ResumeAnalysisLoadingPageClientProps) {
   const router = useRouter();
 
@@ -59,7 +61,11 @@ export default function ResumeAnalysisLoadingPageClient({
   const isValidMockApplyId = Number.isInteger(mockApplyId) && mockApplyId > 0;
   const [pollingRetryKey, setPollingRetryKey] = useState(0);
   const [errorMessage, setErrorMessage] = useState(
-    isValidMockApplyId ? "" : INVALID_MOCK_APPLY_MESSAGE,
+    isError
+      ? `응답 대기 시간이 길어져 작업을 멈췄어요.\n소모된 크레딧이 복구됐어요.`
+      : isValidMockApplyId
+        ? ""
+        : INVALID_MOCK_APPLY_MESSAGE,
   );
 
   const moveToResult = useCallback(
@@ -95,7 +101,7 @@ export default function ResumeAnalysisLoadingPageClient({
   }, [jobPostingId, mockApplyId, router]);
 
   useEffect(() => {
-    if (!isValidMockApplyId) {
+    if (isError || !isValidMockApplyId) {
       return;
     }
 
@@ -251,7 +257,14 @@ export default function ResumeAnalysisLoadingPageClient({
       window.clearInterval(pollTimer);
       window.clearTimeout(timeoutTimer);
     };
-  }, [isValidMockApplyId, mockApplyId, moveToResult, pollingRetryKey, taskId]);
+  }, [
+    isValidMockApplyId,
+    mockApplyId,
+    moveToResult,
+    pollingRetryKey,
+    taskId,
+    isError,
+  ]);
 
   const handleRetry = () => {
     if (!isValidMockApplyId) {
@@ -274,17 +287,13 @@ export default function ResumeAnalysisLoadingPageClient({
       {errorMessage && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            type="confirmationModal"
-            title="분석 결과를 불러오지 못했어요"
+            type="notice"
+            title="나중에 다시 시도해주세요."
             description={errorMessage}
-            onClose={handleRetry}
-            secondaryAction={{
-              label: "자소서로 돌아가기",
-              onClick: moveBackToResume,
-            }}
+            onClose={moveBackToResume}
             primaryAction={{
-              label: "다시 확인",
-              onClick: handleRetry,
+              label: "확인",
+              onClick: moveBackToResume,
             }}
           />
         </div>

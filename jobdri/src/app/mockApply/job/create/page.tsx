@@ -84,6 +84,8 @@ export default function JobPostingCreatePage() {
     initialDraft.files,
   );
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showInvalidDataModal, setShowInvalidDataModal] = useState(false);
+
   const [jobPostingToastMessage, setJobPostingToastMessage] = useState<
     string | null
   >(null);
@@ -91,6 +93,16 @@ export default function JobPostingCreatePage() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const analysisError = searchParams.get("analysisError");
+
+    if (analysisError === "not_saved") {
+      const modalTimer = window.setTimeout(() => {
+        setShowInvalidDataModal(true);
+        window.history.replaceState(null, "", window.location.pathname);
+      }, 0);
+
+      return () => window.clearTimeout(modalTimer);
+    }
+
     const toastMessage =
       searchParams.get("analysisCanceled") === "1"
         ? "공고 분석을 중단했습니다."
@@ -200,6 +212,21 @@ export default function JobPostingCreatePage() {
           </div>
         </main>
       </div>
+
+      {showInvalidDataModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            type="alert"
+            title="공고 내용을 불러오지 못했어요"
+            description={`공고 내용이 정확히 입력되었는지 확인 후,\n자세하게 다시 작성해 주세요.`}
+            onClose={() => setShowInvalidDataModal(false)}
+            primaryAction={{
+              label: "확인",
+              onClick: () => setShowInvalidDataModal(false),
+            }}
+          />
+        </div>
+      )}
 
       {showExitConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">

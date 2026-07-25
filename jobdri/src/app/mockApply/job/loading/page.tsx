@@ -85,9 +85,12 @@ function LoadingStatusRows({ durationMs }: { durationMs: number }) {
   useEffect(() => {
     const stepDurationMs = durationMs / loadingStatusMessages.length;
     const timers = loadingStatusMessages.map((_, index) =>
-      window.setTimeout(() => {
-        setActiveStep(index + 1);
-      }, stepDurationMs * (index + 1)),
+      window.setTimeout(
+        () => {
+          setActiveStep(index + 1);
+        },
+        stepDurationMs * (index + 1),
+      ),
     );
 
     return () => {
@@ -121,6 +124,8 @@ export default function JobPostingLoadingPage() {
   const hasStartedAnalysisRef = useRef(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     if (hasStartedAnalysisRef.current) {
       return;
     }
@@ -137,7 +142,6 @@ export default function JobPostingLoadingPage() {
         if (!rawText && !imageObjectKey) {
           throw new Error("분석할 채용 공고가 없습니다.");
         }
-
         const accepted = await ingestJobPosting({ rawText, imageObjectKey });
         const status = await waitForJobPostingIngest(accepted.taskId);
 
@@ -146,20 +150,37 @@ export default function JobPostingLoadingPage() {
         }
 
         saveJobPostingAnalysis(status.result);
-        router.replace("/mockApply/job/review");
+
+        const resultJobPostingId = status.result.saved?.jobPostingId;
+        const isSavedToDb = status.result.savedToDatabase ?? true;
+
+        if (isMounted) {
+          // ID가 존재하고 DB 저장이 정상적으로 완료되었을 때만 리뷰 페이지로 이동
+          if (resultJobPostingId && isSavedToDb) {
+            router.replace(`/mockApply/job/${resultJobPostingId}/review`);
+          } else {
+            router.replace("/mockApply/job/create?analysisError=not_saved");
+          }
+        }
       } catch (error) {
         const message =
           error instanceof Error
             ? error.message
             : "채용 공고 분석에 실패했습니다.";
 
-        router.replace(
-          `/mockApply/job/create?analysisError=${encodeURIComponent(message)}`,
-        );
+        if (isMounted) {
+          router.replace(
+            `/mockApply/job/create?analysisError=${encodeURIComponent(message)}`,
+          );
+        }
       }
     };
 
     void analyzeJobPosting();
+
+    return () => {
+      isMounted = false;
+    };
   }, [router]);
 
   const closeStopConfirm = () => setShowStopConfirm(false);

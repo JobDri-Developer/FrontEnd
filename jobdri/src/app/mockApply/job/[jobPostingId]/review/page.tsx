@@ -1,7 +1,13 @@
 "use client";
 
-import { useMemo, useState, type MouseEvent, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import {
+  useMemo,
+  useState,
+  useEffect,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
+import { useRouter, useParams } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import SideHeaderContainer from "@/components/common/header/SideHeaderContainer";
 import {
@@ -12,14 +18,13 @@ import {
 import { CtaFooter } from "@/components/common/cta";
 import { JDInput } from "@/components/common/input";
 import { ModalNotice } from "@/components/common/modal";
-import Avatar, {
-  type AvatarColor,
-} from "@/components/mockApply/home/Avatar";
+import Avatar, { type AvatarColor } from "@/components/mockApply/home/Avatar";
 import {
   clearJobPostingInput,
   getJobPostingAnalysis,
-} from "../jobPostingDraftStore";
+} from "@/app/mockApply/job/jobPostingDraftStore";
 import {
+  fetchMyJobPosting,
   saveJobPosting,
   updateJobPosting,
   type JobPostingSavePayload,
@@ -54,7 +59,6 @@ function SectionCard({
           {title}
         </h2>
       </div>
-
       <div className="flex self-stretch flex-col items-start gap-1">
         {children}
       </div>
@@ -94,12 +98,10 @@ function JobProfileRow({
             />
           </svg>
         </div>
-
         <span className="text-cap12-med text-text-neutral-disabled [font-feature-settings:'liga'_off,'clig'_off]">
           이 공고의 프로필 색상을 선택해 주세요.
         </span>
       </div>
-
       <div className="flex flex-1 items-start py-0.5">
         <Avatar
           name={avatarName}
@@ -108,9 +110,7 @@ function JobProfileRow({
           size="large"
           isEditable
           onChange={(color: AvatarColor) =>
-            onProfileColorChange(
-              color.toUpperCase() as JobPostingProfileColor,
-            )
+            onProfileColorChange(color.toUpperCase() as JobPostingProfileColor)
           }
           className="!h-11 !w-11"
         />
@@ -121,77 +121,35 @@ function JobProfileRow({
 
 export default function JobPostingReviewPage() {
   const router = useRouter();
-  const [initialValues] = useState(() => {
-    const result = getJobPostingAnalysis();
-    const generated = result?.generated;
-    const extracted = result?.extracted;
-    const saved = result?.saved;
+  const params = useParams();
+  const urlJobPostingId = params.jobPostingId as string;
 
-    return {
-      companyName: firstNonEmpty(
-        saved?.companyName,
-        generated?.companyName,
-        extracted?.companyName,
-      ),
-      postingName: firstNonEmpty(
-        saved?.postingName,
-        generated?.jobTitle,
-        extracted?.jobTitle,
-        saved?.jobTitle,
-        result?.classification?.detailClassificationName,
-        saved?.detailClassificationName,
-      ),
-      jobTitle: firstNonEmpty(
-        saved?.jobTitle,
-        generated?.jobTitle,
-        extracted?.jobTitle,
-        result?.classification?.detailClassificationName,
-        saved?.detailClassificationName,
-      ),
-      task: firstNonEmpty(generated?.task, extracted?.task, saved?.task),
-      requirements: firstNonEmpty(
-        generated?.requirements,
-        extracted?.requirements,
-        saved?.requirement,
-      ),
-      preferred: firstNonEmpty(
-        generated?.preferredQualifications,
-        extracted?.preferredQualifications,
-        saved?.preferred,
-      ),
-      companySize: saved?.companySize?.trim() || "STARTUP",
-      profileColor: saved?.profileColor ?? "DEFAULT",
-      detailClassificationId:
-        saved?.detailClassificationId ??
-        result?.classification?.detailClassificationId ??
-        result?.candidates?.[0]?.detailClassificationId ??
-        0,
-      jobPostingId: saved?.jobPostingId ?? null,
-    };
-  });
+  const [isLoading, setIsLoading] = useState(true);
   const [profileColor, setProfileColor] =
-    useState<JobPostingProfileColor>(initialValues.profileColor);
-  const [jobPostingName, setJobPostingName] = useState(
-    initialValues.postingName,
-  );
-  const [companyName, setCompanyName] = useState(initialValues.companyName);
-  const [roleName, setRoleName] = useState(initialValues.jobTitle);
-  const [task, setTask] = useState(initialValues.task);
-  const [requirements, setRequirements] = useState(
-    initialValues.requirements,
-  );
-  const [preferred, setPreferred] = useState(initialValues.preferred);
+    useState<JobPostingProfileColor>("DEFAULT");
+  const [jobPostingName, setJobPostingName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [roleName, setRoleName] = useState("");
+  const [task, setTask] = useState("");
+  const [requirements, setRequirements] = useState("");
+  const [preferred, setPreferred] = useState("");
+  const [companySize, setCompanySize] = useState("STARTUP");
+  const [detailClassificationId, setDetailClassificationId] = useState(0);
+  const [jobPostingId, setJobPostingId] = useState<number | null>(null);
+
   const [showBackConfirm, setShowBackConfirm] = useState(false);
   const [showHomeConfirm, setShowHomeConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveErrorMessage, setSaveErrorMessage] = useState("");
+
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics(true, "job-posting-review", { trackPadding: 28 });
+
   const companyAvatarName = useMemo(() => {
     const trimmedCompanyName = companyName.trim();
-
     return trimmedCompanyName.length > 0 ? trimmedCompanyName[0] : "T";
   }, [companyName]);
+
   const isNextEnabled = useMemo(
     () =>
       [jobPostingName, companyName, roleName].every(
@@ -199,20 +157,114 @@ export default function JobPostingReviewPage() {
       ),
     [companyName, jobPostingName, roleName],
   );
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        if (urlJobPostingId) {
+          // URL 경로에 ID가 있으면 DB에서 패칭
+          const saved = await fetchMyJobPosting(Number(urlJobPostingId));
+          setProfileColor(saved.profileColor ?? "DEFAULT");
+          setJobPostingName(
+            firstNonEmpty(
+              saved.postingName,
+              saved.jobTitle,
+              saved.detailClassificationName,
+            ),
+          );
+          setCompanyName(saved.companyName ?? "");
+          setRoleName(
+            firstNonEmpty(saved.jobTitle, saved.detailClassificationName),
+          );
+          setTask(saved.task ?? "");
+          setRequirements(saved.requirement ?? "");
+          setPreferred(saved.preferred ?? "");
+          setCompanySize(saved.companySize?.trim() || "STARTUP");
+          setDetailClassificationId(saved.detailClassificationId ?? 0);
+          setJobPostingId(saved.jobPostingId ?? null);
+        } else {
+          // 파라미터가 없으면 스토어에서 임시 데이터 패칭
+          const result = getJobPostingAnalysis();
+          if (!result) {
+            router.replace("/mockApply/job/create");
+            return;
+          }
+          const { generated, extracted, saved } = result;
+          setProfileColor(saved?.profileColor ?? "DEFAULT");
+          setJobPostingName(
+            firstNonEmpty(
+              saved?.postingName,
+              generated?.jobTitle,
+              extracted?.jobTitle,
+              saved?.jobTitle,
+              result?.classification?.detailClassificationName,
+              saved?.detailClassificationName,
+            ),
+          );
+          setCompanyName(
+            firstNonEmpty(
+              saved?.companyName,
+              generated?.companyName,
+              extracted?.companyName,
+            ),
+          );
+          setRoleName(
+            firstNonEmpty(
+              saved?.jobTitle,
+              generated?.jobTitle,
+              extracted?.jobTitle,
+              result?.classification?.detailClassificationName,
+              saved?.detailClassificationName,
+            ),
+          );
+          setTask(firstNonEmpty(generated?.task, extracted?.task, saved?.task));
+          setRequirements(
+            firstNonEmpty(
+              generated?.requirements,
+              extracted?.requirements,
+              saved?.requirement,
+            ),
+          );
+          setPreferred(
+            firstNonEmpty(
+              generated?.preferredQualifications,
+              extracted?.preferredQualifications,
+              saved?.preferred,
+            ),
+          );
+          setCompanySize(saved?.companySize?.trim() || "STARTUP");
+          setDetailClassificationId(
+            saved?.detailClassificationId ??
+              result?.classification?.detailClassificationId ??
+              result?.candidates?.[0]?.detailClassificationId ??
+              0,
+          );
+          setJobPostingId(saved?.jobPostingId ?? null);
+        }
+      } catch (error) {
+        console.error("데이터 로드 실패", error);
+        router.replace("/");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [urlJobPostingId, router]);
+
   const handleHomeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setShowHomeConfirm(true);
   };
+
   const handleNext = async () => {
-    if (!isNextEnabled || isSaving) {
-      return;
-    }
+    if (!isNextEnabled || isSaving) return;
 
     setIsSaving(true);
     setSaveErrorMessage("");
 
     try {
-      if (initialValues.detailClassificationId <= 0) {
+      if (detailClassificationId <= 0) {
         throw new Error("직무 분류 정보가 없어 공고를 저장할 수 없습니다.");
       }
 
@@ -220,16 +272,18 @@ export default function JobPostingReviewPage() {
         profileColor,
         postingName: jobPostingName.trim(),
         companyName: companyName.trim(),
-        companySize: initialValues.companySize,
+        companySize: companySize,
         jobTitle: roleName.trim(),
-        detailClassificationId: initialValues.detailClassificationId,
+        detailClassificationId: detailClassificationId,
         task: task.trim(),
         requirement: requirements.trim(),
         preferred: preferred.trim(),
       };
-      const savedJobPosting = initialValues.jobPostingId
-        ? await updateJobPosting(initialValues.jobPostingId, payload)
+
+      const savedJobPosting = jobPostingId
+        ? await updateJobPosting(jobPostingId, payload)
         : await saveJobPosting(payload);
+
       const createdApply = await createApplyFromJobPosting({
         jobPostingId: savedJobPosting.jobPostingId,
         applyType: getSelectedApplyType(),
@@ -249,6 +303,16 @@ export default function JobPostingReviewPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex h-dvh w-dvw items-center justify-center bg-bg-white">
+        <span className="text-text-neutral-description">
+          데이터를 불러오는 중입니다...
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="h-dvh w-dvw overflow-hidden bg-line-neutral-assistive">
       <div className="flex h-dvh w-dvw min-w-[1100px] flex-col bg-bg-white">
@@ -259,10 +323,7 @@ export default function JobPostingReviewPage() {
           currentStep={1}
           steps={wizardSteps}
           lastSavedAt="17:00"
-          homeAction={{
-            label: "홈으로",
-            onClick: handleHomeClick,
-          }}
+          homeAction={{ label: "홈으로", onClick: handleHomeClick }}
           className="min-w-[1100px] max-w-none shrink-0 self-stretch"
         />
 

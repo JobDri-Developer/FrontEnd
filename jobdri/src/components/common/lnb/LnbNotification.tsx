@@ -134,6 +134,15 @@ export function mapApiToLnbItem(
       ? String(item.payload.mockApplyId)
       : undefined;
 
+  const jobPostingId =
+    item.payload?.jobPostingId !== undefined &&
+    item.payload?.jobPostingId !== null
+      ? String(item.payload.jobPostingId)
+      : undefined;
+
+  const taskId = item.payload?.taskId;
+  const savedToDatabase = item.payload?.savedToDatabase;
+
   return {
     id: item.id ? String(item.id) : crypto.randomUUID(),
     title: item.title,
@@ -144,6 +153,9 @@ export function mapApiToLnbItem(
     readAt: item.readAt,
     targetType: item.targetType,
     mockApplyId,
+    jobPostingId,
+    taskId,
+    savedToDatabase, // 추가
     apiType: item.type,
   };
 }
@@ -357,7 +369,6 @@ function LnbNotificationList({
           )}
         >
           <div className="flex min-w-0 flex-col items-start self-stretch">
-            {/* 💡 정렬과 필터링이 모두 완료된 sortedItems를 매핑합니다 */}
             {sortedItems.map((notificationItem) => {
               if (!notificationItem.id || notificationItem.id === "undefined") {
                 return null;
@@ -412,47 +423,71 @@ export function LnbNotificationListItem({
   const iconStyle = notificationIconStyles[notificationType];
 
   const handleNotificationClick = () => {
-    // 🚨 어떤 녀석을 클릭했는지 원본 데이터를 통째로 찍어봅니다!
     console.log("클릭한 알림 전체 데이터:", notificationItem);
 
-    const { id, targetType, mockApplyId, read, apiType } = notificationItem;
+    const {
+      id,
+      mockApplyId,
+      jobPostingId,
+      taskId,
+      savedToDatabase,
+      read,
+      apiType,
+    } = notificationItem;
 
     if (!read) {
       markNotificationAsRead(id).catch(console.error);
       if (onReadItem) onReadItem(id);
     }
 
-    // 만약 여기서 걸린다면 어떤 알림인지 콘솔 창에 찍힙니다.
-    if (!mockApplyId) {
-      console.warn("⚠️ 이 알림에는 mockApplyId가 없습니다!", notificationItem);
-      router.push("/apply"); // ID가 없으면 안전하게 목록으로 이동
-      return;
-    }
-
     switch (apiType) {
+      // #0 공고 분석 성공
       case "JOB_POSTING_ASYNC_SUCCEEDED":
-        router.push(`/job-posting/${mockApplyId}`);
+        if (savedToDatabase === true && jobPostingId) {
+          router.push(`/mockApply/job/${jobPostingId}/review`);
+        } else {
+          console.warn("⚠️ 공고 분석은 완료되었으나 DB 저장이 보류되었습니다.");
+          router.push(`/mockApply/job/create?analysisError=deferred`);
+        }
         break;
 
+      // #1 공고 분석 실패
       case "JOB_POSTING_ASYNC_FAILED":
-        router.push(`/job-posting/${mockApplyId}`);
+        router.push(`/mockApply/job/create?analysisError=1`);
         break;
 
+      // #2 자소서 분석 성공
       case "ANALYSIS_ASYNC_SUCCEEDED":
-        router.push(`/mockApply/${mockApplyId}/result`);
+        if (mockApplyId) {
+          router.push(`/mockApply/${mockApplyId}/result`);
+        } else {
+          router.push("/");
+        }
         break;
 
+      // #3 자소서 분석 실패
       case "ANALYSIS_ASYNC_FAILED":
-        router.push(
-          `/mockApply/${mockApplyId}/result/resume-analysis-loading?error=true`,
-        );
+        if (mockApplyId) {
+          const queryParam = jobPostingId
+            ? `?jobPostingId=${jobPostingId}&error=true`
+            : `?error=true`;
+
+          router.push(
+            `/mockApply/${mockApplyId}/result/resume-analysis-loading${queryParam}`,
+          );
+        } else {
+          router.push("/");
+        }
         break;
 
+      // #4 일반 알림 및 그 외 (GENERAL)
+      case "GENERAL":
       default:
-        router.push(`/mockApply/${mockApplyId}/result`);
+        router.push(`/`);
         break;
     }
   };
+
   return (
     <article
       onClick={handleNotificationClick}
