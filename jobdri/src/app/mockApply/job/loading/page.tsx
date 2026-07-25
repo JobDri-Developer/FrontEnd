@@ -152,12 +152,14 @@ export default function JobPostingLoadingPage() {
         saveJobPostingAnalysis(status.result);
 
         const resultJobPostingId = status.result.saved?.jobPostingId;
+        const isSavedToDb = status.result.savedToDatabase ?? true;
 
         if (isMounted) {
-          if (resultJobPostingId) {
+          // ID가 존재하고 DB 저장이 정상적으로 완료되었을 때만 리뷰 페이지로 이동
+          if (resultJobPostingId && isSavedToDb) {
             router.replace(`/mockApply/job/${resultJobPostingId}/review`);
           } else {
-            router.replace("/mockApply/job/create?analysisError=deferred");
+            router.replace("/mockApply/job/create?analysisError=not_saved");
           }
         }
       } catch (error) {

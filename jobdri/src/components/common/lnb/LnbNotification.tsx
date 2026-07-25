@@ -425,8 +425,15 @@ export function LnbNotificationListItem({
   const handleNotificationClick = () => {
     console.log("클릭한 알림 전체 데이터:", notificationItem);
 
-    const { id, mockApplyId, jobPostingId, savedToDatabase, read, apiType } =
-      notificationItem;
+    const {
+      id,
+      mockApplyId,
+      jobPostingId,
+      taskId,
+      savedToDatabase,
+      read,
+      apiType,
+    } = notificationItem;
 
     if (!read) {
       markNotificationAsRead(id).catch(console.error);
@@ -461,8 +468,12 @@ export function LnbNotificationListItem({
       // #3 자소서 분석 실패
       case "ANALYSIS_ASYNC_FAILED":
         if (mockApplyId) {
+          const queryParam = jobPostingId
+            ? `?jobPostingId=${jobPostingId}&error=true`
+            : `?error=true`;
+
           router.push(
-            `/mockApply/${mockApplyId}/result/resume-analysis-loading?error=true`,
+            `/mockApply/${mockApplyId}/result/resume-analysis-loading${queryParam}`,
           );
         } else {
           router.push("/");

@@ -23,6 +23,7 @@ interface ResumeAnalysisLoadingPageClientProps {
   jobPostingId?: number;
   applicationLabel?: string;
   initialSequence?: number;
+  isError?: boolean;
 }
 
 function isFailedTaskStatus(status: string) {
@@ -51,6 +52,7 @@ export default function ResumeAnalysisLoadingPageClient({
   jobPostingId,
   applicationLabel,
   initialSequence,
+  isError,
 }: ResumeAnalysisLoadingPageClientProps) {
   const router = useRouter();
 
@@ -59,7 +61,11 @@ export default function ResumeAnalysisLoadingPageClient({
   const isValidMockApplyId = Number.isInteger(mockApplyId) && mockApplyId > 0;
   const [pollingRetryKey, setPollingRetryKey] = useState(0);
   const [errorMessage, setErrorMessage] = useState(
-    isValidMockApplyId ? "" : INVALID_MOCK_APPLY_MESSAGE,
+    isError
+      ? "응답 대기 시간이 길어져 작업을 멈췄어요. 소모된 크레딧이 복구됐어요."
+      : isValidMockApplyId
+        ? ""
+        : INVALID_MOCK_APPLY_MESSAGE,
   );
 
   const moveToResult = useCallback(
