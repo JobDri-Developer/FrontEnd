@@ -23,42 +23,6 @@ import {
 } from "@/components/mockApply/home/types";
 import { useReApply } from "@/hooks/useReApply";
 
-// const DUMMY_DRAFTS = [
-//   {
-//     id: "1",
-//     companyName: "네이버",
-//     position: "UXUI 디자이너",
-//     currentStep: 1,
-//     updatedAt: "오늘",
-//   },
-//   {
-//     id: "2",
-//     companyName: "당근마켓",
-//     position: "그로스 프로덕트 디자이너",
-//     currentStep: 2,
-//     updatedAt: "어제",
-//   },
-//   {
-//     id: "3",
-//     companyName: "현대자동차",
-//     position: "모델링 디자이너",
-//     currentStep: 3,
-//     updatedAt: "오늘",
-//   },
-// ];
-
-// const DUMMY_RESULTS = Array.from({ length: 12 }).map((_, i) => ({
-//   id: i, // string("result-0")에서 number(i)로 변경!
-//   jobPostingId: i,
-//   mockApplyId: i,
-//   company: "토스",
-//   position: "프로덕트 디자이너(인턴)",
-//   createdAt: "YY.MM.DD",
-//   score: 85,
-//   version: 1,
-//   status: "completed",
-// }));
-
 export default function Home() {
   const router = useRouter();
   const { reApply } = useReApply();
