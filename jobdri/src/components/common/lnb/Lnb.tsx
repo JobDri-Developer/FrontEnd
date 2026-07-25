@@ -1,10 +1,11 @@
 ﻿"use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore, useRef } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { ModalNotice } from "@/components/common/modal";
+import { Toast, type ToastVariant } from "@/components/common/toast";
 import {
   AUTH_STORAGE_KEYS,
   clearAuthTokens,
@@ -21,10 +22,7 @@ import {
 } from "@/lib/api/notification";
 import LnbDefault from "./LnbDefault";
 import LnbFolded from "./LnbFolded";
-import {
-  // defaultNotificationItems,
-  mapApiToLnbItem,
-} from "./LnbNotification";
+import { mapApiToLnbItem } from "./LnbNotification";
 import {
   type LnbItemKey,
   type LnbRecentItem,
@@ -99,101 +97,87 @@ export default function Lnb({
   >([]);
   const [hasNotification, setHasNotification] = useState(false);
 
-  // // Fetch 최근 항목
-  // useEffect(() => {
-  //   const loadData = async () => {
-  //     try {
-  //       const data = await fetchMyMockApplies();
-  //       const allItems = [...data.inProgress, ...data.completed];
+  const [toastState, setToastState] = useState<{
+    message: string;
+    variant: ToastVariant;
+  } | null>(null);
 
-  //       const mappedItems: LnbRecentItem[] = allItems.map((item) => ({
-  //         id: String(item.mockApplyId),
-  //         companyName: item.companyName,
-  //         jobTitle:
-  //           item.jobTitle || item.detailClassificationName || "직무 미지정",
-  //         version: item.version ?? 1,
-  //       }));
-
-  //       setRecentItems(mappedItems);
-  //       if (mappedItems.length > 0) {
-  //         setSelectedRecentItemId(mappedItems[0].id);
-  //       }
-  //     } catch (error) {
-  //       console.error("데이터 로드 실패:", error);
-  //       setRecentItems([]);
-  //     }
-  //   };
-
-  //   loadData();
-  // }, []);
-
-  // useEffect(() => {
-  //   const loadInitialNotifications = async () => {
-  //     try {
-  //       const res = await fetch("/api/notifications");
-  //       const data = await res.json();
-
-  //       if (data.isSuccess && data.result) {
-  //         const mappedItems = data.result.map(mapApiToLnbItem);
-  //         setNotificationItems(mappedItems);
-  //         setHasNotification(
-  //           mappedItems.some((item: LnbNotificationItem) => !item.read),
-  //         );
-  //       }
-  //     } catch (error) {
-  //       console.error("초기 알림 목록 로드 실패:", error);
-  //     }
-  //   };
-
-  //   loadInitialNotifications();
-
-  //   const eventSource = new EventSource("/api/notifications/stream");
-
-  //   eventSource.onmessage = (event) => {
-  //     try {
-  //       const newNotification = JSON.parse(event.data);
-  //       const mappedNewItem = mapApiToLnbItem(newNotification);
-  //       setNotificationItems((prev) => [mappedNewItem, ...prev]);
-  //       setHasNotification(true);
-  //     } catch (error) {
-  //       console.error("SSE 메시지 파싱 오류:", error, event.data);
-  //     }
-  //   };
-
-  //   eventSource.onerror = (error) => {
-  //     console.error("SSE 스트림 연결 에러:", error);
-  //     eventSource.close(); // 필요시 재연결 로직 추가 가능
-  //   };
-
-  //   return () => {
-  //     eventSource.close();
-  //   };
-  // }, []);
+  // 중복 구독 방지용 락 Ref 추가
+  const hasSubscribedRef = useRef(false);
 
   useEffect(() => {
-    // 1. 기존 알림 먼저 불러오기
-    const loadInitialNotifications = async () => {
+    if (hasSubscribedRef.current) return;
+    hasSubscribedRef.current = true;
+
+    const fetchAndUpdateNotifications = async () => {
       try {
         const data = await fetchNotifications();
         if (data.isSuccess && data.result) {
           const mappedItems = data.result.map(mapApiToLnbItem);
-          setNotificationItems(mappedItems);
+
+          setNotificationItems((prevItems) => {
+            if (prevItems.length > 0 && mappedItems.length > 0) {
+              const latestNewItem = mappedItems[0];
+              const prevLatestItem = prevItems[0];
+
+              if (
+                latestNewItem.id !== prevLatestItem.id &&
+                !latestNewItem.read
+              ) {
+                triggerToastBasedOnNotification(latestNewItem);
+              }
+            }
+            return mappedItems;
+          });
+
           setHasNotification(mappedItems.some((item) => !item.read));
         }
       } catch (error) {
-        console.error("초기 알림 목록 로드 실패:", error);
+        console.error("알림 목록 갱신 실패:", error);
       }
     };
 
-    loadInitialNotifications();
+    const triggerToastBasedOnNotification = (item: LnbNotificationItem) => {
+      let toastMessage = item.title || "새로운 알림이 도착했습니다.";
+      let toastVariant: ToastVariant = "check";
+
+      switch (item.apiType) {
+        case "JOB_POSTING_ASYNC_SUCCEEDED":
+          toastMessage = "공고 분석이 완료되었습니다!";
+          toastVariant = "check";
+          break;
+        case "JOB_POSTING_ASYNC_FAILED":
+          toastMessage = "공고 분석에 실패했습니다. 다시 시도해주세요.";
+          toastVariant = "warning";
+          break;
+        case "ANALYSIS_ASYNC_SUCCEEDED":
+          toastMessage = "자소서 분석이 완료되었습니다!";
+          toastVariant = "check";
+          break;
+        case "ANALYSIS_ASYNC_FAILED":
+          toastMessage = "자소서 분석에 실패했습니다. 다시 시도해주세요.";
+          toastVariant = "warning";
+          break;
+        default:
+          if (item.type === "fail") {
+            toastVariant = "warning";
+          }
+          break;
+      }
+
+      setToastState({ message: toastMessage, variant: toastVariant });
+      setTimeout(() => setToastState(null), 3000);
+    };
+
+    fetchAndUpdateNotifications();
 
     const unsubscribe = subscribeToNotificationStream(
       (newNotification) => {
-        const mappedNewItem = mapApiToLnbItem(newNotification);
-        setNotificationItems((prev) => [mappedNewItem, ...prev]);
-        setHasNotification(true);
+        console.log("🔥 [SSE 수신 완료] 서버에서 알림 옴!!!", newNotification);
+        setTimeout(() => {
+          fetchAndUpdateNotifications();
+        }, 500);
       },
-      // 에러가 났을 때
       (error) => {
         console.error("실시간 알림 연결 문제 발생:", error);
       },
@@ -201,6 +185,7 @@ export default function Lnb({
 
     return () => {
       unsubscribe();
+      hasSubscribedRef.current = false; // 언마운트 시 초기화
     };
   }, []);
 
@@ -260,7 +245,7 @@ export default function Lnb({
     <>
       <aside
         className={clsx(
-          "sticky top-0 flex h-screen min-h-[800px] shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out",
+          "sticky top-0 flex h-screen min-h-[800px] shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out z-40",
           isFold ? "w-[52px] items-center" : "w-[280px]",
           className,
         )}
@@ -275,8 +260,6 @@ export default function Lnb({
             onNavItemClick={handleNavItemClick}
             onSearchQueryChange={setSearchQuery}
             onToggleFold={handleToggleFold}
-            // onMarkAllRead={handleMarkAllRead}
-            // onReadItem={handleReadItem}
           />
         ) : (
           <LnbDefault
@@ -306,7 +289,7 @@ export default function Lnb({
 
       {showComingSoonModal &&
         createPortal(
-          <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
             <ModalNotice
               title="아직 준비중인 서비스입니다"
               description="더 나은 서비스를 위해 노력하고 있습니다!\n조금만 기다려 주세요"
@@ -319,6 +302,14 @@ export default function Lnb({
           </div>,
           document.body,
         )}
+
+      {toastState && (
+        <Toast
+          message={toastState.message}
+          variant={toastState.variant}
+          position="top"
+        />
+      )}
     </>
   );
 }

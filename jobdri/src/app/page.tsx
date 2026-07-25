@@ -226,7 +226,7 @@ export default function Home() {
           </div>
         </main>
 
-        {/* 3. 하단 푸터 */}
+        {/* 하단 푸터 */}
         <BusinessFooter className="mt-auto items-center bg-[#F5F6F9] [&>div:first-child]:bg-transparent" />
       </div>
     </div>

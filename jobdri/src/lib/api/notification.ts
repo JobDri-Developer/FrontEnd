@@ -53,6 +53,7 @@ export async function fetchNotifications(): Promise<NotificationResponse> {
       "Content-Type": "application/json",
       ...headers,
     },
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -87,17 +88,17 @@ export function subscribeToNotificationStream(
       signal: ctrl.signal,
 
       onmessage(event) {
+        // console.log(
+        //   "📥 [SSE 통신 감지!!] 서버가 보낸 원본 데이터:",
+        //   event.data,
+        // );
+
         if (!event.data || !event.data.trim().startsWith("{")) {
           return;
         }
 
         try {
           const parsedData = JSON.parse(event.data) as ApiNotificationItem;
-
-          if (!parsedData.title || parsedData.title.trim() === "") {
-            return;
-          }
-
           onMessage(parsedData);
         } catch (e: unknown) {
           console.error("SSE 데이터 파싱 실패:", e);

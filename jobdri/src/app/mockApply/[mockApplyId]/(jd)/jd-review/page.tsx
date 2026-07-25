@@ -28,14 +28,72 @@ import {
   type JdReviewSection,
 } from "@/components/mockApply/jd/jdReviewSections";
 
-function subscribeToSessionStorage(onStoreChange: () => void) {
-  const handleStorage = () => onStoreChange();
+export function subscribeToNotificationStream(
+  onMessage: (data: ApiNotificationItem) => void,
+  onError?: (error: unknown) => void,
+) {
+  const headers = getAuthHeaders();
+  const ctrl = new AbortController();
 
-  window.addEventListener("storage", handleStorage);
+  if (!headers.Authorization) {
+    console.warn("로그인 토큰이 없어 실시간 알림을 연결하지 않습니다.");
+    return () => ctrl.abort();
+  }
 
-  return () => {
-    window.removeEventListener("storage", handleStorage);
-  };
+  const tokenOnly = headers.Authorization.replace("Bearer ", "");
+
+  console.log(
+    "🔌 SSE 연결 시도 중... URL:",
+    `${API_BASE_URL}/api/notifications/stream`,
+  );
+
+  fetchEventSource(
+    `${API_BASE_URL}/api/notifications/stream?accessToken=${tokenOnly}`,
+    {
+      method: "GET",
+      headers: {
+        ...headers,
+        Accept: "text/event-stream",
+      },
+      signal: ctrl.signal,
+
+      onopen(response) {
+        if (response.ok) {
+          console.log("🟢 SSE 연결 성공!! 서버와 스트림 연결됨.");
+        } else {
+          console.error(
+            "🔴 SSE 연결 응답 이상:",
+            response.status,
+            response.statusText,
+          );
+        }
+      },
+
+      onmessage(event) {
+        console.log("📥 SSE raw 메시지 수신:", event.data); // 👈 서버가 뭐라도 보내면 무조건 찍힘!
+
+        if (!event.data || !event.data.trim().startsWith("{")) {
+          return;
+        }
+
+        try {
+          const parsedData = JSON.parse(event.data) as ApiNotificationItem;
+          onMessage(parsedData);
+        } catch (e: unknown) {
+          console.error("SSE 데이터 파싱 실패:", e);
+        }
+      },
+
+      onerror(err: unknown) {
+        console.error("❌ SSE 스트림 에러 발생:", err);
+        if (onError) onError(err);
+      },
+    },
+  ).catch((err) => {
+    console.error("❌ SSE 연결 래퍼 예외 발생:", err);
+  });
+
+  return () => ctrl.abort();
 }
 
 function parseStoredSections(value: string | null) {
