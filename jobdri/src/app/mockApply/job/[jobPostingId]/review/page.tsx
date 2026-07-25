@@ -4,6 +4,7 @@ import {
   useMemo,
   useState,
   useEffect,
+  useRef,
   type MouseEvent,
   type ReactNode,
 } from "react";
@@ -142,6 +143,11 @@ export default function JobPostingReviewPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveErrorMessage, setSaveErrorMessage] = useState("");
 
+  // ✅ 헤더에 표시할 자동저장 시간과, 초기 마운트 여부를 추적하는 ref
+  const [lastSavedTime, setLastSavedTime] = useState<string>("");
+  const isInitialRender = useRef(true);
+  const isAutoSaving = useRef(false);
+
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics(true, "job-posting-review", { trackPadding: 28 });
 
@@ -158,11 +164,11 @@ export default function JobPostingReviewPage() {
     [companyName, jobPostingName, roleName],
   );
 
+  // 1. 초기 데이터 로딩
   useEffect(() => {
     const loadData = async () => {
       try {
         if (urlJobPostingId) {
-          // URL 경로에 ID가 있으면 DB에서 패칭
           const saved = await fetchMyJobPosting(Number(urlJobPostingId));
           setProfileColor(saved.profileColor ?? "DEFAULT");
           setJobPostingName(
@@ -183,7 +189,6 @@ export default function JobPostingReviewPage() {
           setDetailClassificationId(saved.detailClassificationId ?? 0);
           setJobPostingId(saved.jobPostingId ?? null);
         } else {
-          // 파라미터가 없으면 스토어에서 임시 데이터 패칭
           const result = getJobPostingAnalysis();
           if (!result) {
             router.replace("/mockApply/job/create");
@@ -246,11 +251,88 @@ export default function JobPostingReviewPage() {
         router.replace("/");
       } finally {
         setIsLoading(false);
+        // 처음 로딩 완료 시점을 자동저장 시간으로 초기 세팅
+        const now = new Date();
+        setLastSavedTime(
+          `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+        );
       }
     };
 
     loadData();
   }, [urlJobPostingId, router]);
+
+  // ✅ 2. 디바운싱 적용된 자동 저장 로직
+  useEffect(() => {
+    // 로딩 중이거나, 필수값이 비어있거나, 직무 분류값이 없으면 실행 안 함
+    if (
+      isLoading ||
+      !jobPostingName.trim() ||
+      !companyName.trim() ||
+      !roleName.trim() ||
+      detailClassificationId <= 0
+    ) {
+      return;
+    }
+
+    // 처음 데이터를 불러와서 state에 셋팅될 때는 저장을 스킵
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    // 입력이 멈추고 1초(1000ms) 후에 API 호출
+    const autoSaveTimer = setTimeout(async () => {
+      if (isAutoSaving.current) return;
+      isAutoSaving.current = true;
+
+      try {
+        const payload: JobPostingSavePayload = {
+          profileColor,
+          postingName: jobPostingName.trim(),
+          companyName: companyName.trim(),
+          companySize: companySize,
+          jobTitle: roleName.trim(),
+          detailClassificationId: detailClassificationId,
+          task: task.trim(),
+          requirement: requirements.trim(),
+          preferred: preferred.trim(),
+        };
+
+        let savedResult;
+        if (jobPostingId) {
+          savedResult = await updateJobPosting(jobPostingId, payload);
+        } else {
+          savedResult = await saveJobPosting(payload);
+          setJobPostingId(savedResult.jobPostingId); // 새로 생성 시 ID 업데이트
+        }
+
+        const now = new Date();
+        setLastSavedTime(
+          `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+        );
+      } catch (error) {
+        console.error("자동 저장 실패:", error);
+      } finally {
+        isAutoSaving.current = false;
+      }
+    }, 1000);
+
+    // 값이 바뀌면 기존 타이머를 날리고 새로 타이머를 세팅 (디바운싱의 핵심)
+    return () => clearTimeout(autoSaveTimer);
+  }, [
+    profileColor,
+    jobPostingName,
+    companyName,
+    roleName,
+    task,
+    requirements,
+    preferred,
+    companySize,
+    detailClassificationId,
+    jobPostingId,
+    isLoading, // 로딩 상태가 바뀔 때도 감지
+  ]);
 
   const handleHomeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -322,7 +404,7 @@ export default function JobPostingReviewPage() {
           applicationLabel="첫 번째 지원"
           currentStep={1}
           steps={wizardSteps}
-          lastSavedAt="17:00"
+          lastSavedAt={lastSavedTime} // ✅ 하드코딩(17:00) 삭제하고 자동저장 시간 상태 바인딩
           homeAction={{ label: "홈으로", onClick: handleHomeClick }}
           className="min-w-[1100px] max-w-none shrink-0 self-stretch"
         />

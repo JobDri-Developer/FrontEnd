@@ -107,6 +107,13 @@ export default function Home() {
             status: "completed",
           };
         });
+        // console.log("순수 채용공고 개수:", savedOnlyDrafts.length);
+        // console.log("작성 중인 모의지원 개수:", mappedDrafts.length);
+        // console.log(
+        //   "합쳐서 총 Draft 개수:",
+        //   savedOnlyDrafts.length + mappedDrafts.length,
+        // );
+
         setDrafts([...savedOnlyDrafts, ...mappedDrafts]);
         setResults(mappedResults);
       } catch (error) {
@@ -179,7 +186,9 @@ export default function Home() {
                         generated: null,
                         saved,
                       });
-                      router.push("/mockApply/job/review");
+                      router.push(
+                        `/mockApply/job/${targetDraft.jobPostingId}/review`,
+                      );
                     })
                     .catch((error) => {
                       console.error("채용 공고를 불러오지 못했습니다.", error);
@@ -191,7 +200,7 @@ export default function Home() {
                   case 1:
                   case 2:
                     router.push(
-                      `/mockApply/${targetDraft.mockApplyId}?jobPostingId=${targetDraft.jobPostingId}`,
+                      `/mockApply/job/${targetDraft.jobPostingId}/review`,
                     );
                     break;
                   case 3:
