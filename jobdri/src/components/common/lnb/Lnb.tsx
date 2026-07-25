@@ -173,7 +173,7 @@ export default function Lnb({
 
     const unsubscribe = subscribeToNotificationStream(
       (newNotification) => {
-        console.log("🔥 [SSE 수신 완료] 서버에서 알림 옴!!!", newNotification);
+        // console.log("🔥 [SSE 수신 완료] 서버에서 알림 옴!!!", newNotification);
         setTimeout(() => {
           fetchAndUpdateNotifications();
         }, 500);
