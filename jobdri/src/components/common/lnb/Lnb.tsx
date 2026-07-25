@@ -27,6 +27,7 @@ import {
   type LnbItemKey,
   type LnbRecentItem,
   type LnbNavItem,
+  defaultRecentItems,
 } from "./LnbShared";
 
 interface LnbProps {
@@ -89,7 +90,8 @@ export default function Lnb({
   const [searchQuery, setSearchQuery] = useState("");
   const [isRecentOpen, setIsRecentOpen] = useState(defaultRecentOpen);
 
-  const [recentItems, setRecentItems] = useState<LnbRecentItem[]>([]);
+  const [recentItems, setRecentItems] =
+    useState<LnbRecentItem[]>(defaultRecentItems);
   const [selectedRecentItemId, setSelectedRecentItemId] = useState<string>("");
 
   const [notificationItems, setNotificationItems] = useState<
