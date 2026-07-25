@@ -17,7 +17,7 @@ import {
   fetchMyJobPostings,
 } from "@/lib/api/jobPostings";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
-import { formatDate } from "@/utils/date";
+import { formatDate, formatRelativeDate } from "@/utils/date";
 import {
   DraftData,
   ApplicationCardData,
@@ -71,7 +71,9 @@ export default function Home() {
               jobPosting?.detailClassificationName ||
               "직무 미지정",
             currentStep: item.status === "ANSWER_WRITE" ? 2 : 1,
-            updatedAt: item.createdAt ? formatDate(item.createdAt) : "-",
+            updatedAt: item.createdAt
+              ? formatRelativeDate(item.createdAt)
+              : "-",
           };
         });
 
@@ -97,7 +99,7 @@ export default function Home() {
               "직무 미지정",
             currentStep: 1,
             updatedAt: jobPosting.createdAt
-              ? formatDate(jobPosting.createdAt)
+              ? formatRelativeDate(jobPosting.createdAt)
               : "-",
           }));
 
