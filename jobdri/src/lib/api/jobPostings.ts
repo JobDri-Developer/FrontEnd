@@ -62,6 +62,8 @@ export interface SavedJobPosting {
   detailClassificationId: number;
   detailClassificationName: string;
   task: string;
+  createdAt: string;
+  updatedAt?: string;
   requirement: string;
   preferred: string;
 }
@@ -352,6 +354,13 @@ export async function updateJobPosting(
   );
 }
 
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+}
+
 export async function fetchMyJobPostings({
   redirectOnUnauthorized = true,
 }: { redirectOnUnauthorized?: boolean } = {}) {
@@ -363,14 +372,13 @@ export async function fetchMyJobPostings({
     },
   );
 
-  const result = await parseApiResponse<SavedJobPosting[]>(
+  const result = await parseApiResponse<PaginatedResponse<SavedJobPosting>>(
     response,
     "내 지원 데이터를 불러오지 못했습니다.",
     { redirectOnUnauthorized },
   );
-  console.log("fetchMyJobPostings 응답:", result);
 
-  return result ?? [];
+  return result?.content ?? [];
 }
 
 export async function fetchMyJobPosting(jobPostingId: number) {

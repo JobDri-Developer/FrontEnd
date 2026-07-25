@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
@@ -22,6 +23,7 @@ import {
   ApplicationCardData,
 } from "@/components/mockApply/home/types";
 import { useReApply } from "@/hooks/useReApply";
+import { mapMockApplyToApplication } from "@/components/mockApply/home/applicationHomeUtils";
 
 export default function Home() {
   const router = useRouter();
@@ -32,10 +34,18 @@ export default function Home() {
   useEffect(() => {
     const loadMockApplies = async () => {
       try {
-        const [data, jobPostings] = await Promise.all([
+        const [data, fetchedJobPostings] = await Promise.all([
           fetchMyMockApplies({ redirectOnUnauthorized: false }),
           fetchMyJobPostings({ redirectOnUnauthorized: false }).catch(() => []),
         ]);
+
+        const jobPostings = Array.isArray(fetchedJobPostings)
+          ? fetchedJobPostings
+          : [];
+
+        const inProgressList = data?.inProgress || [];
+        const completedList = data?.completed?.content || [];
+
         const jobPostingById = new Map(
           jobPostings.map((jobPosting) => [
             jobPosting.jobPostingId,
@@ -43,7 +53,8 @@ export default function Home() {
           ]),
         );
 
-        const mappedDrafts = data.inProgress.map((item) => {
+        // 🌟 작성 중인 모의지원(Drafts) 매핑
+        const mappedDrafts = inProgressList.map((item) => {
           const jobPosting = jobPostingById.get(item.jobPostingId);
 
           return {
@@ -60,14 +71,17 @@ export default function Home() {
               jobPosting?.detailClassificationName ||
               "직무 미지정",
             currentStep: item.status === "ANSWER_WRITE" ? 2 : 1,
-            updatedAt: formatDate(item.createdAt),
+            updatedAt: item.createdAt ? formatDate(item.createdAt) : "-",
           };
         });
+
         const linkedJobPostingIds = new Set(
-          [...data.inProgress, ...data.completed].map(
+          [...inProgressList, ...completedList].map(
             (item) => item.jobPostingId,
           ),
         );
+
+        // 🌟 순수 채용 공고(Drafts) 매핑
         const savedOnlyDrafts = jobPostings
           .filter(
             (jobPosting) => !linkedJobPostingIds.has(jobPosting.jobPostingId),
@@ -82,37 +96,29 @@ export default function Home() {
               jobPosting.detailClassificationName ||
               "직무 미지정",
             currentStep: 1,
-            updatedAt: "-",
+            updatedAt: jobPosting.createdAt
+              ? formatDate(jobPosting.createdAt)
+              : "-",
           }));
 
-        const mappedResults = data.completed.map((item) => {
+        const mappedResults = completedList.map((item) => {
           const jobPosting = jobPostingById.get(item.jobPostingId);
 
-          return {
-            id: item.mockApplyId,
-            jobPostingId: item.jobPostingId,
-            mockApplyId: item.mockApplyId,
-            company:
-              item.companyName || jobPosting?.companyName || "회사명 미입력",
-            profileColor: jobPosting?.profileColor ?? "DEFAULT",
-            position:
-              item.jobTitle ||
-              jobPosting?.jobTitle ||
-              item.detailClassificationName ||
-              jobPosting?.detailClassificationName ||
-              "직무 미지정",
-            createdAt: formatDate(item.createdAt),
-            score: item.score || 0,
-            version: item.version || 1,
-            status: "completed",
-          };
+          const cardData = mapMockApplyToApplication(
+            {
+              ...item,
+              profileColor: jobPosting?.profileColor ?? "DEFAULT",
+              jobTitle: item.jobTitle || jobPosting?.jobTitle || "",
+              detailClassificationName:
+                item.detailClassificationName ||
+                jobPosting?.detailClassificationName ||
+                "",
+            },
+            "completed",
+          );
+
+          return cardData;
         });
-        // console.log("순수 채용공고 개수:", savedOnlyDrafts.length);
-        // console.log("작성 중인 모의지원 개수:", mappedDrafts.length);
-        // console.log(
-        //   "합쳐서 총 Draft 개수:",
-        //   savedOnlyDrafts.length + mappedDrafts.length,
-        // );
 
         setDrafts([...savedOnlyDrafts, ...mappedDrafts]);
         setResults(mappedResults);
@@ -137,6 +143,7 @@ export default function Home() {
       console.error("채용 공고를 삭제하지 못했습니다.", error);
     }
   };
+
   return (
     <div className="flex min-h-screen w-full bg-[#F5F6F9] overflow-x-hidden ">
       <Lnb className="shrink-0 z-50" />
