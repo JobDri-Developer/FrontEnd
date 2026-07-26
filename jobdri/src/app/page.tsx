@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
@@ -17,48 +18,13 @@ import {
   fetchMyJobPostings,
 } from "@/lib/api/jobPostings";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
-import { formatDate } from "@/utils/date";
-import {
+import { formatRelativeDate } from "@/utils/date";
+import type {
   DraftData,
   ApplicationCardData,
 } from "@/components/mockApply/home/types";
 import { useReApply } from "@/hooks/useReApply";
-
-// const DUMMY_DRAFTS = [
-//   {
-//     id: "1",
-//     companyName: "네이버",
-//     position: "UXUI 디자이너",
-//     currentStep: 1,
-//     updatedAt: "오늘",
-//   },
-//   {
-//     id: "2",
-//     companyName: "당근마켓",
-//     position: "그로스 프로덕트 디자이너",
-//     currentStep: 2,
-//     updatedAt: "어제",
-//   },
-//   {
-//     id: "3",
-//     companyName: "현대자동차",
-//     position: "모델링 디자이너",
-//     currentStep: 3,
-//     updatedAt: "오늘",
-//   },
-// ];
-
-// const DUMMY_RESULTS = Array.from({ length: 12 }).map((_, i) => ({
-//   id: i, // string("result-0")에서 number(i)로 변경!
-//   jobPostingId: i,
-//   mockApplyId: i,
-//   company: "토스",
-//   position: "프로덕트 디자이너(인턴)",
-//   createdAt: "YY.MM.DD",
-//   score: 85,
-//   version: 1,
-//   status: "completed",
-// }));
+import { mapMockApplyToApplication } from "@/components/mockApply/home/applicationHomeUtils";
 
 export default function Home() {
   const router = useRouter();
@@ -69,10 +35,18 @@ export default function Home() {
   useEffect(() => {
     const loadMockApplies = async () => {
       try {
-        const [data, jobPostings] = await Promise.all([
+        const [data, fetchedJobPostings] = await Promise.all([
           fetchMyMockApplies({ redirectOnUnauthorized: false }),
           fetchMyJobPostings({ redirectOnUnauthorized: false }).catch(() => []),
         ]);
+
+        const jobPostings = Array.isArray(fetchedJobPostings)
+          ? fetchedJobPostings
+          : [];
+
+        const inProgressList = data?.inProgress || [];
+        const completedList = data?.completed?.content || [];
+
         const jobPostingById = new Map(
           jobPostings.map((jobPosting) => [
             jobPosting.jobPostingId,
@@ -80,7 +54,8 @@ export default function Home() {
           ]),
         );
 
-        const mappedDrafts = data.inProgress.map((item) => {
+        // 🌟 작성 중인 모의지원(Drafts) 매핑
+        const mappedDrafts = inProgressList.map((item) => {
           const jobPosting = jobPostingById.get(item.jobPostingId);
 
           return {
@@ -97,14 +72,19 @@ export default function Home() {
               jobPosting?.detailClassificationName ||
               "직무 미지정",
             currentStep: item.status === "ANSWER_WRITE" ? 2 : 1,
-            updatedAt: formatDate(item.createdAt),
+            updatedAt: item.createdAt
+              ? formatRelativeDate(item.createdAt)
+              : "-",
           };
         });
+
         const linkedJobPostingIds = new Set(
-          [...data.inProgress, ...data.completed].map(
+          [...inProgressList, ...completedList].map(
             (item) => item.jobPostingId,
           ),
         );
+
+        // 🌟 순수 채용 공고(Drafts) 매핑
         const savedOnlyDrafts = jobPostings
           .filter(
             (jobPosting) => !linkedJobPostingIds.has(jobPosting.jobPostingId),
@@ -119,31 +99,30 @@ export default function Home() {
               jobPosting.detailClassificationName ||
               "직무 미지정",
             currentStep: 1,
-            updatedAt: "-",
+            updatedAt: jobPosting.createdAt
+              ? formatRelativeDate(jobPosting.createdAt)
+              : "-",
           }));
 
-        const mappedResults = data.completed.map((item) => {
+        const mappedResults = completedList.map((item) => {
           const jobPosting = jobPostingById.get(item.jobPostingId);
 
-          return {
-            id: item.mockApplyId,
-            jobPostingId: item.jobPostingId,
-            mockApplyId: item.mockApplyId,
-            company:
-              item.companyName || jobPosting?.companyName || "회사명 미입력",
-            profileColor: jobPosting?.profileColor ?? "DEFAULT",
-            position:
-              item.jobTitle ||
-              jobPosting?.jobTitle ||
-              item.detailClassificationName ||
-              jobPosting?.detailClassificationName ||
-              "직무 미지정",
-            createdAt: formatDate(item.createdAt),
-            score: item.score || 0,
-            version: item.sequence ?? 1,
-            status: "completed",
-          };
+          const cardData = mapMockApplyToApplication(
+            {
+              ...item,
+              profileColor: jobPosting?.profileColor ?? "DEFAULT",
+              jobTitle: item.jobTitle || jobPosting?.jobTitle || "",
+              detailClassificationName:
+                item.detailClassificationName ||
+                jobPosting?.detailClassificationName ||
+                "",
+            },
+            "completed",
+          );
+
+          return cardData;
         });
+
         setDrafts([...savedOnlyDrafts, ...mappedDrafts]);
         setResults(mappedResults);
       } catch (error) {
@@ -181,7 +160,6 @@ export default function Home() {
       console.error("모의 서류 지원을 삭제하지 못했습니다.", error);
     }
   };
-
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
       <Lnb className="z-50 shrink-0" />
@@ -231,7 +209,9 @@ export default function Home() {
                         generated: null,
                         saved,
                       });
-                      router.push("/mockApply/job/review");
+                      router.push(
+                        `/mockApply/job/${targetDraft.jobPostingId}/review`,
+                      );
                     })
                     .catch((error) => {
                       console.error("채용 공고를 불러오지 못했습니다.", error);
@@ -241,6 +221,10 @@ export default function Home() {
 
                 switch (targetDraft.currentStep) {
                   case 1:
+                    router.push(
+                      `/mockApply/job/${targetDraft.jobPostingId}/review`,
+                    );
+                    break;
                   case 2:
                     router.push(
                       `/mockApply/${targetDraft.mockApplyId}?jobPostingId=${targetDraft.jobPostingId}`,
@@ -283,7 +267,7 @@ export default function Home() {
           </div>
         </main>
 
-        {/* 3. 하단 푸터 */}
+        {/* 하단 푸터 */}
         <BusinessFooter className="mt-auto items-center bg-[#F5F6F9] [&>div:first-child]:bg-transparent" />
       </div>
     </div>

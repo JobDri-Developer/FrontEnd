@@ -6,6 +6,7 @@ interface ResumeAnalysisLoadingPageProps {
     taskId?: string;
     jobPostingId?: string;
     sequence?: string;
+    error?: string;
   }>;
 }
 
@@ -20,7 +21,7 @@ function parsePositiveNumber(value?: string) {
 export default async function ResumeAnalysisLoadingPage({
   searchParams,
 }: ResumeAnalysisLoadingPageProps) {
-  const { taskId, jobPostingId, sequence } = await searchParams;
+  const { taskId, jobPostingId, sequence, error } = await searchParams;
   const parsedJobPostingId = parsePositiveNumber(jobPostingId);
   const parsedSequence = parsePositiveNumber(sequence);
 
@@ -30,6 +31,7 @@ export default async function ResumeAnalysisLoadingPage({
       jobPostingId={parsedJobPostingId}
       initialSequence={parsedSequence}
       applicationLabel={formatApplicationSequenceLabel(parsedSequence)}
+      isError={error === "true"}
     />
   );
 }

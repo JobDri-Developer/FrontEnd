@@ -24,6 +24,7 @@ import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 import { fetchMockApplyJobPosting } from "@/lib/api/mockApplies";
 import type { JDData } from "@/components/mockApply/Question/SidePanel";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const getSubmitPayload = (questionsData: QuestionItem[]) =>
   questionsData.map((question) => {
@@ -121,6 +122,7 @@ export default function MockApplyPage({
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const debouncedQuestions = useDebounce(questions, 1000);
 
   const questionsRef = useRef<QuestionItem[]>([]);
   const questionSaveQueueRef = useRef<Promise<void>>(Promise.resolve());
@@ -424,40 +426,43 @@ export default function MockApplyPage({
 
   useEffect(() => {
     if (
-      questions.length === 0 ||
+      isQuestionsLoading ||
+      debouncedQuestions.length === 0 ||
       isQuestionStructureSavingRef.current
     ) {
       return;
     }
 
     const revision = questionSaveRevisionRef.current;
-    const questionsSnapshot = questions;
-    const autoSaveTimer = window.setTimeout(() => {
-      void enqueueQuestionSave(async () => {
-        if (
-          revision !== questionSaveRevisionRef.current ||
-          isQuestionStructureSavingRef.current
-        ) {
-          return;
-        }
+    const questionsSnapshot = debouncedQuestions;
 
-        await saveApply(
-          Number(mockApplyId),
-          getSubmitPayload(questionsSnapshot),
-        );
+    void enqueueQuestionSave(async () => {
+      if (
+        revision !== questionSaveRevisionRef.current ||
+        isQuestionStructureSavingRef.current
+      ) {
+        return;
+      }
 
-        if (revision === questionSaveRevisionRef.current) {
-          setLastSavedTime(getCurrentTime());
-        }
-      }).catch((error) => {
-        if (revision === questionSaveRevisionRef.current) {
-          console.error("자동 저장 실패:", error);
-        }
-      });
-    }, 2000);
+      await saveApply(
+        Number(mockApplyId),
+        getSubmitPayload(questionsSnapshot),
+      );
 
-    return () => window.clearTimeout(autoSaveTimer);
-  }, [enqueueQuestionSave, questions, mockApplyId]);
+      if (revision === questionSaveRevisionRef.current) {
+        setLastSavedTime(getCurrentTime());
+      }
+    }).catch((error) => {
+      if (revision === questionSaveRevisionRef.current) {
+        console.error("자동 저장 실패:", error);
+      }
+    });
+  }, [
+    debouncedQuestions,
+    enqueueQuestionSave,
+    isQuestionsLoading,
+    mockApplyId,
+  ]);
 
   // --- 이벤트 핸들러 모음 ---
 
@@ -781,7 +786,11 @@ export default function MockApplyPage({
                 label: "돌아가기",
                 onClick: () => {
                   setIsLeaveModalOpen(false);
-                  router.push("/mockApply/job/review");
+                  router.push(
+                    jobPostingId
+                      ? `/mockApply/job/${jobPostingId}/review`
+                      : "/mockApply/job/create",
+                  );
                 },
               }}
               primaryAction={{

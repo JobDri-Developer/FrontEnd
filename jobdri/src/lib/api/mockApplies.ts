@@ -4,7 +4,10 @@ import {
   parseApiResponse,
   parseApiResponseAllowNull,
 } from "@/lib/api/client";
-import type { SavedJobPosting } from "@/lib/api/jobPostings";
+import type {
+  JobPostingProfileColor,
+  SavedJobPosting,
+} from "@/lib/api/jobPostings";
 
 export type JobPostingApplyType = "MOCK" | "ACTUAL";
 export type MockApplyProgressStatus =
@@ -52,12 +55,21 @@ export interface MockApplyHomeItem {
   jobTitle: string;
   createdAt: string;
   applyType: JobPostingApplyType;
-  score: number;
+  profileColor?: JobPostingProfileColor;
+  score?: number;
 }
 
-export interface MockApplyHomeList {
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+export interface MyMockAppliesResponse {
   inProgress: MockApplyHomeItem[];
-  completed: MockApplyHomeItem[];
+  completed: PageResponse<MockApplyHomeItem>;
 }
 
 export const APPLY_TYPE_STORAGE_KEY = "jobdri.applyType";
@@ -145,7 +157,7 @@ export async function fetchMyMockApplies({
     signal,
   });
 
-  const result = await parseApiResponse<MockApplyHomeList>(
+  const result = await parseApiResponse<MyMockAppliesResponse>(
     response,
     "내 지원 데이터를 불러오지 못했습니다.",
     { redirectOnUnauthorized },
@@ -153,7 +165,13 @@ export async function fetchMyMockApplies({
 
   return {
     inProgress: result.inProgress ?? [],
-    completed: result.completed ?? [],
+    completed: result.completed ?? {
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      size: 0,
+      number: 0,
+    },
   };
 }
 

@@ -131,6 +131,15 @@ export function mapApiToLnbItem(
       ? String(item.payload.mockApplyId)
       : undefined;
 
+  const jobPostingId =
+    item.payload?.jobPostingId !== undefined &&
+    item.payload?.jobPostingId !== null
+      ? String(item.payload.jobPostingId)
+      : undefined;
+
+  const taskId = item.payload?.taskId;
+  const savedToDatabase = item.payload?.savedToDatabase;
+
   return {
     id: item.id ? String(item.id) : crypto.randomUUID(),
     title: item.title,
@@ -142,7 +151,9 @@ export function mapApiToLnbItem(
     targetType: item.targetType,
     targetId: item.targetId,
     mockApplyId,
-    taskId: item.payload?.taskId,
+    jobPostingId,
+    taskId,
+    savedToDatabase,
     apiType: item.type,
   };
 }
@@ -361,7 +372,6 @@ function LnbNotificationList({
           )}
         >
           <div className="flex min-w-0 flex-col items-start self-stretch">
-            {/* 💡 정렬과 필터링이 모두 완료된 sortedItems를 매핑합니다 */}
             {sortedItems.map((notificationItem) => {
               if (!notificationItem.id || notificationItem.id === "undefined") {
                 return null;
@@ -420,7 +430,9 @@ export function LnbNotificationListItem({
       id,
       targetId,
       mockApplyId,
+      jobPostingId,
       taskId,
+      savedToDatabase,
       read,
       apiType,
       description,
@@ -437,10 +449,15 @@ export function LnbNotificationListItem({
 
     switch (apiType) {
       case "JOB_POSTING_ASYNC_SUCCEEDED": {
+        if (savedToDatabase === true && jobPostingId) {
+          router.push(`/mockApply/job/${jobPostingId}/review`);
+          break;
+        }
+
         const jobPostingTaskId = taskId || targetId;
 
         if (!jobPostingTaskId) {
-          router.push("/mockApply/job/create");
+          router.push("/mockApply/job/create?analysisError=deferred");
           break;
         }
 
@@ -457,7 +474,13 @@ export function LnbNotificationListItem({
           }
 
           saveJobPostingAnalysis(status.result);
-          router.push("/mockApply/job/review");
+          const savedJobPostingId = status.result.saved?.jobPostingId;
+
+          router.push(
+            savedJobPostingId
+              ? `/mockApply/job/${savedJobPostingId}/review`
+              : "/mockApply/job/create?analysisError=deferred",
+          );
         } catch (error) {
           const message =
             error instanceof Error
@@ -470,39 +493,57 @@ export function LnbNotificationListItem({
         break;
       }
 
-      case "JOB_POSTING_ASYNC_FAILED":
+      case "JOB_POSTING_ASYNC_FAILED": {
         router.push(
           `/mockApply/job/create?analysisError=${encodeURIComponent(
             description || "채용 공고 분석에 실패했습니다.",
           )}`,
         );
         break;
+      }
 
-      case "ANALYSIS_ASYNC_SUCCEEDED":
+      case "ANALYSIS_ASYNC_SUCCEEDED": {
         router.push(
           notificationMockApplyId
             ? `/mockApply/${notificationMockApplyId}/result`
             : "/",
         );
         break;
+      }
 
-      case "ANALYSIS_ASYNC_FAILED":
-        router.push(
-          notificationMockApplyId
-            ? `/mockApply/${notificationMockApplyId}`
-            : "/",
-        );
+      case "ANALYSIS_ASYNC_FAILED": {
+        if (notificationMockApplyId) {
+          const queryParams = new URLSearchParams({ error: "true" });
+
+          if (jobPostingId) {
+            queryParams.set("jobPostingId", jobPostingId);
+          }
+
+          router.push(
+            `/mockApply/${notificationMockApplyId}/result/resume-analysis-loading?${queryParams.toString()}`,
+          );
+        } else {
+          router.push("/");
+        }
         break;
+      }
 
-      default:
+      case "GENERAL": {
+        router.push("/");
+        break;
+      }
+
+      default: {
         router.push(
           notificationMockApplyId
             ? `/mockApply/${notificationMockApplyId}/result`
             : "/",
         );
         break;
+      }
     }
   };
+
   return (
     <article
       onClick={() => void handleNotificationClick()}

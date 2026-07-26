@@ -28,6 +28,8 @@ export interface ApiNotificationItem {
   payload?: {
     mockApplyId?: number;
     taskId?: string;
+    jobPostingId?: number | null;
+    savedToDatabase?: boolean;
     status?: string;
   };
 }
@@ -42,7 +44,9 @@ export interface LnbNotificationItem {
   targetType?: string;
   targetId?: string;
   mockApplyId?: string;
+  jobPostingId?: string;
   taskId?: string;
+  savedToDatabase?: boolean;
   apiType?: string;
   readAt?: string;
 }
@@ -63,6 +67,7 @@ export async function fetchNotifications(): Promise<NotificationResponse> {
       "Content-Type": "application/json",
       ...headers,
     },
+    cache: "no-store",
   });
 
   if (!response.ok) {
