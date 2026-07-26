@@ -1,6 +1,7 @@
 import type { SavedJobPosting } from "@/lib/api/jobPostings";
 import {
   getMockApplyResumeRecords,
+  JobPostingApplyType,
   type MockApplyHomeItem,
 } from "@/lib/api/mockApplies";
 import {
@@ -10,6 +11,7 @@ import {
   getJdReviewStorageKey,
 } from "@/components/mockApply/jd/jdReviewSections";
 import type { ApplicationCardData } from "./types";
+import { JobPostingProfileColor } from "@/lib/api/jobPostings";
 
 export const EMPTY_APPLICATION_TITLE = "아직 지원 내역이 없어요!";
 export const EMPTY_APPLICATION_DESCRIPTION =
@@ -81,7 +83,7 @@ export function mapMockApplyToApplication(
     jobPostingId: item.jobPostingId,
     company: companyName || "회사명 미입력",
     hasCompanyName: companyName.length > 0,
-    profileColor: item.profileColor ?? "DEFAULT",
+    profileColor: (item.profileColor ?? "DEFAULT") as JobPostingProfileColor,
     position: item.jobTitle || item.detailClassificationName || "직무 미분류",
     createdAt: formatCreatedAt(item.createdAt),
     createdAtTime: getCreatedAtTime(item.createdAt),
@@ -89,8 +91,8 @@ export function mapMockApplyToApplication(
     mockApplyId: item.mockApplyId,
     resumePath: item.resumePath,
     status,
-    applyType: item.applyType,
-    version: item.version ?? 1,
+    applyType: item.applyType as JobPostingApplyType,
+    version: item.sequence ?? 1,
   };
 }
 

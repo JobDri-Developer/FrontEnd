@@ -62,6 +62,8 @@ export interface SavedJobPosting {
   detailClassificationId: number;
   detailClassificationName: string;
   task: string;
+  createdAt: string;
+  updatedAt?: string;
   requirement: string;
   preferred: string;
 }
@@ -135,7 +137,6 @@ interface TimedRequestInit extends RequestInit {
 }
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 30000;
-
 
 function getImageContentType(file: File) {
   if (file.type) {
@@ -212,7 +213,6 @@ async function fetchWithTimeout(
     globalThis.clearTimeout(timeoutId);
   }
 }
-
 
 async function postJobPosting<T>(
   path: string,
@@ -354,21 +354,31 @@ export async function updateJobPosting(
   );
 }
 
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+}
+
 export async function fetchMyJobPostings({
   redirectOnUnauthorized = true,
 }: { redirectOnUnauthorized?: boolean } = {}) {
-  const response = await fetchWithTimeout(`${API_BASE_URL}/api/job-postings/me`, {
-    headers: getAuthHeaders(),
-    cache: "no-store",
-  });
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/api/job-postings/me`,
+    {
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    },
+  );
 
-  const result = await parseApiResponse<SavedJobPosting[]>(
+  const result = await parseApiResponse<PaginatedResponse<SavedJobPosting>>(
     response,
     "내 지원 데이터를 불러오지 못했습니다.",
     { redirectOnUnauthorized },
   );
 
-  return result ?? [];
+  return result?.content ?? [];
 }
 
 export async function fetchMyJobPosting(jobPostingId: number) {
@@ -449,11 +459,7 @@ export async function waitForJobPostingIngest(
       return status;
     }
 
-    if (
-      status.error ||
-      status.failureReason ||
-      isFailedStatus(status.status)
-    ) {
+    if (status.error || status.failureReason || isFailedStatus(status.status)) {
       throw new Error(
         status.failureReason ||
           status.error ||

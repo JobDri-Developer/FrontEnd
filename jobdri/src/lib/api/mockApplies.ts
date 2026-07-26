@@ -34,26 +34,39 @@ export interface MockApplyResumeRecord {
   updatedAt: string;
 }
 
-export interface MockApplyHomeItem {
-  mockApplyId: number;
-  resumePath?: string | null;
-  jobPostingId: number;
-  status: MockApplyProgressStatus | string;
-  companyName: string;
-  profileColor?: JobPostingProfileColor | null;
-  postingName?: string | null;
-  detailClassificationName?: string | null;
-  jobTitle?: string | null;
-  createdAt: string;
-  applyType: JobPostingApplyType;
-  score?: number | null;
-  version: number;
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }
 
-export interface MockApplyHomeList {
+export interface MyMockAppliesResponse {
   inProgress: MockApplyHomeItem[];
-  completed: MockApplyHomeItem[];
+  completed: PageResponse<MockApplyHomeItem>;
 }
+
+// 모의지원 아이템 타입 (이미지 속 필드들 반영)
+export interface MockApplyHomeItem {
+  mockApplyId: number;
+  resumePath: string;
+  jobPostingId: number;
+  sequence: number;
+  status: string;
+  companyName: string;
+  profileColor: string;
+  detailClassificationName: string;
+  jobTitle: string;
+  createdAt: string;
+  applyType: string;
+  score?: number;
+}
+
+// export interface MockApplyHomeList {
+//   inProgress: MockApplyHomeItem[];
+//   completed: MockApplyHomeItem[];
+// }
 
 export const APPLY_TYPE_STORAGE_KEY = "jobdri.applyType";
 const MOCK_APPLY_RESUME_STORAGE_KEY = "jobdri.mockApplyResumeRecords";
@@ -116,7 +129,7 @@ export async function fetchMyMockApplies({
     signal,
   });
 
-  const result = await parseApiResponse<MockApplyHomeList>(
+  const result = await parseApiResponse<MyMockAppliesResponse>(
     response,
     "내 지원 데이터를 불러오지 못했습니다.",
     { redirectOnUnauthorized },
@@ -124,7 +137,7 @@ export async function fetchMyMockApplies({
 
   return {
     inProgress: result.inProgress ?? [],
-    completed: result.completed ?? [],
+    completed: result.completed ?? { content: [] },
   };
 }
 

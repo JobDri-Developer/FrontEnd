@@ -4,6 +4,7 @@ import {
   useMemo,
   useState,
   useEffect,
+  useRef,
   type MouseEvent,
   type ReactNode,
 } from "react";
@@ -34,6 +35,7 @@ import {
   createApplyFromJobPosting,
   getSelectedApplyType,
 } from "@/lib/api/mockApplies";
+import { useDebounce } from "@/hooks/useDebounce";
 
 function firstNonEmpty(...values: Array<string | null | undefined>) {
   return values.find((value) => value?.trim())?.trim() ?? "";
@@ -142,6 +144,75 @@ export default function JobPostingReviewPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveErrorMessage, setSaveErrorMessage] = useState("");
 
+  const [lastSavedTime, setLastSavedTime] = useState<string>("");
+
+  const isInitialRender = useRef(true);
+
+  const currentPayload: JobPostingSavePayload = useMemo(
+    () => ({
+      profileColor,
+      postingName: jobPostingName.trim(),
+      companyName: companyName.trim(),
+      companySize: companySize,
+      jobTitle: roleName.trim(),
+      detailClassificationId: detailClassificationId,
+      task: task.trim(),
+      requirement: requirements.trim(),
+      preferred: preferred.trim(),
+    }),
+    [
+      profileColor,
+      jobPostingName,
+      companyName,
+      companySize,
+      roleName,
+      detailClassificationId,
+      task,
+      requirements,
+      preferred,
+    ],
+  );
+
+  const debouncedPayload = useDebounce(currentPayload, 1000);
+
+  useEffect(() => {
+    if (
+      isLoading ||
+      debouncedPayload.detailClassificationId <= 0 ||
+      !debouncedPayload.postingName ||
+      !debouncedPayload.companyName ||
+      !debouncedPayload.jobTitle
+    ) {
+      return;
+    }
+
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    const autoSave = async () => {
+      try {
+        let savedResult;
+        if (jobPostingId) {
+          savedResult = await updateJobPosting(jobPostingId, debouncedPayload);
+        } else {
+          savedResult = await saveJobPosting(debouncedPayload);
+          setJobPostingId(savedResult.jobPostingId);
+        }
+
+        const now = new Date();
+        setLastSavedTime(
+          `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+        );
+      } catch (error) {
+        console.error("채용 공고 자동 저장 실패:", error);
+      }
+    };
+
+    autoSave();
+  }, [debouncedPayload, jobPostingId, isLoading]);
+
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics(true, "job-posting-review", { trackPadding: 28 });
 
@@ -158,11 +229,11 @@ export default function JobPostingReviewPage() {
     [companyName, jobPostingName, roleName],
   );
 
+  // 1. 초기 데이터 로딩
   useEffect(() => {
     const loadData = async () => {
       try {
         if (urlJobPostingId) {
-          // URL 경로에 ID가 있으면 DB에서 패칭
           const saved = await fetchMyJobPosting(Number(urlJobPostingId));
           setProfileColor(saved.profileColor ?? "DEFAULT");
           setJobPostingName(
@@ -183,7 +254,6 @@ export default function JobPostingReviewPage() {
           setDetailClassificationId(saved.detailClassificationId ?? 0);
           setJobPostingId(saved.jobPostingId ?? null);
         } else {
-          // 파라미터가 없으면 스토어에서 임시 데이터 패칭
           const result = getJobPostingAnalysis();
           if (!result) {
             router.replace("/mockApply/job/create");
@@ -246,6 +316,10 @@ export default function JobPostingReviewPage() {
         router.replace("/");
       } finally {
         setIsLoading(false);
+        const now = new Date();
+        setLastSavedTime(
+          `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+        );
       }
     };
 
@@ -268,21 +342,9 @@ export default function JobPostingReviewPage() {
         throw new Error("직무 분류 정보가 없어 공고를 저장할 수 없습니다.");
       }
 
-      const payload: JobPostingSavePayload = {
-        profileColor,
-        postingName: jobPostingName.trim(),
-        companyName: companyName.trim(),
-        companySize: companySize,
-        jobTitle: roleName.trim(),
-        detailClassificationId: detailClassificationId,
-        task: task.trim(),
-        requirement: requirements.trim(),
-        preferred: preferred.trim(),
-      };
-
       const savedJobPosting = jobPostingId
-        ? await updateJobPosting(jobPostingId, payload)
-        : await saveJobPosting(payload);
+        ? await updateJobPosting(jobPostingId, currentPayload)
+        : await saveJobPosting(currentPayload);
 
       const createdApply = await createApplyFromJobPosting({
         jobPostingId: savedJobPosting.jobPostingId,
@@ -322,7 +384,7 @@ export default function JobPostingReviewPage() {
           applicationLabel="첫 번째 지원"
           currentStep={1}
           steps={wizardSteps}
-          lastSavedAt="17:00"
+          lastSavedAt={lastSavedTime}
           homeAction={{ label: "홈으로", onClick: handleHomeClick }}
           className="min-w-[1100px] max-w-none shrink-0 self-stretch"
         />

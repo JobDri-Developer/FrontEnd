@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { QuestionList } from "@/components/mockApply/Question/QuestionList";
 import JDSidePanel from "@/components/mockApply/Question/SidePanel";
@@ -26,6 +26,7 @@ import { fetchMyJobPosting } from "@/lib/api/jobPostings";
 import type { JDData } from "@/components/mockApply/Question/SidePanel";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function MockApplyPage({
   params,
@@ -52,6 +53,7 @@ export default function MockApplyPage({
     : sequenceJobPostingId;
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [lastSavedTime, setLastSavedTime] = useState<string>("저장 전");
+  const isInitialRender = useRef(true); // 처음 데이터를 불러왔을 때 저장되는 것 방지
 
   const [toast, setToast] = useState<{
     open: boolean;
@@ -334,6 +336,40 @@ export default function MockApplyPage({
   const isSubmitDisabled =
     !mappedQuestionForForm ||
     questions.some((question) => !(question.answer || "").trim());
+
+  // ✅ 1. questions 배열을 1초 딜레이시키는 디바운스 생성
+  const debouncedQuestions = useDebounce(questions, 1000);
+
+  // ✅ 2. 1초 뒤에 갱신된 debouncedQuestions를 감지해서 API 호출!
+  useEffect(() => {
+    // 로딩 중이거나 데이터가 없으면 무시
+    if (isQuestionsLoading || debouncedQuestions.length === 0) return;
+
+    // 첫 마운트(데이터 패칭 직후) 시점에는 자동저장 방지
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    const autoSave = async () => {
+      try {
+        // 방금 파악하신 대로 saveApply 사용!
+        await saveApply(
+          Number(mockApplyId),
+          getSubmitPayload(debouncedQuestions),
+        );
+
+        const now = new Date();
+        setLastSavedTime(
+          `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+        );
+      } catch (error) {
+        console.error("자소서 자동 저장 실패:", error);
+      }
+    };
+
+    autoSave();
+  }, [debouncedQuestions, mockApplyId, isQuestionsLoading]);
 
   return (
     <MockApplyTemplate

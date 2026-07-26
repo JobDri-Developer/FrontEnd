@@ -27,6 +27,7 @@ import {
   type LnbItemKey,
   type LnbRecentItem,
   type LnbNavItem,
+  defaultRecentItems,
 } from "./LnbShared";
 
 interface LnbProps {
@@ -89,7 +90,8 @@ export default function Lnb({
   const [searchQuery, setSearchQuery] = useState("");
   const [isRecentOpen, setIsRecentOpen] = useState(defaultRecentOpen);
 
-  const [recentItems, setRecentItems] = useState<LnbRecentItem[]>([]);
+  const [recentItems, setRecentItems] =
+    useState<LnbRecentItem[]>(defaultRecentItems);
   const [selectedRecentItemId, setSelectedRecentItemId] = useState<string>("");
 
   const [notificationItems, setNotificationItems] = useState<
@@ -173,7 +175,7 @@ export default function Lnb({
 
     const unsubscribe = subscribeToNotificationStream(
       (newNotification) => {
-        console.log("🔥 [SSE 수신 완료] 서버에서 알림 옴!!!", newNotification);
+        // console.log("🔥 [SSE 수신 완료] 서버에서 알림 옴!!!", newNotification);
         setTimeout(() => {
           fetchAndUpdateNotifications();
         }, 500);
