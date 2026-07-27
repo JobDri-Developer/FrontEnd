@@ -1,4 +1,5 @@
 import type { HTMLAttributes } from "react";
+import Link from "next/link";
 import clsx from "clsx";
 import Logo from "@/assets/ic_LOGO_minimum.svg";
 
@@ -67,19 +68,20 @@ export default function BusinessFooter({
           </p>
 
           <div className="flex h-4 items-center gap-4">
-            <button
-              type="button"
-              className="flex h-4 items-center text-cap12-med text-gray-400 [font-feature-settings:'liga'_off,'clig'_off]"
+            {/* 💡 button을 Link로 변경하고 href와 hover 효과 추가 */}
+            <Link
+              href="/policy?tab=terms"
+              className="flex h-4 items-center text-cap12-med text-gray-400 transition-colors hover:text-gray-600 [font-feature-settings:'liga'_off,'clig'_off]"
             >
               이용 약관
-            </button>
+            </Link>
             <span className="h-4 w-px bg-[#D3D5D7]" />
-            <button
-              type="button"
-              className="flex h-4 items-center text-cap12-med text-gray-400 [font-feature-settings:'liga'_off,'clig'_off]"
+            <Link
+              href="/policy?tab=privacy"
+              className="flex h-4 items-center text-cap12-med text-gray-400 transition-colors hover:text-gray-600 [font-feature-settings:'liga'_off,'clig'_off]"
             >
               개인정보 처리방침
-            </button>
+            </Link>
           </div>
         </div>
       </div>

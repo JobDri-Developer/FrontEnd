@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { CreditCard } from "@/components/common/cards";
 import Useage from "@/components/common/credit/Useage";
 import {
@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/credit";
 import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
+import { BusinessFooter } from "@/components/common/footer";
 
 function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
   const original = basePricePerUnit * plan.creditAmount;
@@ -21,7 +22,9 @@ function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
 
 function CreditContent() {
   const [plans, setPlans] = useState<CreditPlan[]>([]);
+  const [isConfirming, setIsConfirming] = useState(false); // 승인 중 로딩 상태 추가
   const searchParams = useSearchParams();
+  const router = useRouter(); // 라우터 훅 추가
 
   useEffect(() => {
     fetchCreditPlans()
@@ -34,10 +37,27 @@ function CreditContent() {
     const orderId = searchParams.get("orderId");
     const amount = searchParams.get("amount");
 
+    // URL에 결제 정보가 있으면 승인 로직 시작
     if (paymentKey && orderId && amount) {
-      confirmPurchase(paymentKey, orderId, Number(amount)).catch(() => {});
+      const processConfirm = async () => {
+        setIsConfirming(true); // 화면 잠금 (중복 요청 방지)
+        try {
+          await confirmPurchase(paymentKey, orderId, Number(amount));
+
+          alert("크레딧 충전이 완료되었습니다!");
+        } catch (error) {
+          console.error("결제 승인 실패:", error);
+          alert("결제 승인에 실패했습니다. 다시 시도해 주세요.");
+        } finally {
+          setIsConfirming(false);
+          // 새로고침 시 중복 호출 방지
+          router.replace("/credit");
+        }
+      };
+
+      processConfirm();
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   const basePricePerUnit =
     plans.find((p) => p.planCode === "ONE_TIME")?.price ?? 2500;
@@ -45,6 +65,15 @@ function CreditContent() {
   return (
     <>
       <PageHeader />
+
+      {/* 결제 승인 중일 때 화면을 덮는 로딩 UI */}
+      {isConfirming && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="text-white text-h24-bold animate-pulse">
+            결제를 안전하게 승인하고 있습니다...
+          </div>
+        </div>
+      )}
       <section className="mx-auto mt-8 mb-16 flex w-full flex-row gap-4">
         {plans.map((plan) => (
           <CreditCard
@@ -76,6 +105,7 @@ export default function CreditPage() {
             <CreditContent />
           </Suspense>
         </main>
+        <BusinessFooter />
       </div>
     </div>
   );

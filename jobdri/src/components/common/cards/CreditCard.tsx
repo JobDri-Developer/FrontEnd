@@ -88,12 +88,17 @@ export default function CreditCard({
             </div>
           </div>
 
-          <Button
-            label={buttonLabel}
-            size="large"
-            styleType="secondary"
-            onClick={handlePurchaseClick}
-          />
+          <div className="flex flex-1 flex-col justify-between gap-2 w-full">
+            <Button
+              label={buttonLabel}
+              size="large"
+              styleType="secondary"
+              onClick={handlePurchaseClick}
+            />
+            <p className="text-cap12-med text-text-neutral-caption items-center justify-center flex">
+              * 구매한 이용권은 구매일로부터 6개월간 유효합니다
+            </p>
+          </div>
         </div>
       </article>
     </>
