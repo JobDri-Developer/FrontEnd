@@ -10,7 +10,7 @@ import {
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
-import { ModalNotice } from "@/components/common/modal";
+import ModalNotice from "../modal/ModalNotice";
 import { Toast, type ToastVariant } from "@/components/common/toast";
 import {
   AUTH_STORAGE_KEYS,
@@ -281,10 +281,7 @@ export default function Lnb({
       );
     };
 
-    window.addEventListener(
-      MOCK_APPLY_DELETED_EVENT,
-      handleMockApplyDeleted,
-    );
+    window.addEventListener(MOCK_APPLY_DELETED_EVENT, handleMockApplyDeleted);
 
     return () => {
       window.removeEventListener(

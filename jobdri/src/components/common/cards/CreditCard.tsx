@@ -13,11 +13,8 @@ import { Toast } from "../toast";
 
 interface CreditCardProps extends HTMLAttributes<HTMLElement> {
   creditCount?: number;
-  creditLabel?: string;
   price?: string;
-  currencyLabel?: string;
   discountRate?: string;
-  discountLabel?: string;
   buttonLabel?: string;
   planCode: PlanCode;
   onPurchase?: () => void;
@@ -31,7 +28,6 @@ export default function CreditCard({
   planCode,
   onPurchase,
   className,
-
   ...articleProps
 }: CreditCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);

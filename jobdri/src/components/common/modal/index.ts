@@ -1,6 +1,0 @@
-export { default as ModalInput } from "./ModalInput";
-export { default as ModalFileUpload } from "./ModalFileUpload";
-export { default as ModalLinkInputDemo } from "./ModalLinkInputDemo";
-export { default as ModalNotice } from "./ModalNotice";
-export { default as ModalPurchase } from "./ModalPurchase";
-export { default as ModalAdd } from "./ModalAdd";
