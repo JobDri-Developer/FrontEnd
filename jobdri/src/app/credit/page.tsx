@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/credit";
 import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
+import { BusinessFooter } from "@/components/common/footer";
 
 function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
   const original = basePricePerUnit * plan.creditAmount;
@@ -96,13 +97,16 @@ function CreditContent() {
 
 export default function CreditPage() {
   return (
-    <div className="flex min-h-screen w-full bg-[#F5F6F9] overflow-x-hidden ">
+    <div className="flex min-h-screen w-full bg-[#F5F6F9]">
       <Lnb />
-      <main className="flex-1 w-full max-w-[1320px] min-w-[1060px] px-18 pt-12 pb-60 mx-auto">
-        <Suspense fallback={<div>로딩 중...</div>}>
-          <CreditContent />
-        </Suspense>
-      </main>
+      <div className="w-full flex-1">
+        <main className="flex-1 w-full max-w-[1320px] min-w-[1060px] px-18 pt-12 pb-60 mx-auto overflow-x-hidden">
+          <Suspense fallback={<div>로딩 중...</div>}>
+            <CreditContent />
+          </Suspense>
+        </main>
+        <BusinessFooter />
+      </div>
     </div>
   );
 }
