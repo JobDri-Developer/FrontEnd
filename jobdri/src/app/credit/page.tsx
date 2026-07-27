@@ -37,27 +37,30 @@ function CreditContent() {
     const orderId = searchParams.get("orderId");
     const amount = searchParams.get("amount");
 
-    // URL에 결제 정보가 있으면 승인 로직 시작
     if (paymentKey && orderId && amount) {
       const processConfirm = async () => {
-        setIsConfirming(true); // 화면 잠금 (중복 요청 방지)
+        setIsConfirming(true); // 화면 잠금
+
         try {
           await confirmPurchase(paymentKey, orderId, Number(amount));
-
-          alert("크레딧 충전이 완료되었습니다!");
+          window.history.replaceState(null, "", window.location.pathname);
+          setIsConfirming(false);
+          setTimeout(() => {
+            alert("크레딧 충전이 완료되었습니다!");
+            window.location.reload();
+          }, 100);
         } catch (error) {
           console.error("결제 승인 실패:", error);
-          alert("결제 승인에 실패했습니다. 다시 시도해 주세요.");
-        } finally {
           setIsConfirming(false);
-          // 새로고침 시 중복 호출 방지
-          router.replace("/credit");
+          alert("결제 승인에 실패했습니다. 다시 시도해 주세요.");
+          // 실패 시에도 쿼리 파라미터를 날려 중복 요청 방지
+          window.history.replaceState(null, "", window.location.pathname);
         }
       };
 
       processConfirm();
     }
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   const basePricePerUnit =
     plans.find((p) => p.planCode === "ONE_TIME")?.price ?? 2500;
@@ -82,9 +85,6 @@ function CreditContent() {
             price={plan.price.toLocaleString()}
             planCode={plan.planCode}
             discountRate={calcDiscountRate(plan, basePricePerUnit)}
-            discountLabel={
-              calcDiscountRate(plan, basePricePerUnit) ? "할인" : ""
-            }
           />
         ))}
       </section>

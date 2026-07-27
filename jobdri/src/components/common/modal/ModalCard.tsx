@@ -23,7 +23,7 @@ export const ModalCard: React.FC<ModalCardProps> = ({
   onErrorClick,
 }) => {
   return (
-    <div className="bg-white rounded-modal shadow-modal flex flex-col h-fil w-full max-w-[400px]">
+    <div className="bg-white rounded-modal shadow-modal flex flex-col h-full w-100">
       <div className="flex flex-col justify-center items-start mx-7 mt-7">
         <h3 className="text-t20-semibold text-text-neutral-title text-center mb-3">
           {title}
