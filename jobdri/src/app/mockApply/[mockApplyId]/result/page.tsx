@@ -8,11 +8,12 @@ import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
 import { ModalNotice } from "@/components/common/modal";
 import { Toast } from "@/components/common/toast";
 import { useReApply } from "@/hooks/useReApply";
-import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
+import {
+  fetchMockApplyJobPosting,
+  getMockApplyResumeRecords,
+} from "@/lib/api/mockApplies";
 import { useAnalysisResult } from "@/hooks/useAnalysisResult";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
-import { fetchMyJobPosting } from "@/lib/api/jobPostings";
-import { fetchSequence } from "@/lib/api/result";
 
 interface ResultPageProps {
   params: Promise<{
@@ -69,10 +70,8 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
 
     const loadJobPostingHeader = async () => {
       try {
-        const resolvedJobPostingId =
-          parsedJobPostingId ??
-          (await fetchSequence(parsedMockApplyId)).jobPostingId;
-        const jobPosting = await fetchMyJobPosting(resolvedJobPostingId);
+        const jobPosting =
+          await fetchMockApplyJobPosting(parsedMockApplyId);
 
         if (!ignore) {
           setJobPostingHeader({
@@ -93,7 +92,7 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
     return () => {
       ignore = true;
     };
-  }, [parsedJobPostingId, parsedMockApplyId]);
+  }, [parsedMockApplyId]);
 
   const closeToast = () => setToast({ open: false, message: "" });
   const showTopToast = (message: string) => {
@@ -111,7 +110,10 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
       return;
     }
     try {
-      await reApply(resolvedMockApplyId);
+      await reApply(resolvedMockApplyId, {
+        getRedirectPath: (result) =>
+          `/mockApply/${result.mockApplyId}?retry=1&sequence=${result.sequence}`,
+      });
     } catch {
       setIsRetryModalOpen(false);
       showTopToast("재도전을 시작하지 못했어요. 잠시 후 다시 시도해주세요.");
@@ -165,10 +167,9 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
       {isRetryModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            variant="double"
+            type="confirmation"
             title="같은 공고로 다시 도전할까요?"
             description="현재 내용을 저장하고 자소서 입력 단계로 돌아갑니다."
-            className="!w-[400px]"
             onClose={() => setIsRetryModalOpen(false)}
             secondaryAction={{
               label: "취소",

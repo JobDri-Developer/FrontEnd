@@ -1,5 +1,19 @@
-import { fetchEventSource } from "@microsoft/fetch-event-source";
+import {
+  EventStreamContentType,
+  fetchEventSource,
+} from "@microsoft/fetch-event-source";
 import { API_BASE_URL, getAuthHeaders } from "@/lib/auth";
+
+class NotificationStreamResponseError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly contentType: string | null,
+  ) {
+    super(message);
+    this.name = "NotificationStreamResponseError";
+  }
+}
 
 export interface ApiNotificationItem {
   id: number;
@@ -75,51 +89,87 @@ export function subscribeToNotificationStream(
     return () => ctrl.abort();
   }
 
-  const tokenOnly = headers.Authorization.replace("Bearer ", "");
-
-  fetchEventSource(
-    `${API_BASE_URL}/api/notifications/stream?accessToken=${tokenOnly}`,
-    {
-      method: "GET",
-      headers: {
-        ...headers,
-        Accept: "text/event-stream",
-      },
-      signal: ctrl.signal,
-
-      onmessage(event) {
-        // console.log(
-        //   "📥 [SSE 통신 감지!!] 서버가 보낸 원본 데이터:",
-        //   event.data,
-        // );
-
-        if (!event.data || !event.data.trim().startsWith("{")) {
-          return;
-        }
-
-        try {
-          const parsedData = JSON.parse(event.data) as ApiNotificationItem;
-          onMessage(parsedData);
-        } catch (e: unknown) {
-          console.error("SSE 데이터 파싱 실패:", e);
-        }
-      },
-
-      onerror(err: unknown) {
-        if (err instanceof Error && err.name === "AbortError") {
-          return;
-        }
-
-        console.error("SSE 스트림 에러:", err);
-        if (onError) onError(err);
-      },
+  fetchEventSource(`${API_BASE_URL}/api/notifications/stream`, {
+    method: "GET",
+    headers: {
+      ...headers,
+      accept: EventStreamContentType,
     },
-  ).catch((err) => {
-    if (err.name === "AbortError") {
-      console.log("알림 스트림 연결이 정상적으로 해제되었습니다. (Abort)");
+    cache: "no-store",
+    signal: ctrl.signal,
+
+    async onopen(response) {
+      const contentType = response.headers.get("content-type");
+
+      if (response.ok && contentType?.startsWith(EventStreamContentType)) {
+        return;
+      }
+
+      const errorResponse = contentType?.includes("application/json")
+        ? ((await response
+            .clone()
+            .json()
+            .catch(() => null)) as {
+            message?: string;
+            error?: string;
+          } | null)
+        : null;
+
+      throw new NotificationStreamResponseError(
+        errorResponse?.message ||
+          errorResponse?.error ||
+          `알림 스트림 연결에 실패했습니다. (${response.status})`,
+        response.status,
+        contentType,
+      );
+    },
+
+    onmessage(event) {
+      if (!event.data || !event.data.trim().startsWith("{")) {
+        return;
+      }
+
+      try {
+        const parsedData = JSON.parse(event.data) as ApiNotificationItem;
+
+        if (!parsedData.title || parsedData.title.trim() === "") {
+          return;
+        }
+
+        onMessage(parsedData);
+      } catch (error: unknown) {
+        console.error("SSE 데이터 파싱 실패:", error);
+      }
+    },
+
+    onerror(error: unknown) {
+      if (
+        (error instanceof Error && error.name === "AbortError") ||
+        error instanceof NotificationStreamResponseError
+      ) {
+        throw error;
+      }
+
+      onError?.(error);
+      return 5_000;
+    },
+  }).catch((error: unknown) => {
+    if (error instanceof Error && error.name === "AbortError") {
       return;
     }
-    console.error("SSE 연결 중 예외 발생:", err);
+
+    if (error instanceof NotificationStreamResponseError) {
+      console.warn(
+        `실시간 알림 연결을 건너뜁니다: ${error.message}`,
+        {
+          status: error.status,
+          contentType: error.contentType,
+        },
+      );
+      return;
+    }
+
+    console.error("SSE 연결 중 예외 발생:", error);
   });
 
   return () => ctrl.abort();

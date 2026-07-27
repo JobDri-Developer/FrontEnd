@@ -121,65 +121,59 @@ export default function JobPostingLoadingPage() {
   const router = useRouter();
   const [loadingDurationMs] = useState(createRandomLoadingDurationMs);
   const [showStopConfirm, setShowStopConfirm] = useState(false);
-  const hasStartedAnalysisRef = useRef(false);
+  const analysisPromiseRef = useRef<Promise<string> | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
-
-    if (hasStartedAnalysisRef.current) {
-      return;
-    }
-    hasStartedAnalysisRef.current = true;
+    let isActive = true;
 
     const analyzeJobPosting = async () => {
-      try {
-        const draft = getJobPostingDraft();
-        const rawText = draft.value.trim() || undefined;
-        const imageObjectKey = draft.files[0]
-          ? await uploadJobPostingImage(draft.files[0])
-          : undefined;
+      const draft = getJobPostingDraft();
+      const rawText = draft.value.trim() || undefined;
+      const imageObjectKey = draft.files[0]
+        ? await uploadJobPostingImage(draft.files[0])
+        : undefined;
 
-        if (!rawText && !imageObjectKey) {
-          throw new Error("분석할 채용 공고가 없습니다.");
-        }
-        const accepted = await ingestJobPosting({ rawText, imageObjectKey });
-        const status = await waitForJobPostingIngest(accepted.taskId);
+      if (!rawText && !imageObjectKey) {
+        throw new Error("분석할 채용 공고가 없습니다.");
+      }
 
-        if (!status.result) {
-          throw new Error("채용 공고 분석 결과를 확인할 수 없습니다.");
-        }
+      const accepted = await ingestJobPosting({ rawText, imageObjectKey });
+      const status = await waitForJobPostingIngest(accepted.taskId);
 
-        saveJobPostingAnalysis(status.result);
+      if (!status.result) {
+        throw new Error("채용 공고 분석 결과를 확인할 수 없습니다.");
+      }
 
-        const resultJobPostingId = status.result.saved?.jobPostingId;
-        const isSavedToDb = status.result.savedToDatabase ?? true;
+      saveJobPostingAnalysis(status.result);
 
-        if (isMounted) {
-          // ID가 존재하고 DB 저장이 정상적으로 완료되었을 때만 리뷰 페이지로 이동
-          if (resultJobPostingId && isSavedToDb) {
-            router.replace(`/mockApply/job/${resultJobPostingId}/review`);
-          } else {
-            router.replace("/mockApply/job/create?analysisError=not_saved");
-          }
-        }
-      } catch (error) {
+      const resultJobPostingId = status.result.saved?.jobPostingId;
+      const isSavedToDb = status.result.savedToDatabase ?? true;
+
+      // ID가 존재하고 DB 저장이 정상적으로 완료되었을 때만 리뷰 페이지로 이동
+      return resultJobPostingId && isSavedToDb
+        ? `/mockApply/job/${resultJobPostingId}/review`
+        : "/mockApply/job/create?analysisError=not_saved";
+    };
+
+    if (!analysisPromiseRef.current) {
+      analysisPromiseRef.current = analyzeJobPosting().catch((error) => {
         const message =
           error instanceof Error
             ? error.message
             : "채용 공고 분석에 실패했습니다.";
 
-        if (isMounted) {
-          router.replace(
-            `/mockApply/job/create?analysisError=${encodeURIComponent(message)}`,
-          );
-        }
-      }
-    };
+        return `/mockApply/job/create?analysisError=${encodeURIComponent(message)}`;
+      });
+    }
 
-    void analyzeJobPosting();
+    void analysisPromiseRef.current.then((destination) => {
+      if (isActive) {
+        router.replace(destination);
+      }
+    });
 
     return () => {
-      isMounted = false;
+      isActive = false;
     };
   }, [router]);
 
@@ -239,7 +233,7 @@ export default function JobPostingLoadingPage() {
       {showStopConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            type="confirmationModal"
+            type="confirmation"
             title="분석을 중단하시겠습니까?"
             description="분석을 중단하고 공고 입력으로 돌아갑니다."
             onClose={closeStopConfirm}

@@ -74,7 +74,7 @@ function CreditContent() {
           </div>
         </div>
       )}
-      <section className="flex flex-row gap-4 w-full mt-8 mb-16 mx-auto">
+      <section className="mx-auto mt-8 mb-16 flex w-full flex-row gap-4">
         {plans.map((plan) => (
           <CreditCard
             key={plan.planCode}
@@ -97,10 +97,10 @@ function CreditContent() {
 
 export default function CreditPage() {
   return (
-    <div className="flex min-h-screen w-full bg-[#F5F6F9]">
-      <Lnb />
-      <div className="w-full flex-1">
-        <main className="flex-1 w-full max-w-[1320px] min-w-[1060px] px-18 pt-12 pb-60 mx-auto overflow-x-hidden">
+    <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
+      <Lnb className="z-50 shrink-0" />
+      <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
+        <main className="mx-auto w-full max-w-[1320px] min-w-[1060px] px-18 pt-12 pb-60">
           <Suspense fallback={<div>로딩 중...</div>}>
             <CreditContent />
           </Suspense>

@@ -24,6 +24,27 @@ interface QuestionApiItem {
   answer?: string;
 }
 
+function mapQuestionItems(
+  questions: QuestionApiItem[] | undefined,
+): QuestionItem[] {
+  return (questions ?? []).map((question, index) => {
+    const questionId = question.questionId ?? question.id;
+
+    return {
+      id:
+        questionId !== undefined
+          ? String(questionId)
+          : `question-${index}`,
+      questionId,
+      question: question.content,
+      maxLength: question.charLimit,
+      selected: question.selected,
+      custom: question.custom,
+      answer: question.answer,
+    };
+  });
+}
+
 interface SelectedQuestionsApiResponse {
   mockApplyId: number;
   status: string;
@@ -57,22 +78,13 @@ export async function fetchQuestions(
     "문항 목록을 불러오지 못했습니다.",
   );
 
-  return (result ?? []).map(
-    ({ id, content, charLimit, selected, questionId, custom }, index) => ({
-      id: String(index),
-      questionId: id ?? questionId,
-      question: content,
-      maxLength: charLimit,
-      selected,
-      custom,
-    }),
-  );
+  return mapQuestionItems(result);
 }
 
 export async function saveQuestions(
   mockApplyId: number,
   questions: QuestionItem[],
-): Promise<void> {
+): Promise<QuestionItem[]> {
   const response = await fetch(
     `${API_BASE_URL}/api/mock-applies/${mockApplyId}/questions`,
     {
@@ -88,7 +100,12 @@ export async function saveQuestions(
     },
   );
 
-  await parseApiResponse<unknown>(response, "문항 저장에 실패했습니다.");
+  const result = await parseApiResponse<SelectedQuestionsApiResponse>(
+    response,
+    "문항 저장에 실패했습니다.",
+  );
+
+  return mapQuestionItems(result?.questions);
 }
 
 export async function fetchSelectedQuestions(
@@ -106,26 +123,21 @@ export async function fetchSelectedQuestions(
     "선택 문항 조회에 실패했습니다.",
   );
 
-  return (result?.questions ?? []).map(
-    (
-      { id, questionId, content, charLimit, selected, custom, answer },
-      index,
-    ) => ({
-      id: String(index),
-      questionId: id ?? questionId,
-      question: content,
-      maxLength: charLimit,
-      selected,
-      custom,
-      answer,
-    }),
-  );
+  return mapQuestionItems(result?.questions);
 }
 
 export interface SaveApplyResult {
   mockApplyId: number;
   status: string;
   sequence: number;
+  questions: QuestionItem[];
+}
+
+interface SaveApplyApiResult {
+  mockApplyId: number;
+  status: string;
+  sequence: number;
+  questions?: QuestionApiItem[];
 }
 
 export async function saveApply(
@@ -143,11 +155,17 @@ export async function saveApply(
     },
   );
 
-  const result = await parseApiResponse<SaveApplyResult>(
+  const result = await parseApiResponse<SaveApplyApiResult>(
     response,
     "답변 제출에 실패했습니다.",
   );
-  return result!;
+
+  return {
+    mockApplyId: result!.mockApplyId,
+    status: result!.status,
+    sequence: result!.sequence,
+    questions: mapQuestionItems(result!.questions),
+  };
 }
 
 export async function createCustomQuestionCandidate(

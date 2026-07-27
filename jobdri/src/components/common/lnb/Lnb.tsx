@@ -1,6 +1,12 @@
 ﻿"use client";
 
-import { useEffect, useState, useSyncExternalStore, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
@@ -13,12 +19,16 @@ import {
   requestLogout,
 } from "@/lib/auth";
 import { fetchCreditBalance } from "@/lib/api/credit";
-import { fetchMyMockApplies } from "@/lib/api/mockApplies";
 import {
-  NotificationResponse,
+  fetchMyMockApplies,
+  MOCK_APPLY_CHANGED_EVENT,
+  MOCK_APPLY_DELETED_EVENT,
+} from "@/lib/api/mockApplies";
+import { getResumePath } from "@/components/mockApply/home/applicationHomeUtils";
+import {
   fetchNotifications,
   subscribeToNotificationStream,
-  LnbNotificationItem,
+  type LnbNotificationItem,
 } from "@/lib/api/notification";
 import LnbDefault from "./LnbDefault";
 import LnbFolded from "./LnbFolded";
@@ -27,7 +37,6 @@ import {
   type LnbItemKey,
   type LnbRecentItem,
   type LnbNavItem,
-  defaultRecentItems,
 } from "./LnbShared";
 
 interface LnbProps {
@@ -90,8 +99,7 @@ export default function Lnb({
   const [searchQuery, setSearchQuery] = useState("");
   const [isRecentOpen, setIsRecentOpen] = useState(defaultRecentOpen);
 
-  const [recentItems, setRecentItems] =
-    useState<LnbRecentItem[]>(defaultRecentItems);
+  const [recentItems, setRecentItems] = useState<LnbRecentItem[]>([]);
   const [selectedRecentItemId, setSelectedRecentItemId] = useState<string>("");
 
   const [notificationItems, setNotificationItems] = useState<
@@ -107,9 +115,108 @@ export default function Lnb({
   // 중복 구독 방지용 락 Ref 추가
   const hasSubscribedRef = useRef(false);
 
+  const loadRecentItems = useCallback(async () => {
+    try {
+      const data = await fetchMyMockApplies({
+        redirectOnUnauthorized: false,
+      });
+      const allItems = [
+        ...data.inProgress.map((item) => ({ item, isCompleted: false })),
+        ...data.completed.content.map((item) => ({
+          item,
+          isCompleted: true,
+        })),
+      ].sort((a, b) => {
+        const aTime = new Date(a.item.createdAt).getTime();
+        const bTime = new Date(b.item.createdAt).getTime();
+
+        if (Number.isNaN(aTime) || Number.isNaN(bTime)) {
+          return b.item.mockApplyId - a.item.mockApplyId;
+        }
+        return bTime - aTime;
+      });
+
+      const mappedItems: LnbRecentItem[] = allItems.map(
+        ({ item, isCompleted }) => ({
+          id: String(item.mockApplyId),
+          companyName: item.companyName,
+          jobTitle:
+            item.jobTitle || item.detailClassificationName || "직무 미지정",
+          version: item.sequence ?? 1,
+          href: isCompleted
+            ? `/mockApply/${item.mockApplyId}/result?jobPostingId=${item.jobPostingId}&sequence=${item.sequence ?? 1}`
+            : getResumePath(item),
+        }),
+      );
+
+      setRecentItems(mappedItems);
+      setSelectedRecentItemId((current) =>
+        mappedItems.some((item) => item.id === current)
+          ? current
+          : (mappedItems[0]?.id ?? ""),
+      );
+    } catch (error) {
+      console.error("최근 모의지원 목록 로드 실패:", error);
+      setRecentItems([]);
+      setSelectedRecentItemId("");
+    }
+  }, []);
+
+  useEffect(() => {
+    const initialLoadTimer = window.setTimeout(() => {
+      void loadRecentItems();
+    }, 0);
+
+    return () => window.clearTimeout(initialLoadTimer);
+  }, [loadRecentItems]);
+
+  useEffect(() => {
+    const refreshRecentItems = () => {
+      void loadRecentItems();
+    };
+
+    window.addEventListener(MOCK_APPLY_CHANGED_EVENT, refreshRecentItems);
+    window.addEventListener("focus", refreshRecentItems);
+
+    return () => {
+      window.removeEventListener(MOCK_APPLY_CHANGED_EVENT, refreshRecentItems);
+      window.removeEventListener("focus", refreshRecentItems);
+    };
+  }, [loadRecentItems]);
+
   useEffect(() => {
     if (hasSubscribedRef.current) return;
     hasSubscribedRef.current = true;
+
+    const triggerToastBasedOnNotification = (item: LnbNotificationItem) => {
+      let toastMessage = item.title || "새로운 알림이 도착했습니다.";
+      let toastVariant: ToastVariant = "check";
+
+      switch (item.apiType) {
+        case "JOB_POSTING_ASYNC_SUCCEEDED":
+          toastMessage = "공고 분석이 완료되었습니다!";
+          break;
+        case "JOB_POSTING_ASYNC_FAILED":
+          toastMessage = "공고 분석에 실패했습니다. 다시 시도해주세요.";
+          toastVariant = "warning";
+          break;
+        case "ANALYSIS_ASYNC_SUCCEEDED":
+          toastMessage = "자소서 분석이 완료되었습니다!";
+          break;
+        case "ANALYSIS_ASYNC_FAILED":
+          toastMessage = "자소서 분석에 실패했습니다. 다시 시도해주세요.";
+          toastVariant = "warning";
+          break;
+        default:
+          if (item.type === "fail") {
+            toastVariant = "warning";
+          }
+          break;
+      }
+
+      setToastState({ message: toastMessage, variant: toastVariant });
+      window.setTimeout(() => setToastState(null), 3000);
+    };
 
     const fetchAndUpdateNotifications = async () => {
       try {
@@ -139,46 +246,17 @@ export default function Lnb({
       }
     };
 
-    const triggerToastBasedOnNotification = (item: LnbNotificationItem) => {
-      let toastMessage = item.title || "새로운 알림이 도착했습니다.";
-      let toastVariant: ToastVariant = "check";
-
-      switch (item.apiType) {
-        case "JOB_POSTING_ASYNC_SUCCEEDED":
-          toastMessage = "공고 분석이 완료되었습니다!";
-          toastVariant = "check";
-          break;
-        case "JOB_POSTING_ASYNC_FAILED":
-          toastMessage = "공고 분석에 실패했습니다. 다시 시도해주세요.";
-          toastVariant = "warning";
-          break;
-        case "ANALYSIS_ASYNC_SUCCEEDED":
-          toastMessage = "자소서 분석이 완료되었습니다!";
-          toastVariant = "check";
-          break;
-        case "ANALYSIS_ASYNC_FAILED":
-          toastMessage = "자소서 분석에 실패했습니다. 다시 시도해주세요.";
-          toastVariant = "warning";
-          break;
-        default:
-          if (item.type === "fail") {
-            toastVariant = "warning";
-          }
-          break;
-      }
-
-      setToastState({ message: toastMessage, variant: toastVariant });
-      setTimeout(() => setToastState(null), 3000);
-    };
-
-    fetchAndUpdateNotifications();
+    void fetchAndUpdateNotifications();
 
     const unsubscribe = subscribeToNotificationStream(
       (newNotification) => {
-        // console.log("🔥 [SSE 수신 완료] 서버에서 알림 옴!!!", newNotification);
-        setTimeout(() => {
-          fetchAndUpdateNotifications();
+        window.setTimeout(() => {
+          void fetchAndUpdateNotifications();
         }, 500);
+
+        if (newNotification.type.startsWith("ANALYSIS_ASYNC_")) {
+          void loadRecentItems();
+        }
       },
       (error) => {
         console.error("실시간 알림 연결 문제 발생:", error);
@@ -187,7 +265,32 @@ export default function Lnb({
 
     return () => {
       unsubscribe();
-      hasSubscribedRef.current = false; // 언마운트 시 초기화
+      hasSubscribedRef.current = false;
+    };
+  }, [loadRecentItems]);
+
+  useEffect(() => {
+    const handleMockApplyDeleted = (event: Event) => {
+      const mockApplyId = (event as CustomEvent<number>).detail;
+
+      setRecentItems((current) =>
+        current.filter((item) => item.id !== String(mockApplyId)),
+      );
+      setSelectedRecentItemId((current) =>
+        current === String(mockApplyId) ? "" : current,
+      );
+    };
+
+    window.addEventListener(
+      MOCK_APPLY_DELETED_EVENT,
+      handleMockApplyDeleted,
+    );
+
+    return () => {
+      window.removeEventListener(
+        MOCK_APPLY_DELETED_EVENT,
+        handleMockApplyDeleted,
+      );
     };
   }, []);
 
@@ -247,7 +350,7 @@ export default function Lnb({
     <>
       <aside
         className={clsx(
-          "sticky top-0 flex h-screen min-h-[800px] shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out z-40",
+          "sticky top-0 z-40 flex h-dvh max-h-dvh min-h-0 shrink-0 flex-col justify-between border-r border-line-neutral-default bg-bg-contents-default transition-[width] duration-300 ease-in-out",
           isFold ? "w-[52px] items-center" : "w-[280px]",
           className,
         )}
@@ -259,7 +362,12 @@ export default function Lnb({
             hasNotification={hasNotification}
             notificationItems={notificationItems}
             searchQuery={searchQuery}
+            onActivateSearch={() => setIsFold(false)}
+            onCreditClick={() => router.push("/credit")}
+            onLogout={handleLogout}
             onNavItemClick={handleNavItemClick}
+            onMarkAllRead={handleMarkAllRead}
+            onReadItem={handleReadItem}
             onSearchQueryChange={setSearchQuery}
             onToggleFold={handleToggleFold}
           />
@@ -277,7 +385,12 @@ export default function Lnb({
             selectedRecentItemId={selectedRecentItemId}
             onLogout={handleLogout}
             onNavItemClick={handleNavItemClick}
-            onRecentItemClick={(item) => setSelectedRecentItemId(item.id)}
+            onRecentItemClick={(item) => {
+              setSelectedRecentItemId(item.id);
+              if (item.href) {
+                router.push(item.href);
+              }
+            }}
             onSearchQueryChange={(searchQuerySetter) =>
               setSearchQuery(searchQuerySetter)
             }
@@ -293,8 +406,13 @@ export default function Lnb({
         createPortal(
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
             <ModalNotice
+              variant="single"
+              layout="centered"
               title="아직 준비중인 서비스입니다"
-              description="더 나은 서비스를 위해 노력하고 있습니다!\n조금만 기다려 주세요"
+              description={[
+                "더 나은 서비스를 위해 노력하고 있습니다!",
+                "조금만 기다려 주세요",
+              ].join("\n")}
               onClose={() => setShowComingSoonModal(false)}
               primaryAction={{
                 label: "확인",

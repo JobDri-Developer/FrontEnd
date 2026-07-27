@@ -18,6 +18,11 @@ export interface LnbFoldedProps {
   notificationItems: LnbNotificationItem[];
   searchQuery: string;
   onNavItemClick: (item: LnbNavItem) => void;
+  onActivateSearch: () => void;
+  onCreditClick: () => void;
+  onLogout: () => void;
+  onMarkAllRead?: () => void;
+  onReadItem?: (id: string) => void;
   onSearchQueryChange: (value: string) => void;
   onToggleFold: () => void;
 }
@@ -28,7 +33,12 @@ export default function LnbFolded({
   hasNotification,
   notificationItems,
   searchQuery,
+  onActivateSearch,
+  onCreditClick,
+  onLogout,
+  onMarkAllRead,
   onNavItemClick,
+  onReadItem,
   onSearchQueryChange,
   onToggleFold,
 }: LnbFoldedProps) {
@@ -47,6 +57,7 @@ export default function LnbFolded({
           <LnbFoldedSearchMenu
             searchQuery={searchQuery}
             onSearchQueryChange={onSearchQueryChange}
+            onActivateSearch={onActivateSearch}
           />
         </div>
       </div>
@@ -55,6 +66,10 @@ export default function LnbFolded({
         emailInitial={emailInitial}
         hasNotification={hasNotification}
         notificationItems={notificationItems}
+        onCreditClick={onCreditClick}
+        onLogout={onLogout}
+        onMarkAllRead={onMarkAllRead}
+        onReadItem={onReadItem}
       />
     </>
   );

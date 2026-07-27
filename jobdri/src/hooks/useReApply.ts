@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   type MockApplyRetryResult,
@@ -16,9 +16,12 @@ interface ReApplyOptions {
 export function useReApply() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
 
   const reApply = async (mockApplyId: number, options?: ReApplyOptions) => {
-    if (isSaving || !mockApplyId) return null;
+    if (isSavingRef.current || !mockApplyId) return null;
+
+    isSavingRef.current = true;
     setIsSaving(true);
 
     try {
@@ -31,10 +34,11 @@ export function useReApply() {
       });
       router.push(
         options?.getRedirectPath?.(result) ??
-          `/mockApply/${result.mockApplyId}?retry=1&sequence=${result.sequence}`,
+          `/mockApply/${result.mockApplyId}?sequence=${result.sequence}`,
       );
       return result;
     } catch {
+      isSavingRef.current = false;
       setIsSaving(false);
       return null;
     }

@@ -14,11 +14,13 @@ export function ResultApplicationCard({
   createdAt,
   score,
   version = 1,
+  isRetryDisabled = false,
   onDeleteClick,
   onRetryClick,
   onResumeClick,
 }: ApplicationCardData & {
   companyVariant?: "default" | "none";
+  isRetryDisabled?: boolean;
   onDeleteClick: () => void;
   onRetryClick?: () => void;
   onResumeClick?: () => void;
@@ -52,6 +54,8 @@ export function ResultApplicationCard({
 
   const handleRetry = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isRetryDisabled) return;
+
     setIsMenuOpen(false);
     onRetryClick?.(); // 부모로부터 받은 다시하기 함수 실행
   };
@@ -92,7 +96,11 @@ export function ResultApplicationCard({
               <div className="absolute right-0 top-full mt-1 z-10">
                 <DropDownMenu
                   items={[
-                    { label: "다시하기", onClick: handleRetry },
+                    {
+                      label: "재도전하기",
+                      onClick: handleRetry,
+                      disabled: isRetryDisabled,
+                    },
                     { label: "삭제하기", onClick: handleDelete },
                   ]}
                 />

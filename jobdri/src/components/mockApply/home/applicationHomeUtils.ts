@@ -1,8 +1,8 @@
 import type { SavedJobPosting } from "@/lib/api/jobPostings";
 import {
   getMockApplyResumeRecords,
-  JobPostingApplyType,
   type MockApplyHomeItem,
+  type JobPostingApplyType,
 } from "@/lib/api/mockApplies";
 import {
   createJdReviewSectionsFromJobPosting,
@@ -11,7 +11,7 @@ import {
   getJdReviewStorageKey,
 } from "@/components/mockApply/jd/jdReviewSections";
 import type { ApplicationCardData } from "./types";
-import { JobPostingProfileColor } from "@/lib/api/jobPostings";
+import type { JobPostingProfileColor } from "@/lib/api/jobPostings";
 
 export const EMPTY_APPLICATION_TITLE = "아직 지원 내역이 없어요!";
 export const EMPTY_APPLICATION_DESCRIPTION =

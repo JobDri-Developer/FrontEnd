@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
@@ -8,18 +9,15 @@ import Icon, { type IconType } from "@/components/common/icons/Icon";
 import { SelectListItem } from "@/components/common/select";
 import useOutsideClick from "@/hooks/useOutsideClick";
 import EmptyNotificationImage from "@/assets/ic_Image.svg";
-import {
-  lnbHiddenScrollbarClass,
-  LnbScrollbar,
-  useLnbScrollMetrics,
-} from "./LnbScrollbar";
+import { useLnbScrollMetrics } from "./LnbScrollbar";
 import {
   ApiNotificationItem,
-  NotificationResponse,
   LnbNotificationItem,
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from "@/lib/api/notification";
+import { fetchJobPostingIngestStatus } from "@/lib/api/jobPostings";
+import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
 import { formatDate } from "@/utils/date";
 import { scrollbarClassS } from "../scrollbar/scrollbarStyles";
 import { useScrollGradient } from "@/hooks/useScrollGradient";
@@ -152,10 +150,11 @@ export function mapApiToLnbItem(
     read: item.isRead,
     readAt: item.readAt,
     targetType: item.targetType,
+    targetId: item.targetId,
     mockApplyId,
     jobPostingId,
     taskId,
-    savedToDatabase, // 추가
+    savedToDatabase,
     apiType: item.type,
   };
 }
@@ -172,13 +171,71 @@ export function LnbNotificationButton({
   onReadItem?: (id: string) => void;
 }) {
   const notificationMenuRef = useRef<HTMLSpanElement>(null);
+  const notificationPanelRef = useRef<HTMLDivElement>(null);
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState<{
+    left: number;
+    top: number;
+  } | null>(null);
+  const hasUnreadNotification =
+    hasNotification ||
+    notificationItems.some((notificationItem) => !notificationItem.read);
 
-  useOutsideClick(
-    notificationMenuRef,
-    () => setIsNotificationPanelOpen(false),
-    isNotificationPanelOpen,
-  );
+  const updatePanelPosition = useCallback(() => {
+    const notificationButton = notificationMenuRef.current;
+
+    if (!notificationButton) return;
+
+    const buttonRect = notificationButton.getBoundingClientRect();
+    const panelWidth = 460;
+    const panelHeight = 360;
+    const panelGap = 14;
+    const viewportGap = 12;
+
+    setPanelPosition({
+      left: Math.max(
+        viewportGap,
+        Math.min(
+          buttonRect.right + panelGap,
+          window.innerWidth - panelWidth - viewportGap,
+        ),
+      ),
+      top: Math.max(
+        viewportGap,
+        Math.min(
+          buttonRect.bottom - panelHeight,
+          window.innerHeight - panelHeight - viewportGap,
+        ),
+      ),
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isNotificationPanelOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (
+        target instanceof Node &&
+        !notificationMenuRef.current?.contains(target) &&
+        !notificationPanelRef.current?.contains(target)
+      ) {
+        setIsNotificationPanelOpen(false);
+      }
+    };
+
+    updatePanelPosition();
+    document.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("resize", updatePanelPosition);
+    window.addEventListener("scroll", updatePanelPosition, true);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("resize", updatePanelPosition);
+      window.removeEventListener("scroll", updatePanelPosition, true);
+    };
+  }, [isNotificationPanelOpen, updatePanelPosition]);
 
   return (
     <span
@@ -190,31 +247,43 @@ export function LnbNotificationButton({
         styleType={isNotificationPanelOpen ? "normal" : "weak"}
         size="s"
         buttonType="transparent"
-        aria-label="알림"
+        aria-label={hasUnreadNotification ? "새 알림 있음" : "알림"}
         aria-expanded={isNotificationPanelOpen}
         aria-haspopup="dialog"
         onClick={() => {
+          if (!isNotificationPanelOpen) {
+            updatePanelPosition();
+          }
           setIsNotificationPanelOpen((prev) => !prev);
-          // (선택 사항) 패널을 열 때마다 최신 알림을 다시 불러오고 싶다면 여기에 추가
-          // if (!isNotificationPanelOpen) { fetchNotifications(); }
         }}
       />
 
-      {/* 안 읽은 알림이 있으면 빨간 점 표시 */}
-      {hasNotification && (
-        <span className="absolute top-px right-px flex items-center justify-center">
-          <span className="h-[5px] w-[5px] rounded-full bg-icon-primary-strong" />
-        </span>
-      )}
-
-      {isNotificationPanelOpen && (
-        <LnbNotificationPanel
-          notificationItems={notificationItems}
-          onMarkAllRead={onMarkAllRead}
-          onReadItem={onReadItem}
-          className="absolute bottom-0 left-[38px] z-[80]"
+      {hasUnreadNotification && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute top-px right-px z-10 h-[5px] w-[5px] rounded-full bg-fill-primary-default"
         />
       )}
+
+      {isNotificationPanelOpen &&
+        panelPosition &&
+        createPortal(
+          <div
+            ref={notificationPanelRef}
+            className="fixed z-[200]"
+            style={{
+              left: panelPosition.left,
+              top: panelPosition.top,
+            }}
+          >
+            <LnbNotificationPanel
+              notificationItems={notificationItems}
+              onMarkAllRead={onMarkAllRead}
+              onReadItem={onReadItem}
+            />
+          </div>,
+          document.body,
+        )}
     </span>
   );
 }
@@ -311,8 +380,10 @@ function LnbNotificationList({
   notificationItems: LnbNotificationItem[];
   onReadItem?: (id: string) => void;
 }) {
-  const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
-    useLnbScrollMetrics(true, notificationItems.length);
+  const { scrollAreaRef, updateScrollbarMetrics } = useLnbScrollMetrics(
+    true,
+    notificationItems.length,
+  );
 
   const { scrollRef, showGradient, checkScroll } =
     useScrollGradient<HTMLDivElement>([notificationItems]);
@@ -422,75 +493,128 @@ export function LnbNotificationListItem({
   const notificationType = notificationItem.type ?? "normal";
   const iconStyle = notificationIconStyles[notificationType];
 
-  const handleNotificationClick = () => {
-    console.log("클릭한 알림 전체 데이터:", notificationItem);
-
+  const handleNotificationClick = async () => {
     const {
       id,
+      targetId,
       mockApplyId,
       jobPostingId,
       taskId,
       savedToDatabase,
       read,
       apiType,
+      description,
     } = notificationItem;
 
     if (!read) {
-      markNotificationAsRead(id).catch(console.error);
-      if (onReadItem) onReadItem(id);
+      void markNotificationAsRead(id);
+      onReadItem?.(id);
     }
 
+    const notificationMockApplyId =
+      mockApplyId ??
+      (targetId && /^\d+$/.test(targetId) ? targetId : undefined);
+
     switch (apiType) {
-      // #0 공고 분석 성공
-      case "JOB_POSTING_ASYNC_SUCCEEDED":
+      case "JOB_POSTING_ASYNC_SUCCEEDED": {
         if (savedToDatabase === true && jobPostingId) {
           router.push(`/mockApply/job/${jobPostingId}/review`);
-        } else {
-          console.warn("⚠️ 공고 분석은 완료되었으나 DB 저장이 보류되었습니다.");
-          router.push(`/mockApply/job/create?analysisError=deferred`);
+          break;
         }
-        break;
 
-      // #1 공고 분석 실패
-      case "JOB_POSTING_ASYNC_FAILED":
-        router.push(`/mockApply/job/create?analysisError=1`);
-        break;
+        const jobPostingTaskId = taskId || targetId;
 
-      // #2 자소서 분석 성공
-      case "ANALYSIS_ASYNC_SUCCEEDED":
-        if (mockApplyId) {
-          router.push(`/mockApply/${mockApplyId}/result`);
-        } else {
-          router.push("/");
+        if (!jobPostingTaskId) {
+          router.push("/mockApply/job/create?analysisError=deferred");
+          break;
         }
-        break;
 
-      // #3 자소서 분석 실패
-      case "ANALYSIS_ASYNC_FAILED":
-        if (mockApplyId) {
-          const queryParam = jobPostingId
-            ? `?jobPostingId=${jobPostingId}&error=true`
-            : `?error=true`;
+        try {
+          const status = await fetchJobPostingIngestStatus(jobPostingTaskId);
+
+          if (!status.result) {
+            throw new Error(
+              status.failureReason ||
+                status.error ||
+                status.message ||
+                "채용 공고 분석 결과를 확인할 수 없습니다.",
+            );
+          }
+
+          saveJobPostingAnalysis(status.result);
+          const savedJobPostingId = status.result.saved?.jobPostingId;
 
           router.push(
-            `/mockApply/${mockApplyId}/result/resume-analysis-loading${queryParam}`,
+            savedJobPostingId
+              ? `/mockApply/job/${savedJobPostingId}/review`
+              : "/mockApply/job/create?analysisError=deferred",
+          );
+        } catch (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "채용 공고 분석 결과를 불러오지 못했습니다.";
+          router.push(
+            `/mockApply/job/create?analysisError=${encodeURIComponent(message)}`,
+          );
+        }
+        break;
+      }
+
+      case "JOB_POSTING_ASYNC_FAILED": {
+        router.push(
+          `/mockApply/job/create?analysisError=${encodeURIComponent(
+            description || "채용 공고 분석에 실패했습니다.",
+          )}`,
+        );
+        break;
+      }
+
+      case "ANALYSIS_ASYNC_SUCCEEDED": {
+        router.push(
+          notificationMockApplyId
+            ? `/mockApply/${notificationMockApplyId}/result`
+            : "/",
+        );
+        break;
+      }
+
+      case "ANALYSIS_ASYNC_FAILED": {
+        if (notificationMockApplyId) {
+          const queryParams = new URLSearchParams({ error: "true" });
+
+          if (jobPostingId) {
+            queryParams.set("jobPostingId", jobPostingId);
+          }
+
+          router.push(
+            `/mockApply/${notificationMockApplyId}/result/resume-analysis-loading?${queryParams.toString()}`,
           );
         } else {
           router.push("/");
         }
         break;
+      }
 
-      // #4 일반 알림 및 그 외 (GENERAL)
-      case "GENERAL":
-      default:
-        router.push(`/`);
+      case "GENERAL": {
+        router.push("/");
         break;
+      }
+
+      default: {
+        router.push(
+          notificationMockApplyId
+            ? `/mockApply/${notificationMockApplyId}/result`
+            : "/",
+        );
+        break;
+      }
     }
   };
 
   return (
     <article
-      onClick={handleNotificationClick}
+      onClick={() => void handleNotificationClick()}
       className={clsx(
         "flex shrink-0 items-center gap-2 self-stretch rounded-card-s px-3 py-2",
         "cursor-pointer transition-colors hover:bg-fill-neutral-muted",

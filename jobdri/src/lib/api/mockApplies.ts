@@ -2,8 +2,12 @@ import {
   API_BASE_URL,
   getAuthHeaders,
   parseApiResponse,
+  parseApiResponseAllowNull,
 } from "@/lib/api/client";
-import type { JobPostingProfileColor } from "@/lib/api/jobPostings";
+import type {
+  JobPostingProfileColor,
+  SavedJobPosting,
+} from "@/lib/api/jobPostings";
 
 export type JobPostingApplyType = "MOCK" | "ACTUAL";
 export type MockApplyProgressStatus =
@@ -16,6 +20,12 @@ export interface MockApplyFromJobPosting {
   jobPostingId: number;
   mockApplyId: number;
   applyType: JobPostingApplyType;
+  sequence: number;
+}
+
+export interface MockApplyFromJobPostingPayload {
+  jobPostingId: number;
+  sequence?: number;
 }
 
 export interface MockApplyRetryResult {
@@ -34,7 +44,22 @@ export interface MockApplyResumeRecord {
   updatedAt: string;
 }
 
-interface PageResponse<T> {
+export interface MockApplyHomeItem {
+  mockApplyId: number;
+  resumePath: string;
+  jobPostingId: number;
+  sequence: number;
+  status: MockApplyProgressStatus | string;
+  companyName: string;
+  detailClassificationName: string;
+  jobTitle: string;
+  createdAt: string;
+  applyType: JobPostingApplyType;
+  profileColor?: JobPostingProfileColor;
+  score?: number;
+}
+
+export interface PageResponse<T> {
   content: T[];
   totalElements: number;
   totalPages: number;
@@ -47,33 +72,24 @@ export interface MyMockAppliesResponse {
   completed: PageResponse<MockApplyHomeItem>;
 }
 
-// 모의지원 아이템 타입 (이미지 속 필드들 반영)
-export interface MockApplyHomeItem {
-  mockApplyId: number;
-  resumePath: string;
-  jobPostingId: number;
-  sequence: number;
-  status: string;
-  companyName: string;
-  profileColor: string;
-  detailClassificationName: string;
-  jobTitle: string;
-  createdAt: string;
-  applyType: string;
-  score?: number;
-}
-
-// export interface MockApplyHomeList {
-//   inProgress: MockApplyHomeItem[];
-//   completed: MockApplyHomeItem[];
-// }
-
 export const APPLY_TYPE_STORAGE_KEY = "jobdri.applyType";
+export const MOCK_APPLY_DELETED_EVENT = "jobdri:mock-apply-deleted";
+export const MOCK_APPLY_CHANGED_EVENT = "jobdri:mock-apply-changed";
 const MOCK_APPLY_RESUME_STORAGE_KEY = "jobdri.mockApplyResumeRecords";
+const retryMockApplyRequests = new Map<
+  number,
+  Promise<MockApplyRetryResult>
+>();
+
+export function notifyMockApplyChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(MOCK_APPLY_CHANGED_EVENT));
+  }
+}
 
 async function postMockApplyFromJobPosting(
   path: string,
-  jobPostingId: number,
+  payload: MockApplyFromJobPostingPayload,
   fallbackMessage: string,
 ) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -82,24 +98,34 @@ async function postMockApplyFromJobPosting(
       "Content-Type": "application/json",
       ...getAuthHeaders(),
     },
-    body: JSON.stringify({ jobPostingId }),
+    body: JSON.stringify(payload),
   });
 
-  return parseApiResponse<MockApplyFromJobPosting>(response, fallbackMessage);
+  const result = await parseApiResponse<MockApplyFromJobPosting>(
+    response,
+    fallbackMessage,
+  );
+
+  notifyMockApplyChanged();
+  return result;
 }
 
-export function createMockApplyFromJobPosting(jobPostingId: number) {
+export function createMockApplyFromJobPosting(
+  payload: MockApplyFromJobPostingPayload,
+) {
   return postMockApplyFromJobPosting(
     "/api/mock-applies/mock/from-job-posting",
-    jobPostingId,
+    payload,
     "모의 서류 지원 생성에 실패했습니다.",
   );
 }
 
-export function createActualApplyFromJobPosting(jobPostingId: number) {
+export function createActualApplyFromJobPosting(
+  payload: MockApplyFromJobPostingPayload,
+) {
   return postMockApplyFromJobPosting(
     "/api/mock-applies/actual",
-    jobPostingId,
+    payload,
     "실제 공고 기반 서류 지원 생성에 실패했습니다.",
   );
 }
@@ -107,13 +133,15 @@ export function createActualApplyFromJobPosting(jobPostingId: number) {
 export function createApplyFromJobPosting({
   jobPostingId,
   applyType,
+  sequence,
 }: {
   jobPostingId: number;
   applyType: JobPostingApplyType;
+  sequence?: number;
 }) {
   return applyType === "MOCK"
-    ? createMockApplyFromJobPosting(jobPostingId)
-    : createActualApplyFromJobPosting(jobPostingId);
+    ? createMockApplyFromJobPosting({ jobPostingId, sequence })
+    : createActualApplyFromJobPosting({ jobPostingId, sequence });
 }
 
 export async function fetchMyMockApplies({
@@ -137,8 +165,58 @@ export async function fetchMyMockApplies({
 
   return {
     inProgress: result.inProgress ?? [],
-    completed: result.completed ?? { content: [] },
+    completed: result.completed ?? {
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      size: 0,
+      number: 0,
+    },
   };
+}
+
+export async function deleteMockApply(mockApplyId: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    },
+  );
+  const result = await parseApiResponseAllowNull<unknown>(
+    response,
+    "모의 서류 지원 삭제에 실패했습니다.",
+  );
+
+  removeMockApplyResumeRecord(mockApplyId);
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent<number>(MOCK_APPLY_DELETED_EVENT, {
+        detail: mockApplyId,
+      }),
+    );
+  }
+  notifyMockApplyChanged();
+
+  return result;
+}
+
+export async function fetchMockApplyJobPosting(
+  mockApplyId: number,
+): Promise<SavedJobPosting> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/mock-applies/${mockApplyId}/job-posting`,
+    {
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    },
+  );
+
+  return parseApiResponse<SavedJobPosting>(
+    response,
+    "연결된 채용 공고를 불러오지 못했습니다.",
+  );
 }
 
 export function saveSelectedApplyType(applyType: JobPostingApplyType) {
@@ -232,6 +310,26 @@ export function saveMockApplyResumeRecord({
   );
 }
 
+export function removeMockApplyResumeRecord(mockApplyId: number) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const nextRecords = getMockApplyResumeRecords().filter(
+    (record) => record.mockApplyId !== mockApplyId,
+  );
+
+  if (nextRecords.length === 0) {
+    window.localStorage.removeItem(MOCK_APPLY_RESUME_STORAGE_KEY);
+    return;
+  }
+
+  window.localStorage.setItem(
+    MOCK_APPLY_RESUME_STORAGE_KEY,
+    JSON.stringify(nextRecords),
+  );
+}
+
 export function updateMockApplyResumeStatus(
   mockApplyId: number,
   status: MockApplyProgressStatus,
@@ -255,19 +353,45 @@ export function updateMockApplyResumeStatus(
   });
 }
 
-export async function retryMockApply(
+export function retryMockApply(
   mockApplyId: number,
 ): Promise<MockApplyRetryResult> {
-  const response = await fetch(
+  const ongoingRequest = retryMockApplyRequests.get(mockApplyId);
+  if (ongoingRequest) {
+    return ongoingRequest;
+  }
+
+  const request = fetch(
     `${API_BASE_URL}/api/mock-applies/${mockApplyId}/retry`,
     {
       method: "POST",
       headers: getAuthHeaders(),
     },
+  )
+    .then((response) =>
+      parseApiResponse<MockApplyRetryResult>(
+        response,
+        "재도전 모의 서류 지원 생성에 실패했습니다.",
+      ),
+    )
+    .then((result) => {
+      notifyMockApplyChanged();
+      return result;
+    });
+
+  retryMockApplyRequests.set(mockApplyId, request);
+  void request.then(
+    () => {
+      if (retryMockApplyRequests.get(mockApplyId) === request) {
+        retryMockApplyRequests.delete(mockApplyId);
+      }
+    },
+    () => {
+      if (retryMockApplyRequests.get(mockApplyId) === request) {
+        retryMockApplyRequests.delete(mockApplyId);
+      }
+    },
   );
 
-  return parseApiResponse<MockApplyRetryResult>(
-    response,
-    "재도전 모의 서류 지원 생성에 실패했습니다.",
-  );
+  return request;
 }

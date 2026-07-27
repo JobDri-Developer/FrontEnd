@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
 import { ModalNotice } from "@/components/common/modal";
 import {
@@ -286,16 +286,33 @@ export default function ResumeAnalysisLoadingPageClient({
 
       {errorMessage && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
-          <ModalNotice
-            type="notice"
-            title="나중에 다시 시도해주세요."
-            description={errorMessage}
-            onClose={moveBackToResume}
-            primaryAction={{
-              label: "확인",
-              onClick: moveBackToResume,
-            }}
-          />
+          {isError || !isValidMockApplyId ? (
+            <ModalNotice
+              type="alertModal"
+              title="나중에 다시 시도해주세요."
+              description={errorMessage}
+              onClose={moveBackToResume}
+              primaryAction={{
+                label: "확인",
+                onClick: moveBackToResume,
+              }}
+            />
+          ) : (
+            <ModalNotice
+              type="confirmation"
+              title="분석 결과를 불러오지 못했어요"
+              description={errorMessage}
+              onClose={moveBackToResume}
+              secondaryAction={{
+                label: "자소서로 돌아가기",
+                onClick: moveBackToResume,
+              }}
+              primaryAction={{
+                label: "다시 확인",
+                onClick: handleRetry,
+              }}
+            />
+          )}
         </div>
       )}
     </>

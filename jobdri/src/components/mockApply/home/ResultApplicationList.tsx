@@ -7,6 +7,7 @@ import type { ApplicationCardData } from "./types";
 
 interface ResultApplicationListProps {
   applications: ApplicationCardData[];
+  isRetrying?: boolean;
   onDelete: (application: ApplicationCardData) => void;
   onRetry: (application: ApplicationCardData) => void;
   onResume: (application: ApplicationCardData) => void;
@@ -14,6 +15,7 @@ interface ResultApplicationListProps {
 
 export default function ResultApplicationList({
   applications,
+  isRetrying = false,
   onDelete,
   onRetry,
   onResume,
@@ -51,6 +53,7 @@ export default function ResultApplicationList({
           <ResultApplicationCard
             key={application.id}
             {...application}
+            isRetryDisabled={isRetrying}
             onDeleteClick={() => onDelete(application)}
             onRetryClick={() => onRetry(application)}
             onResumeClick={() => onResume(application)}

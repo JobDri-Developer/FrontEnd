@@ -494,7 +494,7 @@ export default function JobPostingReviewPage() {
       {showBackConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            type="confirmationModal"
+            type="confirmation"
             title="공고 입력으로 돌아갈까요?"
             description="공고 확인에서 수정한 내용은 저장되지 않아요."
             onClose={() => setShowBackConfirm(false)}
@@ -514,7 +514,7 @@ export default function JobPostingReviewPage() {
       {showHomeConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            type="confirmationModal"
+            type="confirmation"
             title="페이지를 나가시겠어요?"
             description="자동 저장 이후 작성된 내용은 저장되지 않아요."
             onClose={() => setShowHomeConfirm(false)}
@@ -533,7 +533,7 @@ export default function JobPostingReviewPage() {
       {saveErrorMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
           <ModalNotice
-            type="noticeModal"
+            type="alertModal"
             title="공고를 저장하지 못했습니다."
             description={saveErrorMessage}
             onClose={() => setSaveErrorMessage("")}

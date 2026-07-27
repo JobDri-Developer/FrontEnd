@@ -8,6 +8,7 @@ import Lnb from "@/components/common/lnb/Lnb";
 import ResultDraftList from "@/components/mockApply/home/ResultDraftList";
 import ResultApplicationList from "@/components/mockApply/home/ResultApplicationList";
 import {
+  deleteMockApply,
   fetchMyMockApplies,
   saveSelectedApplyType,
 } from "@/lib/api/mockApplies";
@@ -17,8 +18,8 @@ import {
   fetchMyJobPostings,
 } from "@/lib/api/jobPostings";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
-import { formatDate, formatRelativeDate } from "@/utils/date";
-import {
+import { formatRelativeDate } from "@/utils/date";
+import type {
   DraftData,
   ApplicationCardData,
 } from "@/components/mockApply/home/types";
@@ -27,7 +28,7 @@ import { mapMockApplyToApplication } from "@/components/mockApply/home/applicati
 
 export default function Home() {
   const router = useRouter();
-  const { reApply } = useReApply();
+  const { reApply, isSaving: isRetrying } = useReApply();
   const [drafts, setDrafts] = useState<DraftData[]>([]);
   const [results, setResults] = useState<ApplicationCardData[]>([]);
 
@@ -146,10 +147,23 @@ export default function Home() {
     }
   };
 
+  const deleteApplication = async (mockApplyId: number) => {
+    try {
+      await deleteMockApply(mockApplyId);
+      setDrafts((current) =>
+        current.filter((draft) => draft.mockApplyId !== mockApplyId),
+      );
+      setResults((current) =>
+        current.filter((result) => result.mockApplyId !== mockApplyId),
+      );
+    } catch (error) {
+      console.error("모의 서류 지원을 삭제하지 못했습니다.", error);
+    }
+  };
   return (
-    <div className="flex min-h-screen w-full bg-[#F5F6F9] overflow-x-hidden ">
-      <Lnb className="shrink-0 z-50" />
-      <div className="z-10 flex min-w-0 h-screen flex-1 flex-col self-stretch relative mx-auto items-center">
+    <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
+      <Lnb className="z-50 shrink-0" />
+      <div className="relative z-10 mx-auto flex h-full min-h-0 min-w-0 flex-1 flex-col items-center overflow-x-hidden overflow-y-auto">
         <main className="flex-1 w-full max-w-[1320px] min-w-[912px] px-18 pt-12 pb-60">
           <div className="flex items-start justify-between mb-16">
             <div className="flex flex-col gap-2">
@@ -207,9 +221,13 @@ export default function Home() {
 
                 switch (targetDraft.currentStep) {
                   case 1:
-                  case 2:
                     router.push(
                       `/mockApply/job/${targetDraft.jobPostingId}/review`,
+                    );
+                    break;
+                  case 2:
+                    router.push(
+                      `/mockApply/${targetDraft.mockApplyId}?jobPostingId=${targetDraft.jobPostingId}`,
                     );
                     break;
                   case 3:
@@ -224,7 +242,11 @@ export default function Home() {
               onDelete={(id) => {
                 const targetDraft = drafts.find((draft) => draft.id === id);
 
-                if (targetDraft) {
+                if (!targetDraft) return;
+
+                if (typeof targetDraft.mockApplyId === "number") {
+                  void deleteApplication(targetDraft.mockApplyId);
+                } else {
                   void deletePosting(targetDraft.jobPostingId);
                 }
               }}
@@ -233,7 +255,8 @@ export default function Home() {
             {/* 분석 완료 섹션 */}
             <ResultApplicationList
               applications={results}
-              onDelete={(app) => void deletePosting(app.jobPostingId)}
+              isRetrying={isRetrying}
+              onDelete={(app) => void deleteApplication(app.mockApplyId)}
               onRetry={(app) => void reApply(app.mockApplyId)}
               onResume={(app) => {
                 router.push(

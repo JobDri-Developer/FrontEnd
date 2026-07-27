@@ -5,7 +5,7 @@ import Header from "@/components/common/header/Header";
 import CtaFooter from "@/components/common/cta/CtaFooter";
 import { fetchSequence } from "@/lib/api/result";
 import { LEAVE_MODAL_CONFIG } from "@/constants/modalConfig";
-import { ModalCard } from "./modal/ModalCard";
+import { ModalNotice } from "./modal";
 import { type IconType } from "@/components/common/icons/Icon"; // 👈 아이콘 타입 임포트 추가
 
 interface MockApplyTemplateProps {
@@ -108,13 +108,19 @@ export default function MockApplyTemplate({
 
       {showHomeConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
-          <ModalCard
+          <ModalNotice
+            type="confirmation"
             title={customHomeModal.title}
             description={customHomeModal.description}
-            secondaryBtn={customHomeModal.secondaryBtn}
-            primaryBtn={customHomeModal.primaryBtn}
-            onSecondaryClick={handleHomeLeave}
-            onPrimaryClick={() => setShowHomeConfirm(false)}
+            onClose={() => setShowHomeConfirm(false)}
+            secondaryAction={{
+              label: customHomeModal.secondaryBtn,
+              onClick: handleHomeLeave,
+            }}
+            primaryAction={{
+              label: customHomeModal.primaryBtn,
+              onClick: () => setShowHomeConfirm(false),
+            }}
           />
         </div>
       )}
