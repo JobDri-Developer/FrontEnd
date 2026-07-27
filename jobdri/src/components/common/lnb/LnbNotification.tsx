@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
@@ -170,16 +171,71 @@ export function LnbNotificationButton({
   onReadItem?: (id: string) => void;
 }) {
   const notificationMenuRef = useRef<HTMLSpanElement>(null);
+  const notificationPanelRef = useRef<HTMLDivElement>(null);
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState<{
+    left: number;
+    top: number;
+  } | null>(null);
   const hasUnreadNotification =
     hasNotification ||
     notificationItems.some((notificationItem) => !notificationItem.read);
 
-  useOutsideClick(
-    notificationMenuRef,
-    () => setIsNotificationPanelOpen(false),
-    isNotificationPanelOpen,
-  );
+  const updatePanelPosition = useCallback(() => {
+    const notificationButton = notificationMenuRef.current;
+
+    if (!notificationButton) return;
+
+    const buttonRect = notificationButton.getBoundingClientRect();
+    const panelWidth = 460;
+    const panelHeight = 360;
+    const panelGap = 14;
+    const viewportGap = 12;
+
+    setPanelPosition({
+      left: Math.max(
+        viewportGap,
+        Math.min(
+          buttonRect.right + panelGap,
+          window.innerWidth - panelWidth - viewportGap,
+        ),
+      ),
+      top: Math.max(
+        viewportGap,
+        Math.min(
+          buttonRect.bottom - panelHeight,
+          window.innerHeight - panelHeight - viewportGap,
+        ),
+      ),
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isNotificationPanelOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (
+        target instanceof Node &&
+        !notificationMenuRef.current?.contains(target) &&
+        !notificationPanelRef.current?.contains(target)
+      ) {
+        setIsNotificationPanelOpen(false);
+      }
+    };
+
+    updatePanelPosition();
+    document.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("resize", updatePanelPosition);
+    window.addEventListener("scroll", updatePanelPosition, true);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("resize", updatePanelPosition);
+      window.removeEventListener("scroll", updatePanelPosition, true);
+    };
+  }, [isNotificationPanelOpen, updatePanelPosition]);
 
   return (
     <span
@@ -195,9 +251,10 @@ export function LnbNotificationButton({
         aria-expanded={isNotificationPanelOpen}
         aria-haspopup="dialog"
         onClick={() => {
+          if (!isNotificationPanelOpen) {
+            updatePanelPosition();
+          }
           setIsNotificationPanelOpen((prev) => !prev);
-          // (선택 사항) 패널을 열 때마다 최신 알림을 다시 불러오고 싶다면 여기에 추가
-          // if (!isNotificationPanelOpen) { fetchNotifications(); }
         }}
       />
 
@@ -208,14 +265,25 @@ export function LnbNotificationButton({
         />
       )}
 
-      {isNotificationPanelOpen && (
-        <LnbNotificationPanel
-          notificationItems={notificationItems}
-          onMarkAllRead={onMarkAllRead}
-          onReadItem={onReadItem}
-          className="absolute bottom-0 left-[38px] z-[80]"
-        />
-      )}
+      {isNotificationPanelOpen &&
+        panelPosition &&
+        createPortal(
+          <div
+            ref={notificationPanelRef}
+            className="fixed z-[200]"
+            style={{
+              left: panelPosition.left,
+              top: panelPosition.top,
+            }}
+          >
+            <LnbNotificationPanel
+              notificationItems={notificationItems}
+              onMarkAllRead={onMarkAllRead}
+              onReadItem={onReadItem}
+            />
+          </div>,
+          document.body,
+        )}
     </span>
   );
 }
