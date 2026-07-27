@@ -85,9 +85,6 @@ function CreditContent() {
             price={plan.price.toLocaleString()}
             planCode={plan.planCode}
             discountRate={calcDiscountRate(plan, basePricePerUnit)}
-            discountLabel={
-              calcDiscountRate(plan, basePricePerUnit) ? "할인" : ""
-            }
           />
         ))}
       </section>
