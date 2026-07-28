@@ -32,6 +32,17 @@ const loadingStatusMessages = [
 
 type LoadingStepStatus = "done" | "active" | "pending";
 
+interface InvalidField {
+  message?: string;
+  [key: string]: unknown;
+}
+
+interface ParsedError {
+  message?: string;
+  invalidFields?: InvalidField[];
+  [key: string]: unknown;
+}
+
 function createRandomLoadingDurationMs() {
   return (
     MIN_LOADING_DURATION_MS +
@@ -134,14 +145,93 @@ export default function JobPostingLoadingPage() {
         : undefined;
 
       if (!rawText && !imageObjectKey) {
-        throw new Error("분석할 채용 공고가 없습니다.");
+        throw new Error(JSON.stringify(["분석할 채용 공고가 없습니다."]));
       }
 
       const accepted = await ingestJobPosting({ rawText, imageObjectKey });
-      const status = await waitForJobPostingIngest(accepted.taskId);
+
+      let status;
+      try {
+        status = await waitForJobPostingIngest(accepted.taskId);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          try {
+            const parsedStatus = JSON.parse(err.message);
+            if (
+              parsedStatus &&
+              (parsedStatus.error ||
+                parsedStatus.failureReason ||
+                parsedStatus.status === "FAILED")
+            ) {
+              status = parsedStatus;
+            } else {
+              throw err;
+            }
+          } catch {
+            throw err;
+          }
+        } else {
+          throw err;
+        }
+      }
+
+      if (
+        status &&
+        (status.status === "FAILED" || status.error || status.failureReason)
+      ) {
+        const errorMessages: string[] = [];
+        const rawErrorData =
+          status.error || status.failureReason || status.message;
+
+        let parsedError: ParsedError | null = null;
+
+        if (rawErrorData) {
+          if (typeof rawErrorData === "object") {
+            parsedError = rawErrorData as ParsedError;
+          } else if (typeof rawErrorData === "string") {
+            try {
+              parsedError = JSON.parse(rawErrorData) as ParsedError;
+            } catch {
+              try {
+                const fixedJsonStr = rawErrorData.replace(/'/g, '"');
+                parsedError = JSON.parse(fixedJsonStr) as ParsedError;
+              } catch {
+                errorMessages.push(rawErrorData);
+              }
+            }
+          }
+        }
+
+        if (parsedError) {
+          if (
+            Array.isArray(parsedError.invalidFields) &&
+            parsedError.invalidFields.length > 0
+          ) {
+            parsedError.invalidFields.forEach((field: InvalidField) => {
+              if (field.message) {
+                errorMessages.push(field.message);
+              }
+            });
+          }
+
+          if (errorMessages.length === 0 && parsedError.message) {
+            errorMessages.push(parsedError.message);
+          }
+        }
+
+        if (errorMessages.length === 0) {
+          errorMessages.push(
+            status.message || "채용 공고 분석에 실패했습니다.",
+          );
+        }
+
+        throw new Error(JSON.stringify(errorMessages));
+      }
 
       if (!status.result) {
-        throw new Error("채용 공고 분석 결과를 확인할 수 없습니다.");
+        throw new Error(
+          JSON.stringify(["채용 공고 분석 결과를 확인할 수 없습니다."]),
+        );
       }
 
       saveJobPostingAnalysis(status.result);
@@ -149,7 +239,6 @@ export default function JobPostingLoadingPage() {
       const resultJobPostingId = status.result.saved?.jobPostingId;
       const isSavedToDb = status.result.savedToDatabase ?? true;
 
-      // ID가 존재하고 DB 저장이 정상적으로 완료되었을 때만 리뷰 페이지로 이동
       return resultJobPostingId && isSavedToDb
         ? `/mockApply/job/${resultJobPostingId}/review`
         : "/mockApply/job/create?analysisError=not_saved";
@@ -157,16 +246,28 @@ export default function JobPostingLoadingPage() {
 
     if (!analysisPromiseRef.current) {
       analysisPromiseRef.current = analyzeJobPosting().catch((error) => {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "채용 공고 분석에 실패했습니다.";
+        let params = "";
+        try {
+          const rawMessage = error instanceof Error ? error.message : "";
 
-        return `/mockApply/job/create?analysisError=${encodeURIComponent(message)}`;
+          if (rawMessage.startsWith("[") && rawMessage.endsWith("]")) {
+            const messages = JSON.parse(rawMessage) as string[];
+            if (messages.length > 0) {
+              params = messages
+                .map((msg) => `analysisError=${encodeURIComponent(msg)}`)
+                .join("&");
+            }
+          } else {
+            params = `analysisError=${encodeURIComponent(rawMessage || "채용 공고 분석에 실패했습니다.")}`;
+          }
+        } catch {
+          params = `analysisError=${encodeURIComponent("채용 공고 분석에 실패했습니다.")}`;
+        }
+        return `/mockApply/job/create?${params}`;
       });
     }
 
-    void analysisPromiseRef.current.then((destination) => {
+    void analysisPromiseRef.current?.then((destination) => {
       if (isActive) {
         router.replace(destination);
       }

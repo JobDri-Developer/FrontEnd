@@ -455,17 +455,17 @@ export async function waitForJobPostingIngest(
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const status = await fetchJobPostingIngestStatus(taskId);
 
-    if (status.result) {
-      return status;
+    if (
+      status.error ||
+      status.failureReason ||
+      isFailedStatus(status.status) ||
+      status.status === "FAILED"
+    ) {
+      throw new Error(JSON.stringify(status));
     }
 
-    if (status.error || status.failureReason || isFailedStatus(status.status)) {
-      throw new Error(
-        status.failureReason ||
-          status.error ||
-          status.message ||
-          "채용 공고 처리에 실패했습니다.",
-      );
+    if (status.result) {
+      return status;
     }
 
     if (isCompletedStatus(status.status)) {
@@ -477,5 +477,7 @@ export async function waitForJobPostingIngest(
     await delay(intervalMs);
   }
 
-  throw new Error("채용 공고 처리 시간이 초과되었습니다.");
+  throw new Error(
+    JSON.stringify({ failureReason: "채용 공고 처리 시간이 초과되었습니다." }),
+  );
 }

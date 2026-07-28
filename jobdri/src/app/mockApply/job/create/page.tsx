@@ -86,9 +86,7 @@ export default function JobPostingCreatePage() {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showInvalidDataModal, setShowInvalidDataModal] = useState(false);
 
-  const [jobPostingToastMessage, setJobPostingToastMessage] = useState<
-    string | null
-  >(null);
+  const [toastMessages, setToastMessages] = useState<string[]>([]);
 
   const inputContainerRef = useRef<HTMLDivElement>(null);
 
@@ -114,43 +112,55 @@ export default function JobPostingCreatePage() {
     };
   }, [jobPostingInputValue, attachedFiles]); // 의존성 배열에 상태 추가
 
+  // ✅ 교체할 부분: URL에서 여러 개의 에러를 가져오도록 useEffect 수정
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
-    const analysisError = searchParams.get("analysisError");
 
-    if (analysisError === "not_saved") {
+    // getAll을 사용하여 배열 형태로 모두 가져옵니다
+    const analysisErrors = searchParams.getAll("analysisError");
+    const isCanceled = searchParams.get("analysisCanceled");
+
+    if (analysisErrors.includes("not_saved")) {
       const modalTimer = window.setTimeout(() => {
         setShowInvalidDataModal(true);
         window.history.replaceState(null, "", window.location.pathname);
       }, 0);
-
       return () => window.clearTimeout(modalTimer);
     }
 
-    const toastMessage =
-      searchParams.get("analysisCanceled") === "1"
-        ? "공고 분석을 중단했습니다."
-        : analysisError === "1"
-          ? "업로드에 실패했습니다."
-          : analysisError;
+    const nextToastMessages: string[] = [];
 
-    if (!toastMessage) {
+    if (isCanceled === "1") {
+      nextToastMessages.push("공고 분석을 중단했습니다.");
+    }
+
+    analysisErrors.forEach((err) => {
+      if (err === "1") nextToastMessages.push("업로드에 실패했습니다.");
+      else if (err !== "not_saved") nextToastMessages.push(err);
+    });
+
+    if (nextToastMessages.length === 0) {
       return;
     }
 
     const openToastTimer = window.setTimeout(() => {
-      setJobPostingToastMessage(toastMessage);
+      setToastMessages(nextToastMessages);
       window.history.replaceState(null, "", window.location.pathname);
     }, 0);
+
     const toastTimer = window.setTimeout(() => {
-      setJobPostingToastMessage(null);
-    }, 3000);
+      setToastMessages([]);
+    }, 4000);
 
     return () => {
       window.clearTimeout(openToastTimer);
       window.clearTimeout(toastTimer);
     };
   }, []);
+
+  const removeToast = (indexToRemove: number) => {
+    setToastMessages((prev) => prev.filter((_, i) => i !== indexToRemove));
+  };
 
   const handleSubmit = () => {
     saveJobPostingDraft({
@@ -273,13 +283,18 @@ export default function JobPostingCreatePage() {
         </div>
       )}
 
-      {jobPostingToastMessage && (
-        <Toast
-          message={jobPostingToastMessage}
-          variant="warning"
-          onClose={() => setJobPostingToastMessage(null)}
-          className="!right-7 !bottom-7 !max-w-none !rounded-card"
-        />
+      {toastMessages.length > 0 && (
+        <div className="fixed bottom-7 right-7 z-50 flex flex-col gap-3">
+          {toastMessages.map((msg, index) => (
+            <Toast
+              key={index}
+              message={msg}
+              variant="warning"
+              onClose={() => removeToast(index)}
+              className="!static !max-w-none !rounded-card"
+            />
+          ))}
+        </div>
       )}
     </div>
   );
