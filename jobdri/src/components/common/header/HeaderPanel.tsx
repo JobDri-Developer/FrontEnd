@@ -25,7 +25,7 @@ const Step: React.FC<StepProps> = ({ step, state }) => {
   return (
     <div
       className={`flex items-center space-x-2 p-2 rounded-card-result ${
-        isActive ? "bg-fill-quaternary-assistive " : "bg-transparent"
+        isActive ? "bg-fill-quaternary-assistive" : "bg-transparent"
       }`}
     >
       {/* 숫자 또는 체크 아이콘 영역 */}

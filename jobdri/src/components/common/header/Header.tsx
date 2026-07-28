@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { Button } from "../buttons";
 import type { IconType } from "../icons/Icon";
+import { HeaderPanel } from "./HeaderPanel";
 
 interface HeaderActionProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -37,7 +38,7 @@ interface HeaderProps {
 }
 
 const defaultSteps: ProgressStep[] = [
-  { label: "JD 확인" },
+  { label: "공고 확인" },
   { label: "자소서 입력" },
   { label: "첨삭 결과" },
 ];
@@ -267,7 +268,7 @@ export default function Header({
           </div>
         </div>
       </div>
-
+      {/* 
       <div className="flex flex-1 items-center justify-center gap-2 px-10">
         <ol className="flex items-center gap-2">
           {steps.map((step, index) => {
@@ -304,6 +305,15 @@ export default function Header({
             );
           })}
         </ol>
+      </div> */}
+      <div className="flex flex-1 items-center justify-center gap-2 px-10">
+        <HeaderPanel
+          steps={steps.map((step, index) => ({
+            id: index + 1,
+            label: step.label,
+          }))}
+          currentStepId={activeStep}
+        />
       </div>
       <div className="flex flex-1 items-center justify-end gap-4">
         {lastSavedAt && (
