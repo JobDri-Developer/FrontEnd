@@ -47,11 +47,10 @@ function createImagePreviewState(
   };
 }
 
-export interface LLMInputProps
-  extends Omit<
-    TextareaHTMLAttributes<HTMLTextAreaElement>,
-    "className" | "defaultValue" | "onChange" | "onSubmit" | "value"
-  > {
+export interface LLMInputProps extends Omit<
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
+  "className" | "defaultValue" | "onChange" | "onSubmit" | "value"
+> {
   value?: string;
   defaultValue?: string;
   defaultFiles?: File[];
@@ -94,9 +93,9 @@ export function LLMInput({
   const rootRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imagePreviewsRef = useRef<LLMInputImagePreviewState[]>([]);
-  const previewCleanupTimerRef = useRef<ReturnType<
-    typeof setTimeout
-  > | null>(null);
+  const previewCleanupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const imageLimitToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -251,17 +250,27 @@ export function LLMInput({
     const imageFiles = incomingFiles.filter((file) =>
       file.type.startsWith("image/"),
     );
-    const remainingImageCount = Math.max(maxImages - imagePreviews.length, 0);
-    const files = imageFiles.slice(0, remainingImageCount);
 
+    // 중복 방지 로직
+    const uniqueFiles = imageFiles.filter(
+      (newFile) =>
+        !imagePreviews.some(
+          (preview) =>
+            preview.file.name === newFile.name &&
+            preview.file.size === newFile.size,
+        ),
+    );
+
+    const remainingImageCount = Math.max(maxImages - imagePreviews.length, 0);
+    const files = uniqueFiles.slice(0, remainingImageCount);
     if (files.length === 0) {
-      if (imageFiles.length > 0 && hasReachedMaxImages) {
+      if (incomingFiles.length > 0 && hasReachedMaxImages) {
         openImageLimitToast();
       }
       return;
     }
 
-    if (imageFiles.length > files.length) {
+    if (uniqueFiles.length > files.length) {
       openImageLimitToast();
     }
 
@@ -315,7 +324,10 @@ export function LLMInput({
   const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
     const nextTarget = event.relatedTarget;
 
-    if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
+    if (
+      nextTarget instanceof Node &&
+      event.currentTarget.contains(nextTarget)
+    ) {
       return;
     }
 
@@ -343,7 +355,9 @@ export function LLMInput({
   const handleImageLoad = (id: string) => {
     setImagePreviews((currentImagePreviews) =>
       currentImagePreviews.map((imagePreview) =>
-        imagePreview.id === id ? { ...imagePreview, loaded: true } : imagePreview,
+        imagePreview.id === id
+          ? { ...imagePreview, loaded: true }
+          : imagePreview,
       ),
     );
   };

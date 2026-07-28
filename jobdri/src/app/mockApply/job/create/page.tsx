@@ -98,7 +98,13 @@ export default function JobPostingCreatePage() {
         inputContainerRef.current &&
         !inputContainerRef.current.contains(event.target as Node)
       ) {
-        setIsInputActive(false);
+        const hasInput =
+          jobPostingInputValue.trim().length > 0 || attachedFiles.length > 0;
+
+        // 아무것도 입력되지 않았을 때만 원래대로 돌아감
+        if (!hasInput) {
+          setIsInputActive(false);
+        }
       }
     }
 
@@ -106,7 +112,7 @@ export default function JobPostingCreatePage() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [jobPostingInputValue, attachedFiles]); // 의존성 배열에 상태 추가
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -190,9 +196,7 @@ export default function JobPostingCreatePage() {
       />
 
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center self-stretch px-2 pb-2">
-        {/* 컨테이너의 flex를 활용해 중앙 기준을 잡고 내부 요소들을 translate로 상하 이동시킵니다. */}
         <main className="relative flex h-full min-h-0 w-full flex-col items-center justify-center overflow-hidden rounded-card-l bg-fill-quaternary-assistive">
-          {/* 1. 타이틀 + 인풋 영역 (활성화 시 중앙으로 이동) */}
           <section
             ref={inputContainerRef}
             className={clsx(
@@ -220,7 +224,6 @@ export default function JobPostingCreatePage() {
             />
           </section>
 
-          {/* 2. 카드 영역 (활성화 시 투명해지며 사라짐) */}
           <section
             className={clsx(
               "absolute left-1/2 top-1/2 z-0 flex w-max -translate-x-1/2 items-start gap-5 transition-all duration-350 ease-in-out",
