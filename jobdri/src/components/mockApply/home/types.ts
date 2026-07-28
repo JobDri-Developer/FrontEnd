@@ -28,5 +28,6 @@ export interface DraftData {
   position: string;
   currentStep: number;
   updatedAt: string;
+  createdAtTime?: number;
   // logoUrl?: string; // 실제 API에서는 로고 이미지 URL을 받을 수 있습니다.
 }

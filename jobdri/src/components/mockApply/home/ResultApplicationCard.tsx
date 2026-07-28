@@ -57,7 +57,7 @@ export function ResultApplicationCard({
     if (isRetryDisabled) return;
 
     setIsMenuOpen(false);
-    onRetryClick?.(); // 부모로부터 받은 다시하기 함수 실행
+    onRetryClick?.(); // 부모로부터 받은 재도전하기 함수 실행
   };
 
   return (
@@ -124,8 +124,10 @@ export function ResultApplicationCard({
       <div className="flex items-end justify-between self-stretch mt-6">
         <p className="text-cap12-med text-text-neutral-caption">{createdAt}</p>
         <div className="flex flex-row justify-center items-end gap-0.5">
-          <p className="text-h24-bold">{score}</p>
-          <p className="text-label14-semibold">점</p>
+          <p className="text-h24-bold text-text-neutral-title">{score}</p>
+          <div className="flex items-center pb-0.5">
+            <p className="text-label14-semibold">점</p>
+          </div>
           <Icon type="CHEVRON_R" className="text-icon-neutral-default" />
         </div>
       </div>

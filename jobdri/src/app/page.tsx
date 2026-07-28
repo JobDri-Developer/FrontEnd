@@ -56,7 +56,7 @@ export default function Home() {
         );
 
         // 🌟 작성 중인 모의지원(Drafts) 매핑
-        const mappedDrafts = inProgressList.map((item) => {
+        const mappedDrafts: DraftData[] = inProgressList.map((item) => {
           const jobPosting = jobPostingById.get(item.jobPostingId);
 
           return {
@@ -76,6 +76,9 @@ export default function Home() {
             updatedAt: item.createdAt
               ? formatRelativeDate(item.createdAt)
               : "-",
+            createdAtTime: item.createdAt
+              ? new Date(item.createdAt).getTime()
+              : 0,
           };
         });
 
@@ -86,7 +89,7 @@ export default function Home() {
         );
 
         // 🌟 순수 채용 공고(Drafts) 매핑
-        const savedOnlyDrafts = jobPostings
+        const savedOnlyDrafts: DraftData[] = jobPostings
           .filter(
             (jobPosting) => !linkedJobPostingIds.has(jobPosting.jobPostingId),
           )
@@ -103,6 +106,9 @@ export default function Home() {
             updatedAt: jobPosting.createdAt
               ? formatRelativeDate(jobPosting.createdAt)
               : "-",
+            createdAtTime: jobPosting.createdAt
+              ? new Date(jobPosting.createdAt).getTime()
+              : 0,
           }));
 
         const mappedResults = completedList.map((item) => {
@@ -124,7 +130,23 @@ export default function Home() {
           return cardData;
         });
 
-        setDrafts([...savedOnlyDrafts, ...mappedDrafts]);
+        const sortedDrafts = [...savedOnlyDrafts, ...mappedDrafts].sort(
+          (a, b) => {
+            const timeDifference =
+              (b.createdAtTime ?? 0) - (a.createdAtTime ?? 0);
+
+            if (timeDifference !== 0) {
+              return timeDifference;
+            }
+
+            return (
+              (b.mockApplyId ?? b.jobPostingId) -
+              (a.mockApplyId ?? a.jobPostingId)
+            );
+          },
+        );
+
+        setDrafts(sortedDrafts);
         setResults(mappedResults);
       } catch (error) {
         console.error("데이터를 불러오는데 실패했습니다.", error);
