@@ -36,9 +36,9 @@ const containerFlexStyles: Record<TooltipPlacement, string> = {
 };
 
 const arrowSpacingStyles: Record<TooltipPlacement, string> = {
-  up_left: "ml-[20px] -mb-[1px]",
-  up_mid: "-mb-[1px]",
-  up_right: "mr-[20px] -mb-[1px]",
+  up_left: "ml-[20px] -mb-[2px]",
+  up_mid: "-mb-[2px]",
+  up_right: "mr-[20px] -mb-[2px]",
 
   down_left: "ml-[20px] -mt-[2px]",
   down_mid: "-mt-[2px]",
