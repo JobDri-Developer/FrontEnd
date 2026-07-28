@@ -47,116 +47,116 @@ export const navItems: LnbNavItem[] = [
   },
 ];
 
-export const defaultRecentItems: LnbRecentItem[] = [
-  {
-    id: "toss-product-designer",
-    companyName: "토스",
-    jobTitle: "프로덕트 디자이너",
-    version: 1,
-  },
-  {
-    id: "kakao-ux-researcher",
-    companyName: "카카오",
-    jobTitle: "UX 리서처",
-    version: 1,
-  },
-  {
-    id: "naver-ui-designer",
-    companyName: "네이버",
-    jobTitle: "UI 디자이너",
-    version: 1,
-  },
-  {
-    id: "sandbox-grading-criteria-refinement",
-    companyName: "SK하이닉스",
-    jobTitle: "채점 평가 요소 고도화 및 결과 리포트 개선",
-    version: 2,
-  },
-  {
-    id: "coupang-mobile-designer",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너",
-    version: 6,
-  },
-  {
-    id: "coupang-contract-interview-5",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너 계약직 인턴십",
-    version: 5,
-  },
-  {
-    id: "coupang-contract-interview-4",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너 계약직 인턴십",
-    version: 4,
-  },
-  {
-    id: "coupang-contract-interview-3",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너 계약직 인턴십",
-    version: 3,
-  },
-  {
-    id: "coupang-contract-interview-2",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너 계약직 인턴십",
-    version: 2,
-  },
-  {
-    id: "coupang-contract-interview-1",
-    companyName: "쿠팡",
-    jobTitle: "모바일 디자이너 계약직 인턴십",
-    version: 1,
-  },
-  {
-    id: "line-product-manager",
-    companyName: "라인",
-    jobTitle: "프로덕트 매니저",
-    version: 3,
-  },
-  {
-    id: "baemin-brand-designer",
-    companyName: "배달의민족",
-    jobTitle: "브랜드 디자이너",
-    version: 2,
-  },
-  {
-    id: "danggeun-content-marketer",
-    companyName: "당근",
-    jobTitle: "콘텐츠 마케터",
-    version: 1,
-  },
-  {
-    id: "hyundai-data-analyst",
-    companyName: "현대자동차",
-    jobTitle: "서비스 데이터 분석가",
-    version: 4,
-  },
-  {
-    id: "musinsa-product-designer",
-    companyName: "무신사",
-    jobTitle: "커머스 프로덕트 디자이너",
-    version: 2,
-  },
-  {
-    id: "zigbang-frontend-engineer",
-    companyName: "직방",
-    jobTitle: "프론트엔드 엔지니어",
-    version: 5,
-  },
-  {
-    id: "bucketplace-ux-writer",
-    companyName: "오늘의집",
-    jobTitle: "UX 라이터",
-    version: 1,
-  },
-  {
-    id: "yanolja-growth-manager",
-    companyName: "야놀자",
-    jobTitle: "그로스 매니저",
-    version: 2,
-  },
-];
+// export const defaultRecentItems: LnbRecentItem[] = [
+//   {
+//     id: "toss-product-designer",
+//     companyName: "토스",
+//     jobTitle: "프로덕트 디자이너",
+//     version: 1,
+//   },
+//   {
+//     id: "kakao-ux-researcher",
+//     companyName: "카카오",
+//     jobTitle: "UX 리서처",
+//     version: 1,
+//   },
+//   {
+//     id: "naver-ui-designer",
+//     companyName: "네이버",
+//     jobTitle: "UI 디자이너",
+//     version: 1,
+//   },
+//   {
+//     id: "sandbox-grading-criteria-refinement",
+//     companyName: "SK하이닉스",
+//     jobTitle: "채점 평가 요소 고도화 및 결과 리포트 개선",
+//     version: 2,
+//   },
+//   {
+//     id: "coupang-mobile-designer",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너",
+//     version: 6,
+//   },
+//   {
+//     id: "coupang-contract-interview-5",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너 계약직 인턴십",
+//     version: 5,
+//   },
+//   {
+//     id: "coupang-contract-interview-4",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너 계약직 인턴십",
+//     version: 4,
+//   },
+//   {
+//     id: "coupang-contract-interview-3",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너 계약직 인턴십",
+//     version: 3,
+//   },
+//   {
+//     id: "coupang-contract-interview-2",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너 계약직 인턴십",
+//     version: 2,
+//   },
+//   {
+//     id: "coupang-contract-interview-1",
+//     companyName: "쿠팡",
+//     jobTitle: "모바일 디자이너 계약직 인턴십",
+//     version: 1,
+//   },
+//   {
+//     id: "line-product-manager",
+//     companyName: "라인",
+//     jobTitle: "프로덕트 매니저",
+//     version: 3,
+//   },
+//   {
+//     id: "baemin-brand-designer",
+//     companyName: "배달의민족",
+//     jobTitle: "브랜드 디자이너",
+//     version: 2,
+//   },
+//   {
+//     id: "danggeun-content-marketer",
+//     companyName: "당근",
+//     jobTitle: "콘텐츠 마케터",
+//     version: 1,
+//   },
+//   {
+//     id: "hyundai-data-analyst",
+//     companyName: "현대자동차",
+//     jobTitle: "서비스 데이터 분석가",
+//     version: 4,
+//   },
+//   {
+//     id: "musinsa-product-designer",
+//     companyName: "무신사",
+//     jobTitle: "커머스 프로덕트 디자이너",
+//     version: 2,
+//   },
+//   {
+//     id: "zigbang-frontend-engineer",
+//     companyName: "직방",
+//     jobTitle: "프론트엔드 엔지니어",
+//     version: 5,
+//   },
+//   {
+//     id: "bucketplace-ux-writer",
+//     companyName: "오늘의집",
+//     jobTitle: "UX 라이터",
+//     version: 1,
+//   },
+//   {
+//     id: "yanolja-growth-manager",
+//     companyName: "야놀자",
+//     jobTitle: "그로스 매니저",
+//     version: 2,
+//   },
+// ];
 
 export function LnbDivider() {
   return (
@@ -171,9 +171,14 @@ export function LnbDefaultHeader({
 }: {
   onToggleFold: () => void;
 }) {
+  const router = useRouter();
+
   return (
     <div className="flex items-center justify-between self-stretch py-5 pr-2 pl-1">
-      <span className="flex h-[30px] w-[100px] shrink-0 items-end justify-center">
+      <span
+        className="flex h-[30px] w-[100px] shrink-0 items-end justify-center cursor-pointer"
+        onClick={() => router.push("/")}
+      >
         <Logo aria-hidden="true" className="h-[30px] w-[100px]" />
       </span>
 
