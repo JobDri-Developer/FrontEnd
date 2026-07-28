@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState, useRef, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import { LLMInput } from "@/components/common/input";
@@ -90,6 +90,24 @@ export default function JobPostingCreatePage() {
     string | null
   >(null);
 
+  const inputContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: globalThis.MouseEvent) {
+      if (
+        inputContainerRef.current &&
+        !inputContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsInputActive(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const analysisError = searchParams.get("analysisError");
@@ -172,44 +190,49 @@ export default function JobPostingCreatePage() {
       />
 
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center self-stretch px-2 pb-2">
-        <main className="flex h-full min-h-0 flex-col items-center justify-start self-stretch overflow-hidden rounded-card-l bg-fill-quaternary-assistive">
-          <div
+        {/* 컨테이너의 flex를 활용해 중앙 기준을 잡고 내부 요소들을 translate로 상하 이동시킵니다. */}
+        <main className="relative flex h-full min-h-0 w-full flex-col items-center justify-center overflow-hidden rounded-card-l bg-fill-quaternary-assistive">
+          {/* 1. 타이틀 + 인풋 영역 (활성화 시 중앙으로 이동) */}
+          <section
+            ref={inputContainerRef}
             className={clsx(
-              "flex flex-1 flex-col items-center self-stretch",
-              isInputActive
-                ? "justify-center gap-0 -translate-y-[4dvh]"
-                : "justify-center gap-[6.6dvh] pb-[2dvh]",
+              "z-10 flex w-full flex-col items-center gap-[60px] transition-transform duration-500 ease-in-out",
+              isInputActive ? "translate-y-0" : "-translate-y-[140px]",
             )}
           >
-            <section className="flex flex-col items-center gap-[60px]">
-              <div className="flex flex-col items-center gap-2">
-                <h1 className="text-center text-h28-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-                  지원하고자하는 기업의 공고를 붙여넣으세요
-                </h1>
-                <p className="text-center text-b16-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-                  첨부한 내용을 바탕으로 모의 공고가 생성되고 내가 작성한
-                  자소서를 채점받을 수 있습니다.
-                </p>
-              </div>
+            <div className="flex flex-col items-center gap-2">
+              <h1 className="text-center text-h28-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+                지원하고자하는 기업의 공고를 붙여넣으세요
+              </h1>
+              <p className="text-center text-b16-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+                첨부한 내용을 바탕으로 모의 공고가 생성되고 내가 작성한 자소서를
+                채점받을 수 있습니다.
+              </p>
+            </div>
 
-              <LLMInput
-                value={jobPostingInputValue}
-                onChange={setJobPostingInputValue}
-                onFilesChange={setAttachedFiles}
-                onFocus={() => setIsInputActive(true)}
-                onSubmit={handleSubmit}
-                defaultFiles={initialDraft.files}
-              />
-            </section>
+            <LLMInput
+              value={jobPostingInputValue}
+              onChange={setJobPostingInputValue}
+              onFilesChange={setAttachedFiles}
+              onFocus={() => setIsInputActive(true)}
+              onSubmit={handleSubmit}
+              defaultFiles={initialDraft.files}
+            />
+          </section>
 
-            {!isInputActive && (
-              <section className="flex items-start gap-5">
-                {INTRO_STEPS.map((step) => (
-                  <JobPostingStepCard key={step.step} step={step} />
-                ))}
-              </section>
+          {/* 2. 카드 영역 (활성화 시 투명해지며 사라짐) */}
+          <section
+            className={clsx(
+              "absolute left-1/2 top-1/2 z-0 flex w-max -translate-x-1/2 items-start gap-5 transition-all duration-350 ease-in-out",
+              isInputActive
+                ? "pointer-events-none opacity-0 translate-y-20"
+                : "translate-y-10 opacity-100 ",
             )}
-          </div>
+          >
+            {INTRO_STEPS.map((step) => (
+              <JobPostingStepCard key={step.step} step={step} />
+            ))}
+          </section>
         </main>
       </div>
 
