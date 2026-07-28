@@ -25,6 +25,7 @@ import type {
 } from "@/components/mockApply/home/types";
 import { useReApply } from "@/hooks/useReApply";
 import { mapMockApplyToApplication } from "@/components/mockApply/home/applicationHomeUtils";
+import { Tooltip } from "@/components/common/tooltip";
 
 export default function Home() {
   const router = useRouter();
@@ -266,7 +267,6 @@ export default function Home() {
             />
           </div>
         </main>
-
         {/* 하단 푸터 */}
         <BusinessFooter className="mt-auto items-center bg-[#F5F6F9] [&>div:first-child]:bg-transparent" />
       </div>
