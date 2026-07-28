@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState, useRef, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import { LLMInput } from "@/components/common/input";
@@ -86,47 +86,81 @@ export default function JobPostingCreatePage() {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showInvalidDataModal, setShowInvalidDataModal] = useState(false);
 
-  const [jobPostingToastMessage, setJobPostingToastMessage] = useState<
-    string | null
-  >(null);
+  const [toastMessages, setToastMessages] = useState<string[]>([]);
+
+  const inputContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const analysisError = searchParams.get("analysisError");
+    function handleClickOutside(event: globalThis.MouseEvent) {
+      if (
+        inputContainerRef.current &&
+        !inputContainerRef.current.contains(event.target as Node)
+      ) {
+        const hasInput =
+          jobPostingInputValue.trim().length > 0 || attachedFiles.length > 0;
 
-    if (analysisError === "not_saved") {
+        // 아무것도 입력되지 않았을 때만 원래대로 돌아감
+        if (!hasInput) {
+          setIsInputActive(false);
+        }
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [jobPostingInputValue, attachedFiles]); // 의존성 배열에 상태 추가
+
+  // ✅ 교체할 부분: URL에서 여러 개의 에러를 가져오도록 useEffect 수정
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+
+    // getAll을 사용하여 배열 형태로 모두 가져옵니다
+    const analysisErrors = searchParams.getAll("analysisError");
+    const isCanceled = searchParams.get("analysisCanceled");
+
+    if (analysisErrors.includes("not_saved")) {
       const modalTimer = window.setTimeout(() => {
         setShowInvalidDataModal(true);
         window.history.replaceState(null, "", window.location.pathname);
       }, 0);
-
       return () => window.clearTimeout(modalTimer);
     }
 
-    const toastMessage =
-      searchParams.get("analysisCanceled") === "1"
-        ? "공고 분석을 중단했습니다."
-        : analysisError === "1"
-          ? "업로드에 실패했습니다."
-          : analysisError;
+    const nextToastMessages: string[] = [];
 
-    if (!toastMessage) {
+    if (isCanceled === "1") {
+      nextToastMessages.push("공고 분석을 중단했습니다.");
+    }
+
+    analysisErrors.forEach((err) => {
+      if (err === "1") nextToastMessages.push("업로드에 실패했습니다.");
+      else if (err !== "not_saved") nextToastMessages.push(err);
+    });
+
+    if (nextToastMessages.length === 0) {
       return;
     }
 
     const openToastTimer = window.setTimeout(() => {
-      setJobPostingToastMessage(toastMessage);
+      setToastMessages(nextToastMessages);
       window.history.replaceState(null, "", window.location.pathname);
     }, 0);
+
     const toastTimer = window.setTimeout(() => {
-      setJobPostingToastMessage(null);
-    }, 3000);
+      setToastMessages([]);
+    }, 4000);
 
     return () => {
       window.clearTimeout(openToastTimer);
       window.clearTimeout(toastTimer);
     };
   }, []);
+
+  const removeToast = (indexToRemove: number) => {
+    setToastMessages((prev) => prev.filter((_, i) => i !== indexToRemove));
+  };
 
   const handleSubmit = () => {
     saveJobPostingDraft({
@@ -172,44 +206,46 @@ export default function JobPostingCreatePage() {
       />
 
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center self-stretch px-2 pb-2">
-        <main className="flex h-full min-h-0 flex-col items-center justify-start self-stretch overflow-hidden rounded-card-l bg-fill-quaternary-assistive">
-          <div
+        <main className="relative flex h-full min-h-0 w-full flex-col items-center justify-center overflow-hidden rounded-card-l bg-fill-quaternary-assistive">
+          <section
+            ref={inputContainerRef}
             className={clsx(
-              "flex flex-1 flex-col items-center self-stretch",
-              isInputActive
-                ? "justify-center gap-0 -translate-y-[4dvh]"
-                : "justify-center gap-[6.6dvh] pb-[2dvh]",
+              "z-10 flex w-full flex-col items-center gap-[60px] transition-transform duration-500 ease-in-out",
+              isInputActive ? "translate-y-0" : "-translate-y-[140px]",
             )}
           >
-            <section className="flex flex-col items-center gap-[60px]">
-              <div className="flex flex-col items-center gap-2">
-                <h1 className="text-center text-h28-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
-                  지원하고자하는 기업의 공고를 붙여넣으세요
-                </h1>
-                <p className="text-center text-b16-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
-                  첨부한 내용을 바탕으로 모의 공고가 생성되고 내가 작성한
-                  자소서를 채점받을 수 있습니다.
-                </p>
-              </div>
+            <div className="flex flex-col items-center gap-2">
+              <h1 className="text-center text-h28-bold text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]">
+                지원하고자하는 기업의 공고를 붙여넣으세요
+              </h1>
+              <p className="text-center text-b16-med text-text-neutral-description [font-feature-settings:'liga'_off,'clig'_off]">
+                첨부한 내용을 바탕으로 모의 공고가 생성되고 내가 작성한 자소서를
+                채점받을 수 있습니다.
+              </p>
+            </div>
 
-              <LLMInput
-                value={jobPostingInputValue}
-                onChange={setJobPostingInputValue}
-                onFilesChange={setAttachedFiles}
-                onFocus={() => setIsInputActive(true)}
-                onSubmit={handleSubmit}
-                defaultFiles={initialDraft.files}
-              />
-            </section>
+            <LLMInput
+              value={jobPostingInputValue}
+              onChange={setJobPostingInputValue}
+              onFilesChange={setAttachedFiles}
+              onFocus={() => setIsInputActive(true)}
+              onSubmit={handleSubmit}
+              defaultFiles={initialDraft.files}
+            />
+          </section>
 
-            {!isInputActive && (
-              <section className="flex items-start gap-5">
-                {INTRO_STEPS.map((step) => (
-                  <JobPostingStepCard key={step.step} step={step} />
-                ))}
-              </section>
+          <section
+            className={clsx(
+              "absolute left-1/2 top-1/2 z-0 flex w-max -translate-x-1/2 items-start gap-5 transition-all duration-350 ease-in-out",
+              isInputActive
+                ? "pointer-events-none opacity-0 translate-y-20"
+                : "translate-y-10 opacity-100 ",
             )}
-          </div>
+          >
+            {INTRO_STEPS.map((step) => (
+              <JobPostingStepCard key={step.step} step={step} />
+            ))}
+          </section>
         </main>
       </div>
 
@@ -247,13 +283,18 @@ export default function JobPostingCreatePage() {
         </div>
       )}
 
-      {jobPostingToastMessage && (
-        <Toast
-          message={jobPostingToastMessage}
-          variant="warning"
-          onClose={() => setJobPostingToastMessage(null)}
-          className="!right-7 !bottom-7 !max-w-none !rounded-card"
-        />
+      {toastMessages.length > 0 && (
+        <div className="fixed bottom-7 right-7 z-50 flex flex-col gap-3">
+          {toastMessages.map((msg, index) => (
+            <Toast
+              key={index}
+              message={msg}
+              variant="warning"
+              onClose={() => removeToast(index)}
+              className="!static !max-w-none !rounded-card"
+            />
+          ))}
+        </div>
       )}
     </div>
   );
