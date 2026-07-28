@@ -496,18 +496,9 @@ function RecentItemsSection({
 function SearchEmptyState() {
   return (
     <div className="flex h-[200px] items-center justify-center gap-2.5 self-stretch">
-      <div className="flex flex-col items-center justify-center gap-5 p-0">
-        <div
-          className="h-20 w-20 shrink-0 border border-pink-400 bg-pink-100"
-          aria-hidden="true"
-        />
-
-        <div className="flex flex-col items-center justify-center gap-2">
-          <p className="text-center text-b16-semibold text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
-            검색 결과가 없습니다
-          </p>
-        </div>
-      </div>
+      <p className="text-center text-b16-semibold text-text-neutral-caption [font-feature-settings:'liga'_off,'clig'_off]">
+        검색 결과가 없습니다
+      </p>
     </div>
   );
 }
@@ -666,7 +657,7 @@ export function LnbDefaultFooter({
       <div className="flex items-center justify-between self-stretch px-2 py-3">
         <div ref={accountMenuRef} className="relative flex items-center gap-2">
           {isAccountMenuOpen && (
-            <div className="absolute bottom-[calc(100%+5px)] left-0 z-50 flex w-[200px] flex-col items-start gap-0 rounded-toast-s border border-line-neutral-default bg-bg-lightbox-light p-1 shadow-card backdrop-blur-[2px]">
+            <div className="absolute bottom-[calc(100%+5px)] left-0 z-50 flex w-[200px] flex-col items-start gap-0 rounded-toast-s border border-line-neutral-default bg-bg-contents-default p-1 shadow-card">
               <TextButton
                 label="로그아웃"
                 size="small"
@@ -762,7 +753,7 @@ export function LnbFoldedFooter({
       <div className="flex items-center justify-center self-stretch py-3">
         <div ref={accountMenuRef} className="relative">
           {isAccountMenuOpen && (
-            <div className="absolute bottom-0 left-[calc(100%+12px)] z-50 flex w-[124px] flex-col items-start rounded-toast-s border border-line-neutral-default bg-bg-lightbox-light p-1 shadow-card backdrop-blur-[2px]">
+            <div className="absolute bottom-0 left-[calc(100%+12px)] z-50 flex w-[124px] flex-col items-start rounded-toast-s border border-line-neutral-default bg-bg-contents-default p-1 shadow-card">
               <TextButton
                 label="로그아웃"
                 size="small"

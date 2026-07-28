@@ -75,7 +75,7 @@ export default function Lnb({
   initialActiveItem = "apply",
   email,
   className,
-  defaultRecentOpen = true,
+  defaultRecentOpen = false,
   disableCreditFetch = false,
 }: LnbProps) {
   const router = useRouter();
@@ -401,15 +401,11 @@ export default function Lnb({
 
       {showComingSoonModal &&
         createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
             <ModalNotice
-              variant="single"
-              layout="centered"
+              type="alertModal"
               title="아직 준비중인 서비스입니다"
-              description={[
-                "더 나은 서비스를 위해 노력하고 있습니다!",
-                "조금만 기다려 주세요",
-              ].join("\n")}
+              description={"더 나은 서비스를 위해 노력하고 있습니다!\n조금만 기다려 주세요"}
               onClose={() => setShowComingSoonModal(false)}
               primaryAction={{
                 label: "확인",
