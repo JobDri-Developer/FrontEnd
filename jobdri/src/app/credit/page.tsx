@@ -105,14 +105,6 @@ function CreditContent() {
         />
       )}
 
-      {couponToastCreditAmount !== null && (
-        <Toast
-          message={`${couponToastCreditAmount}크레딧이 충전되었습니다!`}
-          variant="check"
-          onClose={() => setCouponToastCreditAmount(null)}
-        />
-      )}
-
       {/* 결제 승인 중일 때 화면을 덮는 로딩 UI */}
       {isConfirming && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -132,8 +124,16 @@ function CreditContent() {
           />
         ))}
       </section>
-      <div className="min-w-265">
+      <div className="relative min-w-265">
         <Useage />
+        {couponToastCreditAmount !== null && (
+          <Toast
+            message={`${couponToastCreditAmount}크레딧이 충전되었습니다!`}
+            variant="check"
+            onClose={() => setCouponToastCreditAmount(null)}
+            className="!absolute !right-7 !bottom-7 !w-[376px] !max-w-none"
+          />
+        )}
       </div>
     </>
   );
