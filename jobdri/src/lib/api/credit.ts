@@ -122,3 +122,43 @@ export async function confirmPurchase(
   });
   checkResponse(response, "결제 승인에 실패했습니다.");
 }
+
+export interface RedeemCouponResult {
+  couponCode: string;
+  creditAmount: number;
+  creditBalance: number;
+  redeemedAt: string;
+}
+
+interface RedeemCouponResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: RedeemCouponResult | null;
+  error: string | null;
+}
+
+export async function redeemCoupon(
+  couponCode: string,
+): Promise<RedeemCouponResult> {
+  const response = await fetch(`${API_BASE_URL}/api/payments/coupons/redeem`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ couponCode }),
+  });
+
+  if (response.status === 401) handleUnauthorized();
+
+  const payload = (await response.json()) as RedeemCouponResponse;
+
+  if (!response.ok || !payload.isSuccess || !payload.result) {
+    throw new Error(
+      payload.error || payload.message || "쿠폰 번호를 확인해주세요.",
+    );
+  }
+
+  return payload.result;
+}

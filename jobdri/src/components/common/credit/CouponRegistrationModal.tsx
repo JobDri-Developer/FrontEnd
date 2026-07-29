@@ -4,24 +4,44 @@ import { useState } from "react";
 import { ButtonCtaModal } from "@/components/common/buttons";
 import { InputTextAreaAutoGrowS } from "@/components/common/input";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
+import { redeemCoupon } from "@/lib/api/credit";
 
 interface CouponRegistrationModalProps {
   onClose: () => void;
+  onSuccess: (creditAmount: number) => void;
 }
 
 export default function CouponRegistrationModal({
   onClose,
+  onSuccess,
 }: CouponRegistrationModalProps) {
   const [couponNumber, setCouponNumber] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCouponNumberChange = (value: string) => {
     setCouponNumber(value);
     setError("");
   };
 
-  const handleSubmit = () => {
-    setError("쿠폰 번호를 확인해주세요.");
+  const handleSubmit = async () => {
+    const couponCode = couponNumber.trim();
+
+    if (!couponCode || isSubmitting) {
+      setError("쿠폰 번호를 확인해주세요.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await redeemCoupon(couponCode);
+      onSuccess(result.creditAmount);
+    } catch {
+      setError("쿠폰 번호를 확인해주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -60,6 +80,7 @@ export default function CouponRegistrationModal({
             value={couponNumber}
             onChange={handleCouponNumberChange}
             error={error}
+            disabled={isSubmitting}
             showAddButton={false}
             showBottomLine={false}
             className="gap-1"
@@ -75,6 +96,7 @@ export default function CouponRegistrationModal({
             submitStyleType="secondary"
             onCancel={onClose}
             onSubmit={handleSubmit}
+            submitDisabled={isSubmitting}
             className="w-full !pb-0"
           />
         </div>

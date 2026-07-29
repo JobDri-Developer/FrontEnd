@@ -14,6 +14,7 @@ import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
 import { BusinessFooter } from "@/components/common/footer";
 import { Button } from "@/components/common/buttons";
+import { Toast } from "@/components/common/toast";
 
 function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
   const original = basePricePerUnit * plan.creditAmount;
@@ -26,6 +27,9 @@ function CreditContent() {
   const [plans, setPlans] = useState<CreditPlan[]>([]);
   const [isConfirming, setIsConfirming] = useState(false); // 승인 중 로딩 상태 추가
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [couponToastCreditAmount, setCouponToastCreditAmount] = useState<
+    number | null
+  >(null);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -64,6 +68,21 @@ function CreditContent() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    if (couponToastCreditAmount === null) return;
+
+    const toastTimer = window.setTimeout(() => {
+      setCouponToastCreditAmount(null);
+    }, 3000);
+
+    return () => window.clearTimeout(toastTimer);
+  }, [couponToastCreditAmount]);
+
+  const handleCouponRegistrationSuccess = (creditAmount: number) => {
+    setIsCouponModalOpen(false);
+    setCouponToastCreditAmount(creditAmount);
+  };
+
   const basePricePerUnit =
     plans.find((p) => p.planCode === "ONE_TIME")?.price ?? 2500;
 
@@ -82,6 +101,15 @@ function CreditContent() {
       {isCouponModalOpen && (
         <CouponRegistrationModal
           onClose={() => setIsCouponModalOpen(false)}
+          onSuccess={handleCouponRegistrationSuccess}
+        />
+      )}
+
+      {couponToastCreditAmount !== null && (
+        <Toast
+          message={`${couponToastCreditAmount}크레딧이 충전되었습니다!`}
+          variant="check"
+          onClose={() => setCouponToastCreditAmount(null)}
         />
       )}
 

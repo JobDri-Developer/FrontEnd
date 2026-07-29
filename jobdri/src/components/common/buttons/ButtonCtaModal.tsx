@@ -18,6 +18,7 @@ interface ButtonCtaModalProps {
   submitClassName?: string;
   cancelClassName?: string;
   className?: string;
+  submitDisabled?: boolean;
 }
 
 interface Stack3Item {
@@ -59,6 +60,7 @@ export default function ButtonCtaModal({
   submitClassName,
   cancelClassName,
   className,
+  submitDisabled = false,
 }: ButtonCtaModalProps) {
   return (
     <div
@@ -73,6 +75,7 @@ export default function ButtonCtaModal({
           size="large"
           styleType={submitStyleType}
           onClick={onSubmit}
+          disabled={submitDisabled}
           className={clsx("h-[46px] w-full", submitClassName)}
         />
       ) : stack === "stack2_horizontal" ? (
@@ -89,6 +92,7 @@ export default function ButtonCtaModal({
             size="large"
             styleType={submitStyleType}
             onClick={onSubmit}
+            disabled={submitDisabled}
             className={clsx("h-[46px] flex-1", submitClassName)}
           />
         </div>
