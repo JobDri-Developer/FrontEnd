@@ -31,9 +31,6 @@ function CreditContent() {
     number | null
   >(null);
   const searchParams = useSearchParams();
-  const isCouponToastPreview =
-    process.env.NODE_ENV === "development" &&
-    searchParams.get("couponToastPreview") === "1";
 
   useEffect(() => {
     fetchCreditPlans()
@@ -108,9 +105,9 @@ function CreditContent() {
         />
       )}
 
-      {(couponToastCreditAmount !== null || isCouponToastPreview) && (
+      {couponToastCreditAmount !== null && (
         <Toast
-          message={`${couponToastCreditAmount ?? 1}크레딧이 충전되었습니다!`}
+          message={`${couponToastCreditAmount}크레딧이 충전되었습니다!`}
           variant="check"
           onClose={() => setCouponToastCreditAmount(null)}
         />
