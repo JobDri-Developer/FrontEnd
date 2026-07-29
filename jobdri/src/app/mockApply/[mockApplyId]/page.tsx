@@ -491,6 +491,15 @@ export default function MockApplyPage({
         ),
       );
       const acceptedAnalysis = await requestAnalysis(Number(mockApplyId));
+      const isCachedResultAvailable =
+        isCachedAnalysisResultAvailable(acceptedAnalysis);
+      const analysisResult = isCachedResultAvailable
+        ? await fetchAnalysisResult(Number(mockApplyId))
+        : null;
+      const analysisTaskId = acceptedAnalysis.taskId?.trim();
+
+      if (!isCachedResultAvailable && !analysisTaskId)
+        throw new Error("자소서 분석 작업 번호를 확인할 수 없습니다.");
 
       let resolvedJobPostingId = jobPostingId;
       if (!resolvedJobPostingId || resolvedJobPostingId <= 0) {
@@ -509,8 +518,7 @@ export default function MockApplyPage({
       if (resolvedJobPostingId && resolvedJobPostingId > 0)
         resultSearchParams.set("jobPostingId", String(resolvedJobPostingId));
 
-      if (isCachedAnalysisResultAvailable(acceptedAnalysis)) {
-        const analysisResult = await fetchAnalysisResult(Number(mockApplyId));
+      if (analysisResult) {
         const resultSequence =
           analysisResult.sequence > 0
             ? analysisResult.sequence
@@ -525,11 +533,6 @@ export default function MockApplyPage({
         router.push(`/mockApply/${mockApplyId}/result${resultQuery}`);
         return;
       }
-
-      const analysisTaskId = acceptedAnalysis.taskId?.trim();
-
-      if (!analysisTaskId)
-        throw new Error("자소서 분석 작업 번호를 확인할 수 없습니다.");
 
       const loadingSearchParams = new URLSearchParams();
       loadingSearchParams.set("taskId", analysisTaskId);
