@@ -74,6 +74,26 @@ export interface RequestAnalysisResponse {
   taskId: string;
   status: string;
   message: string;
+  cached: boolean;
+  resultAvailable: boolean;
+}
+
+export function isCachedAnalysisResultAvailable({
+  status,
+  cached,
+  resultAvailable,
+}: RequestAnalysisResponse) {
+  return (
+    status.trim().toUpperCase() === "SUCCEEDED" &&
+    cached === true &&
+    resultAvailable === true
+  );
+}
+
+export interface AnalysisTaskStep {
+  code: string;
+  label: string;
+  status: string;
 }
 
 export interface AnalysisTaskStatus {
@@ -92,6 +112,12 @@ export interface AnalysisTaskStatus {
   lastAttemptAt: string | null;
   startedAt: string | null;
   completedAt: string | null;
+  cancelRequested: boolean;
+  cancelledAt: string | null;
+  currentStep: string | null;
+  progressPercent: number;
+  estimatedRemainingSeconds: number;
+  steps: AnalysisTaskStep[];
   result: AnalysisResult | null;
 }
 

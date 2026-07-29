@@ -17,7 +17,9 @@ import { ModalNotice } from "@/components/common/modal";
 import { Toast, type ToastVariant } from "@/components/common/toast";
 import {
   CreditInsufficientError,
+  fetchAnalysisResult,
   fetchSequence,
+  isCachedAnalysisResultAvailable,
   requestAnalysis,
 } from "@/lib/api/result";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
@@ -489,9 +491,14 @@ export default function MockApplyPage({
         ),
       );
       const acceptedAnalysis = await requestAnalysis(Number(mockApplyId));
+      const isCachedResultAvailable =
+        isCachedAnalysisResultAvailable(acceptedAnalysis);
+      const analysisResult = isCachedResultAvailable
+        ? await fetchAnalysisResult(Number(mockApplyId))
+        : null;
       const analysisTaskId = acceptedAnalysis.taskId?.trim();
 
-      if (!analysisTaskId)
+      if (!isCachedResultAvailable && !analysisTaskId)
         throw new Error("자소서 분석 작업 번호를 확인할 수 없습니다.");
 
       let resolvedJobPostingId = jobPostingId;
@@ -505,6 +512,26 @@ export default function MockApplyPage({
             error,
           );
         }
+      }
+
+      const resultSearchParams = new URLSearchParams();
+      if (resolvedJobPostingId && resolvedJobPostingId > 0)
+        resultSearchParams.set("jobPostingId", String(resolvedJobPostingId));
+
+      if (analysisResult) {
+        const resultSequence =
+          analysisResult.sequence > 0
+            ? analysisResult.sequence
+            : savedApply.sequence;
+
+        if (resultSequence > 0)
+          resultSearchParams.set("sequence", String(resultSequence));
+
+        const resultQuery = resultSearchParams.size
+          ? `?${resultSearchParams.toString()}`
+          : "";
+        router.push(`/mockApply/${mockApplyId}/result${resultQuery}`);
+        return;
       }
 
       const loadingSearchParams = new URLSearchParams();
