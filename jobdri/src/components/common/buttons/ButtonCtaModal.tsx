@@ -76,7 +76,7 @@ export default function ButtonCtaModal({
           className={clsx("h-[46px] w-full", submitClassName)}
         />
       ) : stack === "stack2_horizontal" ? (
-        <div className="flex w-full items-start gap-3 self-stretch">
+        <div className="flex w-full items-start gap-2 self-stretch">
           <Button
             label={cancelLabel}
             size="large"

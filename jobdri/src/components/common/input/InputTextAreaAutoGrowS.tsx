@@ -37,6 +37,7 @@ export function InputTextAreaAutoGrowS({
   leadingContent,
   trailingContent,
   showAddButton = true,
+  showBottomLine = true,
   addButtonLabel = "추가하기",
   addButtonDisabled,
   onAdd,
@@ -171,18 +172,20 @@ export function InputTextAreaAutoGrowS({
           </div>
         </div>
 
-        <InputTextAreaFixedBottom
-          addButtonDisabled={addButtonDisabled}
-          addButtonLabel={addButtonLabel}
-          count={count}
-          disabled={disabled}
-          hasValue={hasValue}
-          leadingContent={leadingContent}
-          maxLength={maxLength}
-          onAdd={onAdd}
-          showAddButton={showAddButton}
-          trailingContent={trailingContent}
-        />
+        {showBottomLine && (
+          <InputTextAreaFixedBottom
+            addButtonDisabled={addButtonDisabled}
+            addButtonLabel={addButtonLabel}
+            count={count}
+            disabled={disabled}
+            hasValue={hasValue}
+            leadingContent={leadingContent}
+            maxLength={maxLength}
+            onAdd={onAdd}
+            showAddButton={showAddButton}
+            trailingContent={trailingContent}
+          />
+        )}
       </div>
 
       <InputTextAreaFixedMessage

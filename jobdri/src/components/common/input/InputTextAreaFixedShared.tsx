@@ -35,6 +35,7 @@ export interface InputTextAreaFixedSharedProps extends Omit<
   leadingContent?: ReactNode;
   trailingContent?: ReactNode;
   showAddButton?: boolean;
+  showBottomLine?: boolean;
   addButtonLabel?: string;
   addButtonDisabled?: boolean;
   onAdd?: () => void;

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { CreditCard } from "@/components/common/cards";
 import Useage from "@/components/common/credit/Useage";
+import CouponRegistrationModal from "@/components/common/credit/CouponRegistrationModal";
 import {
   fetchCreditPlans,
   confirmPurchase,
@@ -12,6 +13,7 @@ import {
 import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
 import { BusinessFooter } from "@/components/common/footer";
+import { Button } from "@/components/common/buttons";
 
 function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
   const original = basePricePerUnit * plan.creditAmount;
@@ -23,8 +25,8 @@ function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
 function CreditContent() {
   const [plans, setPlans] = useState<CreditPlan[]>([]);
   const [isConfirming, setIsConfirming] = useState(false); // 승인 중 로딩 상태 추가
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const searchParams = useSearchParams();
-  const router = useRouter(); // 라우터 훅 추가
 
   useEffect(() => {
     fetchCreditPlans()
@@ -67,7 +69,21 @@ function CreditContent() {
 
   return (
     <>
-      <PageHeader />
+      <div className="flex self-stretch items-end justify-between">
+        <PageHeader />
+        <Button
+          label="쿠폰 등록하기"
+          styleType="tertiary"
+          size="large"
+          onClick={() => setIsCouponModalOpen(true)}
+        />
+      </div>
+
+      {isCouponModalOpen && (
+        <CouponRegistrationModal
+          onClose={() => setIsCouponModalOpen(false)}
+        />
+      )}
 
       {/* 결제 승인 중일 때 화면을 덮는 로딩 UI */}
       {isConfirming && (
