@@ -53,6 +53,7 @@ interface AuthInputProps {
   placeholder?: string;
   value?: string;
   onChange?: (value: string) => void;
+  onBlur?: () => void;
   inputType?: HTMLInputTypeAttribute;
   name?: string;
   autoComplete?: string;
@@ -72,6 +73,7 @@ function InputMain({
   placeholder,
   value = "",
   onChange,
+  onBlur,
   inputType,
   name,
   autoComplete,
@@ -128,7 +130,10 @@ function InputMain({
           value={value}
           onChange={(event) => onChange?.(event.target.value)}
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onBlur={() => {
+            setFocused(false);
+            onBlur?.();
+          }}
           disabled={disabled}
         />
       </div>
@@ -142,11 +147,10 @@ function InputMain({
   );
 }
 
-interface AuthSingleLineProps
-  extends Omit<
-    InputHTMLAttributes<HTMLInputElement>,
-    "value" | "onChange" | "disabled" | "className"
-  > {
+interface AuthSingleLineProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "value" | "onChange" | "disabled" | "className"
+> {
   value?: string;
   onChange?: (value: string) => void;
   disabled?: boolean;
@@ -257,11 +261,20 @@ export default function EmailLoginScreen() {
     useState(false);
   const verificationInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
+  // toched 상태
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [passwordConfirmTouched, setPasswordConfirmTouched] = useState(false);
+
   const isLoginReady = email.length > 0 && password.length > 0;
   const hasSignupEmailValidationError =
-    authMode === "signup" && email.length > 0 && !emailPattern.test(email);
+    authMode === "signup" &&
+    emailTouched &&
+    email.length > 0 &&
+    !emailPattern.test(email);
   const hasPasswordMaxLengthError = password.length > 20;
   const hasPasswordValidationError =
+    passwordTouched &&
     password.length > 0 &&
     !hasPasswordMaxLengthError &&
     !passwordPattern.test(password);
@@ -271,7 +284,9 @@ export default function EmailLoginScreen() {
       ? passwordValidationMessage
       : undefined;
   const hasPasswordMismatchError =
-    passwordConfirm.length > 0 && passwordConfirm !== password;
+    passwordConfirmTouched &&
+    passwordConfirm.length > 0 &&
+    passwordConfirm !== password;
   const isSignupFilled =
     email.length > 0 && password.length > 0 && passwordConfirm.length > 0;
   const isSignupReady =
@@ -305,6 +320,7 @@ export default function EmailLoginScreen() {
     setter: Dispatch<SetStateAction<string>>,
   ) => {
     setter(value);
+    setEmailTouched(false);
     setLoginError(false);
     setLoginErrorMessage(loginValidationErrorMessage);
     setSignupErrorMessage("");
@@ -314,6 +330,7 @@ export default function EmailLoginScreen() {
 
   const handlePasswordChange = (value: string) => {
     handleInputChange(value, setPassword);
+    setPasswordConfirmTouched(false);
 
     if (value.length === 0) {
       setPasswordConfirm("");
@@ -322,6 +339,7 @@ export default function EmailLoginScreen() {
 
   const handlePasswordConfirmChange = (value: string) => {
     handleInputChange(value, setPasswordConfirm);
+    setPasswordConfirmTouched(false);
   };
 
   const focusVerificationInput = (index: number) => {
@@ -459,6 +477,10 @@ export default function EmailLoginScreen() {
   const handleSignupSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    setEmailTouched(true);
+    setPasswordTouched(true);
+    setPasswordConfirmTouched(true);
+
     if (isSignupSubmitting || !isSignupReady || !emailPattern.test(email)) {
       return;
     }
@@ -534,6 +556,9 @@ export default function EmailLoginScreen() {
     setPasswordConfirm("");
     setVerificationCode([...initialVerificationCode]);
     setHasVerificationError(false);
+    setEmailTouched(false);
+    setPasswordTouched(false);
+    setPasswordConfirmTouched(false);
     hideCreditTooltip();
   };
 
@@ -674,6 +699,7 @@ export default function EmailLoginScreen() {
                             onChange={(value) =>
                               handleInputChange(value, setEmail)
                             }
+                            onBlur={() => setEmailTouched(true)}
                           />
                           <InputMain
                             name="password"
@@ -686,6 +712,7 @@ export default function EmailLoginScreen() {
                             error={loginError ? loginErrorMessage : undefined}
                             className="self-stretch"
                             onChange={handlePasswordChange}
+                            onBlur={() => setPasswordTouched(true)}
                           />
                         </div>
 
@@ -744,7 +771,13 @@ export default function EmailLoginScreen() {
                               hasSignupEmailValidationError ||
                               Boolean(signupErrorMessage)
                             }
-                            error={signupErrorMessage || undefined}
+                            error={
+                              signupErrorMessage
+                                ? signupErrorMessage
+                                : hasSignupEmailValidationError
+                                  ? "이메일 형식이 맞지 않습니다."
+                                  : undefined
+                            }
                             className="self-stretch"
                             gapClassName={authInputGapClass}
                             labelClassName={authInputLabelClass}
@@ -766,6 +799,7 @@ export default function EmailLoginScreen() {
                             gapClassName={authInputGapClass}
                             labelClassName={authInputLabelClass}
                             onChange={handlePasswordChange}
+                            onBlur={() => setPasswordTouched(true)}
                           />
                           <InputMain
                             label="비밀번호 확인"
@@ -787,6 +821,7 @@ export default function EmailLoginScreen() {
                             gapClassName={authInputGapClass}
                             labelClassName={authInputLabelClass}
                             onChange={handlePasswordConfirmChange}
+                            // onBlur={() => setPasswordConfirmTouched(true)}
                           />
                         </div>
 
