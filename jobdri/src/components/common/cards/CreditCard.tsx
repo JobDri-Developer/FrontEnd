@@ -8,7 +8,6 @@ import { ModalCard } from "../modal/ModalCard";
 import { ModalOverlay } from "../modal/ModalOverlay";
 import type { PlanCode } from "@/lib/api/credit";
 import { preparePurchase } from "@/lib/api/credit";
-import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
 import { Toast } from "../toast";
 
 interface CreditCardProps extends HTMLAttributes<HTMLElement> {
@@ -55,35 +54,25 @@ export default function CreditCard({
   const handleConfirmPurchase = async () => {
     setIsLoading(true);
     try {
-      const { clientKey, orderId, orderName, amount, customerEmail } =
-        await preparePurchase(planCode);
+      // 결제 준비 API 호출
+      const response = await preparePurchase(planCode);
 
-      const tossPayments = await loadTossPayments(clientKey);
-      const payment = tossPayments.payment({ customerKey: ANONYMOUS });
+      // 타입스크립트 에러 방지를 위한 타입 단언
+      const data = response as unknown as {
+        checkoutPage?: string;
+        result?: { checkoutPage?: string };
+      };
+      const checkoutPage = data.checkoutPage || data.result?.checkoutPage;
 
-      await payment.requestPayment({
-        method: "CARD",
-        amount: { currency: "KRW", value: amount },
-        orderId,
-        orderName,
-        customerEmail,
-        successUrl: `${window.location.origin}/credit`,
-        failUrl: `${window.location.origin}/credit/fail`,
-        card: {
-          easyPay: "TOSSPAY",
-          flowMode: "DIRECT",
-        },
-      });
-    } catch (error: unknown) {
-      const tossError = error as { code?: string; message?: string };
-
-      if (tossError.code === "USER_CANCEL") {
-        setToastMessage("결제를 취소하였습니다.");
+      if (checkoutPage) {
+        // 백엔드에서 생성한 토스페이 결제 페이지로 이동
+        window.location.assign(checkoutPage);
       } else {
-        console.error("결제 창 호출 중 오류:", tossError.message || error);
-        setToastMessage("결제 진행 중 오류가 발생했습니다.");
+        throw new Error("결제 페이지 URL을 찾을 수 없습니다.");
       }
-    } finally {
+    } catch (error: unknown) {
+      console.error("결제 준비 중 오류:", error);
+      setToastMessage("결제 진행 중 오류가 발생했습니다.");
       setIsLoading(false);
       setIsModalOpen(false);
     }

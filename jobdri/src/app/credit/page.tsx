@@ -6,7 +6,7 @@ import { CreditCard } from "@/components/common/cards";
 import Useage from "@/components/common/credit/Useage";
 import {
   fetchCreditPlans,
-  confirmPurchase,
+  checkPaymentStatus,
   type CreditPlan,
 } from "@/lib/api/credit";
 import Lnb from "@/components/common/lnb/Lnb";
@@ -22,9 +22,9 @@ function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
 
 function CreditContent() {
   const [plans, setPlans] = useState<CreditPlan[]>([]);
-  const [isConfirming, setIsConfirming] = useState(false); // 승인 중 로딩 상태 추가
+  const [isConfirming, setIsConfirming] = useState(false);
   const searchParams = useSearchParams();
-  const router = useRouter(); // 라우터 훅 추가
+  const router = useRouter();
 
   useEffect(() => {
     fetchCreditPlans()
@@ -33,32 +33,57 @@ function CreditContent() {
   }, []);
 
   useEffect(() => {
-    const paymentKey = searchParams.get("paymentKey");
     const orderId = searchParams.get("orderId");
-    const amount = searchParams.get("amount");
 
-    if (paymentKey && orderId && amount) {
-      const processConfirm = async () => {
-        setIsConfirming(true); // 화면 잠금
+    if (orderId) {
+      let isPolling = true;
 
+      const pollStatus = async () => {
         try {
-          await confirmPurchase(paymentKey, orderId, Number(amount));
-          window.history.replaceState(null, "", window.location.pathname);
-          setIsConfirming(false);
-          setTimeout(() => {
+          const response = await checkPaymentStatus(orderId);
+          // API 타입이 지정되지 않은 경우를 대비한 타입 단언
+          const data = response as unknown as {
+            status?: string;
+            result?: { status?: string };
+          };
+          const status = data.status || data.result?.status;
+
+          if (status === "COMPLETED") {
+            isPolling = false;
+            window.history.replaceState(null, "", window.location.pathname);
+            setIsConfirming(false);
             alert("크레딧 충전이 완료되었습니다!");
             window.location.reload();
-          }, 100);
-        } catch (error) {
-          console.error("결제 승인 실패:", error);
-          setIsConfirming(false);
-          alert("결제 승인에 실패했습니다. 다시 시도해 주세요.");
-          // 실패 시에도 쿼리 파라미터를 날려 중복 요청 방지
+          } else if (status === "FAILED") {
+            isPolling = false;
+            window.history.replaceState(null, "", window.location.pathname);
+            setIsConfirming(false);
+            alert("결제에 실패했거나 취소되었습니다.");
+          } else {
+            // PENDING, PROCESSING, UNKNOWN 상태일 경우 계속 폴링
+            if (isPolling) {
+              setTimeout(pollStatus, 2000); // 2초 주기로 폴링
+            }
+          }
+        } catch (error: unknown) {
+          console.error("결제 상태 조회 실패:", error);
+          isPolling = false;
           window.history.replaceState(null, "", window.location.pathname);
+          setIsConfirming(false);
+          alert("결제 상태를 확인하는 중 오류가 발생했습니다.");
         }
       };
 
-      processConfirm();
+      // 동기적 setState 호출 경고(Cascading renders)를 방지하기 위해 Promise로 감싸서 실행
+      Promise.resolve().then(() => {
+        setIsConfirming(true);
+        pollStatus();
+      });
+
+      // 폴링 중단
+      return () => {
+        isPolling = false;
+      };
     }
   }, [searchParams]);
 
@@ -69,11 +94,10 @@ function CreditContent() {
     <>
       <PageHeader />
 
-      {/* 결제 승인 중일 때 화면을 덮는 로딩 UI */}
       {isConfirming && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="text-white text-h24-bold animate-pulse">
-            결제를 안전하게 승인하고 있습니다...
+            결제 결과를 확인하고 있습니다...
           </div>
         </div>
       )}

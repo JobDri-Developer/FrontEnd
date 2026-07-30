@@ -49,9 +49,7 @@ export async function fetchCreditBalance({
 export async function fetchCreditTransactions(
   type?: TransactionType,
 ): Promise<CreditTransaction[]> {
-  const url = new URL(
-    `${API_BASE_URL}/api/payments/credits/me/transactions`,
-  );
+  const url = new URL(`${API_BASE_URL}/api/payments/credits/me/transactions`);
   if (type) url.searchParams.set("type", type);
 
   const response = await fetch(url.toString(), {
@@ -107,18 +105,26 @@ export async function preparePurchase(
   return result;
 }
 
-export async function confirmPurchase(
-  paymentKey: string,
-  orderId: string,
-  amount: number,
-): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/payments/confirm`, {
-    method: "POST",
-    headers: {
-      ...getAuthHeaders(),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ paymentKey, orderId, amount }),
+// export async function confirmPurchase(
+//   paymentKey: string,
+//   orderId: string,
+//   amount: number,
+// ): Promise<void> {
+//   const response = await fetch(`${API_BASE_URL}/api/payments/confirm`, {
+//     method: "POST",
+//     headers: {
+//       ...getAuthHeaders(),
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify({ paymentKey, orderId, amount }),
+//   });
+//   checkResponse(response, "결제 승인에 실패했습니다.");
+// }
+
+export async function checkPaymentStatus(orderId: string) {
+  const response = await fetch(`/api/payments/orders/${orderId}`, {
+    method: "GET",
   });
-  checkResponse(response, "결제 승인에 실패했습니다.");
+  if (!response.ok) throw new Error("Failed to fetch payment status");
+  return response.json();
 }
