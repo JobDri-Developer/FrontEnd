@@ -18,7 +18,7 @@ export default function PageHeader() {
     routeTitles[pathname] ?? pathname.split("/").filter(Boolean).pop() ?? "홈";
 
   return (
-    <div className="gap-y-1">
+    <div className="flex flex-col items-start gap-2">
       <h1 className="text-h24-bold text-text-neutral-title">{title}</h1>
       <p className="text-b16-med text-text-neutral-description">
         {PageDescriptions[pathname]}

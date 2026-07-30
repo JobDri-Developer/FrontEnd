@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { CreditCard } from "@/components/common/cards";
 import Useage from "@/components/common/credit/Useage";
+import CouponRegistrationModal from "@/components/common/credit/CouponRegistrationModal";
 import {
   fetchCreditPlans,
   checkPaymentStatus,
@@ -12,6 +13,8 @@ import {
 import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
 import { BusinessFooter } from "@/components/common/footer";
+import { Button } from "@/components/common/buttons";
+import { Toast } from "@/components/common/toast";
 
 function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
   const original = basePricePerUnit * plan.creditAmount;
@@ -23,8 +26,11 @@ function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
 function CreditContent() {
   const [plans, setPlans] = useState<CreditPlan[]>([]);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [couponToastCreditAmount, setCouponToastCreditAmount] = useState<
+    number | null
+  >(null);
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   useEffect(() => {
     fetchCreditPlans()
@@ -87,12 +93,50 @@ function CreditContent() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    if (couponToastCreditAmount === null) return;
+
+    const toastTimer = window.setTimeout(() => {
+      setCouponToastCreditAmount(null);
+    }, 3000);
+
+    return () => window.clearTimeout(toastTimer);
+  }, [couponToastCreditAmount]);
+
+  const handleCouponRegistrationSuccess = (creditAmount: number) => {
+    setIsCouponModalOpen(false);
+    setCouponToastCreditAmount(creditAmount);
+  };
+
   const basePricePerUnit =
     plans.find((p) => p.planCode === "ONE_TIME")?.price ?? 2500;
 
   return (
     <>
-      <PageHeader />
+      <div className="flex self-stretch items-end justify-between">
+        <PageHeader />
+        <Button
+          label="쿠폰 등록하기"
+          styleType="tertiary"
+          size="large"
+          onClick={() => setIsCouponModalOpen(true)}
+        />
+      </div>
+
+      {isCouponModalOpen && (
+        <CouponRegistrationModal
+          onClose={() => setIsCouponModalOpen(false)}
+          onSuccess={handleCouponRegistrationSuccess}
+        />
+      )}
+
+      {couponToastCreditAmount !== null && (
+        <Toast
+          message={`${couponToastCreditAmount}크레딧이 충전되었습니다!`}
+          variant="check"
+          onClose={() => setCouponToastCreditAmount(null)}
+        />
+      )}
 
       {isConfirming && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">

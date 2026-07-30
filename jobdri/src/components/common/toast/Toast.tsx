@@ -34,7 +34,7 @@ export default function Toast({
 
         isTop
           ? "top-10 left-1/2 w-fit -translate-x-1/2 justify-center gap-3 rounded-card bg-fill-quaternary-default py-3 pr-4 pl-3"
-          : "right-5 bottom-28 max-w-[400px] justify-between self-stretch rounded-card px-4 py-3 pl-5",
+          : "right-7 bottom-7 max-w-[400px] justify-between self-stretch rounded-card px-4 py-3 pl-5",
 
         isDark ? "bg-fill-tertiary-default" : "bg-fill-quaternary-default",
         className,
