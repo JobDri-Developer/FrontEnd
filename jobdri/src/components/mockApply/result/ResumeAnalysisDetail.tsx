@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { QuestionList } from "../Question/QuestionList";
 import { type QuestionItem as ApiQuestionItem } from "@/lib/api/questions";
-import { lnbHiddenScrollbarClass } from "@/components/common/lnb/LnbScrollbar";
-import DetailAnnotationPanel from "./DetailAnotationPannel";
 import {
-  scrollbarClassL,
-  scrollbarClassS,
-} from "@/components/common/scrollbar/scrollbarStyles";
+  LnbScrollbar,
+  lnbHiddenScrollbarClass,
+  useLnbScrollMetrics,
+} from "@/components/common/lnb/LnbScrollbar";
+import DetailAnnotationPanel from "./DetailAnotationPannel";
+import { scrollbarClassS } from "@/components/common/scrollbar/scrollbarStyles";
 import { QuestionAnalysis, type AnalysisResult } from "@/lib/api/result";
 import { HighlightStatus, HighlightStyles } from "./highlightStyles";
 import Icon from "@/components/common/icons/Icon";
@@ -111,6 +112,11 @@ export default function ResumeAnalysisDetail({
   analysisData,
   children,
 }: ResumeAnalysisDetailProps) {
+  const {
+    scrollAreaRef,
+    scrollbarMetrics,
+    updateScrollbarMetrics,
+  } = useLnbScrollMetrics<HTMLElement>(true, "resume-analysis-detail");
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<number | null>(
     null,
   );
@@ -124,8 +130,7 @@ export default function ResumeAnalysisDetail({
     answer: q.answer,
   }));
 
-  const [questions, setQuestions] =
-    useState<ApiQuestionItem[]>(initialQuestions);
+  const [questions] = useState<ApiQuestionItem[]>(initialQuestions);
   const [selectedId, setSelectedId] = useState<string | null>(
     initialQuestions[0]?.id || null,
   );
@@ -146,15 +151,16 @@ export default function ResumeAnalysisDetail({
   };
 
   return (
-    <div className="relative flex min-h-0 flex-1 items-stretch bg-fill-quaternary-assistive self-stretch overflow-visible rounded-card-l mx-2">
+    <div className="relative flex min-h-0 flex-1 items-stretch self-stretch overflow-visible">
       <main
-        className={`flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden px-16  pb-0 ${scrollbarClassL} overflow-y-auto [scrollbar-gutter:stable_both-edges]`}
+        ref={scrollAreaRef}
+        onScroll={updateScrollbarMetrics}
+        className={`mx-2 flex min-h-0 flex-1 items-start justify-center self-stretch overflow-y-auto overflow-x-hidden rounded-card-l bg-fill-quaternary-assistive px-2 pb-0 ${lnbHiddenScrollbarClass}`}
       >
-        <div className="flex w-full items-start justify-center self-stretch px-2 pb-0">
           <div className="flex flex-1 flex-col items-center p-0">
             {children}
-            <section className="flex items-start justify-center gap-3 self-stretch px-16 pt-8">
-              <div className="flex w-full max-w-[1320px] mx-auto gap-6 items-start">
+            <section className="flex items-start justify-center gap-0 self-stretch rounded-card-l px-16 pt-8 pb-0">
+              <div className="mx-auto flex max-w-[1320px] [flex:1_0_0] items-start gap-5">
                 <div className="w-62 shrink-0 sticky top-8">
                   <QuestionList
                     questions={questions}
@@ -222,8 +228,13 @@ export default function ResumeAnalysisDetail({
               </div>
             </section>
           </div>
-        </div>
       </main>
+
+      <LnbScrollbar
+        metrics={scrollbarMetrics}
+        size="l"
+        className="inset-y-0 right-0 z-20 items-end"
+      />
     </div>
   );
 }
