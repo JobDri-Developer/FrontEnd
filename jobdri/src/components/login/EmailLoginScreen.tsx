@@ -33,6 +33,7 @@ import {
   sendEmailVerification,
   signupWithEmail,
 } from "@/lib/auth";
+import { shouldShowDesktopRequiredPage } from "@/utils/device";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,20}$/;
@@ -457,7 +458,11 @@ export default function EmailLoginScreen() {
     try {
       const tokens = await loginWithEmail({ email, password });
       saveAuthTokens(tokens, email);
-      router.push(ROUTES.HOME);
+      router.push(
+        shouldShowDesktopRequiredPage()
+          ? ROUTES.DESKTOP_REQUIRED
+          : ROUTES.HOME,
+      );
     } catch (error) {
       setLoginError(true);
       setLoginErrorMessage(

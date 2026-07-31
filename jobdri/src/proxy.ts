@@ -3,6 +3,15 @@ import type { NextRequest } from "next/server";
 
 const PUBLIC_ROUTES = ["/login", "/oauth2", "/components"];
 const PRODUCTION_CANONICAL_ORIGIN = "https://www.jobdri.com";
+const DESKTOP_REQUIRED_PATH = "/desktop-required";
+const MOBILE_USER_AGENT_PATTERN =
+  /Android.*Mobile|iPhone|iPod|IEMobile|Opera Mini|webOS|BlackBerry/i;
+
+function isMobileRequest(request: NextRequest) {
+  return MOBILE_USER_AGENT_PATTERN.test(
+    request.headers.get("user-agent") ?? "",
+  );
+}
 
 function getRequestHost(request: NextRequest) {
   const forwardedHost = request.headers
@@ -51,6 +60,17 @@ export function proxy(request: NextRequest) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (
+    token &&
+    isMobileRequest(request) &&
+    pathname !== DESKTOP_REQUIRED_PATH &&
+    !isPublic
+  ) {
+    return NextResponse.redirect(
+      new URL(DESKTOP_REQUIRED_PATH, request.url),
+    );
   }
 
   return NextResponse.next();

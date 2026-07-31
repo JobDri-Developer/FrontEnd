@@ -6,6 +6,16 @@ import QueryProvider from "@/components/providers/QueryProvider";
 export const metadata: Metadata = {
   title: "JobDri",
   description: "취준생을 위한 채용 통합 관리 솔루션",
+  icons: {
+    icon: [
+      {
+        url: "/ic_JobDri.svg?v=2",
+        type: "image/svg+xml",
+      },
+    ],
+    shortcut: "/ic_JobDri.svg?v=2",
+    apple: "/ic_JobDri.svg?v=2",
+  },
 };
 
 export default function RootLayout({
@@ -15,9 +25,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" className="h-full antialiased">
-      <head>
-        <link rel="icon" href="/ic_JobDri.svg" />
-      </head>
       <body className="min-h-full max-w-[1920px] bg-line-neutral-assistive">
         <QueryProvider> {children}</QueryProvider>
       </body>
