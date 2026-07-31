@@ -80,15 +80,14 @@ export async function fetchCreditPlans(): Promise<CreditPlan[]> {
 }
 
 export interface PreparePaymentResult {
-  paymentId: number;
-  orderId: string;
-  orderName: string;
-  amount: number;
-  creditAmount: number;
-  clientKey: string;
-  customerEmail: string;
+  orderId: number; // JobDri 내부 결제 DB ID
+  orderName: string; // 주문명
+  amount: number; // 결제 금액
+  creditAmount: number; // 충전될 크레딧 수량
+  checkoutPage: string; // 토스페이 결제창 URL (리다이렉트용)
 }
 
+// 토스 결제 준비 API
 export async function preparePurchase(
   planCode: PlanCode,
 ): Promise<PreparePaymentResult> {
@@ -105,27 +104,21 @@ export async function preparePurchase(
   return result;
 }
 
-// export async function confirmPurchase(
-//   paymentKey: string,
-//   orderId: string,
-//   amount: number,
-// ): Promise<void> {
-//   const response = await fetch(`${API_BASE_URL}/api/payments/confirm`, {
-//     method: "POST",
-//     headers: {
-//       ...getAuthHeaders(),
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify({ paymentKey, orderId, amount }),
-//   });
-//   checkResponse(response, "결제 승인에 실패했습니다.");
-// }
+// 결제 상태 확인 API (폴링 또는 복귀 페이지에서 사용)
+export async function checkPaymentStatus(orderId: string | number) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/payments/orders/${orderId}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    },
+  );
 
-export async function checkPaymentStatus(orderId: string) {
-  const response = await fetch(`/api/payments/orders/${orderId}`, {
-    method: "GET",
-  });
-  if (!response.ok) throw new Error("Failed to fetch payment status");
+  if (!response.ok) {
+    console.warn(`결제 상태 조회 지연 중... (상태코드: ${response.status})`);
+    return { result: { status: "UNKNOWN" } };
+  }
+
   return response.json();
 }
 

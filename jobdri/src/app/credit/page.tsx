@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { CreditCard } from "@/components/common/cards";
 import Useage from "@/components/common/credit/Useage";
 import CouponRegistrationModal from "@/components/common/credit/CouponRegistrationModal";
@@ -9,12 +9,14 @@ import {
   fetchCreditPlans,
   checkPaymentStatus,
   type CreditPlan,
+  fetchCreditBalance,
 } from "@/lib/api/credit";
 import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
 import { BusinessFooter } from "@/components/common/footer";
-import { Button } from "@/components/common/buttons";
 import { Toast } from "@/components/common/toast";
+import { useCreditStore } from "@/lib/store/useCreditStore";
+import { Button } from "@/components/common/buttons";
 
 function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
   const original = basePricePerUnit * plan.creditAmount;
@@ -31,6 +33,17 @@ function CreditContent() {
     number | null
   >(null);
   const searchParams = useSearchParams();
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => {
+        setToastMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
 
   useEffect(() => {
     fetchCreditPlans()
@@ -39,14 +52,14 @@ function CreditContent() {
   }, []);
 
   useEffect(() => {
-    const orderId = searchParams.get("orderId");
+    const paymentId = searchParams.get("paymentId");
 
-    if (orderId) {
+    if (paymentId) {
       let isPolling = true;
 
       const pollStatus = async () => {
         try {
-          const response = await checkPaymentStatus(orderId);
+          const response = await checkPaymentStatus(paymentId);
           // API 타입이 지정되지 않은 경우를 대비한 타입 단언
           const data = response as unknown as {
             status?: string;
@@ -58,13 +71,23 @@ function CreditContent() {
             isPolling = false;
             window.history.replaceState(null, "", window.location.pathname);
             setIsConfirming(false);
-            alert("크레딧 충전이 완료되었습니다!");
-            window.location.reload();
+
+            // 서버에서 최신 잔액 조회
+            fetchCreditBalance()
+              .then((latestBalance) => {
+                useCreditStore.getState().setCreditCount(latestBalance);
+                setToastMessage("크레딧 충전이 완료되었습니다.");
+              })
+              .catch((err) => {
+                console.error("잔액 갱신 실패:", err);
+                alert("결제는 완료되었으나 잔액 동기화에 실패했습니다.");
+                window.location.reload();
+              });
           } else if (status === "FAILED") {
             isPolling = false;
             window.history.replaceState(null, "", window.location.pathname);
             setIsConfirming(false);
-            alert("결제에 실패했거나 취소되었습니다.");
+            setToastMessage("결제에 실패했거나 취소되었습니다.");
           } else {
             // PENDING, PROCESSING, UNKNOWN 상태일 경우 계속 폴링
             if (isPolling) {
@@ -80,7 +103,6 @@ function CreditContent() {
         }
       };
 
-      // 동기적 setState 호출 경고(Cascading renders)를 방지하기 위해 Promise로 감싸서 실행
       Promise.resolve().then(() => {
         setIsConfirming(true);
         pollStatus();
@@ -90,6 +112,18 @@ function CreditContent() {
       return () => {
         isPolling = false;
       };
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const isCanceled = searchParams.get("cancel");
+
+    if (isCanceled === "true") {
+      setTimeout(() => {
+        setToastMessage("결제가 취소되었습니다.");
+      }, 100);
+
+      window.history.replaceState(null, "", window.location.pathname);
     }
   }, [searchParams]);
 
