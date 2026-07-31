@@ -40,7 +40,7 @@ import {
 } from "./LnbShared";
 
 interface LnbProps {
-  initialActiveItem?: LnbItemKey;
+  initialActiveItem?: LnbItemKey | null;
   email?: string;
   className?: string;
   notificationItems?: LnbNotificationItem[];
@@ -94,7 +94,7 @@ export default function Lnb({
   const [isFold, setIsFold] = useState(false);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [activeItem, setActiveItem] = useState<LnbItemKey | undefined>(
-    initialActiveItem,
+    initialActiveItem ?? undefined,
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [isRecentOpen, setIsRecentOpen] = useState(defaultRecentOpen);
