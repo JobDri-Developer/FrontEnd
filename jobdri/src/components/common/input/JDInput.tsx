@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
 import type { IconType } from "@/components/common/icons/Icon";
-import { normalizeCriteriaList } from "@/utils/jdCriteria";
+import { normalizeJdLineBreaks } from "@/utils/jdCriteria";
 import { InputTextAreaAutoGrowS } from "./InputTextAreaAutoGrowS";
 
 export type JDInputState = "default" | "tapped";
@@ -50,10 +50,14 @@ const jdInputTypeConfig: Record<
   },
 };
 
-function getJDInputListItems(value: string, normalizeSentences: boolean) {
-  return (normalizeSentences ? normalizeCriteriaList(value) : value)
-    .split(/\r\n?|\n|\u2028|\u2029/)
-    .map((item) => item.trim().replace(/^[-•ㆍ·]\s*/, ""))
+function getJDInputListItems(value: string) {
+  return normalizeJdLineBreaks(value)
+    .split("\n")
+    .map((item) =>
+      item
+        .trim()
+        .replace(/^[-–—*•●◦▪▫■□◆◇▶▷▸▹‣⁃·ㆍ]\s*/, ""),
+    )
     .filter(Boolean);
 }
 
@@ -68,9 +72,7 @@ function JDInputDisplayValue({
   placeholder: string;
   value: string;
 }) {
-  const listItems = hasValue
-    ? getJDInputListItems(value, alwaysShowAsList)
-    : [];
+  const listItems = hasValue ? getJDInputListItems(value) : [];
 
   if (hasValue && (alwaysShowAsList || listItems.length > 1)) {
     return (
@@ -233,6 +235,7 @@ export function JDInput({
               maxLength={maxLength}
               message=""
               selected
+              addButtonLabel="수정하기"
               onAdd={handleAdd}
               className="!w-full min-w-0 flex-1 gap-1"
             />
