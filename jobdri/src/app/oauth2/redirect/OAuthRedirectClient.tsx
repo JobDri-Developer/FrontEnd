@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import { getEmailFromAccessToken, saveAuthTokens } from "@/lib/auth";
+import { shouldShowDesktopRequiredPage } from "@/utils/device";
 
 export default function OAuthRedirectClient() {
   const router = useRouter();
@@ -28,7 +29,11 @@ export default function OAuthRedirectClient() {
           getEmailFromAccessToken(accessToken) ||
           undefined,
       );
-      router.replace(ROUTES.HOME);
+      router.replace(
+        shouldShowDesktopRequiredPage()
+          ? ROUTES.DESKTOP_REQUIRED
+          : ROUTES.HOME,
+      );
       return;
     }
 

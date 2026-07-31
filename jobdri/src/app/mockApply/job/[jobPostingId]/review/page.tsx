@@ -36,6 +36,7 @@ import {
   getSelectedApplyType,
 } from "@/lib/api/mockApplies";
 import { useDebounce } from "@/hooks/useDebounce";
+import { normalizeJdLineBreaks } from "@/utils/jdCriteria";
 
 function firstNonEmpty(...values: Array<string | null | undefined>) {
   return values.find((value) => value?.trim())?.trim() ?? "";
@@ -143,6 +144,9 @@ export default function JobPostingReviewPage() {
   const [showHomeConfirm, setShowHomeConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveErrorMessage, setSaveErrorMessage] = useState("");
+  const [editingFieldIds, setEditingFieldIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const [lastSavedTime, setLastSavedTime] = useState<string>("");
 
@@ -228,6 +232,21 @@ export default function JobPostingReviewPage() {
       ),
     [companyName, jobPostingName, roleName],
   );
+  const isAnyInputEditing = editingFieldIds.size > 0;
+
+  const handleInputEditingChange = (fieldId: string, isEditing: boolean) => {
+    setEditingFieldIds((current) => {
+      const next = new Set(current);
+
+      if (isEditing) {
+        next.add(fieldId);
+      } else {
+        next.delete(fieldId);
+      }
+
+      return next;
+    });
+  };
 
   // 1. 초기 데이터 로딩
   useEffect(() => {
@@ -248,8 +267,8 @@ export default function JobPostingReviewPage() {
             firstNonEmpty(saved.jobTitle, saved.detailClassificationName),
           );
           setTask(saved.task ?? "");
-          setRequirements(saved.requirement ?? "");
-          setPreferred(saved.preferred ?? "");
+          setRequirements(normalizeJdLineBreaks(saved.requirement ?? ""));
+          setPreferred(normalizeJdLineBreaks(saved.preferred ?? ""));
           setCompanySize(saved.companySize?.trim() || "STARTUP");
           setDetailClassificationId(saved.detailClassificationId ?? 0);
           setJobPostingId(saved.jobPostingId ?? null);
@@ -289,17 +308,21 @@ export default function JobPostingReviewPage() {
           );
           setTask(firstNonEmpty(generated?.task, extracted?.task, saved?.task));
           setRequirements(
-            firstNonEmpty(
-              generated?.requirements,
-              extracted?.requirements,
-              saved?.requirement,
+            normalizeJdLineBreaks(
+              firstNonEmpty(
+                generated?.requirements,
+                extracted?.requirements,
+                saved?.requirement,
+              ),
             ),
           );
           setPreferred(
-            firstNonEmpty(
-              generated?.preferredQualifications,
-              extracted?.preferredQualifications,
-              saved?.preferred,
+            normalizeJdLineBreaks(
+              firstNonEmpty(
+                generated?.preferredQualifications,
+                extracted?.preferredQualifications,
+                saved?.preferred,
+              ),
             ),
           );
           setCompanySize(saved?.companySize?.trim() || "STARTUP");
@@ -332,7 +355,7 @@ export default function JobPostingReviewPage() {
   };
 
   const handleNext = async () => {
-    if (!isNextEnabled || isSaving) return;
+    if (!isNextEnabled || isSaving || isAnyInputEditing) return;
 
     setIsSaving(true);
     setSaveErrorMessage("");
@@ -418,6 +441,12 @@ export default function JobPostingReviewPage() {
                       type="company"
                       value={jobPostingName}
                       onChange={setJobPostingName}
+                      onEdit={() =>
+                        handleInputEditingChange("posting-name", true)
+                      }
+                      onAdd={() =>
+                        handleInputEditingChange("posting-name", false)
+                      }
                       className="!w-full"
                     />
                     <JDInput
@@ -426,6 +455,12 @@ export default function JobPostingReviewPage() {
                       type="company"
                       value={companyName}
                       onChange={setCompanyName}
+                      onEdit={() =>
+                        handleInputEditingChange("company-name", true)
+                      }
+                      onAdd={() =>
+                        handleInputEditingChange("company-name", false)
+                      }
                       className="!w-full"
                     />
                   </SectionCard>
@@ -435,6 +470,8 @@ export default function JobPostingReviewPage() {
                       type="role"
                       value={roleName}
                       onChange={setRoleName}
+                      onEdit={() => handleInputEditingChange("role", true)}
+                      onAdd={() => handleInputEditingChange("role", false)}
                       className="!w-full"
                     />
                     <JDInput
@@ -443,6 +480,8 @@ export default function JobPostingReviewPage() {
                       required={false}
                       value={task}
                       onChange={setTask}
+                      onEdit={() => handleInputEditingChange("task", true)}
+                      onAdd={() => handleInputEditingChange("task", false)}
                       className="!w-full"
                     />
                   </SectionCard>
@@ -453,6 +492,12 @@ export default function JobPostingReviewPage() {
                       required={false}
                       value={requirements}
                       onChange={setRequirements}
+                      onEdit={() =>
+                        handleInputEditingChange("qualification", true)
+                      }
+                      onAdd={() =>
+                        handleInputEditingChange("qualification", false)
+                      }
                       className="!w-full"
                     />
                     <JDInput
@@ -460,6 +505,8 @@ export default function JobPostingReviewPage() {
                       required={false}
                       value={preferred}
                       onChange={setPreferred}
+                      onEdit={() => handleInputEditingChange("prefer", true)}
+                      onAdd={() => handleInputEditingChange("prefer", false)}
                       className="!w-full"
                     />
                   </SectionCard>
@@ -485,7 +532,7 @@ export default function JobPostingReviewPage() {
           }}
           nextAction={{
             label: "다음으로",
-            disabled: !isNextEnabled || isSaving,
+            disabled: !isNextEnabled || isSaving || isAnyInputEditing,
             onClick: () => void handleNext(),
           }}
         />

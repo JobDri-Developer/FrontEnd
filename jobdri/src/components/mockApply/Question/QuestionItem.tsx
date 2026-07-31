@@ -77,7 +77,7 @@ export const QuestionItem = ({
               className="pointer-events-none w-full h-full flex items-center justify-center"
               style={{ pointerEvents: "none" }}
             >
-              <Icon type="TRASH" className="text-text-system-fail" />
+              <Icon type="TRASH" className="text-icon-neutral-assistive" />
             </span>
           </button>
         )}

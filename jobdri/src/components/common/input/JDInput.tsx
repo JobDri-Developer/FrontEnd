@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
 import type { IconType } from "@/components/common/icons/Icon";
+import { normalizeJdLineBreaks } from "@/utils/jdCriteria";
 import { InputTextAreaAutoGrowS } from "./InputTextAreaAutoGrowS";
 
 export type JDInputState = "default" | "tapped";
@@ -50,24 +51,30 @@ const jdInputTypeConfig: Record<
 };
 
 function getJDInputListItems(value: string) {
-  return value
-    .split(/\r?\n/)
-    .map((item) => item.trim().replace(/^[-•ㆍ·]\s*/, ""))
+  return normalizeJdLineBreaks(value)
+    .split("\n")
+    .map((item) =>
+      item
+        .trim()
+        .replace(/^[-–—*•●◦▪▫■□◆◇▶▷▸▹‣⁃·ㆍ]\s*/, ""),
+    )
     .filter(Boolean);
 }
 
 function JDInputDisplayValue({
+  alwaysShowAsList,
   hasValue,
   placeholder,
   value,
 }: {
+  alwaysShowAsList: boolean;
   hasValue: boolean;
   placeholder: string;
   value: string;
 }) {
   const listItems = hasValue ? getJDInputListItems(value) : [];
 
-  if (hasValue && listItems.length > 1) {
+  if (hasValue && (alwaysShowAsList || listItems.length > 1)) {
     return (
       <div className="flex flex-1 flex-col items-start gap-2.5 self-stretch py-2">
         {listItems.map((item, index) => (
@@ -228,6 +235,7 @@ export function JDInput({
               maxLength={maxLength}
               message=""
               selected
+              addButtonLabel="수정하기"
               onAdd={handleAdd}
               className="!w-full min-w-0 flex-1 gap-1"
             />
@@ -236,6 +244,9 @@ export function JDInput({
       ) : (
         <div className="flex flex-1 items-start gap-5 self-stretch">
           <JDInputDisplayValue
+            alwaysShowAsList={
+              type === "qualification" || type === "prefer"
+            }
             hasValue={hasValue}
             placeholder={placeholder}
             value={resolvedValue}

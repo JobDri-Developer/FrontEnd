@@ -200,7 +200,7 @@ function CreditContent() {
 export default function CreditPage() {
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
-      <Lnb className="z-50 shrink-0" />
+      <Lnb initialActiveItem={null} className="z-50 shrink-0" />
       <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
         <main className="mx-auto w-full max-w-[1320px] min-w-[1060px] px-18 pt-12 pb-60">
           <Suspense fallback={<div>로딩 중...</div>}>
