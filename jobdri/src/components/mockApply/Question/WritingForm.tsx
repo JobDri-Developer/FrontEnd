@@ -33,7 +33,7 @@ export default function WritingForm({ question, onChange }: WritingFormProps) {
           required={false}
           value={question.title === "새로운 문항" ? "" : question.title}
           onChange={(val) => onChange("title", val)}
-          maxLength={100}
+          maxLength={200}
           placeholder="예) 이 회사에 지원한 동기를 작성해주세요."
           showAddButton={false}
         />
