@@ -14,6 +14,8 @@ interface ResumeAnalysisLoadingProps {
   onBack?: () => void;
   onComplete?: () => void;
   applicationLabel?: string;
+  companyName?: string;
+  jobTitle?: string;
   isFailed?: boolean;
   onErrorConfirm?: () => void;
 }
@@ -34,6 +36,8 @@ export default function ResumeAnalysisLoading({
   onBack,
   onComplete,
   applicationLabel,
+  companyName = "",
+  jobTitle = "",
   isFailed = false,
 }: ResumeAnalysisLoadingProps) {
   const initialRemainingSeconds = Math.max(1, Math.ceil(durationMs / 1000));
@@ -102,7 +106,12 @@ export default function ResumeAnalysisLoading({
 
   return (
     <div className="relative flex h-dvh min-w-[1100px] flex-col overflow-hidden bg-fill-quaternary-default">
-      <Header currentStep={5} applicationLabel={applicationLabel} />
+      <Header
+        currentStep={5}
+        applicationLabel={applicationLabel}
+        companyName={companyName}
+        jobTitle={jobTitle}
+      />
 
       <div className="flex min-h-0 flex-1 items-start px-2 pb-2">
         <section
