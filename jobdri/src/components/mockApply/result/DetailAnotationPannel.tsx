@@ -8,8 +8,8 @@ import Icon from "@/components/common/icons/Icon";
 
 const statusLabel: Record<HighlightStatus, string> = {
   proven: "적절함",
-  fabricated: "구체성 부족",
-  mentioned: "신뢰성 부족",
+  mentioned: "구체성 부족",
+  fabricated: "신뢰성 부족",
 };
 
 export interface DetailAnnotationPanelProps {
