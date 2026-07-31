@@ -38,6 +38,7 @@ import {
   type LnbRecentItem,
   type LnbNavItem,
 } from "./LnbShared";
+import { useCreditStore } from "@/lib/store/useCreditStore";
 
 interface LnbProps {
   initialActiveItem?: LnbItemKey;
@@ -90,7 +91,7 @@ export default function Lnb({
   const emailInitial = getEmailInitial(displayEmail);
 
   // States
-  const [creditCount, setCreditCount] = useState<number>(0);
+  const { creditCount, setCreditCount } = useCreditStore();
   const [isFold, setIsFold] = useState(false);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [activeItem, setActiveItem] = useState<LnbItemKey | undefined>(
@@ -297,7 +298,7 @@ export default function Lnb({
     fetchCreditBalance({ redirectOnUnauthorized: false })
       .then(setCreditCount)
       .catch(() => {});
-  }, [disableCreditFetch]);
+  }, []);
 
   // Handlers
   const handleToggleFold = () => setIsFold((prev) => !prev);
@@ -405,7 +406,9 @@ export default function Lnb({
             <ModalNotice
               type="alertModal"
               title="아직 준비중인 서비스입니다"
-              description={"더 나은 서비스를 위해 노력하고 있습니다!\n조금만 기다려 주세요"}
+              description={
+                "더 나은 서비스를 위해 노력하고 있습니다!\n조금만 기다려 주세요"
+              }
               onClose={() => setShowComingSoonModal(false)}
               primaryAction={{
                 label: "확인",

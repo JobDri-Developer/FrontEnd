@@ -54,27 +54,24 @@ export default function CreditCard({
   const handleConfirmPurchase = async () => {
     setIsLoading(true);
     try {
-      // 결제 준비 API 호출
-      const response = await preparePurchase(planCode);
+      // 결제 준비
+      const paymentData = await preparePurchase(planCode);
 
-      // 타입스크립트 에러 방지를 위한 타입 단언
-      const data = response as unknown as {
-        checkoutPage?: string;
-        result?: { checkoutPage?: string };
-      };
-      const checkoutPage = data.checkoutPage || data.result?.checkoutPage;
-
-      if (checkoutPage) {
-        // 백엔드에서 생성한 토스페이 결제 페이지로 이동
-        window.location.assign(checkoutPage);
+      // 토스페이 결제창(checkoutPage)으로 리다이렉트
+      if (paymentData.checkoutPage) {
+        window.location.assign(paymentData.checkoutPage);
       } else {
         throw new Error("결제 페이지 URL을 찾을 수 없습니다.");
       }
     } catch (error: unknown) {
-      console.error("결제 준비 중 오류:", error);
-      setToastMessage("결제 진행 중 오류가 발생했습니다.");
-      setIsLoading(false);
+      console.error("결제 진행 중 오류:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "결제 진행 중 오류가 발생했습니다.";
+      setToastMessage(errorMessage);
       setIsModalOpen(false);
+      setIsLoading(false);
     }
   };
 
