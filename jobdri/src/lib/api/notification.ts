@@ -49,6 +49,7 @@ export interface LnbNotificationItem {
   savedToDatabase?: boolean;
   apiType?: string;
   readAt?: string;
+  createdAt?: string;
 }
 
 export interface NotificationResponse {
@@ -130,12 +131,11 @@ export function subscribeToNotificationStream(
       }
 
       try {
-        const parsedData = JSON.parse(event.data) as ApiNotificationItem;
+        const rawParsed = JSON.parse(event.data);
+        const parsedData = (rawParsed.result ||
+          rawParsed) as ApiNotificationItem;
 
-        if (!parsedData.title || parsedData.title.trim() === "") {
-          return;
-        }
-
+        console.log("🔔 [SSE 실시간 수신 성공]:", parsedData);
         onMessage(parsedData);
       } catch (error: unknown) {
         console.error("SSE 데이터 파싱 실패:", error);
@@ -159,13 +159,10 @@ export function subscribeToNotificationStream(
     }
 
     if (error instanceof NotificationStreamResponseError) {
-      console.warn(
-        `실시간 알림 연결을 건너뜁니다: ${error.message}`,
-        {
-          status: error.status,
-          contentType: error.contentType,
-        },
-      );
+      console.warn(`실시간 알림 연결을 건너뜁니다: ${error.message}`, {
+        status: error.status,
+        contentType: error.contentType,
+      });
       return;
     }
 

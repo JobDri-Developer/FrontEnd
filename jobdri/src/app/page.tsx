@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
 import { BusinessFooter } from "@/components/common/footer";
@@ -25,136 +25,237 @@ import type {
 } from "@/components/mockApply/home/types";
 import { useReApply } from "@/hooks/useReApply";
 import { mapMockApplyToApplication } from "@/components/mockApply/home/applicationHomeUtils";
-import { Tooltip } from "@/components/common/tooltip";
+import { Toast, ToastVariant } from "@/components/common/toast";
+
+// 🌟 필요한 API 함수들 import
+import { subscribeAnalysisTaskStream } from "@/lib/api/result";
+import { subscribeToNotificationStream } from "@/lib/api/notification";
 
 export default function Home() {
   const router = useRouter();
   const { reApply, isSaving: isRetrying } = useReApply();
   const [drafts, setDrafts] = useState<DraftData[]>([]);
   const [results, setResults] = useState<ApplicationCardData[]>([]);
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    variant: ToastVariant;
+  }>({
+    show: false,
+    message: "",
+    variant: "normal",
+  });
 
-  useEffect(() => {
-    const loadMockApplies = async () => {
-      try {
-        const [data, fetchedJobPostings] = await Promise.all([
-          fetchMyMockApplies({ redirectOnUnauthorized: false }),
-          fetchMyJobPostings({ redirectOnUnauthorized: false }).catch(() => []),
-        ]);
+  const showToast = (message: string, variant: ToastVariant) => {
+    setToast({ show: true, message, variant });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, show: false }));
+    }, 3000);
+  };
 
-        const jobPostings = Array.isArray(fetchedJobPostings)
-          ? fetchedJobPostings
-          : [];
+  const loadMockApplies = useCallback(async () => {
+    try {
+      const [data, fetchedJobPostings] = await Promise.all([
+        fetchMyMockApplies({ redirectOnUnauthorized: false, size: 100 }),
+        fetchMyJobPostings({ redirectOnUnauthorized: false }).catch(() => []),
+      ]);
 
-        const inProgressList = data?.inProgress || [];
-        const completedList = data?.completed?.content || [];
+      const jobPostings = Array.isArray(fetchedJobPostings)
+        ? fetchedJobPostings
+        : [];
+      const inProgressList = data?.inProgress || [];
+      const completedList = data?.completed?.content || [];
 
-        const jobPostingById = new Map(
-          jobPostings.map((jobPosting) => [
-            jobPosting.jobPostingId,
-            jobPosting,
-          ]),
-        );
+      const jobPostingById = new Map(
+        jobPostings.map((jobPosting) => [jobPosting.jobPostingId, jobPosting]),
+      );
 
-        // 🌟 작성 중인 모의지원(Drafts) 매핑
-        const mappedDrafts: DraftData[] = inProgressList.map((item) => {
-          const jobPosting = jobPostingById.get(item.jobPostingId);
+      // 작성 중인 모의지원(Drafts) 매핑
+      const mappedDrafts: DraftData[] = inProgressList.map((item) => {
+        const jobPosting = jobPostingById.get(item.jobPostingId);
 
-          return {
-            id: String(item.mockApplyId),
-            jobPostingId: item.jobPostingId,
-            mockApplyId: item.mockApplyId,
-            companyName:
-              item.companyName || jobPosting?.companyName || "회사명 미입력",
+        let currentStep = 1;
+        if (item.taskId) {
+          currentStep = 3; // 채점 중
+        } else if (item.status === "ANSWER_WRITE") {
+          currentStep = 2; // 작성 중
+        }
+
+        return {
+          id: String(item.mockApplyId),
+          jobPostingId: item.jobPostingId,
+          mockApplyId: item.mockApplyId,
+          companyName:
+            item.companyName || jobPosting?.companyName || "회사명 미입력",
+          profileColor: jobPosting?.profileColor ?? "DEFAULT",
+          position:
+            item.jobTitle ||
+            jobPosting?.jobTitle ||
+            item.detailClassificationName ||
+            jobPosting?.detailClassificationName ||
+            "직무 미지정",
+          currentStep,
+          taskId: item.taskId,
+          updatedAt: item.createdAt ? formatRelativeDate(item.createdAt) : "-",
+          createdAtTime: item.createdAt
+            ? new Date(item.createdAt).getTime()
+            : 0,
+        };
+      });
+
+      const linkedJobPostingIds = new Set(
+        [...inProgressList, ...completedList].map((item) => item.jobPostingId),
+      );
+
+      // 순수 채용 공고(Drafts) 매핑
+      const savedOnlyDrafts: DraftData[] = jobPostings
+        .filter(
+          (jobPosting) => !linkedJobPostingIds.has(jobPosting.jobPostingId),
+        )
+        .map((jobPosting) => ({
+          id: `job-posting-${jobPosting.jobPostingId}`,
+          jobPostingId: jobPosting.jobPostingId,
+          companyName: jobPosting.companyName || "회사명 미입력",
+          profileColor: jobPosting.profileColor,
+          position:
+            jobPosting.jobTitle ||
+            jobPosting.detailClassificationName ||
+            "직무 미지정",
+          currentStep: 1,
+          taskId: jobPosting.taskId,
+          updatedAt: jobPosting.createdAt
+            ? formatRelativeDate(jobPosting.createdAt)
+            : "-",
+          createdAtTime: jobPosting.createdAt
+            ? new Date(jobPosting.createdAt).getTime()
+            : 0,
+        }));
+
+      const mappedResults = completedList.map((item) => {
+        const jobPosting = jobPostingById.get(item.jobPostingId);
+        return mapMockApplyToApplication(
+          {
+            ...item,
             profileColor: jobPosting?.profileColor ?? "DEFAULT",
-            position:
-              item.jobTitle ||
-              jobPosting?.jobTitle ||
+            jobTitle: item.jobTitle || jobPosting?.jobTitle || "",
+            detailClassificationName:
               item.detailClassificationName ||
               jobPosting?.detailClassificationName ||
-              "직무 미지정",
-            currentStep: item.status === "ANSWER_WRITE" ? 2 : 1,
-            updatedAt: item.createdAt
-              ? formatRelativeDate(item.createdAt)
-              : "-",
-            createdAtTime: item.createdAt
-              ? new Date(item.createdAt).getTime()
-              : 0,
-          };
-        });
-
-        const linkedJobPostingIds = new Set(
-          [...inProgressList, ...completedList].map(
-            (item) => item.jobPostingId,
-          ),
-        );
-
-        // 🌟 순수 채용 공고(Drafts) 매핑
-        const savedOnlyDrafts: DraftData[] = jobPostings
-          .filter(
-            (jobPosting) => !linkedJobPostingIds.has(jobPosting.jobPostingId),
-          )
-          .map((jobPosting) => ({
-            id: `job-posting-${jobPosting.jobPostingId}`,
-            jobPostingId: jobPosting.jobPostingId,
-            companyName: jobPosting.companyName || "회사명 미입력",
-            profileColor: jobPosting.profileColor,
-            position:
-              jobPosting.jobTitle ||
-              jobPosting.detailClassificationName ||
-              "직무 미지정",
-            currentStep: 1,
-            updatedAt: jobPosting.createdAt
-              ? formatRelativeDate(jobPosting.createdAt)
-              : "-",
-            createdAtTime: jobPosting.createdAt
-              ? new Date(jobPosting.createdAt).getTime()
-              : 0,
-          }));
-
-        const mappedResults = completedList.map((item) => {
-          const jobPosting = jobPostingById.get(item.jobPostingId);
-
-          const cardData = mapMockApplyToApplication(
-            {
-              ...item,
-              profileColor: jobPosting?.profileColor ?? "DEFAULT",
-              jobTitle: item.jobTitle || jobPosting?.jobTitle || "",
-              detailClassificationName:
-                item.detailClassificationName ||
-                jobPosting?.detailClassificationName ||
-                "",
-            },
-            "completed",
-          );
-
-          return cardData;
-        });
-
-        const sortedDrafts = [...savedOnlyDrafts, ...mappedDrafts].sort(
-          (a, b) => {
-            const timeDifference =
-              (b.createdAtTime ?? 0) - (a.createdAtTime ?? 0);
-
-            if (timeDifference !== 0) {
-              return timeDifference;
-            }
-
-            return (
-              (b.mockApplyId ?? b.jobPostingId) -
-              (a.mockApplyId ?? a.jobPostingId)
-            );
+              "",
           },
+          "completed",
         );
+      });
 
-        setDrafts(sortedDrafts);
-        setResults(mappedResults);
-      } catch (error) {
-        console.error("데이터를 불러오는데 실패했습니다.", error);
-      }
-    };
+      const sortedDrafts = [...savedOnlyDrafts, ...mappedDrafts].sort(
+        (a, b) => {
+          const aIsAnalyzing = a.currentStep === 3;
+          const bIsAnalyzing = b.currentStep === 3;
 
-    loadMockApplies();
+          if (aIsAnalyzing && !bIsAnalyzing) return -1;
+          if (!aIsAnalyzing && bIsAnalyzing) return 1;
+
+          const timeDifference =
+            (b.createdAtTime ?? 0) - (a.createdAtTime ?? 0);
+          if (timeDifference !== 0) return timeDifference;
+          return (
+            (b.mockApplyId ?? b.jobPostingId) -
+            (a.mockApplyId ?? a.jobPostingId)
+          );
+        },
+      );
+
+      setDrafts(sortedDrafts);
+      setResults(mappedResults);
+    } catch (error) {
+      console.error("데이터를 불러오는데 실패했습니다.", error);
+    }
   }, []);
+
+  // 컴포넌트 마운트 시 최초 1회 목록 불러오기
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      await loadMockApplies();
+    };
+    void fetchInitialData();
+  }, [loadMockApplies]);
+
+  // // 🌟 1. 자소서 분석(채점 중) 개별 구독
+  // useEffect(() => {
+  //   const analyzingDrafts = drafts.filter(
+  //     (draft) => draft.currentStep === 3 && draft.taskId && draft.mockApplyId,
+  //   );
+
+  //   if (analyzingDrafts.length === 0) return;
+
+  //   const abortControllers: AbortController[] = [];
+
+  //   analyzingDrafts.forEach((draft) => {
+  //     const controller = new AbortController();
+  //     abortControllers.push(controller);
+
+  //     void subscribeAnalysisTaskStream(draft.mockApplyId!, draft.taskId!, {
+  //       signal: controller.signal,
+  //       onEvent: (event) => {
+  //         try {
+  //           const data = JSON.parse(event.data);
+  //           if (data.status === "SUCCEEDED") {
+  //             showToast("자소서 분석이 완료되었습니다!", "check");
+  //             loadMockApplies();
+  //             controller.abort();
+  //           } else if (data.status === "FAILED") {
+  //             showToast("자소서 분석에 실패했습니다.", "warning");
+  //             loadMockApplies();
+  //             controller.abort();
+  //           }
+  //         } catch (e) {}
+  //       },
+  //     });
+  //   });
+
+  //   return () => {
+  //     abortControllers.forEach((controller) => controller.abort());
+  //   };
+  // }, [drafts, loadMockApplies]);
+
+  useEffect(() => {
+    const analyzingJobPostings = drafts.filter(
+      (draft) => draft.currentStep === 1 && draft.taskId && !draft.mockApplyId,
+    );
+
+    if (analyzingJobPostings.length === 0) return;
+
+    const abortControllers: AbortController[] = [];
+
+    analyzingJobPostings.forEach((draft) => {
+      const controller = new AbortController();
+      abortControllers.push(controller);
+
+      void subscribeAnalysisTaskStream(draft.jobPostingId, draft.taskId!, {
+        signal: controller.signal,
+        onEvent: (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            const status = data.result?.status || data.status;
+
+            // console.log(`✨ [Task ID: ${draft.taskId}] 상태 감지:`, status);
+
+            if (status === "SUCCEEDED" || status === "FAILED") {
+              void loadMockApplies();
+              controller.abort();
+            }
+          } catch (e) {}
+        },
+      }).catch((error) => {
+        if (error.name === "AbortError" || error.message?.includes("aborted"))
+          return;
+      });
+    });
+
+    return () => {
+      abortControllers.forEach((controller) => controller.abort());
+    };
+  }, [drafts, loadMockApplies]);
 
   const deletePosting = async (jobPostingId: number) => {
     try {
@@ -183,6 +284,7 @@ export default function Home() {
       console.error("모의 서류 지원을 삭제하지 못했습니다.", error);
     }
   };
+
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
       <Lnb className="z-50 shrink-0" />
@@ -292,6 +394,14 @@ export default function Home() {
         {/* 하단 푸터 */}
         <BusinessFooter className="mt-auto items-center bg-[#F5F6F9] [&>div:first-child]:bg-transparent" />
       </div>
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          variant={toast.variant}
+          position="top"
+          onClose={() => setToast((prev) => ({ ...prev, show: false }))}
+        />
+      )}
     </div>
   );
 }
