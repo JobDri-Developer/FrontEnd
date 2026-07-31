@@ -617,7 +617,7 @@ export function LnbNotificationListItem({
       onClick={() => void handleNotificationClick()}
       className={clsx(
         "flex shrink-0 items-center gap-2 self-stretch rounded-card-s px-3 py-2",
-        "cursor-pointer transition-colors hover:bg-fill-neutral-muted",
+        "cursor-pointer transition-colors hover:bg-fill-quaternary-default-hover active:bg-fill-quaternary-default-pressed",
       )}
     >
       <div
