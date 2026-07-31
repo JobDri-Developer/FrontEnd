@@ -62,6 +62,7 @@ export interface SavedJobPosting {
   detailClassificationId: number;
   detailClassificationName: string;
   task: string;
+  taskId?: string;
   createdAt: string;
   updatedAt?: string;
   requirement: string;

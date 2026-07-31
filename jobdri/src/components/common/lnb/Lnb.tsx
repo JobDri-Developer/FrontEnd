@@ -27,7 +27,6 @@ import {
 import { getResumePath } from "@/components/mockApply/home/applicationHomeUtils";
 import {
   fetchNotifications,
-  subscribeToNotificationStream,
   type LnbNotificationItem,
 } from "@/lib/api/notification";
 import LnbDefault from "./LnbDefault";
@@ -39,6 +38,9 @@ import {
   type LnbNavItem,
 } from "./LnbShared";
 import { useCreditStore } from "@/lib/store/useCreditStore";
+
+// 알림 폴링 주기 (15초)
+const NOTIFICATION_POLL_INTERVAL_MS = 15_000;
 
 interface LnbProps {
   initialActiveItem?: LnbItemKey;
@@ -108,13 +110,16 @@ export default function Lnb({
   >([]);
   const [hasNotification, setHasNotification] = useState(false);
 
+  // 🌟 토스트 상태 부활
   const [toastState, setToastState] = useState<{
     message: string;
     variant: ToastVariant;
   } | null>(null);
 
-  // 중복 구독 방지용 락 Ref 추가
-  const hasSubscribedRef = useRef(false);
+  // 🌟 중복 알림 원천 차단용 Refs
+  const seenAnalysisIdsRef = useRef<Set<string>>(new Set());
+  const seenToastIdsRef = useRef<Set<string>>(new Set());
+  const isFirstNotificationLoadRef = useRef(true);
 
   const loadRecentItems = useCallback(async () => {
     try {
@@ -167,7 +172,6 @@ export default function Lnb({
     const initialLoadTimer = window.setTimeout(() => {
       void loadRecentItems();
     }, 0);
-
     return () => window.clearTimeout(initialLoadTimer);
   }, [loadRecentItems]);
 
@@ -175,7 +179,6 @@ export default function Lnb({
     const refreshRecentItems = () => {
       void loadRecentItems();
     };
-
     window.addEventListener(MOCK_APPLY_CHANGED_EVENT, refreshRecentItems);
     window.addEventListener("focus", refreshRecentItems);
 
@@ -185,112 +188,110 @@ export default function Lnb({
     };
   }, [loadRecentItems]);
 
-  useEffect(() => {
-    if (hasSubscribedRef.current) return;
-    hasSubscribedRef.current = true;
+  // 🌟 토스트 띄우는 함수 (순수하게 메시지만 세팅함)
+  const triggerToast = useCallback((item: LnbNotificationItem) => {
+    let toastMessage = item.title || "새로운 알림이 도착했습니다.";
+    let toastVariant: ToastVariant = "check";
 
-    const triggerToastBasedOnNotification = (item: LnbNotificationItem) => {
-      let toastMessage = item.title || "새로운 알림이 도착했습니다.";
-      let toastVariant: ToastVariant = "check";
+    const isJobPostingSuccess =
+      item.apiType === "JOB_POSTING_ANALYSIS_SUCCESS" ||
+      item.title?.includes("공고 분석 완료");
+    const isJobPostingFailed =
+      item.apiType === "JOB_POSTING_ANALYSIS_FAILED" ||
+      item.title?.includes("공고 분석 실패");
 
-      switch (item.apiType) {
-        case "JOB_POSTING_ASYNC_SUCCEEDED":
-          toastMessage = "공고 분석이 완료되었습니다!";
-          break;
-        case "JOB_POSTING_ASYNC_FAILED":
-          toastMessage = "공고 분석에 실패했습니다. 다시 시도해주세요.";
-          toastVariant = "warning";
-          break;
-        case "ANALYSIS_ASYNC_SUCCEEDED":
-          toastMessage = "자소서 분석이 완료되었습니다!";
-          break;
-        case "ANALYSIS_ASYNC_FAILED":
-          toastMessage = "자소서 분석에 실패했습니다. 다시 시도해주세요.";
-          toastVariant = "warning";
-          break;
-        default:
-          if (item.type === "fail") {
-            toastVariant = "warning";
-          }
-          break;
-      }
+    const isResumeAnalysisSuccess =
+      item.apiType === "MOCK_APPLY_ANALYSIS_SUCCESS" ||
+      item.title?.includes("자소서 분석 완료");
+    const isResumeAnalysisFailed =
+      item.apiType === "MOCK_APPLY_ANALYSIS_FAILED" ||
+      item.title?.includes("자소서 분석 실패");
 
-      setToastState({ message: toastMessage, variant: toastVariant });
-      window.setTimeout(() => setToastState(null), 3000);
-    };
+    if (isJobPostingSuccess) {
+      toastMessage = "공고 분석이 완료되었습니다!";
+    } else if (isJobPostingFailed) {
+      toastMessage = "공고 분석에 실패했습니다. 다시 시도해주세요.";
+      toastVariant = "warning";
+    } else if (isResumeAnalysisSuccess) {
+      toastMessage = "자소서 분석이 완료되었습니다!";
+    } else if (isResumeAnalysisFailed) {
+      toastMessage = "자소서 분석에 실패했습니다. 다시 시도해주세요.";
+      toastVariant = "warning";
+    } else if (item.type === "fail") {
+      toastVariant = "warning";
+    }
 
-    const fetchAndUpdateNotifications = async () => {
-      try {
-        const data = await fetchNotifications();
-        if (data.isSuccess && data.result) {
-          const mappedItems = data.result.map(mapApiToLnbItem);
+    setToastState({ message: toastMessage, variant: toastVariant });
+    window.setTimeout(() => setToastState(null), 3000);
+  }, []);
 
-          setNotificationItems((prevItems) => {
-            if (prevItems.length > 0 && mappedItems.length > 0) {
-              const latestNewItem = mappedItems[0];
-              const prevLatestItem = prevItems[0];
+  const fetchAndUpdateNotifications = useCallback(async () => {
+    try {
+      const data = await fetchNotifications();
+      if (!data.isSuccess || !data.result) return;
 
-              if (
-                latestNewItem.id !== prevLatestItem.id &&
-                !latestNewItem.read
-              ) {
-                triggerToastBasedOnNotification(latestNewItem);
-              }
-            }
-            return mappedItems;
-          });
+      const mappedItems = data.result.map(mapApiToLnbItem);
 
-          setHasNotification(mappedItems.some((item) => !item.read));
+      if (isFirstNotificationLoadRef.current) {
+        mappedItems.forEach((item) => {
+          if (item.id) seenToastIdsRef.current.add(String(item.id));
+        });
+        isFirstNotificationLoadRef.current = false;
+      } else {
+        const newUnreadItems = mappedItems.filter(
+          (item) =>
+            item.id &&
+            !seenToastIdsRef.current.has(String(item.id)) &&
+            !item.read,
+        );
+
+        if (newUnreadItems.length > 0) {
+          triggerToast(newUnreadItems[0]);
         }
-      } catch (error) {
-        console.error("알림 목록 갱신 실패:", error);
-      }
-    };
 
+        mappedItems.forEach((item) => {
+          if (item.id) seenToastIdsRef.current.add(String(item.id));
+        });
+      }
+
+      setNotificationItems(mappedItems);
+      setHasNotification(mappedItems.some((item) => !item.read));
+
+      // 리스트 갱신 로직 (분석 완료 시)
+      const analysisIds = mappedItems
+        .filter((item) => item.apiType?.includes("ANALYSIS"))
+        .map((item) => String(item.id));
+
+      const hasNewAnalysis = analysisIds.some(
+        (id) => !seenAnalysisIdsRef.current.has(id),
+      );
+      seenAnalysisIdsRef.current = new Set(analysisIds);
+
+      if (hasNewAnalysis) {
+        void loadRecentItems();
+      }
+    } catch (error) {
+      console.error("알림 목록 갱신 실패:", error);
+    }
+  }, [loadRecentItems, triggerToast]);
+
+  useEffect(() => {
     void fetchAndUpdateNotifications();
 
-    const unsubscribe = subscribeToNotificationStream(
-      (newNotification) => {
-        window.setTimeout(() => {
-          void fetchAndUpdateNotifications();
-        }, 500);
+    const intervalId = window.setInterval(() => {
+      void fetchAndUpdateNotifications();
+    }, NOTIFICATION_POLL_INTERVAL_MS);
 
-        if (newNotification.type.startsWith("ANALYSIS_ASYNC_")) {
-          void loadRecentItems();
-        }
-      },
-      (error) => {
-        console.error("실시간 알림 연결 문제 발생:", error);
-      },
-    );
+    const handleFocus = () => {
+      void fetchAndUpdateNotifications();
+    };
+    window.addEventListener("focus", handleFocus);
 
     return () => {
-      unsubscribe();
-      hasSubscribedRef.current = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
     };
-  }, [loadRecentItems]);
-
-  useEffect(() => {
-    const handleMockApplyDeleted = (event: Event) => {
-      const mockApplyId = (event as CustomEvent<number>).detail;
-
-      setRecentItems((current) =>
-        current.filter((item) => item.id !== String(mockApplyId)),
-      );
-      setSelectedRecentItemId((current) =>
-        current === String(mockApplyId) ? "" : current,
-      );
-    };
-
-    window.addEventListener(MOCK_APPLY_DELETED_EVENT, handleMockApplyDeleted);
-
-    return () => {
-      window.removeEventListener(
-        MOCK_APPLY_DELETED_EVENT,
-        handleMockApplyDeleted,
-      );
-    };
-  }, []);
+  }, [fetchAndUpdateNotifications]);
 
   // Credit Fetch
   useEffect(() => {
@@ -298,7 +299,7 @@ export default function Lnb({
     fetchCreditBalance({ redirectOnUnauthorized: false })
       .then(setCreditCount)
       .catch(() => {});
-  }, []);
+  }, [disableCreditFetch, setCreditCount]);
 
   // Handlers
   const handleToggleFold = () => setIsFold((prev) => !prev);
@@ -419,6 +420,7 @@ export default function Lnb({
           document.body,
         )}
 
+      {/* 🌟 렌더링에서 빠져있던 토스트 컴포넌트 부활! */}
       {toastState && (
         <Toast
           message={toastState.message}

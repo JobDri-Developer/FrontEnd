@@ -57,6 +57,7 @@ export interface MockApplyHomeItem {
   applyType: JobPostingApplyType;
   profileColor?: JobPostingProfileColor;
   score?: number;
+  taskId?: string;
 }
 
 export interface PageResponse<T> {
@@ -76,10 +77,7 @@ export const APPLY_TYPE_STORAGE_KEY = "jobdri.applyType";
 export const MOCK_APPLY_DELETED_EVENT = "jobdri:mock-apply-deleted";
 export const MOCK_APPLY_CHANGED_EVENT = "jobdri:mock-apply-changed";
 const MOCK_APPLY_RESUME_STORAGE_KEY = "jobdri.mockApplyResumeRecords";
-const retryMockApplyRequests = new Map<
-  number,
-  Promise<MockApplyRetryResult>
->();
+const retryMockApplyRequests = new Map<number, Promise<MockApplyRetryResult>>();
 
 export function notifyMockApplyChanged() {
   if (typeof window !== "undefined") {
@@ -147,11 +145,16 @@ export function createApplyFromJobPosting({
 export async function fetchMyMockApplies({
   signal,
   redirectOnUnauthorized = true,
+  size = 100,
 }: {
   signal?: AbortSignal;
   redirectOnUnauthorized?: boolean;
+  size?: number;
 } = {}) {
-  const response = await fetch(`${API_BASE_URL}/api/mock-applies/me`, {
+  const url = new URL(`${API_BASE_URL}/api/mock-applies/me`);
+  url.searchParams.set("size", String(size));
+
+  const response = await fetch(url.toString(), {
     headers: getAuthHeaders(),
     cache: "no-store",
     signal,
