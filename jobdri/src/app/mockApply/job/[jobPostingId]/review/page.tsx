@@ -36,6 +36,7 @@ import {
   getSelectedApplyType,
 } from "@/lib/api/mockApplies";
 import { useDebounce } from "@/hooks/useDebounce";
+import { normalizeCriteriaList } from "@/utils/jdCriteria";
 
 function firstNonEmpty(...values: Array<string | null | undefined>) {
   return values.find((value) => value?.trim())?.trim() ?? "";
@@ -248,8 +249,8 @@ export default function JobPostingReviewPage() {
             firstNonEmpty(saved.jobTitle, saved.detailClassificationName),
           );
           setTask(saved.task ?? "");
-          setRequirements(saved.requirement ?? "");
-          setPreferred(saved.preferred ?? "");
+          setRequirements(normalizeCriteriaList(saved.requirement ?? ""));
+          setPreferred(normalizeCriteriaList(saved.preferred ?? ""));
           setCompanySize(saved.companySize?.trim() || "STARTUP");
           setDetailClassificationId(saved.detailClassificationId ?? 0);
           setJobPostingId(saved.jobPostingId ?? null);
@@ -289,17 +290,21 @@ export default function JobPostingReviewPage() {
           );
           setTask(firstNonEmpty(generated?.task, extracted?.task, saved?.task));
           setRequirements(
-            firstNonEmpty(
-              generated?.requirements,
-              extracted?.requirements,
-              saved?.requirement,
+            normalizeCriteriaList(
+              firstNonEmpty(
+                generated?.requirements,
+                extracted?.requirements,
+                saved?.requirement,
+              ),
             ),
           );
           setPreferred(
-            firstNonEmpty(
-              generated?.preferredQualifications,
-              extracted?.preferredQualifications,
-              saved?.preferred,
+            normalizeCriteriaList(
+              firstNonEmpty(
+                generated?.preferredQualifications,
+                extracted?.preferredQualifications,
+                saved?.preferred,
+              ),
             ),
           );
           setCompanySize(saved?.companySize?.trim() || "STARTUP");

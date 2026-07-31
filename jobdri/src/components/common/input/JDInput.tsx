@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
 import type { IconType } from "@/components/common/icons/Icon";
+import { normalizeCriteriaList } from "@/utils/jdCriteria";
 import { InputTextAreaAutoGrowS } from "./InputTextAreaAutoGrowS";
 
 export type JDInputState = "default" | "tapped";
@@ -49,25 +50,29 @@ const jdInputTypeConfig: Record<
   },
 };
 
-function getJDInputListItems(value: string) {
-  return value
-    .split(/\r?\n/)
+function getJDInputListItems(value: string, normalizeSentences: boolean) {
+  return (normalizeSentences ? normalizeCriteriaList(value) : value)
+    .split(/\r\n?|\n|\u2028|\u2029/)
     .map((item) => item.trim().replace(/^[-•ㆍ·]\s*/, ""))
     .filter(Boolean);
 }
 
 function JDInputDisplayValue({
+  alwaysShowAsList,
   hasValue,
   placeholder,
   value,
 }: {
+  alwaysShowAsList: boolean;
   hasValue: boolean;
   placeholder: string;
   value: string;
 }) {
-  const listItems = hasValue ? getJDInputListItems(value) : [];
+  const listItems = hasValue
+    ? getJDInputListItems(value, alwaysShowAsList)
+    : [];
 
-  if (hasValue && listItems.length > 1) {
+  if (hasValue && (alwaysShowAsList || listItems.length > 1)) {
     return (
       <div className="flex flex-1 flex-col items-start gap-2.5 self-stretch py-2">
         {listItems.map((item, index) => (
@@ -236,6 +241,9 @@ export function JDInput({
       ) : (
         <div className="flex flex-1 items-start gap-5 self-stretch">
           <JDInputDisplayValue
+            alwaysShowAsList={
+              type === "qualification" || type === "prefer"
+            }
             hasValue={hasValue}
             placeholder={placeholder}
             value={resolvedValue}
