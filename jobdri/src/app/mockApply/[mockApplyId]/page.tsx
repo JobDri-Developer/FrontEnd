@@ -119,7 +119,9 @@ export default function MockApplyPage({
     variant: ToastVariant;
   }>({ open: false, message: "", variant: "normal" });
 
-  const [modalTarget, setModalTarget] = useState<string | null>(null);
+  // 임시 주석 처리: 문항 삭제 모달 타겟 상태
+  // const [modalTarget, setModalTarget] = useState<string | null>(null);
+
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
@@ -203,10 +205,7 @@ export default function MockApplyPage({
 
         return savedQuestions;
       } catch (error) {
-        if (
-          canonicalFallback &&
-          revision === questionSaveRevisionRef.current
-        ) {
+        if (canonicalFallback && revision === questionSaveRevisionRef.current) {
           const reconciledQuestions = mergeLocalQuestionEdits(
             canonicalFallback,
             desiredQuestions,
@@ -234,10 +233,7 @@ export default function MockApplyPage({
   }, [questions]);
 
   useEffect(() => {
-    if (
-      !isRetryEntry ||
-      retryToastShownForRef.current === mockApplyId
-    ) {
+    if (!isRetryEntry || retryToastShownForRef.current === mockApplyId) {
       return;
     }
 
@@ -446,10 +442,7 @@ export default function MockApplyPage({
         return;
       }
 
-      await saveApply(
-        Number(mockApplyId),
-        getSubmitPayload(questionsSnapshot),
-      );
+      await saveApply(Number(mockApplyId), getSubmitPayload(questionsSnapshot));
 
       if (revision === questionSaveRevisionRef.current) {
         setLastSavedTime(getCurrentTime());
@@ -485,10 +478,7 @@ export default function MockApplyPage({
 
     try {
       const savedApply = await enqueueQuestionSave(() =>
-        saveApply(
-          Number(mockApplyId),
-          getSubmitPayload(questionsRef.current),
-        ),
+        saveApply(Number(mockApplyId), getSubmitPayload(questionsRef.current)),
       );
       const acceptedAnalysis = await requestAnalysis(Number(mockApplyId));
       const isCachedResultAvailable =
@@ -565,7 +555,11 @@ export default function MockApplyPage({
     }
   };
 
-  const performDelete = async (targetId: string) => {
+  // 내용 여부(hasContent)를 인자로 받아 토스트를 띄울지 결정하도록 수정
+  const performDelete = async (
+    targetId: string,
+    hasContent: boolean = false,
+  ) => {
     if (isQuestionStructureSavingRef.current) {
       setToast({
         open: true,
@@ -604,11 +598,15 @@ export default function MockApplyPage({
           ? "등록된 문항이 없습니다. 문항 추가 버튼을 눌러 작성해주세요."
           : "",
       );
-      setToast({
-        open: true,
-        message: "문항이 삭제되었어요",
-        variant: "normal",
-      });
+
+      // 내용이 있을 때만 삭제 완료 토스트 오픈
+      if (hasContent) {
+        setToast({
+          open: true,
+          message: "문항이 삭제되었어요.",
+          variant: "normal",
+        });
+      }
     } catch (error) {
       console.error("문항 삭제 실패:", error);
       setToast({
@@ -619,17 +617,14 @@ export default function MockApplyPage({
     }
   };
 
+  // 무조건 삭제를 호출하되, 내용 여부(hasContent)를 넘겨줍니다.
   const handleDeleteQuestion = (targetId: string) => {
     const targetQ = questions.find((q) => q.id === targetId);
     const hasContent =
       (targetQ?.question?.trim() || "") !== "" ||
       (targetQ?.answer?.trim() || "") !== "";
 
-    if (hasContent) {
-      setModalTarget(targetId);
-    } else {
-      void performDelete(targetId);
-    }
+    void performDelete(targetId, hasContent);
   };
 
   const handleUpdate = (field: string, value: string) => {
@@ -779,28 +774,12 @@ export default function MockApplyPage({
           />
         )}
 
-        {modalTarget && (
+        {/* 모달 UI 부분은 주석 처리 유지 */}
+        {/* {modalTarget && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
-            <ModalNotice
-              type="confirmation"
-              title="정말로 문항을 삭제할까요?"
-              description="삭제된 내용은 복구되지 않아요."
-              onClose={() => setModalTarget(null)}
-              secondaryAction={{
-                label: "취소",
-                onClick: () => setModalTarget(null),
-              }}
-              primaryAction={{
-                label: "삭제하기",
-                styleType: "error",
-                onClick: () => {
-                  void performDelete(modalTarget);
-                  setModalTarget(null);
-                },
-              }}
-            />
+            ...
           </div>
-        )}
+        )} */}
 
         {isLeaveModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
