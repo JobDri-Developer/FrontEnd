@@ -16,6 +16,22 @@ export const metadata: Metadata = {
     shortcut: "/ic_JobDri.svg?v=2",
     apple: "/ic_JobDri.svg?v=2",
   },
+  openGraph: {
+    title: "JobDri",
+    description: "취준생을 위한 채용 통합 관리 솔루션",
+    url: "https://jobdri.com",
+    siteName: "JobDri",
+    images: [
+      {
+        url: "/open_graph.png",
+        width: 1200,
+        height: 630,
+        alt: "사이트 대표 이미지",
+      },
+    ],
+    locale: "ko_KR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
