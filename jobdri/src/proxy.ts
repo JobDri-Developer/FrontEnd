@@ -68,14 +68,14 @@ export function proxy(request: NextRequest) {
     pathname !== DESKTOP_REQUIRED_PATH &&
     !isPublic
   ) {
-    return NextResponse.redirect(
-      new URL(DESKTOP_REQUIRED_PATH, request.url),
-    );
+    return NextResponse.redirect(new URL(DESKTOP_REQUIRED_PATH, request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|test).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };
