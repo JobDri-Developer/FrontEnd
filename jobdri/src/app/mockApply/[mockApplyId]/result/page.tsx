@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import ResumeAnalysisFeedback from "@/components/mockApply/result/ResumeAnalysisFeedback";
 import ResumeAnalysisDetail from "@/components/mockApply/result/ResumeAnalysisDetail";
 import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
-import { ModalNotice } from "@/components/common/modal";
-import { Toast } from "@/components/common/toast";
+import ModalNotice from "@/components/common/modal/ModalNotice";
+import Toast from "@/components/common/toast/Toast";
 import { useReApply } from "@/hooks/useReApply";
 import {
   fetchMockApplyJobPosting,
@@ -70,8 +70,7 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
 
     const loadJobPostingHeader = async () => {
       try {
-        const jobPosting =
-          await fetchMockApplyJobPosting(parsedMockApplyId);
+        const jobPosting = await fetchMockApplyJobPosting(parsedMockApplyId);
 
         if (!ignore) {
           setJobPostingHeader({

@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect, use, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { QuestionList } from "@/components/mockApply/Question/QuestionList";
-import JDSidePanel from "@/components/mockApply/Question/SidePanel";
-import WritingForm from "@/components/mockApply/Question/WritingForm";
+import { QuestionList } from "@/components/mockApply/questions/QuestionList";
+import JDSidePanel from "@/components/mockApply/questions/SidePanel";
+import WritingForm from "@/components/mockApply/questions/WritingForm";
 import clsx from "clsx";
 import { scrollbarClassS } from "@/components/common/scrollbar/scrollbarStyles";
 import {
@@ -13,8 +13,9 @@ import {
   saveApply,
   type QuestionItem,
 } from "@/lib/api/questions";
-import { ModalNotice } from "@/components/common/modal";
-import { Toast, type ToastVariant } from "@/components/common/toast";
+import ModalNotice from "@/components/common/modal/ModalNotice";
+import { type ToastVariant } from "@/components/common/toast/Toast";
+import Toast from "@/components/common/toast/Toast";
 import {
   CreditInsufficientError,
   fetchAnalysisResult,
@@ -24,7 +25,7 @@ import {
 } from "@/lib/api/result";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 import { fetchMockApplyJobPosting } from "@/lib/api/mockApplies";
-import type { JDData } from "@/components/mockApply/Question/SidePanel";
+import type { JDData } from "@/components/mockApply/questions/SidePanel";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
 import { useDebounce } from "@/hooks/useDebounce";
 

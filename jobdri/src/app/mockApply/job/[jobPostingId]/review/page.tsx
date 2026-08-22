@@ -16,10 +16,10 @@ import {
   lnbHiddenScrollbarClass,
   useLnbScrollMetrics,
 } from "@/components/common/lnb/LnbScrollbar";
-import { CtaFooter } from "@/components/common/cta";
-import { JDInput } from "@/components/common/input";
-import { ModalNotice } from "@/components/common/modal";
-import Avatar, { type AvatarColor } from "@/components/mockApply/home/Avatar";
+import CtaFooter from "@/components/common/cta/CtaFooter";
+import { JDInput } from "@/components/common/input/JDInput";
+import ModalNotice from "@/components/common/modal/ModalNotice";
+import Avatar, { type AvatarColor } from "@/components/home/Avatar";
 import {
   clearJobPostingInput,
   getJobPostingAnalysis,

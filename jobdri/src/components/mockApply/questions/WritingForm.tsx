@@ -2,12 +2,10 @@
 
 import React, { useState } from "react";
 import { DropDown } from "@/components/common/dropdown";
-import {
-  InputTextAreaAutoGrowS,
-  InputTextAreaFixedL,
-} from "@/components/common/input";
+import { InputTextAreaAutoGrowS } from "@/components/common/input/InputTextAreaAutoGrowS";
+import { InputTextAreaFixedL } from "@/components/common/input/InputTextAreaFixedL";
 import Icon from "@/components/common/icons/Icon";
-import { Tooltip } from "@/components/common/tooltip";
+import { Tooltip } from "@/components/common/tooltip/Tooltip";
 
 interface QuestionData {
   title: string;

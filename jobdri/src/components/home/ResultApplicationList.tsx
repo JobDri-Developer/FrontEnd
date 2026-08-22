@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ResultApplicationCard } from "@/components/mockApply/home/ResultApplicationCard";
+import { ResultApplicationCard } from "@/components/home/ResultApplicationCard";
 import { Pagination } from "@/components/common/Pagination";
 import type { ApplicationCardData } from "./types";
 

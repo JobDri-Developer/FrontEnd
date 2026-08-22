@@ -10,8 +10,9 @@ import {
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
-import ModalNotice from "../modal/ModalNotice";
-import { Toast, type ToastVariant } from "@/components/common/toast";
+import ModalNotice from "@/components/common/modal/ModalNotice";
+import Toast from "@/components/common/toast/Toast";
+import type { ToastVariant } from "@/components/common/toast/Toast";
 import {
   AUTH_STORAGE_KEYS,
   clearAuthTokens,
@@ -22,9 +23,8 @@ import { fetchCreditBalance } from "@/lib/api/credit";
 import {
   fetchMyMockApplies,
   MOCK_APPLY_CHANGED_EVENT,
-  MOCK_APPLY_DELETED_EVENT,
 } from "@/lib/api/mockApplies";
-import { getResumePath } from "@/components/mockApply/home/applicationHomeUtils";
+import { getResumePath } from "@/components/home/applicationHomeUtils";
 import {
   fetchNotifications,
   type LnbNotificationItem,

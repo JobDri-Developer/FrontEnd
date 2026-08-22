@@ -5,7 +5,7 @@ import Header from "@/components/common/header/Header";
 import CtaFooter from "@/components/common/cta/CtaFooter";
 import { fetchSequence } from "@/lib/api/result";
 import { LEAVE_MODAL_CONFIG } from "@/constants/modalConfig";
-import { ModalNotice } from "./modal";
+import ModalNotice from "@/components/common/modal/ModalNotice";
 import { type IconType } from "@/components/common/icons/Icon"; // 👈 아이콘 타입 임포트 추가
 
 interface MockApplyTemplateProps {

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
-import { ModalNotice } from "@/components/common/modal";
+import ModalNotice from "@/components/common/modal/ModalNotice";
 import {
   AnalysisPendingError,
   fetchAnalysisResult,

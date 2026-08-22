@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { DraftData } from "./types";
-import { ResultDraftCard } from "@/components/mockApply/home/ResultDraftCard";
+import { ResultDraftCard } from "@/components/home/ResultDraftCard";
 import { Pagination } from "@/components/common/Pagination";
 
 interface ResultDraftListProps {

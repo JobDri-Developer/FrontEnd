@@ -7,7 +7,7 @@ import ProgressPanelRow from "@/components/common/progress/ProgressPanelRow";
 import { TextButton } from "@/components/common/buttons";
 import resumeAnalysisLoading from "@/assets/lottie/resume-analysis-loading.json";
 import LoadingGraphic from "./LoadingGraphic";
-import { ModalNotice } from "@/components/common/modal";
+import ModalNotice from "@/components/common/modal/ModalNotice";
 
 interface ResumeAnalysisLoadingProps {
   durationMs: number;

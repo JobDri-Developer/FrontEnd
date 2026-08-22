@@ -16,7 +16,7 @@ import {
   LnbScrollbar,
   useLnbScrollMetrics,
 } from "@/components/common/lnb/LnbScrollbar";
-import { Toast } from "@/components/common/toast";
+import Toast from "@/components/common/toast/Toast";
 import { LLMInputImagePreview } from "./LLMInputImagePreview";
 import { LLMInputSubmitButton } from "./LLMInputSubmitButton";
 

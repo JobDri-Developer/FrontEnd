@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import type { HTMLAttributes } from "react";
-
-import { ChipTag } from "@/components/common/chips";
+import ChipTag from "@/components/common/chips/ChipTag";
 
 type CreditRowVariant = "white" | "assistive";
 

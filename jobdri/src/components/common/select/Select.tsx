@@ -9,9 +9,9 @@ import {
 } from "react";
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
-import { Tooltip } from "@/components/common/tooltip";
+import { Tooltip } from "@/components/common/tooltip/Tooltip";
 import useOutsideClick from "@/hooks/useOutsideClick";
-import { SelectList } from "./SelectList";
+import { SelectList } from "@/components/common/select/SelectList";
 
 export interface SelectOption {
   label: string;
@@ -52,7 +52,12 @@ function SelectInfoIcon({ className }: { className?: string }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx="10" cy="10" r="10" fill="var(--color-icon-neutral-assistive)" />
+      <circle
+        cx="10"
+        cy="10"
+        r="10"
+        fill="var(--color-icon-neutral-assistive)"
+      />
       <path
         d="M9.1 8.55H10.9V14.25H9.1V8.55ZM9 5.75H11V7.45H9V5.75Z"
         fill="var(--color-text-neutral-white)"

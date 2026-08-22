@@ -2,7 +2,7 @@
 
 import React from "react";
 import clsx from "clsx";
-import Avatar from "../home/Avatar";
+import Avatar from "../../home/Avatar";
 import Icon from "@/components/common/icons/Icon";
 import Divider from "@/components/common/Divider";
 import { scrollbarClassS } from "@/components/common/scrollbar/scrollbarStyles";

@@ -3,10 +3,10 @@
 import { useEffect, useState, useRef, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
-import { LLMInput } from "@/components/common/input";
-import { ModalNotice } from "@/components/common/modal";
-import { Toast } from "@/components/common/toast";
-import { INTRO_STEPS } from "@/components/mockApply/home/homeSteps";
+import { LLMInput } from "@/components/common/input/LLMInput";
+import ModalNotice from "@/components/common/modal/ModalNotice";
+import Toast from "@/components/common/toast/Toast";
+import { INTRO_STEPS } from "@/components/home/homeSteps";
 import clsx from "clsx";
 import {
   clearJobPostingDraft,

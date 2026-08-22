@@ -1,15 +1,13 @@
 "use client";
 
-import type {
-  ButtonHTMLAttributes,
-  MouseEvent,
-  ReactNode,
-} from "react";
+import type { ButtonHTMLAttributes, MouseEvent, ReactNode } from "react";
 import { useState } from "react";
 import clsx from "clsx";
 
-interface ApplyOptionCardProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+interface ApplyOptionCardProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "children"
+> {
   title?: string;
   description?: string;
   visual?: ReactNode;
@@ -20,15 +18,13 @@ interface ApplyOptionCardProps
 
 const hoverShadow = "shadow-hover";
 const cardShadow = "shadow-card";
-const defaultStyle = "border-transparent bg-fill-quaternary-default shadow-card";
+const defaultStyle =
+  "border-transparent bg-fill-quaternary-default shadow-card";
 const disabledStyle = clsx(
   "border-transparent bg-fill-quaternary-assistive",
   cardShadow,
 );
-const hoverableStyle = clsx(
-  defaultStyle,
-  "hover:shadow-hover",
-);
+const hoverableStyle = clsx(defaultStyle, "hover:shadow-hover");
 const selectedStyle = clsx(
   "border-line-primary-default bg-fill-quaternary-default",
   hoverShadow,

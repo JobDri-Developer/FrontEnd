@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ButtonCtaModal } from "@/components/common/buttons";
-import { InputTextAreaAutoGrowS } from "@/components/common/input";
+import { InputTextAreaAutoGrowS } from "@/components/common/input/InputTextAreaAutoGrowS";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import { redeemCoupon } from "@/lib/api/credit";
 

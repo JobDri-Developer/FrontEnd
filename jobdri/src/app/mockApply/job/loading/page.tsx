@@ -6,7 +6,7 @@ import clsx from "clsx";
 import Header from "@/components/common/header/Header";
 import { TextButton } from "@/components/common/buttons";
 import Icon from "@/components/common/icons/Icon";
-import { ModalNotice } from "@/components/common/modal";
+import ModalNotice from "@/components/common/modal/ModalNotice";
 import LoadingGraphic from "@/components/mockApply/LoadingGraphic";
 import questionLoadingBook from "@/assets/lottie/question-loading-book.json";
 import questionLoadingSparkle from "@/assets/lottie/question-loading-sparkle.json";

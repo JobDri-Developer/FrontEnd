@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import type { SelectOption } from "./Select";
-import { SelectListItem } from "./SelectListItem";
+import { SelectListItem } from "@/components/common/select/SelectListItem";
 
 export interface SelectListProps {
   id?: string;
