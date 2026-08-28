@@ -6,11 +6,25 @@ import {
   parseApiResponse as parseApiResponseBase,
 } from "@/lib/api/client";
 
+export const CREDIT_INSUFFICIENT_MESSAGE = "크레딧이 부족합니다.";
+
 export class CreditInsufficientError extends Error {
   constructor() {
-    super("크레딧이 부족합니다.");
+    super(CREDIT_INSUFFICIENT_MESSAGE);
     this.name = "CreditInsufficientError";
   }
+}
+
+// 비동기 작업(task) 결과 안에 실패 사유로 실려오는 크레딧 부족 케이스를 판별합니다.
+// (이 경우 HTTP 상태는 200이라 CreditInsufficientError로 잡히지 않습니다.)
+export function isCreditInsufficientMessage(
+  message?: string | null,
+): boolean {
+  return (
+    typeof message === "string" &&
+    message.includes("크레딧") &&
+    message.includes("부족")
+  );
 }
 
 export class AnalysisPendingError extends Error {
@@ -386,6 +400,10 @@ export async function subscribeAnalysisTaskStream(
 async function parseAnalysisResultResponse(response: Response) {
   if (response.status === 401) {
     handleUnauthorized();
+  }
+
+  if (response.status === 402) {
+    throw new CreditInsufficientError();
   }
 
   let data: ApiResponse<AnalysisResult> | null = null;
