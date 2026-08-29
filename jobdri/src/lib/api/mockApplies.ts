@@ -108,38 +108,28 @@ async function postMockApplyFromJobPosting(
   return result;
 }
 
-export function createMockApplyFromJobPosting(
-  payload: MockApplyFromJobPostingPayload,
-) {
-  return postMockApplyFromJobPosting(
-    "/api/mock-applies/mock/from-job-posting",
-    payload,
-    "모의 서류 지원 생성에 실패했습니다.",
-  );
-}
-
 export function createActualApplyFromJobPosting(
   payload: MockApplyFromJobPostingPayload,
 ) {
   return postMockApplyFromJobPosting(
     "/api/mock-applies/actual",
     payload,
-    "실제 공고 기반 서류 지원 생성에 실패했습니다.",
+    "서류 지원 생성에 실패했습니다.",
   );
 }
 
+// 백엔드에서 MOCK/ACTUAL 생성 엔드포인트가 /api/mock-applies/actual 하나로 통합돼,
+// applyType과 무관하게 항상 이 엔드포인트를 호출합니다.
+// (예전 /api/mock-applies/mock/from-job-posting 는 더 이상 존재하지 않음 — 404)
 export function createApplyFromJobPosting({
   jobPostingId,
-  applyType,
   sequence,
 }: {
   jobPostingId: number;
   applyType: JobPostingApplyType;
   sequence?: number;
 }) {
-  return applyType === "MOCK"
-    ? createMockApplyFromJobPosting({ jobPostingId, sequence })
-    : createActualApplyFromJobPosting({ jobPostingId, sequence });
+  return createActualApplyFromJobPosting({ jobPostingId, sequence });
 }
 
 export async function fetchMyMockApplies({

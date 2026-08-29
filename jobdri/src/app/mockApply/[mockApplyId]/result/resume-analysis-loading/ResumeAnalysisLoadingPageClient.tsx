@@ -6,8 +6,10 @@ import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading"
 import { ModalNotice } from "@/components/common/modal";
 import {
   AnalysisPendingError,
+  CreditInsufficientError,
   fetchAnalysisResult,
   fetchAnalysisTaskStatus,
+  isCreditInsufficientMessage,
   subscribeAnalysisTaskStream,
 } from "@/lib/api/result";
 import { fetchMockApplyJobPosting } from "@/lib/api/mockApplies";
@@ -61,6 +63,7 @@ export default function ResumeAnalysisLoadingPageClient({
   const mockApplyId = Number(params.mockApplyId);
   const isValidMockApplyId = Number.isInteger(mockApplyId) && mockApplyId > 0;
   const [pollingRetryKey, setPollingRetryKey] = useState(0);
+  const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
   const [jobPostingHeader, setJobPostingHeader] = useState({
     companyName: "",
     jobTitle: "",
@@ -195,6 +198,16 @@ export default function ResumeAnalysisLoadingPageClient({
         }
 
         if (
+          isCreditInsufficientMessage(task.error) ||
+          isCreditInsufficientMessage(task.failureReason)
+        ) {
+          isFinished = true;
+          abortController.abort();
+          setIsCreditShortModalOpen(true);
+          return;
+        }
+
+        if (
           task.error ||
           task.failureReason ||
           isFailedTaskStatus(task.status)
@@ -231,6 +244,13 @@ export default function ResumeAnalysisLoadingPageClient({
 
         if (error instanceof AnalysisPendingError) {
           consecutiveStatusErrors = 0;
+          return;
+        }
+
+        if (error instanceof CreditInsufficientError) {
+          isFinished = true;
+          abortController.abort();
+          setIsCreditShortModalOpen(true);
           return;
         }
 
@@ -322,6 +342,25 @@ export default function ResumeAnalysisLoadingPageClient({
         companyName={jobPostingHeader.companyName}
         jobTitle={jobPostingHeader.jobTitle}
       />
+
+      {isCreditShortModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+          <ModalNotice
+            type="confirmation"
+            title="크레딧이 부족해요"
+            description="크레딧을 충전하고 다시 시도해주세요."
+            onClose={moveBackToResume}
+            secondaryAction={{
+              label: "닫기",
+              onClick: moveBackToResume,
+            }}
+            primaryAction={{
+              label: "충전하기",
+              onClick: () => router.push("/credit"),
+            }}
+          />
+        </div>
+      )}
 
       {errorMessage && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
