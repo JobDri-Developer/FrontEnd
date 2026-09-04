@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
 import ModalNotice from "@/components/common/modal/ModalNotice";
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import {
   AnalysisPendingError,
   CreditInsufficientError,
@@ -344,7 +345,7 @@ export default function ResumeAnalysisLoadingPageClient({
       />
 
       {isCreditShortModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay>
           <ModalNotice
             type="confirmation"
             title="크레딧이 부족해요"
@@ -359,11 +360,11 @@ export default function ResumeAnalysisLoadingPageClient({
               onClick: () => router.push("/credit"),
             }}
           />
-        </div>
+        </ModalOverlay>
       )}
 
       {errorMessage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay>
           {isError || !isValidMockApplyId ? (
             <ModalNotice
               type="alertModal"
@@ -391,7 +392,7 @@ export default function ResumeAnalysisLoadingPageClient({
               }}
             />
           )}
-        </div>
+        </ModalOverlay>
       )}
     </>
   );

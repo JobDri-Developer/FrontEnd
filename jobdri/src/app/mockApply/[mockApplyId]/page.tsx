@@ -14,6 +14,7 @@ import {
   type QuestionItem,
 } from "@/lib/api/questions";
 import ModalNotice from "@/components/common/modal/ModalNotice";
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import { type ToastVariant } from "@/components/common/toast/Toast";
 import Toast from "@/components/common/toast/Toast";
 import {
@@ -777,13 +778,13 @@ export default function MockApplyPage({
 
         {/* 모달 UI 부분은 주석 처리 유지 */}
         {/* {modalTarget && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+          <ModalOverlay>
             ...
-          </div>
+          </ModalOverlay>
         )} */}
 
         {isLeaveModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+          <ModalOverlay>
             <ModalNotice
               type="confirmation"
               title="공고 확인으로 돌아갈까요?"
@@ -805,11 +806,11 @@ export default function MockApplyPage({
                 onClick: () => setIsLeaveModalOpen(false),
               }}
             />
-          </div>
+          </ModalOverlay>
         )}
 
         {isConfirmModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+          <ModalOverlay>
             <ModalNotice
               type="confirmation"
               title="이대로 채점할까요?"
@@ -825,11 +826,11 @@ export default function MockApplyPage({
                 disabled: isSubmitting,
               }}
             />
-          </div>
+          </ModalOverlay>
         )}
 
         {isCreditShortModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+          <ModalOverlay>
             <ModalNotice
               type="confirmation"
               title="크레딧이 부족해요"
@@ -844,7 +845,7 @@ export default function MockApplyPage({
                 onClick: () => router.push("/credit"),
               }}
             />
-          </div>
+          </ModalOverlay>
         )}
       </div>
     </MockApplyTemplate>

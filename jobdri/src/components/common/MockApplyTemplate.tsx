@@ -6,6 +6,7 @@ import CtaFooter from "@/components/common/cta/CtaFooter";
 import { fetchSequence } from "@/lib/api/result";
 import { LEAVE_MODAL_CONFIG } from "@/constants/modalConfig";
 import ModalNotice from "@/components/common/modal/ModalNotice";
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import { type IconType } from "@/components/common/icons/Icon"; // 👈 아이콘 타입 임포트 추가
 
 interface MockApplyTemplateProps {
@@ -107,7 +108,7 @@ export default function MockApplyTemplate({
       />
 
       {showHomeConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay>
           <ModalNotice
             type="confirmation"
             title={customHomeModal.title}
@@ -122,7 +123,7 @@ export default function MockApplyTemplate({
               onClick: () => setShowHomeConfirm(false),
             }}
           />
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

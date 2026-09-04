@@ -19,6 +19,7 @@ import {
 import CtaFooter from "@/components/common/cta/CtaFooter";
 import { JDInput } from "@/components/common/input/JDInput";
 import ModalNotice from "@/components/common/modal/ModalNotice";
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import Avatar, { type AvatarColor } from "@/components/home/Avatar";
 import {
   clearJobPostingInput,
@@ -539,7 +540,7 @@ export default function JobPostingReviewPage() {
       </div>
 
       {showBackConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay zIndexClassName="z-50">
           <ModalNotice
             type="confirmation"
             title="공고 입력으로 돌아갈까요?"
@@ -555,11 +556,11 @@ export default function JobPostingReviewPage() {
               onClick: () => setShowBackConfirm(false),
             }}
           />
-        </div>
+        </ModalOverlay>
       )}
 
       {showHomeConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay zIndexClassName="z-50">
           <ModalNotice
             type="confirmation"
             title="페이지를 나가시겠어요?"
@@ -574,11 +575,11 @@ export default function JobPostingReviewPage() {
               onClick: () => setShowHomeConfirm(false),
             }}
           />
-        </div>
+        </ModalOverlay>
       )}
 
       {saveErrorMessage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay zIndexClassName="z-50">
           <ModalNotice
             type="alertModal"
             title="공고를 저장하지 못했습니다."
@@ -589,7 +590,7 @@ export default function JobPostingReviewPage() {
               onClick: () => setSaveErrorMessage(""),
             }}
           />
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

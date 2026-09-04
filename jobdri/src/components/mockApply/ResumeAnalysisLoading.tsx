@@ -8,6 +8,7 @@ import { TextButton } from "@/components/common/buttons";
 import resumeAnalysisLoading from "@/assets/lottie/resume-analysis-loading.json";
 import LoadingGraphic from "./LoadingGraphic";
 import ModalNotice from "@/components/common/modal/ModalNotice";
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 
 interface ResumeAnalysisLoadingProps {
   durationMs: number;
@@ -166,7 +167,7 @@ export default function ResumeAnalysisLoading({
       </div>
 
       {isFailed && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay position="absolute" zIndexClassName="z-50">
           <ModalNotice
             type="alertModal"
             title="나중에 다시 시도해주세요."
@@ -177,7 +178,7 @@ export default function ResumeAnalysisLoading({
               onClick: () => router.replace("/"),
             }}
           />
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

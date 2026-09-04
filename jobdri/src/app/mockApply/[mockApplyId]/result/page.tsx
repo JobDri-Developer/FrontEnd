@@ -6,6 +6,7 @@ import ResumeAnalysisFeedback from "@/components/mockApply/result/ResumeAnalysis
 import ResumeAnalysisDetail from "@/components/mockApply/result/ResumeAnalysisDetail";
 import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
 import ModalNotice from "@/components/common/modal/ModalNotice";
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import Toast from "@/components/common/toast/Toast";
 import { useReApply } from "@/hooks/useReApply";
 import {
@@ -164,7 +165,7 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
       </MockApplyTemplate>
 
       {isRetryModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay>
           <ModalNotice
             type="confirmation"
             title="같은 공고로 다시 도전할까요?"
@@ -180,7 +181,7 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
               disabled: isSaving,
             }}
           />
-        </div>
+        </ModalOverlay>
       )}
 
       {toast.open && (
