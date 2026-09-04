@@ -1,20 +1,15 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import clsx from "clsx";
 import AvatarColorPicker from "./AvatarColorPicker";
 import Icon from "@/components/common/icons/Icon";
+import useOutsideClick from "@/hooks/useOutsideClick";
 
 export type AvatarType = "user" | "company";
 export type AvatarSize = "large" | "medium" | "small" | "xsmall";
 export type AvatarColor =
-  | "default"
-  | "red"
-  | "orange"
-  | "green"
-  | "lightblue"
-  | "blue"
-  | "pink";
+  "default" | "red" | "orange" | "green" | "lightblue" | "blue" | "pink";
 export type AvatarColorValue = AvatarColor | Uppercase<AvatarColor>;
 
 interface AvatarProps {
@@ -80,19 +75,8 @@ export default function Avatar({
   const currentColor = normalizeAvatarColor(color);
 
   // 바깥 영역 클릭 시 말풍선 닫기
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
+  const closePopover = useCallback(() => setIsOpen(false), []);
+  useOutsideClick(containerRef, closePopover, isOpen);
 
   if (type === "user") {
     return (

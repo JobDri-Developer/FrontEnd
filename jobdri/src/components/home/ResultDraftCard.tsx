@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { ResultDraftStep } from "./ResultDraftStep";
 import { DraftData } from "./types";
 import Icon from "@/components/common/icons/Icon";
 import Avatar from "./Avatar";
 import { DropDownMenu } from "@/components/common/dropdown";
+import useOutsideClick from "@/hooks/useOutsideClick";
 import clsx from "clsx";
 
 interface ResultDraftCardProps {
@@ -21,18 +22,8 @@ export const ResultDraftCard: React.FC<ResultDraftCardProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
 
   // 메뉴 외부 클릭 시 드롭다운을 닫는 로직
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    if (isMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMenuOpen]);
+  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  useOutsideClick(menuRef, closeMenu, isMenuOpen);
 
   const handleKababClick = (e: React.MouseEvent) => {
     e.stopPropagation();

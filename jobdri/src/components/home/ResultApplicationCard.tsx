@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { handleApplicationCardKeyDown } from "./ApplicationCardShared";
 import type { ApplicationCardData } from "./types";
 import Avatar from "./Avatar";
 import Icon from "@/components/common/icons/Icon";
 import { DropDownMenu } from "@/components/common/dropdown";
+import useOutsideClick from "@/hooks/useOutsideClick";
 
 export function ResultApplicationCard({
   company,
@@ -29,17 +30,8 @@ export function ResultApplicationCard({
   const menuRef = useRef<HTMLDivElement>(null);
 
   // 메뉴 외부 클릭 시 닫기
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-    if (isMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMenuOpen]);
+  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  useOutsideClick(menuRef, closeMenu, isMenuOpen);
 
   const handleKebabClick = (e: React.MouseEvent) => {
     e.stopPropagation();

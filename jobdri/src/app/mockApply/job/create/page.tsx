@@ -1,11 +1,18 @@
 "use client";
 
-import { useEffect, useState, useRef, type MouseEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useRef,
+  type MouseEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import { LLMInput } from "@/components/common/input/LLMInput";
 import ModalNotice from "@/components/common/modal/ModalNotice";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
+import useOutsideClick from "@/hooks/useOutsideClick";
 import Toast from "@/components/common/toast/Toast";
 import { INTRO_STEPS } from "@/components/home/homeSteps";
 import clsx from "clsx";
@@ -91,27 +98,17 @@ export default function JobPostingCreatePage() {
 
   const inputContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClickOutside(event: globalThis.MouseEvent) {
-      if (
-        inputContainerRef.current &&
-        !inputContainerRef.current.contains(event.target as Node)
-      ) {
-        const hasInput =
-          jobPostingInputValue.trim().length > 0 || attachedFiles.length > 0;
+  // 아무것도 입력되지 않았을 때만 원래대로 돌아감
+  const deactivateEmptyInput = useCallback(() => {
+    const hasInput =
+      jobPostingInputValue.trim().length > 0 || attachedFiles.length > 0;
 
-        // 아무것도 입력되지 않았을 때만 원래대로 돌아감
-        if (!hasInput) {
-          setIsInputActive(false);
-        }
-      }
+    if (!hasInput) {
+      setIsInputActive(false);
     }
+  }, [jobPostingInputValue, attachedFiles]);
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [jobPostingInputValue, attachedFiles]); // 의존성 배열에 상태 추가
+  useOutsideClick(inputContainerRef, deactivateEmptyInput);
 
   // ✅ 교체할 부분: URL에서 여러 개의 에러를 가져오도록 useEffect 수정
   useEffect(() => {

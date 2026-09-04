@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import ResumeAnalysisFeedback from "@/components/mockApply/result/ResumeAnalysisFeedback";
 import ResumeAnalysisDetail from "@/components/mockApply/result/ResumeAnalysisDetail";
@@ -9,11 +9,9 @@ import ModalNotice from "@/components/common/modal/ModalNotice";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import Toast from "@/components/common/toast/Toast";
 import { useReApply } from "@/hooks/useReApply";
-import {
-  fetchMockApplyJobPosting,
-  getMockApplyResumeRecords,
-} from "@/lib/api/mockApplies";
+import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
 import { useAnalysisResult } from "@/hooks/useAnalysisResult";
+import { useJobPostingHeader } from "@/hooks/useJobPostingHeader";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
 
 interface ResultPageProps {
@@ -44,14 +42,10 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
     open: false,
     message: "",
   });
-  const [jobPostingHeader, setJobPostingHeader] = useState({
-    companyName: "",
-    jobTitle: "",
-  });
-
   const parsedJobPostingId = parsePositiveNumber(jobPostingId);
   const parsedSequence = parsePositiveNumber(sequence);
   const parsedMockApplyId = parsePositiveNumber(mockApplyId);
+  const jobPostingHeader = useJobPostingHeader(parsedMockApplyId);
 
   const {
     data: analysisData,
@@ -61,38 +55,6 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
 
   const activeTabId = tab === "score-detail" ? "score-detail" : "ai-feedback";
   const headerComponent = <AnalysisHeader activeTabId={activeTabId} />;
-
-  useEffect(() => {
-    if (!parsedMockApplyId) {
-      return;
-    }
-
-    let ignore = false;
-
-    const loadJobPostingHeader = async () => {
-      try {
-        const jobPosting = await fetchMockApplyJobPosting(parsedMockApplyId);
-
-        if (!ignore) {
-          setJobPostingHeader({
-            companyName: jobPosting.companyName,
-            jobTitle:
-              jobPosting.jobTitle || jobPosting.detailClassificationName || "",
-          });
-        }
-      } catch (error) {
-        if (!ignore) {
-          console.error("채용 공고 정보를 불러오지 못했습니다.", error);
-        }
-      }
-    };
-
-    void loadJobPostingHeader();
-
-    return () => {
-      ignore = true;
-    };
-  }, [parsedMockApplyId]);
 
   const closeToast = () => setToast({ open: false, message: "" });
   const showTopToast = (message: string) => {
