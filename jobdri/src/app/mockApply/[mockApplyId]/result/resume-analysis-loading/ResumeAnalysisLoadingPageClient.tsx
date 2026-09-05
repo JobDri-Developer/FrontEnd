@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
-import { ModalNotice } from "@/components/common/modal";
+import ModalNotice from "@/components/common/modal/ModalNotice";
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import {
   AnalysisPendingError,
   CreditInsufficientError,
@@ -12,7 +13,7 @@ import {
   isCreditInsufficientMessage,
   subscribeAnalysisTaskStream,
 } from "@/lib/api/result";
-import { fetchMockApplyJobPosting } from "@/lib/api/mockApplies";
+import { useJobPostingHeader } from "@/hooks/useJobPostingHeader";
 
 const RESUME_ANALYSIS_LOADING_DURATION_MS = 316_000;
 const ANALYSIS_POLL_INTERVAL_MS = 2_500;
@@ -64,10 +65,7 @@ export default function ResumeAnalysisLoadingPageClient({
   const isValidMockApplyId = Number.isInteger(mockApplyId) && mockApplyId > 0;
   const [pollingRetryKey, setPollingRetryKey] = useState(0);
   const [isCreditShortModalOpen, setIsCreditShortModalOpen] = useState(false);
-  const [jobPostingHeader, setJobPostingHeader] = useState({
-    companyName: "",
-    jobTitle: "",
-  });
+  const jobPostingHeader = useJobPostingHeader(mockApplyId);
   const [errorMessage, setErrorMessage] = useState(
     isError
       ? `응답 대기 시간이 길어져 작업을 멈췄어요.\n소모된 크레딧이 복구됐어요.`
@@ -107,38 +105,6 @@ export default function ResumeAnalysisLoadingPageClient({
 
     router.replace(`/mockApply/${mockApplyId}${jobPostingQuery}`);
   }, [jobPostingId, mockApplyId, router]);
-
-  useEffect(() => {
-    if (!isValidMockApplyId) {
-      return;
-    }
-
-    let ignore = false;
-
-    const loadJobPostingHeader = async () => {
-      try {
-        const jobPosting = await fetchMockApplyJobPosting(mockApplyId);
-
-        if (!ignore) {
-          setJobPostingHeader({
-            companyName: jobPosting.companyName,
-            jobTitle:
-              jobPosting.jobTitle || jobPosting.detailClassificationName || "",
-          });
-        }
-      } catch (error) {
-        if (!ignore) {
-          console.error("채용 공고 정보를 불러오지 못했습니다.", error);
-        }
-      }
-    };
-
-    void loadJobPostingHeader();
-
-    return () => {
-      ignore = true;
-    };
-  }, [isValidMockApplyId, mockApplyId]);
 
   useEffect(() => {
     if (isError || !isValidMockApplyId) {
@@ -344,7 +310,7 @@ export default function ResumeAnalysisLoadingPageClient({
       />
 
       {isCreditShortModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay>
           <ModalNotice
             type="confirmation"
             title="크레딧이 부족해요"
@@ -359,11 +325,11 @@ export default function ResumeAnalysisLoadingPageClient({
               onClick: () => router.push("/credit"),
             }}
           />
-        </div>
+        </ModalOverlay>
       )}
 
       {errorMessage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay>
           {isError || !isValidMockApplyId ? (
             <ModalNotice
               type="alertModal"
@@ -391,7 +357,7 @@ export default function ResumeAnalysisLoadingPageClient({
               }}
             />
           )}
-        </div>
+        </ModalOverlay>
       )}
     </>
   );

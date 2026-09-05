@@ -4,7 +4,7 @@ import { useRef, useState, type ChangeEvent } from "react";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
 import Icon from "@/components/common/icons/Icon";
-import { Tooltip } from "@/components/common/tooltip";
+import { Tooltip } from "@/components/common/tooltip/Tooltip";
 
 export interface SearchBarProps {
   placeholder?: string;
@@ -45,7 +45,7 @@ function CollapsedSearchIcon() {
   );
 }
 
-export function SearchBar({
+export default function SearchBar({
   placeholder = "검색어를 입력하세요",
   value: externalValue,
   defaultValue = "",
@@ -119,9 +119,7 @@ export function SearchBar({
         className,
       )}
     >
-      <span
-        className="flex min-w-0 flex-1 items-center gap-2 px-0.5 pt-px pb-0.5"
-      >
+      <span className="flex min-w-0 flex-1 items-center gap-2 px-0.5 pt-px pb-0.5">
         <Icon
           type="SEARCH"
           className="h-4 w-4 shrink-0 text-icon-neutral-default"

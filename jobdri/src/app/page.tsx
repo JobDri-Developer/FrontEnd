@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
 import { BusinessFooter } from "@/components/common/footer";
 import Lnb from "@/components/common/lnb/Lnb";
-import ResultDraftList from "@/components/mockApply/home/ResultDraftList";
-import ResultApplicationList from "@/components/mockApply/home/ResultApplicationList";
+import ResultDraftList from "@/components/home/ResultDraftList";
+import ResultApplicationList from "@/components/home/ResultApplicationList";
 import {
   deleteMockApply,
   fetchMyMockApplies,
@@ -19,17 +19,14 @@ import {
 } from "@/lib/api/jobPostings";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
 import { formatRelativeDate } from "@/utils/date";
-import type {
-  DraftData,
-  ApplicationCardData,
-} from "@/components/mockApply/home/types";
+import type { DraftData, ApplicationCardData } from "@/components/home/types";
 import { useReApply } from "@/hooks/useReApply";
-import { mapMockApplyToApplication } from "@/components/mockApply/home/applicationHomeUtils";
-import { Toast, ToastVariant } from "@/components/common/toast";
+import { mapMockApplyToApplication } from "@/components/home/applicationHomeUtils";
+import { ToastVariant } from "@/components/common/toast/Toast";
+import Toast from "@/components/common/toast/Toast";
 
 // 🌟 필요한 API 함수들 import
 import { subscribeAnalysisTaskStream } from "@/lib/api/result";
-import { subscribeToNotificationStream } from "@/lib/api/notification";
 
 export default function Home() {
   const router = useRouter();

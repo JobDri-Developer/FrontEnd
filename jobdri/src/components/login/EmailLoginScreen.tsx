@@ -22,7 +22,7 @@ import {
 } from "@/components/common/buttons";
 import LogoHorizontalM from "@/components/common/logo/horizontal/m";
 import LogoVerticalM from "@/components/common/logo/vertical/m";
-import { Tooltip } from "@/components/common/tooltip";
+import { Tooltip } from "@/components/common/tooltip/Tooltip";
 import { ROUTES } from "@/constants/routes";
 import {
   AuthApiError,
@@ -459,9 +459,7 @@ export default function EmailLoginScreen() {
       const tokens = await loginWithEmail({ email, password });
       saveAuthTokens(tokens, email);
       router.push(
-        shouldShowDesktopRequiredPage()
-          ? ROUTES.DESKTOP_REQUIRED
-          : ROUTES.HOME,
+        shouldShowDesktopRequiredPage() ? ROUTES.DESKTOP_REQUIRED : ROUTES.HOME,
       );
     } catch (error) {
       setLoginError(true);

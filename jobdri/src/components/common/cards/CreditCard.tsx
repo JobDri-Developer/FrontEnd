@@ -8,7 +8,7 @@ import { ModalCard } from "../modal/ModalCard";
 import { ModalOverlay } from "../modal/ModalOverlay";
 import type { PlanCode } from "@/lib/api/credit";
 import { preparePurchase } from "@/lib/api/credit";
-import { Toast } from "../toast";
+import Toast from "@/components/common/toast/Toast";
 
 interface CreditCardProps extends HTMLAttributes<HTMLElement> {
   creditCount?: number;
