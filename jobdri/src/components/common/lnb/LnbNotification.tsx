@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { IconButton } from "@/components/common/buttons";
 import Icon, { type IconType } from "@/components/common/icons/Icon";
-import { SelectListItem } from "@/components/common/select";
+import { SelectListItem } from "@/components/common/select/SelectListItem";
 import useOutsideClick from "@/hooks/useOutsideClick";
 import EmptyNotificationImage from "@/assets/ic_Image.svg";
 import { useLnbScrollMetrics } from "./LnbScrollbar";

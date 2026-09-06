@@ -4,7 +4,7 @@ import clsx from "clsx";
 import Image, { type ImageProps } from "next/image";
 import { IconButton } from "@/components/common/buttons";
 import loadingExampleImage from "@/assets/img_analysis.png";
-import { LLMInputImageLoadMotion } from "./LLMInputImageLoadMotion";
+import LoadMotion from "@/components/common/LoadMotion";
 import { LLMInputSubmitButton } from "./LLMInputSubmitButton";
 
 export interface LLMInputImagePreviewProps {
@@ -53,7 +53,8 @@ export function LLMInputImagePreview({
         )}
 
         {!loaded && (
-          <LLMInputImageLoadMotion
+          <LoadMotion
+            size="medium"
             className="relative z-10"
             activeDotClassName="bg-icon-neutral-heavy"
             inactiveDotClassName="bg-icon-neutral-assistive"

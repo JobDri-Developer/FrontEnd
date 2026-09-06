@@ -6,7 +6,8 @@ import clsx from "clsx";
 import Header from "@/components/common/header/Header";
 import { TextButton } from "@/components/common/buttons";
 import Icon from "@/components/common/icons/Icon";
-import { ModalNotice } from "@/components/common/modal";
+import ModalNotice from "@/components/common/modal/ModalNotice";
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import LoadingGraphic from "@/components/mockApply/LoadingGraphic";
 import questionLoadingBook from "@/assets/lottie/question-loading-book.json";
 import questionLoadingSparkle from "@/assets/lottie/question-loading-sparkle.json";
@@ -332,7 +333,7 @@ export default function JobPostingLoadingPage() {
       </div>
 
       {showStopConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-lightbox-default">
+        <ModalOverlay zIndexClassName="z-50">
           <ModalNotice
             type="confirmation"
             title="분석을 중단하시겠습니까?"
@@ -347,7 +348,7 @@ export default function JobPostingLoadingPage() {
               onClick: closeStopConfirm,
             }}
           />
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

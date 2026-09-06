@@ -2,9 +2,9 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { CreditCard } from "@/components/common/cards";
-import Useage from "@/components/common/credit/Useage";
-import CouponRegistrationModal from "@/components/common/credit/CouponRegistrationModal";
+import CreditCard from "@/components/common/cards/CreditCard";
+import Useage from "@/components/credit/Useage";
+import CouponRegistrationModal from "@/components/credit/CouponRegistrationModal";
 import {
   fetchCreditPlans,
   checkPaymentStatus,
@@ -14,7 +14,7 @@ import {
 import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
 import { BusinessFooter } from "@/components/common/footer";
-import { Toast } from "@/components/common/toast";
+import Toast from "@/components/common/toast/Toast";
 import { useCreditStore } from "@/lib/store/useCreditStore";
 import { Button } from "@/components/common/buttons";
 

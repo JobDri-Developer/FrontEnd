@@ -10,8 +10,10 @@ import {
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
-import ModalNotice from "../modal/ModalNotice";
-import { Toast, type ToastVariant } from "@/components/common/toast";
+import ModalNotice from "@/components/common/modal/ModalNotice";
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
+import Toast from "@/components/common/toast/Toast";
+import type { ToastVariant } from "@/components/common/toast/Toast";
 import {
   AUTH_STORAGE_KEYS,
   clearAuthTokens,
@@ -22,9 +24,8 @@ import { fetchCreditBalance } from "@/lib/api/credit";
 import {
   fetchMyMockApplies,
   MOCK_APPLY_CHANGED_EVENT,
-  MOCK_APPLY_DELETED_EVENT,
 } from "@/lib/api/mockApplies";
-import { getResumePath } from "@/components/mockApply/home/applicationHomeUtils";
+import { getResumePath } from "@/components/home/applicationHomeUtils";
 import {
   fetchNotifications,
   type LnbNotificationItem,
@@ -403,7 +404,7 @@ export default function Lnb({
 
       {showComingSoonModal &&
         createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-lightbox-default">
+          <ModalOverlay>
             <ModalNotice
               type="alertModal"
               title="아직 준비중인 서비스입니다"
@@ -416,7 +417,7 @@ export default function Lnb({
                 onClick: () => setShowComingSoonModal(false),
               }}
             />
-          </div>,
+          </ModalOverlay>,
           document.body,
         )}
 
