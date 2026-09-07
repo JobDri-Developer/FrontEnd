@@ -6,11 +6,11 @@ export const HighlightStyles: Record<
 > = {
   proven: {
     default:
-      "py-0.25 text-text-highlight-proven bg-fill-highlight-proven-default hover:bg-fill-highlight-proven-default cursor-pointer transition-colors rounded-sm",
+      "py-0.25 text-text-highlight-proven bg-fill-highlight-proven-default hover:bg-fill-highlight-proven-hover cursor-pointer transition-colors rounded-sm",
     hover:
-      "py-0.25 text-text-highlight-proven bg-fill-highlight-proven-default cursor-pointer transition-colors rounded-sm",
+      "py-0.25 text-text-highlight-proven bg-fill-highlight-proven-hover cursor-pointer transition-colors rounded-sm",
     selected:
-      "py-0.25 text-text-highlight-proven bg-fill-highlight-proven-default underline underline-offset-4 cursor-pointer transition-colors rounded-sm",
+      "py-0.25 text-text-highlight-proven bg-fill-highlight-proven-hover underline underline-offset-4 cursor-pointer transition-colors rounded-sm",
   },
   mentioned: {
     default:
