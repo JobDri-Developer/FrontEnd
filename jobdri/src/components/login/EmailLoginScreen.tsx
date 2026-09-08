@@ -44,6 +44,7 @@ const verificationCodeLength = 6;
 const initialVerificationCode = Array(verificationCodeLength).fill("");
 const defaultVerificationErrorMessage = "인증번호를 다시 확인해주세요.";
 const loginValidationErrorMessage = "이메일과 비밀번호를 확인해주세요";
+const loginPasswordErrorMessage = "비밀번호를 확인해주세요.";
 const authInputLabelClass =
   "text-sub14-reg text-text-neutral-title [font-feature-settings:'liga'_off,'clig'_off]";
 const authInputGapClass = "gap-1";
@@ -447,7 +448,11 @@ export default function EmailLoginScreen() {
       !passwordPattern.test(password)
     ) {
       setLoginError(true);
-      setLoginErrorMessage(loginValidationErrorMessage);
+      setLoginErrorMessage(
+        password.length > 0 && !passwordPattern.test(password)
+          ? loginPasswordErrorMessage
+          : loginValidationErrorMessage,
+      );
       return;
     }
 
@@ -463,11 +468,16 @@ export default function EmailLoginScreen() {
       );
     } catch (error) {
       setLoginError(true);
-      setLoginErrorMessage(
-        error instanceof AuthApiError
-          ? error.errorDetail || error.message
-          : "로그인 중 문제가 발생했습니다.",
-      );
+      if (error instanceof AuthApiError) {
+        const errorDescription = `${error.errorDetail ?? ""} ${error.message}`;
+        setLoginErrorMessage(
+          /\[password\]|password|비밀번호/i.test(errorDescription)
+            ? loginPasswordErrorMessage
+            : error.errorDetail || error.message,
+        );
+      } else {
+        setLoginErrorMessage("로그인 중 문제가 발생했습니다.");
+      }
     } finally {
       setIsLoginSubmitting(false);
     }
@@ -694,7 +704,7 @@ export default function EmailLoginScreen() {
                             type="ID"
                             inputType="email"
                             autoComplete="email"
-                            placeholder="아이디"
+                            placeholder="이메일"
                             value={email}
                             disabled={isLoginSubmitting}
                             hasError={loginError}
