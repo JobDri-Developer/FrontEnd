@@ -739,21 +739,23 @@ export default function MockApplyPage({
                 scrollbarClassS,
               )}
             >
-              <div className="w-full min-w-[600px] max-w-[1000px]">
-                {mappedQuestionForForm ? (
-                  <WritingForm
-                    question={mappedQuestionForForm}
-                    onChange={handleUpdate}
-                  />
-                ) : isQuestionsLoading ? (
-                  <div className="flex h-full items-center justify-center text-text-neutral-assistive">
-                    문항을 불러오는 중입니다...
-                  </div>
-                ) : (
-                  <div className="flex h-full items-center justify-center text-text-neutral-assistive">
-                    {questionsErrorMessage}
-                  </div>
-                )}
+              <div className="w-full max-w-[1000px]">
+                <div className="w-full min-w-[600px]">
+                  {mappedQuestionForForm ? (
+                    <WritingForm
+                      question={mappedQuestionForForm}
+                      onChange={handleUpdate}
+                    />
+                  ) : isQuestionsLoading ? (
+                    <div className="flex h-full items-center justify-center text-text-neutral-assistive">
+                      문항을 불러오는 중입니다...
+                    </div>
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-text-neutral-assistive">
+                      {questionsErrorMessage}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
