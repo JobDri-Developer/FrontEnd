@@ -17,7 +17,10 @@ import {
   fetchMyJobPosting,
   fetchMyJobPostings,
 } from "@/lib/api/jobPostings";
-import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
+import {
+  clearJobPostingDraft,
+  saveJobPostingAnalysis,
+} from "@/app/mockApply/job/jobPostingDraftStore";
 import { formatRelativeDate } from "@/utils/date";
 import type { DraftData, ApplicationCardData } from "@/components/home/types";
 import { useReApply } from "@/hooks/useReApply";
@@ -365,8 +368,8 @@ export default function Home() {
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
       <Lnb className="z-50 shrink-0" />
-      <div className="relative z-10 mx-auto flex h-full min-h-0 min-w-0 flex-1 flex-col items-center overflow-x-hidden overflow-y-auto">
-        <main className="flex-1 w-full max-w-[1320px] min-w-[912px] px-18 pt-12 pb-60">
+      <div className="relative z-10 mx-auto flex h-full min-h-0 min-w-0 flex-1 flex-col items-start overflow-x-hidden overflow-y-auto">
+        <main className="mx-auto flex-1 w-full max-w-[1320px] min-w-[912px] px-18 pt-12 pb-60">
           <div className="flex items-start justify-between mb-16">
             <div className="flex flex-col gap-2">
               <h1 className="text-[28px] font-bold text-gray-900">
@@ -382,6 +385,7 @@ export default function Home() {
               size="large"
               iconType="SPARKLE"
               onClick={() => {
+                clearJobPostingDraft();
                 saveSelectedApplyType("MOCK");
                 router.push("/mockApply/job/create");
               }}
