@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import clsx from "clsx";
 import Icon from "@/components/common/icons/Icon";
 
@@ -34,6 +34,7 @@ export default function DropDown({
   className,
 }: DropDownProps) {
   const listboxId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [internalValue, setInternalValue] = useState(defaultValue);
   const selectedValue = value ?? internalValue;
@@ -46,8 +47,37 @@ export default function DropDown({
     setOpen(false);
   };
 
+  useEffect(() => {
+    if (!open) return;
+
+    const closeWhenOutside = (event: PointerEvent | FocusEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", closeWhenOutside);
+    document.addEventListener("focusin", closeWhenOutside);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeWhenOutside);
+      document.removeEventListener("focusin", closeWhenOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
   return (
-    <div className={clsx("relative inline-flex w-fit", className)}>
+    <div
+      ref={containerRef}
+      className={clsx("relative inline-flex w-fit", className)}
+    >
       {/* 트리거 버튼 */}
       <button
         type="button"

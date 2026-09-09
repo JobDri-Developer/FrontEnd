@@ -22,6 +22,7 @@ import ModalNotice from "@/components/common/modal/ModalNotice";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import Avatar, { type AvatarColor } from "@/components/home/Avatar";
 import {
+  clearJobPostingDraft,
   clearJobPostingInput,
   getJobPostingAnalysis,
 } from "@/app/mockApply/job/jobPostingDraftStore";
@@ -568,7 +569,10 @@ export default function JobPostingReviewPage() {
             onClose={() => setShowHomeConfirm(false)}
             secondaryAction={{
               label: "홈으로",
-              onClick: () => router.push("/"),
+              onClick: () => {
+                clearJobPostingDraft();
+                router.push("/");
+              },
             }}
             primaryAction={{
               label: "취소",

@@ -17,13 +17,18 @@ import {
   fetchMyJobPosting,
   fetchMyJobPostings,
 } from "@/lib/api/jobPostings";
-import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
+import {
+  clearJobPostingDraft,
+  saveJobPostingAnalysis,
+} from "@/app/mockApply/job/jobPostingDraftStore";
 import { formatRelativeDate } from "@/utils/date";
 import type { DraftData, ApplicationCardData } from "@/components/home/types";
 import { useReApply } from "@/hooks/useReApply";
 import { mapMockApplyToApplication } from "@/components/home/applicationHomeUtils";
 import { ToastVariant } from "@/components/common/toast/Toast";
 import Toast from "@/components/common/toast/Toast";
+import ModalNotice from "@/components/common/modal/ModalNotice";
+import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 
 // 🌟 필요한 API 함수들 import
 import { subscribeAnalysisTaskStream } from "@/lib/api/result";
@@ -33,6 +38,11 @@ export default function Home() {
   const { reApply, isSaving: isRetrying } = useReApply();
   const [drafts, setDrafts] = useState<DraftData[]>([]);
   const [results, setResults] = useState<ApplicationCardData[]>([]);
+  const [draftToDelete, setDraftToDelete] = useState<DraftData | null>(null);
+  const [applicationToDelete, setApplicationToDelete] =
+    useState<ApplicationCardData | null>(null);
+  const [isDeletingDraft, setIsDeletingDraft] = useState(false);
+  const [isDeletingApplication, setIsDeletingApplication] = useState(false);
   const [toast, setToast] = useState<{
     show: boolean;
     message: string;
@@ -241,7 +251,7 @@ export default function Home() {
               void loadMockApplies();
               controller.abort();
             }
-          } catch (e) {}
+          } catch {}
         },
       }).catch((error) => {
         if (error.name === "AbortError" || error.message?.includes("aborted"))
@@ -254,39 +264,112 @@ export default function Home() {
     };
   }, [drafts, loadMockApplies]);
 
-  const deletePosting = async (jobPostingId: number) => {
+  const confirmDraftDelete = async () => {
+    if (!draftToDelete || isDeletingDraft) return;
+
+    const targetDraft = draftToDelete;
+    setIsDeletingDraft(true);
+
     try {
-      await deleteJobPosting(jobPostingId);
+      const hasOtherLinkedApplication =
+        drafts.some(
+          (draft) =>
+            draft.id !== targetDraft.id &&
+            draft.jobPostingId === targetDraft.jobPostingId &&
+            typeof draft.mockApplyId === "number",
+        ) ||
+        results.some(
+          (result) => result.jobPostingId === targetDraft.jobPostingId,
+        );
+
+      if (typeof targetDraft.mockApplyId === "number") {
+        await deleteMockApply(targetDraft.mockApplyId);
+      }
+
+      // 채용 공고 삭제는 연결된 모든 모의지원을 cascade 삭제할 수 있다.
+      // 다른 초안/결과가 없는 마지막 항목일 때만 공고까지 정리한다.
+      const shouldDeleteJobPosting =
+        typeof targetDraft.mockApplyId !== "number" ||
+        !hasOtherLinkedApplication;
+
+      if (shouldDeleteJobPosting) {
+        await deleteJobPosting(targetDraft.jobPostingId);
+      }
+
       setDrafts((current) =>
-        current.filter((draft) => draft.jobPostingId !== jobPostingId),
+        current.filter(
+          (draft) =>
+            draft.id !== targetDraft.id &&
+            (!shouldDeleteJobPosting ||
+              draft.jobPostingId !== targetDraft.jobPostingId),
+        ),
       );
-      setResults((current) =>
-        current.filter((result) => result.jobPostingId !== jobPostingId),
-      );
+      if (shouldDeleteJobPosting) {
+        setResults((current) =>
+          current.filter(
+            (result) => result.jobPostingId !== targetDraft.jobPostingId,
+          ),
+        );
+      }
+      setDraftToDelete(null);
+      showToast("작성 중인 모의지원이 삭제되었어요.", "check");
     } catch (error) {
-      console.error("채용 공고를 삭제하지 못했습니다.", error);
+      console.warn("작성 중인 모의지원을 삭제하지 못했습니다.", error);
+      setDraftToDelete(null);
+      await loadMockApplies();
+      showToast("삭제에 실패했어요. 잠시 후 다시 시도해주세요.", "warning");
+    } finally {
+      setIsDeletingDraft(false);
     }
   };
 
-  const deleteApplication = async (mockApplyId: number) => {
+  const confirmApplicationDelete = async () => {
+    if (!applicationToDelete || isDeletingApplication) return;
+
+    const targetApplication = applicationToDelete;
+    setIsDeletingApplication(true);
+
     try {
-      await deleteMockApply(mockApplyId);
-      setDrafts((current) =>
-        current.filter((draft) => draft.mockApplyId !== mockApplyId),
-      );
+      const hasOtherLinkedApplication =
+        drafts.some(
+          (draft) =>
+            draft.jobPostingId === targetApplication.jobPostingId &&
+            typeof draft.mockApplyId === "number",
+        ) ||
+        results.some(
+          (result) =>
+            result.mockApplyId !== targetApplication.mockApplyId &&
+            result.jobPostingId === targetApplication.jobPostingId,
+        );
+
+      await deleteMockApply(targetApplication.mockApplyId);
+
+      if (!hasOtherLinkedApplication) {
+        await deleteJobPosting(targetApplication.jobPostingId);
+      }
+
       setResults((current) =>
-        current.filter((result) => result.mockApplyId !== mockApplyId),
+        current.filter(
+          (result) => result.mockApplyId !== targetApplication.mockApplyId,
+        ),
       );
+      setApplicationToDelete(null);
+      showToast("모의지원 결과가 삭제되었어요.", "check");
     } catch (error) {
-      console.error("모의 서류 지원을 삭제하지 못했습니다.", error);
+      console.warn("모의지원 결과를 삭제하지 못했습니다.", error);
+      setApplicationToDelete(null);
+      await loadMockApplies();
+      showToast("삭제에 실패했어요. 잠시 후 다시 시도해주세요.", "warning");
+    } finally {
+      setIsDeletingApplication(false);
     }
   };
 
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
       <Lnb className="z-50 shrink-0" />
-      <div className="relative z-10 mx-auto flex h-full min-h-0 min-w-0 flex-1 flex-col items-center overflow-x-hidden overflow-y-auto">
-        <main className="flex-1 w-full max-w-[1320px] min-w-[912px] px-18 pt-12 pb-60">
+      <div className="relative z-10 mx-auto flex h-full min-h-0 min-w-0 flex-1 flex-col items-start overflow-x-hidden overflow-y-auto">
+        <main className="mx-auto flex-1 w-full max-w-[1320px] min-w-[912px] px-18 pt-12 pb-60">
           <div className="flex items-start justify-between mb-16">
             <div className="flex flex-col gap-2">
               <h1 className="text-[28px] font-bold text-gray-900">
@@ -302,6 +385,7 @@ export default function Home() {
               size="large"
               iconType="SPARKLE"
               onClick={() => {
+                clearJobPostingDraft();
                 saveSelectedApplyType("MOCK");
                 router.push("/mockApply/job/create");
               }}
@@ -363,14 +447,8 @@ export default function Home() {
               }}
               onDelete={(id) => {
                 const targetDraft = drafts.find((draft) => draft.id === id);
-
                 if (!targetDraft) return;
-
-                if (typeof targetDraft.mockApplyId === "number") {
-                  void deleteApplication(targetDraft.mockApplyId);
-                } else {
-                  void deletePosting(targetDraft.jobPostingId);
-                }
+                setDraftToDelete(targetDraft);
               }}
             />
 
@@ -378,7 +456,7 @@ export default function Home() {
             <ResultApplicationList
               applications={results}
               isRetrying={isRetrying}
-              onDelete={(app) => void deleteApplication(app.mockApplyId)}
+              onDelete={setApplicationToDelete}
               onRetry={(app) => void reApply(app.mockApplyId)}
               onResume={(app) => {
                 router.push(
@@ -398,6 +476,58 @@ export default function Home() {
           position="top"
           onClose={() => setToast((prev) => ({ ...prev, show: false }))}
         />
+      )}
+      {draftToDelete && (
+        <ModalOverlay
+          onClose={() => {
+            if (!isDeletingDraft) setDraftToDelete(null);
+          }}
+        >
+          <ModalNotice
+            type="confirmation"
+            title="작성 중인 모의지원을 삭제할까요?"
+            description="지금까지 작성한 내용이 모두 삭제돼요."
+            onClose={() => {
+              if (!isDeletingDraft) setDraftToDelete(null);
+            }}
+            secondaryAction={{
+              label: "취소",
+              onClick: () => setDraftToDelete(null),
+              disabled: isDeletingDraft,
+            }}
+            primaryAction={{
+              label: "삭제하기",
+              onClick: () => void confirmDraftDelete(),
+              disabled: isDeletingDraft,
+            }}
+          />
+        </ModalOverlay>
+      )}
+      {applicationToDelete && (
+        <ModalOverlay
+          onClose={() => {
+            if (!isDeletingApplication) setApplicationToDelete(null);
+          }}
+        >
+          <ModalNotice
+            type="confirmation"
+            title="모의지원 결과를 삭제할까요?"
+            description="삭제한 분석 결과는 다시 확인할 수 없어요."
+            onClose={() => {
+              if (!isDeletingApplication) setApplicationToDelete(null);
+            }}
+            secondaryAction={{
+              label: "취소",
+              onClick: () => setApplicationToDelete(null),
+              disabled: isDeletingApplication,
+            }}
+            primaryAction={{
+              label: "삭제하기",
+              onClick: () => void confirmApplicationDelete(),
+              disabled: isDeletingApplication,
+            }}
+          />
+        </ModalOverlay>
       )}
     </div>
   );

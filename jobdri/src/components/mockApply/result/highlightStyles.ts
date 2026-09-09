@@ -6,26 +6,26 @@ export const HighlightStyles: Record<
 > = {
   proven: {
     default:
-      "py-0.25 text-text-highlight-proven bg-fill-highlight-proven-default hover:bg-fill-highlight-proven-default cursor-pointer transition-colors rounded-sm",
+      "text-text-highlight-proven bg-fill-highlight-proven-default hover:bg-fill-highlight-proven-hover cursor-pointer transition-colors rounded-none",
     hover:
-      "py-0.25 text-text-highlight-proven bg-fill-highlight-proven-default cursor-pointer transition-colors rounded-sm",
+      "text-text-highlight-proven bg-fill-highlight-proven-hover cursor-pointer transition-colors rounded-none",
     selected:
-      "py-0.25 text-text-highlight-proven bg-fill-highlight-proven-default underline underline-offset-4 cursor-pointer transition-colors rounded-sm",
+      "text-text-highlight-proven bg-fill-highlight-proven-hover underline underline-offset-4 cursor-pointer transition-colors rounded-none",
   },
   mentioned: {
     default:
-      "py-0.25 text-text-highlight-mentioned bg-fill-highlight-mentioned-default hover:bg-fill-highlight-mentioned-hover cursor-pointer transition-colors rounded-sm",
+      "text-text-highlight-mentioned bg-fill-highlight-mentioned-default hover:bg-fill-highlight-mentioned-hover cursor-pointer transition-colors rounded-none",
     hover:
-      "py-0.25 text-text-highlight-mentioned bg-fill-highlight-mentioned-hover cursor-pointer transition-colors rounded-sm",
+      "text-text-highlight-mentioned bg-fill-highlight-mentioned-hover cursor-pointer transition-colors rounded-none",
     selected:
-      "py-0.25 text-text-highlight-mentioned bg-fill-highlight-mentioned-hover underline underline-offset-4 cursor-pointer transition-colors rounded-sm",
+      "text-text-highlight-mentioned bg-fill-highlight-mentioned-hover underline underline-offset-4 cursor-pointer transition-colors rounded-none",
   },
   fabricated: {
     default:
-      "py-0.25 text-text-highlight-fabricated bg-fill-highlight-fabricated-default hover:bg-fill-highlight-fabricated-hover cursor-pointer transition-colors rounded-sm",
+      "text-text-highlight-fabricated bg-fill-highlight-fabricated-default hover:bg-fill-highlight-fabricated-hover cursor-pointer transition-colors rounded-none",
     hover:
-      "py-0.25 text-text-highlight-fabricated bg-fill-highlight-fabricated-hover cursor-pointer transition-colors rounded-sm",
+      "text-text-highlight-fabricated bg-fill-highlight-fabricated-hover cursor-pointer transition-colors rounded-none",
     selected:
-      "py-0.25 text-text-highlight-fabricated bg-fill-highlight-fabricated-hover underline underline-offset-4 cursor-pointer transition-colors rounded-sm",
+      "text-text-highlight-fabricated bg-fill-highlight-fabricated-hover underline underline-offset-4 cursor-pointer transition-colors rounded-none",
   },
 };
