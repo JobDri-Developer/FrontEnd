@@ -89,11 +89,8 @@ export function initAnalytics() {
   syncAnalyticsUser();
 }
 
-/**
+/*
  * 저장된 토큰을 읽어 Amplitude의 유저 식별 상태를 맞춘다.
- *
- * 로그인 직후뿐 아니라 새로고침·재방문에도 필요해서(토큰 만료 1시간,
- * setUserId는 메모리에만 남는다) 화면 전환마다 호출한다. 멱등이다.
  */
 export function syncAnalyticsUser() {
   if (!initialized) {
@@ -129,7 +126,6 @@ export function syncAnalyticsUser() {
   const identify = new Identify();
   if (identity.role) {
     // 내부 계정(ADMIN) 이벤트를 차트에서 걸러내기 위한 필수 속성.
-    // 계측 초기 데이터는 대부분 팀원 테스트라 이게 없으면 지표를 믿을 수 없다.
     identify.set("role", identity.role);
   }
   amplitude.identify(identify);

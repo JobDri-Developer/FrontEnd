@@ -6,13 +6,8 @@ import { usePathname } from "next/navigation";
 import { initAnalytics, syncAnalyticsUser } from "@/lib/analytics/client";
 import { track } from "@/lib/analytics/track";
 
-/**
+/*
  * Amplitude 초기화와 화면 조회 추적을 담당한다.
- *
- * useSearchParams가 아니라 usePathname만 쓴다. 루트 레이아웃의 클라이언트
- * 컴포넌트에서 useSearchParams를 호출하면 Next.js가 하위 트리 전체를
- * 클라이언트 렌더링으로 떨어뜨린다(Suspense 경계 요구). 페이지 경로만
- * 필요하므로 그 대가를 치를 이유가 없다.
  */
 export default function AnalyticsProvider({
   children,
