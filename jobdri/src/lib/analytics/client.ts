@@ -99,10 +99,16 @@ export function syncAnalyticsUser() {
 
   if (!identity) {
     // 로그아웃 또는 토큰 만료. device id까지 새로 발급해 이전 유저와 분리한다.
-    if (syncedUserId !== null) {
+    //
+    // 모듈 변수(syncedUserId)가 아니라 SDK의 실제 상태를 본다. Amplitude는
+    // user id를 쿠키에 유지하는데, 401 자동 로그아웃은 window.location.replace로
+    // 페이지를 새로 띄워서 모듈 변수만 null로 초기화된다. 모듈 변수를 기준으로
+    // 하면 이 경우 reset이 불려야 하는데 건너뛰고, 로그아웃한 유저에게 이후
+    // 익명 이벤트가 계속 붙는다.
+    if (amplitude.getUserId() !== undefined) {
       amplitude.reset();
-      syncedUserId = null;
     }
+    syncedUserId = null;
     return;
   }
 
