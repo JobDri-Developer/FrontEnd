@@ -7,10 +7,15 @@ import { normalizeRoute } from "@/lib/analytics/routes";
 const API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY;
 const IS_DEV = process.env.NODE_ENV !== "production";
 
-/**
- * Amplitude는 user_id 최소 길이를 5자로 검증한다(minIdLength 기본값).
- * 우리 userId는 1, 2 같은 작은 정수라서 그대로 넣으면
- * 에러도 없이 이벤트가 서버에서 버려진다. 접두사를 붙여 길이를 확보한다.
+/*
+ * 개발 환경에서는 전송을 기본 차단한다. 로컬 테스트 이벤트가 실서비스 지표에
+ * 섞이면 나중에 걸러낼 방법이 없다. 계측을 검증할 때만 dev 전용 프로젝트 키와
+ * 함께 명시적으로 켠다.
+ */
+const DEV_TRACKING_ENABLED = process.env.NEXT_PUBLIC_ANALYTICS_DEV === "true";
+
+/*
+ * Amplitude는 user_id 최소 길이를 5자로 검증한다(minIdLength 기본값). 접두사를 붙여 길이를 확보한다.
  */
 const USER_ID_PREFIX = "usr_";
 
@@ -19,18 +24,15 @@ export function toAnalyticsUserId(userId: number | string) {
 }
 
 let initialized = false;
-/** 마지막으로 Amplitude에 반영한 user id. 중복 호출을 막는 용도. */
+/* 마지막으로 Amplitude에 반영한 user id. 중복 호출을 막는 용도. */
 let syncedUserId: string | null = null;
 
 export function isAnalyticsReady() {
   return initialized;
 }
 
-/**
+/*
  * 모든 이벤트에 공통 속성을 주입하는 enrichment 플러그인.
- *
- * 이벤트마다 page_path를 손으로 넣으면 반드시 빠뜨리는 곳이 생긴다.
- * 파이프라인 한 곳에서 붙이면 누락이 구조적으로 불가능해진다.
  */
 function commonPropertiesPlugin(): Types.EnrichmentPlugin {
   return {
@@ -52,6 +54,14 @@ export function initAnalytics() {
     return;
   }
 
+  if (IS_DEV && !DEV_TRACKING_ENABLED) {
+    console.info(
+      "[analytics] 개발 환경이라 전송을 건너뜁니다. " +
+        "검증이 필요하면 NEXT_PUBLIC_ANALYTICS_DEV=true로 켜세요(dev 전용 키 사용).",
+    );
+    return;
+  }
+
   if (!API_KEY) {
     if (IS_DEV) {
       console.warn(
@@ -63,13 +73,9 @@ export function initAnalytics() {
 
   amplitude.init(API_KEY, {
     autocapture: {
-      // 세션과 유입 경로(UTM/referrer)는 직접 만들 이유가 없다.
       sessions: true,
       attribution: true,
-      // 페이지뷰는 직접 보낸다. 자동 수집은 /mockApply/12345 같은 원본 URL을
-      // 그대로 실어서 지원 건 수만큼 값이 쪼개진다.
       pageViews: false,
-      // 아래 자동 수집은 Tailwind 클래스명 기반이라 노이즈만 만든다.
       elementInteractions: false,
       formInteractions: false,
       fileDownloads: false,
