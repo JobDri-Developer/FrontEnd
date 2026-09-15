@@ -214,7 +214,27 @@ export function getStoredAuthEmail() {
   return window.localStorage.getItem(AUTH_STORAGE_KEYS.userEmail);
 }
 
-export function getEmailFromAccessToken(accessToken: string) {
+export interface AccessTokenPayload {
+  sub?: unknown;
+  email?: unknown;
+  userId?: unknown;
+  role?: unknown;
+  iat?: unknown;
+  exp?: unknown;
+}
+
+/**
+ * JWT의 payload(두 번째 조각)를 디코딩한다.
+ *
+ * JWT는 base64url로 인코딩돼 있어서 atob에 그대로 넣으면 실패한다.
+ * `-`와 `_`를 `+`와 `/`로 되돌리고, 길이가 4의 배수가 되도록 `=` 패딩을 채워야 한다.
+ *
+ * 서명 검증은 하지 않는다. 서버가 이미 검증하며, 여기서 얻은 값은
+ * 화면 표시와 분석 용도로만 쓴다.
+ */
+export function decodeAccessToken(
+  accessToken: string,
+): AccessTokenPayload | null {
   if (typeof window === "undefined") {
     return null;
   }
@@ -231,26 +251,66 @@ export function getEmailFromAccessToken(accessToken: string) {
       Math.ceil(normalizedPayload.length / 4) * 4,
       "=",
     );
-    const decodedPayload = JSON.parse(window.atob(paddedPayload)) as {
-      email?: unknown;
-      sub?: unknown;
-    };
 
-    if (typeof decodedPayload.email === "string") {
-      return decodedPayload.email;
-    }
-
-    if (
-      typeof decodedPayload.sub === "string" &&
-      decodedPayload.sub.includes("@")
-    ) {
-      return decodedPayload.sub;
-    }
-
-    return null;
+    return JSON.parse(window.atob(paddedPayload)) as AccessTokenPayload;
   } catch {
     return null;
   }
+}
+
+export function getEmailFromAccessToken(accessToken: string) {
+  const decodedPayload = decodeAccessToken(accessToken);
+
+  if (!decodedPayload) {
+    return null;
+  }
+
+  if (typeof decodedPayload.email === "string") {
+    return decodedPayload.email;
+  }
+
+  if (
+    typeof decodedPayload.sub === "string" &&
+    decodedPayload.sub.includes("@")
+  ) {
+    return decodedPayload.sub;
+  }
+
+  return null;
+}
+
+export function getStoredAccessToken() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return window.localStorage.getItem(AUTH_STORAGE_KEYS.accessToken);
+}
+
+export interface AnalyticsIdentity {
+  userId: number;
+  role: string | null;
+}
+
+/**
+ * 분석 도구에 넘길 식별 정보만 추출한다.
+ *
+ * sub는 이메일(PII)이라 의도적으로 제외한다. 여기서 새어나가면
+ * 외부 서비스에 개인정보가 영구히 남는다.
+ */
+export function getAnalyticsIdentity(
+  accessToken: string,
+): AnalyticsIdentity | null {
+  const decodedPayload = decodeAccessToken(accessToken);
+
+  if (!decodedPayload || typeof decodedPayload.userId !== "number") {
+    return null;
+  }
+
+  return {
+    userId: decodedPayload.userId,
+    role: typeof decodedPayload.role === "string" ? decodedPayload.role : null,
+  };
 }
 
 export function getGoogleAuthorizationUrl() {
