@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { DraftData } from "./types";
 import { ResultDraftCard } from "@/components/home/ResultDraftCard";
 import { Pagination } from "@/components/common/Pagination";
+import { track } from "@/lib/analytics";
 
 interface ResultDraftListProps {
   drafts: DraftData[];
@@ -25,6 +26,18 @@ export default function ResultDraftList({
     currentPage * ITEMS_PER_PAGE,
   );
 
+  const handlePageChange = (page: number) => {
+    if (page !== currentPage) {
+      track("paused_carousel_navigated", {
+        direction: page > currentPage ? "right" : "left",
+        total_pages: totalPages,
+        current_page: page,
+      });
+    }
+
+    setCurrentPage(page);
+  };
+
   if (drafts.length === 0) return null;
 
   return (
@@ -41,7 +54,7 @@ export default function ResultDraftList({
           variant="compact"
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          onPageChange={handlePageChange}
         />
       </header>
 

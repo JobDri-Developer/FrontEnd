@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/buttons";
 import { BusinessFooter } from "@/components/common/footer";
@@ -25,6 +25,11 @@ import { formatRelativeDate } from "@/utils/date";
 import type { DraftData, ApplicationCardData } from "@/components/home/types";
 import { useReApply } from "@/hooks/useReApply";
 import { mapMockApplyToApplication } from "@/components/home/applicationHomeUtils";
+import {
+  DRAFT_STATUS_BY_STEP,
+  DRAFT_TOTAL_STEPS,
+} from "@/components/home/homeSteps";
+import { resolveBadgeType, track } from "@/lib/analytics";
 import { ToastVariant } from "@/components/common/toast/Toast";
 import Toast from "@/components/common/toast/Toast";
 import ModalNotice from "@/components/common/modal/ModalNotice";
@@ -52,6 +57,8 @@ export default function Home() {
     message: "",
     variant: "normal",
   });
+
+  const hasTrackedHomeView = useRef(false);
 
   const showToast = (message: string, variant: ToastVariant) => {
     setToast({ show: true, message, variant });
@@ -174,6 +181,14 @@ export default function Home() {
 
       setDrafts(sortedDrafts);
       setResults(mappedResults);
+
+      if (!hasTrackedHomeView.current) {
+        hasTrackedHomeView.current = true;
+        track("home_page_viewed", {
+          paused_count: sortedDrafts.length,
+          completed_count: mappedResults.length,
+        });
+      }
     } catch (error) {
       console.error("데이터를 불러오는데 실패했습니다.", error);
     }
@@ -270,6 +285,12 @@ export default function Home() {
     const targetDraft = draftToDelete;
     setIsDeletingDraft(true);
 
+    track("apply_delete_confirmed", {
+      mock_apply_id: targetDraft.mockApplyId,
+      company: targetDraft.companyName,
+      section: "paused",
+    });
+
     try {
       const hasOtherLinkedApplication =
         drafts.some(
@@ -329,6 +350,12 @@ export default function Home() {
     const targetApplication = applicationToDelete;
     setIsDeletingApplication(true);
 
+    track("apply_delete_confirmed", {
+      mock_apply_id: targetApplication.mockApplyId,
+      company: targetApplication.company,
+      section: "completed",
+    });
+
     try {
       const hasOtherLinkedApplication =
         drafts.some(
@@ -385,6 +412,7 @@ export default function Home() {
               size="large"
               iconType="SPARKLE"
               onClick={() => {
+                track("new_apply_clicked");
                 clearJobPostingDraft();
                 saveSelectedApplyType("MOCK");
                 router.push("/mockApply/job/create");
@@ -402,6 +430,16 @@ export default function Home() {
                 );
 
                 if (!targetDraft) return;
+
+                track("paused_apply_resumed", {
+                  mock_apply_id: targetDraft.mockApplyId,
+                  company: targetDraft.companyName,
+                  position: targetDraft.position,
+                  status:
+                    DRAFT_STATUS_BY_STEP[targetDraft.currentStep] ??
+                    "알 수 없음",
+                  progress: `${targetDraft.currentStep}/${DRAFT_TOTAL_STEPS}`,
+                });
 
                 if (!targetDraft.mockApplyId) {
                   void fetchMyJobPosting(targetDraft.jobPostingId)
@@ -457,8 +495,23 @@ export default function Home() {
               applications={results}
               isRetrying={isRetrying}
               onDelete={setApplicationToDelete}
-              onRetry={(app) => void reApply(app.mockApplyId)}
+              onRetry={(app) => {
+                track("apply_retry_clicked", {
+                  mock_apply_id: app.mockApplyId,
+                  company: app.company,
+                  score: app.score,
+                });
+                void reApply(app.mockApplyId);
+              }}
               onResume={(app) => {
+                track("result_apply_viewed", {
+                  mock_apply_id: app.mockApplyId,
+                  company: app.company,
+                  position: app.position,
+                  score: app.score,
+                  badge_type: resolveBadgeType(app.score),
+                  analysis_date: app.createdAt,
+                });
                 router.push(
                   `/mockApply/${app.mockApplyId}/result?jobPostingId=${app.jobPostingId}`,
                 );
