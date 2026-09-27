@@ -2,6 +2,8 @@
  * Amplitude 이벤트 레지스트리.
  */
 
+import type { PlanCode as CreditPlanCode } from "@/lib/api/credit";
+
 // ---------------------------------------------------------------------------
 // 속성 값 타입
 // 문자열 리터럴 유니온
@@ -28,10 +30,12 @@ export type CarouselDirection = "left" | "right";
 export type ApplySection = "paused" | "completed";
 export type HomeResultFilter = "all" | "needs_improvement" | "improvable";
 export type BadgeType = "needs_improvement" | "improvable";
-export type ResultTab = "feedback" | "jd";
+/** TODO(taxonomy): 문서는 feedback/jd지만 실제 결과 화면 탭은 'AI 피드백 / 채점 상세'다. */
+export type ResultTab = "feedback" | "score_detail";
 export type SummaryFilterType = "strength" | "weakness";
 export type AnalysisErrorType = "credit_insufficient" | "unknown";
-export type PlanCode = "ONE_TIME" | "PACK_5" | "PACK_10";
+/** TODO(taxonomy): 문서 예시는 PACK_5/PACK_10이지만 서버 planCode(FIVE_TIMES/TEN_TIMES)를 그대로 보낸다. */
+export type PlanCode = CreditPlanCode;
 
 /** 프로퍼티가 없는 이벤트. 공통 속성(page_path 등)은 플러그인이 자동으로 붙인다. */
 type NoProperties = Record<string, never>;
@@ -72,8 +76,9 @@ export interface EventPropertiesMap {
   /** 퍼널 진입점 */
   new_apply_clicked: NoProperties;
 
+  // 공고만 저장하고 모의지원을 시작하지 않은 초안 카드는 mock_apply_id가 없다.
   paused_apply_resumed: {
-    mock_apply_id: number;
+    mock_apply_id?: number;
     company: string;
     position: string;
     /** TODO(taxonomy): 화면 표시 문자열("자소서 작성") 대신 MockApplyProgressStatus 코드값 권장 */
@@ -86,9 +91,9 @@ export interface EventPropertiesMap {
     total_pages: number;
     current_page: number;
   };
-  paused_kebab_clicked: { mock_apply_id: number; company: string };
+  paused_kebab_clicked: { mock_apply_id?: number; company: string };
   apply_delete_confirmed: {
-    mock_apply_id: number;
+    mock_apply_id?: number;
     company: string;
     section: ApplySection;
   };
@@ -103,27 +108,31 @@ export interface EventPropertiesMap {
     mock_apply_id: number;
     company: string;
     position: string;
-    score: number;
-    badge_type: BadgeType;
+    score?: number;
+    /** TODO(taxonomy): 점수 구간 기준 미정. 확정 전까지 resolveBadgeType()이 undefined를 반환한다. */
+    badge_type?: BadgeType;
     /** TODO(taxonomy): "오늘"/"3일 전" 표시 문자열이라 집계 불가. ISO 날짜 권장 */
     analysis_date: string;
   };
   apply_retry_clicked: {
     mock_apply_id: number;
     company: string;
-    score: number;
+    score?: number;
   };
 
   // --- 공고 입력 / 확인 ----------------------------------------------------
-  jd_input_page_viewed: { mock_apply_id: number; entry_source: EntrySource };
+  // TODO(taxonomy): mock_apply_id는 공고 확인에서 '다음으로'를 눌러야 생성된다.
+  //                 공고 입력 / 확인 단계에서는 값이 없어 생략한다.
+  jd_input_page_viewed: { mock_apply_id?: number; entry_source: EntrySource };
   jd_input_submitted: {
-    mock_apply_id: number;
+    mock_apply_id?: number;
     input_method: JdInputMethod;
-    has_company_name: boolean;
+    /** TODO(taxonomy): 제출 시점엔 공고 분석 전이라 판별할 수 없어 생략한다. */
+    has_company_name?: boolean;
   };
-  jd_review_page_viewed: { mock_apply_id: number };
-  jd_section_edit_clicked: { mock_apply_id: number; section_id: JdSectionId };
-  jd_section_edited: { mock_apply_id: number; section_id: JdSectionId };
+  jd_review_page_viewed: { mock_apply_id?: number };
+  jd_section_edit_clicked: { mock_apply_id?: number; section_id: JdSectionId };
+  jd_section_edited: { mock_apply_id?: number; section_id: JdSectionId };
 
   // --- 문항 선택 -----------------------------------------------------------
   question_select_page_viewed: { mock_apply_id: number };
@@ -151,18 +160,19 @@ export interface EventPropertiesMap {
    */
   answer_auto_saved: { mock_apply_id: number; completed_count: number };
   apply_submit_clicked: { mock_apply_id: number; all_complete: boolean };
+  // job_posting_id / sequence는 URL 파라미터나 조회 API에서 얻는데, 없거나 실패하면 생략한다.
   /** 핵심 전환 이벤트 (크레딧 차감 시점) */
-  apply_confirmed: { mock_apply_id: number; job_posting_id: number };
+  apply_confirmed: { mock_apply_id: number; job_posting_id?: number };
 
   credit_insufficient_shown: { mock_apply_id: number };
   credit_charge_from_modal_clicked: { mock_apply_id: number };
 
   // --- 분석 로딩 -----------------------------------------------------------
-  analysis_started: { mock_apply_id: number; job_posting_id: number };
+  analysis_started: { mock_apply_id: number; job_posting_id?: number };
   analysis_completed: {
     mock_apply_id: number;
-    job_posting_id: number;
-    sequence: number;
+    job_posting_id?: number;
+    sequence?: number;
   };
   analysis_failed: { mock_apply_id: number; error_type: AnalysisErrorType };
 
@@ -170,17 +180,17 @@ export interface EventPropertiesMap {
   // TODO(taxonomy): 아래 5개 이벤트에 mock_apply_id가 없어서 지원 건 단위 퍼널이 끊긴다.
   //                 라우트(/mockApply/[mockApplyId]/result)에 이미 있으므로 추가만 하면 된다.
   result_page_viewed: {
-    job_posting_id: number;
-    sequence: number;
-    total_count: number;
+    job_posting_id?: number;
+    sequence?: number;
+    total_count?: number;
   };
-  result_tab_switched: { job_posting_id: number; tab_name: ResultTab };
+  result_tab_switched: { job_posting_id?: number; tab_name: ResultTab };
   result_summary_filter_changed: {
-    job_posting_id: number;
+    job_posting_id?: number;
     filter_type: SummaryFilterType;
   };
-  result_retry_clicked: { job_posting_id: number; sequence: number };
-  result_save_exit_clicked: { job_posting_id: number };
+  result_retry_clicked: { job_posting_id?: number; sequence?: number };
+  result_save_exit_clicked: { job_posting_id?: number };
 
   // --- 크레딧 -------------------------------------------------------------
   credit_page_viewed: { remaining_credit: number };

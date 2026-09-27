@@ -6,4 +6,10 @@ export {
   toAnalyticsUserId,
 } from "@/lib/analytics/client";
 export { normalizeRoute } from "@/lib/analytics/routes";
-export type { EventName, EventPropertiesMap } from "@/lib/analytics/events";
+export type {
+  AnalysisErrorType,
+  EntrySource,
+  EventName,
+  EventPropertiesMap,
+  JdSectionId,
+} from "@/lib/analytics/events";
