@@ -7,6 +7,10 @@ export {
 } from "@/lib/analytics/client";
 export { normalizeRoute } from "@/lib/analytics/routes";
 export { resolveBadgeType } from "@/lib/analytics/badge";
+export {
+  consumePendingPurchase,
+  savePendingPurchase,
+} from "@/lib/analytics/purchase";
 export { resolveLoginReferrer } from "@/lib/analytics/referrer";
 export type {
   AnalysisErrorType,
@@ -15,3 +19,4 @@ export type {
   EventPropertiesMap,
   JdSectionId,
 } from "@/lib/analytics/events";
+export type { PendingPurchase } from "@/lib/analytics/purchase";

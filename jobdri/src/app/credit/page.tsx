@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import CreditCard from "@/components/common/cards/CreditCard";
 import Useage from "@/components/credit/Useage";
@@ -17,6 +17,7 @@ import { BusinessFooter } from "@/components/common/footer";
 import Toast from "@/components/common/toast/Toast";
 import { useCreditStore } from "@/lib/store/useCreditStore";
 import { Button } from "@/components/common/buttons";
+import { consumePendingPurchase, track } from "@/lib/analytics";
 
 function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
   const original = basePricePerUnit * plan.creditAmount;
@@ -35,6 +36,20 @@ function CreditContent() {
   const searchParams = useSearchParams();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const router = useRouter();
+  const hasTrackedPageView = useRef(false);
+
+  useEffect(() => {
+    if (hasTrackedPageView.current) return;
+    hasTrackedPageView.current = true;
+
+    fetchCreditBalance()
+      .then((balance) => {
+        track("credit_page_viewed", {
+          remaining_credit: balance,
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (toastMessage) {
@@ -71,6 +86,11 @@ function CreditContent() {
             isPolling = false;
             window.history.replaceState(null, "", window.location.pathname);
             setIsConfirming(false);
+
+            const purchase = consumePendingPurchase();
+            if (purchase) {
+              track("credit_purchase_completed", purchase);
+            }
 
             // 서버에서 최신 잔액 조회
             fetchCreditBalance()
@@ -187,6 +207,13 @@ function CreditContent() {
             price={plan.price.toLocaleString()}
             planCode={plan.planCode}
             discountRate={calcDiscountRate(plan, basePricePerUnit)}
+            onPurchase={() =>
+              track("credit_plan_clicked", {
+                plan_code: plan.planCode,
+                credit_amount: plan.creditAmount,
+                price: plan.price,
+              })
+            }
           />
         ))}
       </section>
