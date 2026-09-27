@@ -6,6 +6,7 @@ export {
   toAnalyticsUserId,
 } from "@/lib/analytics/client";
 export { normalizeRoute } from "@/lib/analytics/routes";
+export { resolveLoginReferrer } from "@/lib/analytics/referrer";
 export type {
   AnalysisErrorType,
   EntrySource,
