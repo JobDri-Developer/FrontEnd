@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ResumeAnalysisLoading from "@/components/mockApply/ResumeAnalysisLoading";
 import ModalNotice from "@/components/common/modal/ModalNotice";
@@ -14,6 +14,7 @@ import {
   subscribeAnalysisTaskStream,
 } from "@/lib/api/result";
 import { useJobPostingHeader } from "@/hooks/useJobPostingHeader";
+import { track, type AnalysisErrorType } from "@/lib/analytics";
 
 const RESUME_ANALYSIS_LOADING_DURATION_MS = 316_000;
 const ANALYSIS_POLL_INTERVAL_MS = 2_500;
@@ -74,6 +75,47 @@ export default function ResumeAnalysisLoadingPageClient({
         : INVALID_MOCK_APPLY_MESSAGE,
   );
 
+  const hasTrackedStartRef = useRef(false);
+
+  const trackAnalysisFailed = useCallback(
+    (errorType: AnalysisErrorType) => {
+      track("analysis_failed", {
+        mock_apply_id: mockApplyId,
+        error_type: errorType,
+      });
+    },
+    [mockApplyId],
+  );
+
+  const openCreditShortModal = useCallback(() => {
+    trackAnalysisFailed("credit_insufficient");
+    track("credit_insufficient_shown", {
+      mock_apply_id: mockApplyId,
+    });
+    setIsCreditShortModalOpen(true);
+  }, [mockApplyId, trackAnalysisFailed]);
+
+  const failAnalysis = useCallback(
+    (message: string) => {
+      trackAnalysisFailed("unknown");
+      setErrorMessage(message);
+    },
+    [trackAnalysisFailed],
+  );
+
+  useEffect(() => {
+    // 알림에서 실패 결과로 진입한 경우(isError)는 분석이 시작된 것이 아니다.
+    if (isError || !isValidMockApplyId || hasTrackedStartRef.current) {
+      return;
+    }
+
+    hasTrackedStartRef.current = true;
+    track("analysis_started", {
+      mock_apply_id: mockApplyId,
+      job_posting_id: jobPostingId,
+    });
+  }, [isError, isValidMockApplyId, jobPostingId, mockApplyId]);
+
   const moveToResult = useCallback(
     (sequence?: number) => {
       if (!Number.isInteger(mockApplyId) || mockApplyId <= 0) {
@@ -81,6 +123,13 @@ export default function ResumeAnalysisLoadingPageClient({
       }
 
       const resolvedSequence = sequence ?? initialSequence;
+
+      track("analysis_completed", {
+        mock_apply_id: mockApplyId,
+        job_posting_id: jobPostingId,
+        sequence: resolvedSequence,
+      });
+
       const resultSearchParams = new URLSearchParams();
 
       if (jobPostingId) {
@@ -159,7 +208,7 @@ export default function ResumeAnalysisLoadingPageClient({
         if (hasMismatchedTask) {
           isFinished = true;
           abortController.abort();
-          setErrorMessage("요청한 지원서와 분석 작업 정보가 일치하지 않아요.");
+          failAnalysis("요청한 지원서와 분석 작업 정보가 일치하지 않아요.");
           return;
         }
 
@@ -169,7 +218,7 @@ export default function ResumeAnalysisLoadingPageClient({
         ) {
           isFinished = true;
           abortController.abort();
-          setIsCreditShortModalOpen(true);
+          openCreditShortModal();
           return;
         }
 
@@ -180,7 +229,7 @@ export default function ResumeAnalysisLoadingPageClient({
         ) {
           isFinished = true;
           abortController.abort();
-          setErrorMessage(
+          failAnalysis(
             task.failureReason ||
               task.error ||
               task.message ||
@@ -199,7 +248,7 @@ export default function ResumeAnalysisLoadingPageClient({
         if (isCompletedTaskStatus(task.status)) {
           isFinished = true;
           abortController.abort();
-          setErrorMessage(
+          failAnalysis(
             task.message || "완료된 자소서 분석 결과를 확인할 수 없어요.",
           );
         }
@@ -216,7 +265,7 @@ export default function ResumeAnalysisLoadingPageClient({
         if (error instanceof CreditInsufficientError) {
           isFinished = true;
           abortController.abort();
-          setIsCreditShortModalOpen(true);
+          openCreditShortModal();
           return;
         }
 
@@ -232,7 +281,7 @@ export default function ResumeAnalysisLoadingPageClient({
 
         isFinished = true;
         abortController.abort();
-        setErrorMessage(
+        failAnalysis(
           error instanceof Error
             ? error.message
             : "분석 결과를 불러오지 못했어요.",
@@ -252,7 +301,7 @@ export default function ResumeAnalysisLoadingPageClient({
 
       isFinished = true;
       abortController.abort();
-      setErrorMessage(
+      failAnalysis(
         "분석 시간이 예상보다 길어지고 있어요. 잠시 후 다시 확인해주세요.",
       );
     }, ANALYSIS_POLL_TIMEOUT_MS);
@@ -284,6 +333,8 @@ export default function ResumeAnalysisLoadingPageClient({
     isValidMockApplyId,
     mockApplyId,
     moveToResult,
+    failAnalysis,
+    openCreditShortModal,
     pollingRetryKey,
     taskId,
     isError,
@@ -322,7 +373,12 @@ export default function ResumeAnalysisLoadingPageClient({
             }}
             primaryAction={{
               label: "충전하기",
-              onClick: () => router.push("/credit"),
+              onClick: () => {
+                track("credit_charge_from_modal_clicked", {
+                  mock_apply_id: mockApplyId,
+                });
+                router.push("/credit");
+              },
             }}
           />
         </ModalOverlay>
