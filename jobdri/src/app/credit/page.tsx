@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import CreditCard from "@/components/common/cards/CreditCard";
 import Useage from "@/components/credit/Useage";
 import CouponRegistrationModal from "@/components/credit/CouponRegistrationModal";
+import TossEventBanner from "@/components/credit/TossEventBanner";
 import {
   fetchCreditPlans,
   checkPaymentStatus,
@@ -199,7 +200,8 @@ function CreditContent() {
           </div>
         </div>
       )}
-      <section className="mx-auto mt-8 mb-16 flex w-full flex-row gap-4">
+      <TossEventBanner className="mt-8" />
+      <section className="mx-auto mt-6 mb-16 flex w-full flex-row gap-4">
         {plans.map((plan) => (
           <CreditCard
             key={plan.planCode}
