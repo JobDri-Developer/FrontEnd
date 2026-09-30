@@ -200,7 +200,8 @@ function CreditContent() {
           </div>
         </div>
       )}
-      <section className="mx-auto mt-8 flex w-full flex-row gap-4">
+      <TossEventBanner className="mt-8" />
+      <section className="mx-auto mt-6 mb-16 flex w-full flex-row gap-4">
         {plans.map((plan) => (
           <CreditCard
             key={plan.planCode}
@@ -218,7 +219,6 @@ function CreditContent() {
           />
         ))}
       </section>
-      <TossEventBanner className="mt-6 mb-16" />
       <div className="min-w-265">
         <Useage />
       </div>
