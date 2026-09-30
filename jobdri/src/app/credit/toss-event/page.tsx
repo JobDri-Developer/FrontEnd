@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Lnb from "@/components/common/lnb/Lnb";
 import { BusinessFooter } from "@/components/common/footer";
-import { Button, IconOnlyButton } from "@/components/common/buttons";
+import { IconOnlyButton } from "@/components/common/buttons";
 import { ROUTES } from "@/constants/routes";
 import tossEventMainImage from "@/assets/img_toss_eventpage_1.png";
 import tossEventNoticeImage from "@/assets/img_toss_eventpage_2.png";
@@ -16,7 +16,7 @@ export default function TossEventPage() {
     <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
       <Lnb initialActiveItem={null} className="z-50 shrink-0" />
       <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
-        <main className="mx-auto w-full max-w-[1320px] min-w-[1060px] px-18 pt-12 pb-60">
+        <main className="mx-auto w-full max-w-[1320px] min-w-[1060px] px-18 pt-12 pb-20">
           <div className="flex items-center gap-2">
             <IconOnlyButton
               iconType="ARROW_LEFT_24"
@@ -46,15 +46,6 @@ export default function TossEventPage() {
               className="h-auto w-full"
             />
           </section>
-
-          <div className="mt-10 flex justify-center">
-            <Button
-              label="크레딧 구매하러 가기"
-              styleType="primary"
-              size="large"
-              onClick={() => router.push(ROUTES.CREDIT)}
-            />
-          </div>
         </main>
         <BusinessFooter />
       </div>
