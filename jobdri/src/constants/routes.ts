@@ -6,4 +6,5 @@
   DESKTOP_REQUIRED: "/desktop-required",
   APPLY: "/mockApply",
   CREDIT: "/credit",
+  CREDIT_TOSS_EVENT: "/credit/toss-event",
 } as const;
