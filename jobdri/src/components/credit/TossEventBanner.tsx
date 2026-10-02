@@ -9,15 +9,16 @@ interface TossEventBannerProps {
   className?: string;
 }
 
-// 912px ~ 1060px 사이에서 가로로 늘어나는 배너.
-// 내부는 1060x160 고정 캔버스를 가운데 정렬해서, 배너가 좁아지면 좌우가 잘린다.
+// 크레딧 카드 영역과 같은 너비로 늘어나는 배너.
+// 내부는 1060x160 고정 캔버스를 가운데 정렬해서, 1060보다 좁아지면 좌우가 잘리고
+// 넓어지면 양옆이 배경(흰색, 배경 원)으로 채워진다.
 export default function TossEventBanner({ className }: TossEventBannerProps) {
   return (
     <Link
       href={ROUTES.CREDIT_TOSS_EVENT}
       aria-label="토스페이 이용하면 토스포인트 3,000원 적립 이벤트 보러가기"
       className={clsx(
-        "relative mx-auto block h-40 w-full max-w-[1060px] overflow-hidden rounded-card-l bg-white transition-opacity hover:opacity-90",
+        "relative block h-40 w-full overflow-hidden rounded-card-l bg-white transition-opacity hover:opacity-90",
         className,
       )}
     >
