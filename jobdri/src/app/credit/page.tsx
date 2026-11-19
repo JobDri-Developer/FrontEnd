@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import CreditCard from "@/components/common/cards/CreditCard";
 import Useage from "@/components/credit/Useage";
 import CouponRegistrationModal from "@/components/credit/CouponRegistrationModal";
@@ -16,7 +17,7 @@ import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
 import { BusinessFooter } from "@/components/common/footer";
 import Toast from "@/components/common/toast/Toast";
-import { useCreditStore } from "@/lib/store/useCreditStore";
+import { queryKeys } from "@/lib/queries";
 import { Button } from "@/components/common/buttons";
 import { consumePendingPurchase, track } from "@/lib/analytics";
 
@@ -28,6 +29,7 @@ function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
 }
 
 function CreditContent() {
+  const queryClient = useQueryClient();
   const [plans, setPlans] = useState<CreditPlan[]>([]);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
@@ -96,7 +98,10 @@ function CreditContent() {
             // 서버에서 최신 잔액 조회
             fetchCreditBalance()
               .then((latestBalance) => {
-                useCreditStore.getState().setCreditCount(latestBalance);
+                queryClient.setQueryData(
+                  queryKeys.creditBalance,
+                  latestBalance,
+                );
                 setToastMessage("크레딧 충전이 완료되었습니다.");
               })
               .catch((err) => {
@@ -134,7 +139,7 @@ function CreditContent() {
         isPolling = false;
       };
     }
-  }, [searchParams]);
+  }, [queryClient, searchParams]);
 
   useEffect(() => {
     const isCanceled = searchParams.get("cancel");

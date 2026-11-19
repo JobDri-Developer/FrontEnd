@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   useCallback,
@@ -10,6 +10,7 @@ import {
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ModalNotice from "@/components/common/modal/ModalNotice";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import Toast from "@/components/common/toast/Toast";
@@ -20,16 +21,18 @@ import {
   getStoredAuthEmail,
   requestLogout,
 } from "@/lib/auth";
-import { fetchCreditBalance } from "@/lib/api/credit";
-import {
-  fetchMyMockApplies,
-  MOCK_APPLY_CHANGED_EVENT,
-} from "@/lib/api/mockApplies";
 import { getResumePath } from "@/components/home/applicationHomeUtils";
-import {
-  fetchNotifications,
-  type LnbNotificationItem,
+import type {
+  ApiNotificationItem,
+  LnbNotificationItem,
 } from "@/lib/api/notification";
+import {
+  creditBalanceQueryOptions,
+  myMockAppliesQueryOptions,
+  notificationsQueryOptions,
+  queryKeys,
+  type MyMockApplies,
+} from "@/lib/queries";
 import LnbDefault from "./LnbDefault";
 import LnbFolded from "./LnbFolded";
 import { mapApiToLnbItem } from "./LnbNotification";
@@ -38,10 +41,6 @@ import {
   type LnbRecentItem,
   type LnbNavItem,
 } from "./LnbShared";
-import { useCreditStore } from "@/lib/store/useCreditStore";
-
-// 알림 폴링 주기 (15초)
-const NOTIFICATION_POLL_INTERVAL_MS = 15_000;
 
 interface LnbProps {
   initialActiveItem?: LnbItemKey | null;
@@ -51,6 +50,43 @@ interface LnbProps {
   defaultRecentOpen?: boolean;
   hasNotification?: boolean;
   disableCreditFetch?: boolean;
+}
+
+const EMPTY_RECENT_ITEMS: LnbRecentItem[] = [];
+const EMPTY_NOTIFICATION_ITEMS: LnbNotificationItem[] = [];
+
+function selectRecentItems(data: MyMockApplies): LnbRecentItem[] {
+  const allItems = [
+    ...data.inProgress.map((item) => ({ item, isCompleted: false })),
+    ...data.completed.content.map((item) => ({
+      item,
+      isCompleted: true,
+    })),
+  ].sort((a, b) => {
+    const aTime = new Date(a.item.createdAt).getTime();
+    const bTime = new Date(b.item.createdAt).getTime();
+
+    if (Number.isNaN(aTime) || Number.isNaN(bTime)) {
+      return b.item.mockApplyId - a.item.mockApplyId;
+    }
+    return bTime - aTime;
+  });
+
+  return allItems.map(({ item, isCompleted }) => ({
+    id: String(item.mockApplyId),
+    companyName: item.companyName,
+    jobTitle: item.jobTitle || item.detailClassificationName || "직무 미지정",
+    version: item.sequence ?? 1,
+    href: isCompleted
+      ? `/mockApply/${item.mockApplyId}/result?jobPostingId=${item.jobPostingId}&sequence=${item.sequence ?? 1}`
+      : getResumePath(item),
+  }));
+}
+
+function selectNotificationItems(
+  items: ApiNotificationItem[],
+): LnbNotificationItem[] {
+  return items.map(mapApiToLnbItem);
 }
 
 function subscribeToStoredEmail(onStoreChange: () => void) {
@@ -83,6 +119,7 @@ export default function Lnb({
   disableCreditFetch = false,
 }: LnbProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const storedEmail = useSyncExternalStore(
     subscribeToStoredEmail,
@@ -93,8 +130,23 @@ export default function Lnb({
   const displayEmail = email ?? storedEmail;
   const emailInitial = getEmailInitial(displayEmail);
 
+  // Queries
+  // 홈과 같은 쿼리 키를 써서, 홈에서는 모의지원 목록 요청이 한 번만 나간다.
+  const { data: recentItems = EMPTY_RECENT_ITEMS } = useQuery({
+    ...myMockAppliesQueryOptions(),
+    select: selectRecentItems,
+  });
+  const { data: notificationItems = EMPTY_NOTIFICATION_ITEMS, isSuccess } =
+    useQuery({
+      ...notificationsQueryOptions(),
+      select: selectNotificationItems,
+    });
+  const { data: creditCount = 0 } = useQuery({
+    ...creditBalanceQueryOptions(),
+    enabled: !disableCreditFetch,
+  });
+
   // States
-  const { creditCount, setCreditCount } = useCreditStore();
   const [isFold, setIsFold] = useState(false);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [activeItem, setActiveItem] = useState<LnbItemKey | undefined>(
@@ -102,14 +154,16 @@ export default function Lnb({
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [isRecentOpen, setIsRecentOpen] = useState(defaultRecentOpen);
+  const [pickedRecentItemId, setPickedRecentItemId] = useState<string>("");
 
-  const [recentItems, setRecentItems] = useState<LnbRecentItem[]>([]);
-  const [selectedRecentItemId, setSelectedRecentItemId] = useState<string>("");
+  // 고른 항목이 목록에서 사라지면 가장 최근 항목을 선택한다.
+  const selectedRecentItemId = recentItems.some(
+    (item) => item.id === pickedRecentItemId,
+  )
+    ? pickedRecentItemId
+    : (recentItems[0]?.id ?? "");
 
-  const [notificationItems, setNotificationItems] = useState<
-    LnbNotificationItem[]
-  >([]);
-  const [hasNotification, setHasNotification] = useState(false);
+  const hasNotification = notificationItems.some((item) => !item.read);
 
   // 🌟 토스트 상태 부활
   const [toastState, setToastState] = useState<{
@@ -121,73 +175,6 @@ export default function Lnb({
   const seenAnalysisIdsRef = useRef<Set<string>>(new Set());
   const seenToastIdsRef = useRef<Set<string>>(new Set());
   const isFirstNotificationLoadRef = useRef(true);
-
-  const loadRecentItems = useCallback(async () => {
-    try {
-      const data = await fetchMyMockApplies({
-        redirectOnUnauthorized: false,
-      });
-      const allItems = [
-        ...data.inProgress.map((item) => ({ item, isCompleted: false })),
-        ...data.completed.content.map((item) => ({
-          item,
-          isCompleted: true,
-        })),
-      ].sort((a, b) => {
-        const aTime = new Date(a.item.createdAt).getTime();
-        const bTime = new Date(b.item.createdAt).getTime();
-
-        if (Number.isNaN(aTime) || Number.isNaN(bTime)) {
-          return b.item.mockApplyId - a.item.mockApplyId;
-        }
-        return bTime - aTime;
-      });
-
-      const mappedItems: LnbRecentItem[] = allItems.map(
-        ({ item, isCompleted }) => ({
-          id: String(item.mockApplyId),
-          companyName: item.companyName,
-          jobTitle:
-            item.jobTitle || item.detailClassificationName || "직무 미지정",
-          version: item.sequence ?? 1,
-          href: isCompleted
-            ? `/mockApply/${item.mockApplyId}/result?jobPostingId=${item.jobPostingId}&sequence=${item.sequence ?? 1}`
-            : getResumePath(item),
-        }),
-      );
-
-      setRecentItems(mappedItems);
-      setSelectedRecentItemId((current) =>
-        mappedItems.some((item) => item.id === current)
-          ? current
-          : (mappedItems[0]?.id ?? ""),
-      );
-    } catch (error) {
-      console.error("최근 모의지원 목록 로드 실패:", error);
-      setRecentItems([]);
-      setSelectedRecentItemId("");
-    }
-  }, []);
-
-  useEffect(() => {
-    const initialLoadTimer = window.setTimeout(() => {
-      void loadRecentItems();
-    }, 0);
-    return () => window.clearTimeout(initialLoadTimer);
-  }, [loadRecentItems]);
-
-  useEffect(() => {
-    const refreshRecentItems = () => {
-      void loadRecentItems();
-    };
-    window.addEventListener(MOCK_APPLY_CHANGED_EVENT, refreshRecentItems);
-    window.addEventListener("focus", refreshRecentItems);
-
-    return () => {
-      window.removeEventListener(MOCK_APPLY_CHANGED_EVENT, refreshRecentItems);
-      window.removeEventListener("focus", refreshRecentItems);
-    };
-  }, [loadRecentItems]);
 
   // 🌟 토스트 띄우는 함수 (순수하게 메시지만 세팅함)
   const triggerToast = useCallback((item: LnbNotificationItem) => {
@@ -226,81 +213,48 @@ export default function Lnb({
     window.setTimeout(() => setToastState(null), 3000);
   }, []);
 
-  const fetchAndUpdateNotifications = useCallback(async () => {
-    try {
-      const data = await fetchNotifications();
-      if (!data.isSuccess || !data.result) return;
+  // 새 알림이 오면 토스트를 띄우고, 분석 완료 알림이면 모의지원 목록을 갱신한다.
+  useEffect(() => {
+    if (!isSuccess) return;
 
-      const mappedItems = data.result.map(mapApiToLnbItem);
+    const analysisIds = notificationItems
+      .filter((item) => item.apiType?.includes("ANALYSIS"))
+      .map((item) => String(item.id));
 
-      if (isFirstNotificationLoadRef.current) {
-        mappedItems.forEach((item) => {
-          if (item.id) seenToastIdsRef.current.add(String(item.id));
-        });
-        isFirstNotificationLoadRef.current = false;
-      } else {
-        const newUnreadItems = mappedItems.filter(
-          (item) =>
-            item.id &&
-            !seenToastIdsRef.current.has(String(item.id)) &&
-            !item.read,
-        );
-
-        if (newUnreadItems.length > 0) {
-          triggerToast(newUnreadItems[0]);
-        }
-
-        mappedItems.forEach((item) => {
-          if (item.id) seenToastIdsRef.current.add(String(item.id));
-        });
-      }
-
-      setNotificationItems(mappedItems);
-      setHasNotification(mappedItems.some((item) => !item.read));
-
-      // 리스트 갱신 로직 (분석 완료 시)
-      const analysisIds = mappedItems
-        .filter((item) => item.apiType?.includes("ANALYSIS"))
-        .map((item) => String(item.id));
-
-      const hasNewAnalysis = analysisIds.some(
-        (id) => !seenAnalysisIdsRef.current.has(id),
-      );
+    if (isFirstNotificationLoadRef.current) {
+      // 처음 받은 알림은 이미 본 것으로 간주한다.
+      notificationItems.forEach((item) => {
+        if (item.id) seenToastIdsRef.current.add(String(item.id));
+      });
       seenAnalysisIdsRef.current = new Set(analysisIds);
-
-      if (hasNewAnalysis) {
-        void loadRecentItems();
-      }
-    } catch (error) {
-      console.error("알림 목록 갱신 실패:", error);
+      isFirstNotificationLoadRef.current = false;
+      return;
     }
-  }, [loadRecentItems, triggerToast]);
 
-  useEffect(() => {
-    void fetchAndUpdateNotifications();
+    const newUnreadItems = notificationItems.filter(
+      (item) =>
+        item.id && !seenToastIdsRef.current.has(String(item.id)) && !item.read,
+    );
 
-    const intervalId = window.setInterval(() => {
-      void fetchAndUpdateNotifications();
-    }, NOTIFICATION_POLL_INTERVAL_MS);
+    if (newUnreadItems.length > 0) {
+      triggerToast(newUnreadItems[0]);
+    }
 
-    const handleFocus = () => {
-      void fetchAndUpdateNotifications();
-    };
-    window.addEventListener("focus", handleFocus);
+    notificationItems.forEach((item) => {
+      if (item.id) seenToastIdsRef.current.add(String(item.id));
+    });
 
-    return () => {
-      window.clearInterval(intervalId);
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, [fetchAndUpdateNotifications]);
+    const hasNewAnalysis = analysisIds.some(
+      (id) => !seenAnalysisIdsRef.current.has(id),
+    );
+    seenAnalysisIdsRef.current = new Set(analysisIds);
 
-  // Credit Fetch
-  useEffect(() => {
-    if (disableCreditFetch) return;
-    fetchCreditBalance({ redirectOnUnauthorized: false })
-      .then(setCreditCount)
-      .catch(() => {});
-  }, [disableCreditFetch, setCreditCount]);
+    if (hasNewAnalysis) {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.myMockApplies,
+      });
+    }
+  }, [isSuccess, notificationItems, queryClient, triggerToast]);
 
   // Handlers
   const handleToggleFold = () => setIsFold((prev) => !prev);
@@ -326,24 +280,30 @@ export default function Lnb({
       }
     }
     clearAuthTokens();
+    // 다른 계정으로 로그인했을 때 이전 사용자의 데이터가 보이지 않게 한다.
+    queryClient.clear();
     router.replace("/login");
   };
 
+  // 읽음 처리를 캐시에 반영해, 다른 페이지로 이동해도 읽음 상태가 유지되게 한다.
+  const updateNotificationCache = (
+    updater: (item: ApiNotificationItem) => ApiNotificationItem,
+  ) => {
+    void queryClient.cancelQueries({ queryKey: queryKeys.notifications });
+    queryClient.setQueryData<ApiNotificationItem[]>(
+      queryKeys.notifications,
+      (current) => current?.map(updater),
+    );
+  };
+
   const handleReadItem = (id: string) => {
-    setNotificationItems((prev) => {
-      const updated = prev.map((item) =>
-        item.id === id ? { ...item, read: true } : item,
-      );
-      setHasNotification(updated.some((item) => !item.read));
-      return updated;
-    });
+    updateNotificationCache((item) =>
+      String(item.id) === id ? { ...item, isRead: true } : item,
+    );
   };
 
   const handleMarkAllRead = () => {
-    setNotificationItems((prev) =>
-      prev.map((item) => ({ ...item, read: true })),
-    );
-    setHasNotification(false);
+    updateNotificationCache((item) => ({ ...item, isRead: true }));
   };
 
   return (
@@ -386,7 +346,7 @@ export default function Lnb({
             onLogout={handleLogout}
             onNavItemClick={handleNavItemClick}
             onRecentItemClick={(item) => {
-              setSelectedRecentItemId(item.id);
+              setPickedRecentItemId(item.id);
               if (item.href) {
                 router.push(item.href);
               }
