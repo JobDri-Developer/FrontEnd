@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/common/header/Header";
 import ProgressPanelRow from "@/components/common/progress/ProgressPanelRow";
 import { TextButton } from "@/components/common/buttons";
-import resumeAnalysisLoading from "@/assets/lottie/resume-analysis-loading.json";
 import LoadingGraphic from "./LoadingGraphic";
 import ModalNotice from "@/components/common/modal/ModalNotice";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
@@ -158,7 +157,7 @@ export default function ResumeAnalysisLoading({
 
             <div className="flex min-h-0 min-w-0 [flex:1_0_0] items-start justify-center gap-16 self-stretch pt-40">
               <LoadingGraphic
-                animationData={resumeAnalysisLoading}
+                animation="resumeAnalysisLoading"
                 className="aspect-[35/29] w-full max-w-[560px] min-w-0 shrink"
               />
             </div>
