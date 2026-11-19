@@ -9,8 +9,6 @@ import Icon from "@/components/common/icons/Icon";
 import ModalNotice from "@/components/common/modal/ModalNotice";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 import LoadingGraphic from "@/components/mockApply/LoadingGraphic";
-import questionLoadingBook from "@/assets/lottie/question-loading-book.json";
-import questionLoadingSparkle from "@/assets/lottie/question-loading-sparkle.json";
 import {
   clearJobPostingDraft,
   getJobPostingDraft,
@@ -68,7 +66,7 @@ function LoadingStatusRow({
       <span className="flex h-6 w-6 shrink-0 items-center justify-center">
         {isActive && (
           <LoadingGraphic
-            animationData={questionLoadingSparkle}
+            animation="questionLoadingSparkle"
             className="h-6 w-6 shrink-0"
           />
         )}
@@ -324,7 +322,7 @@ export default function JobPostingLoadingPage() {
           <section className="flex [flex:1_0_0] self-stretch flex-col items-center gap-16 pt-[120px]">
             <div className="h-[468.422px] w-[640px] shrink-0 [aspect-ratio:97/71]">
               <LoadingGraphic
-                animationData={questionLoadingBook}
+                animation="questionLoadingBook"
                 className="h-full w-full"
               />
             </div>
