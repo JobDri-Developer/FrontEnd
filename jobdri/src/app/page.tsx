@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/common/buttons";
 import { BusinessFooter } from "@/components/common/footer";
 import Lnb from "@/components/common/lnb/Lnb";
@@ -9,14 +10,17 @@ import ResultDraftList from "@/components/home/ResultDraftList";
 import ResultApplicationList from "@/components/home/ResultApplicationList";
 import {
   deleteMockApply,
-  fetchMyMockApplies,
   saveSelectedApplyType,
+  type MockApplyHomeItem,
 } from "@/lib/api/mockApplies";
+import { deleteJobPosting, fetchMyJobPosting } from "@/lib/api/jobPostings";
 import {
-  deleteJobPosting,
-  fetchMyJobPosting,
-  fetchMyJobPostings,
-} from "@/lib/api/jobPostings";
+  myJobPostingsQueryOptions,
+  myMockAppliesQueryOptions,
+  queryKeys,
+  type MyJobPostings,
+  type MyMockApplies,
+} from "@/lib/queries";
 import {
   clearJobPostingDraft,
   saveJobPostingAnalysis,
@@ -38,11 +42,116 @@ import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
 // 🌟 필요한 API 함수들 import
 import { subscribeAnalysisTaskStream } from "@/lib/api/result";
 
+function buildHomeLists(
+  mockApplies: MyMockApplies,
+  jobPostings: MyJobPostings,
+): { drafts: DraftData[]; results: ApplicationCardData[] } {
+  const inProgressList = mockApplies.inProgress;
+  const completedList = mockApplies.completed.content;
+
+  const jobPostingById = new Map(
+    jobPostings.map((jobPosting) => [jobPosting.jobPostingId, jobPosting]),
+  );
+
+  // 작성 중인 모의지원(Drafts) 매핑
+  const mappedDrafts: DraftData[] = inProgressList.map((item) => {
+    const jobPosting = jobPostingById.get(item.jobPostingId);
+
+    let currentStep = 1;
+    if (item.taskId) {
+      currentStep = 3; // 채점 중
+    } else if (item.status === "ANSWER_WRITE") {
+      currentStep = 2; // 작성 중
+    }
+
+    return {
+      id: String(item.mockApplyId),
+      jobPostingId: item.jobPostingId,
+      mockApplyId: item.mockApplyId,
+      companyName:
+        item.companyName || jobPosting?.companyName || "회사명 미입력",
+      profileColor: jobPosting?.profileColor ?? "DEFAULT",
+      position:
+        item.jobTitle ||
+        jobPosting?.jobTitle ||
+        item.detailClassificationName ||
+        jobPosting?.detailClassificationName ||
+        "직무 미지정",
+      currentStep,
+      taskId: item.taskId,
+      updatedAt: item.createdAt ? formatRelativeDate(item.createdAt) : "-",
+      createdAtTime: item.createdAt ? new Date(item.createdAt).getTime() : 0,
+    };
+  });
+
+  const linkedJobPostingIds = new Set(
+    [...inProgressList, ...completedList].map((item) => item.jobPostingId),
+  );
+
+  // 순수 채용 공고(Drafts) 매핑
+  const savedOnlyDrafts: DraftData[] = jobPostings
+    .filter((jobPosting) => !linkedJobPostingIds.has(jobPosting.jobPostingId))
+    .map((jobPosting) => ({
+      id: `job-posting-${jobPosting.jobPostingId}`,
+      jobPostingId: jobPosting.jobPostingId,
+      companyName: jobPosting.companyName || "회사명 미입력",
+      profileColor: jobPosting.profileColor,
+      position:
+        jobPosting.jobTitle ||
+        jobPosting.detailClassificationName ||
+        "직무 미지정",
+      currentStep: 1,
+      taskId: jobPosting.taskId,
+      updatedAt: jobPosting.createdAt
+        ? formatRelativeDate(jobPosting.createdAt)
+        : "-",
+      createdAtTime: jobPosting.createdAt
+        ? new Date(jobPosting.createdAt).getTime()
+        : 0,
+    }));
+
+  const results = completedList.map((item) => {
+    const jobPosting = jobPostingById.get(item.jobPostingId);
+    return mapMockApplyToApplication(
+      {
+        ...item,
+        profileColor: jobPosting?.profileColor ?? "DEFAULT",
+        jobTitle: item.jobTitle || jobPosting?.jobTitle || "",
+        detailClassificationName:
+          item.detailClassificationName ||
+          jobPosting?.detailClassificationName ||
+          "",
+      },
+      "completed",
+    );
+  });
+
+  const drafts = [...savedOnlyDrafts, ...mappedDrafts].sort((a, b) => {
+    const aIsAnalyzing = a.currentStep === 3;
+    const bIsAnalyzing = b.currentStep === 3;
+
+    if (aIsAnalyzing && !bIsAnalyzing) return -1;
+    if (!aIsAnalyzing && bIsAnalyzing) return 1;
+
+    const timeDifference = (b.createdAtTime ?? 0) - (a.createdAtTime ?? 0);
+    if (timeDifference !== 0) return timeDifference;
+    return (
+      (b.mockApplyId ?? b.jobPostingId) - (a.mockApplyId ?? a.jobPostingId)
+    );
+  });
+
+  return { drafts, results };
+}
+
+const EMPTY_DRAFTS: DraftData[] = [];
+const EMPTY_RESULTS: ApplicationCardData[] = [];
+
 export default function Home() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { reApply, isSaving: isRetrying } = useReApply();
-  const [drafts, setDrafts] = useState<DraftData[]>([]);
-  const [results, setResults] = useState<ApplicationCardData[]>([]);
+  const mockAppliesQuery = useQuery(myMockAppliesQueryOptions());
+  const jobPostingsQuery = useQuery(myJobPostingsQueryOptions());
   const [draftToDelete, setDraftToDelete] = useState<DraftData | null>(null);
   const [applicationToDelete, setApplicationToDelete] =
     useState<ApplicationCardData | null>(null);
@@ -67,140 +176,82 @@ export default function Home() {
     }, 3000);
   };
 
-  const loadMockApplies = useCallback(async () => {
-    try {
-      const [data, fetchedJobPostings] = await Promise.all([
-        fetchMyMockApplies({ redirectOnUnauthorized: false, size: 100 }),
-        fetchMyJobPostings({ redirectOnUnauthorized: false }).catch(() => []),
-      ]);
+  // 공고 목록 조회가 실패해도 모의지원 목록만으로 화면을 그린다.
+  const homeLists = useMemo(() => {
+    if (!mockAppliesQuery.data || jobPostingsQuery.isPending) return null;
+    return buildHomeLists(mockAppliesQuery.data, jobPostingsQuery.data ?? []);
+  }, [
+    mockAppliesQuery.data,
+    jobPostingsQuery.data,
+    jobPostingsQuery.isPending,
+  ]);
 
-      const jobPostings = Array.isArray(fetchedJobPostings)
-        ? fetchedJobPostings
-        : [];
-      const inProgressList = data?.inProgress || [];
-      const completedList = data?.completed?.content || [];
+  const drafts = homeLists?.drafts ?? EMPTY_DRAFTS;
+  const results = homeLists?.results ?? EMPTY_RESULTS;
 
-      const jobPostingById = new Map(
-        jobPostings.map((jobPosting) => [jobPosting.jobPostingId, jobPosting]),
-      );
-
-      // 작성 중인 모의지원(Drafts) 매핑
-      const mappedDrafts: DraftData[] = inProgressList.map((item) => {
-        const jobPosting = jobPostingById.get(item.jobPostingId);
-
-        let currentStep = 1;
-        if (item.taskId) {
-          currentStep = 3; // 채점 중
-        } else if (item.status === "ANSWER_WRITE") {
-          currentStep = 2; // 작성 중
-        }
-
-        return {
-          id: String(item.mockApplyId),
-          jobPostingId: item.jobPostingId,
-          mockApplyId: item.mockApplyId,
-          companyName:
-            item.companyName || jobPosting?.companyName || "회사명 미입력",
-          profileColor: jobPosting?.profileColor ?? "DEFAULT",
-          position:
-            item.jobTitle ||
-            jobPosting?.jobTitle ||
-            item.detailClassificationName ||
-            jobPosting?.detailClassificationName ||
-            "직무 미지정",
-          currentStep,
-          taskId: item.taskId,
-          updatedAt: item.createdAt ? formatRelativeDate(item.createdAt) : "-",
-          createdAtTime: item.createdAt
-            ? new Date(item.createdAt).getTime()
-            : 0,
-        };
-      });
-
-      const linkedJobPostingIds = new Set(
-        [...inProgressList, ...completedList].map((item) => item.jobPostingId),
-      );
-
-      // 순수 채용 공고(Drafts) 매핑
-      const savedOnlyDrafts: DraftData[] = jobPostings
-        .filter(
-          (jobPosting) => !linkedJobPostingIds.has(jobPosting.jobPostingId),
-        )
-        .map((jobPosting) => ({
-          id: `job-posting-${jobPosting.jobPostingId}`,
-          jobPostingId: jobPosting.jobPostingId,
-          companyName: jobPosting.companyName || "회사명 미입력",
-          profileColor: jobPosting.profileColor,
-          position:
-            jobPosting.jobTitle ||
-            jobPosting.detailClassificationName ||
-            "직무 미지정",
-          currentStep: 1,
-          taskId: jobPosting.taskId,
-          updatedAt: jobPosting.createdAt
-            ? formatRelativeDate(jobPosting.createdAt)
-            : "-",
-          createdAtTime: jobPosting.createdAt
-            ? new Date(jobPosting.createdAt).getTime()
-            : 0,
-        }));
-
-      const mappedResults = completedList.map((item) => {
-        const jobPosting = jobPostingById.get(item.jobPostingId);
-        return mapMockApplyToApplication(
-          {
-            ...item,
-            profileColor: jobPosting?.profileColor ?? "DEFAULT",
-            jobTitle: item.jobTitle || jobPosting?.jobTitle || "",
-            detailClassificationName:
-              item.detailClassificationName ||
-              jobPosting?.detailClassificationName ||
-              "",
-          },
-          "completed",
-        );
-      });
-
-      const sortedDrafts = [...savedOnlyDrafts, ...mappedDrafts].sort(
-        (a, b) => {
-          const aIsAnalyzing = a.currentStep === 3;
-          const bIsAnalyzing = b.currentStep === 3;
-
-          if (aIsAnalyzing && !bIsAnalyzing) return -1;
-          if (!aIsAnalyzing && bIsAnalyzing) return 1;
-
-          const timeDifference =
-            (b.createdAtTime ?? 0) - (a.createdAtTime ?? 0);
-          if (timeDifference !== 0) return timeDifference;
-          return (
-            (b.mockApplyId ?? b.jobPostingId) -
-            (a.mockApplyId ?? a.jobPostingId)
-          );
-        },
-      );
-
-      setDrafts(sortedDrafts);
-      setResults(mappedResults);
-
-      if (!hasTrackedHomeView.current) {
-        hasTrackedHomeView.current = true;
-        track("home_page_viewed", {
-          paused_count: sortedDrafts.length,
-          completed_count: mappedResults.length,
-        });
-      }
-    } catch (error) {
-      console.error("데이터를 불러오는데 실패했습니다.", error);
-    }
-  }, []);
-
-  // 컴포넌트 마운트 시 최초 1회 목록 불러오기
   useEffect(() => {
-    const fetchInitialData = async () => {
-      await loadMockApplies();
-    };
-    void fetchInitialData();
-  }, [loadMockApplies]);
+    if (!homeLists || hasTrackedHomeView.current) return;
+    hasTrackedHomeView.current = true;
+    track("home_page_viewed", {
+      paused_count: homeLists.drafts.length,
+      completed_count: homeLists.results.length,
+    });
+  }, [homeLists]);
+
+  useEffect(() => {
+    if (mockAppliesQuery.error) {
+      console.error(
+        "데이터를 불러오는데 실패했습니다.",
+        mockAppliesQuery.error,
+      );
+    }
+  }, [mockAppliesQuery.error]);
+
+  const refreshHomeLists = useCallback(
+    () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.myMockApplies }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.myJobPostings }),
+      ]),
+    [queryClient],
+  );
+
+  // 삭제한 항목을 캐시에서 바로 빼서 화면에 즉시 반영한 뒤, 서버 값으로 다시 맞춘다.
+  const removeFromHomeCache = ({
+    mockApplyId,
+    jobPostingId,
+  }: {
+    mockApplyId?: number;
+    jobPostingId?: number;
+  }) => {
+    const shouldKeep = (item: MockApplyHomeItem) =>
+      item.mockApplyId !== mockApplyId && item.jobPostingId !== jobPostingId;
+
+    queryClient.setQueryData<MyMockApplies>(
+      queryKeys.myMockApplies,
+      (current) =>
+        current && {
+          inProgress: current.inProgress.filter(shouldKeep),
+          completed: {
+            ...current.completed,
+            content: current.completed.content.filter(shouldKeep),
+          },
+        },
+    );
+
+    if (jobPostingId !== undefined) {
+      queryClient.setQueryData<MyJobPostings>(
+        queryKeys.myJobPostings,
+        (current) =>
+          current?.filter(
+            (jobPosting) => jobPosting.jobPostingId !== jobPostingId,
+          ),
+      );
+    }
+
+    // 삭제 도중에 시작된 조회가 지운 항목을 되살리지 않도록 다시 요청한다.
+    void refreshHomeLists();
+  };
 
   // // 🌟 1. 자소서 분석(채점 중) 개별 구독
   // useEffect(() => {
@@ -263,7 +314,7 @@ export default function Home() {
             // console.log(`✨ [Task ID: ${draft.taskId}] 상태 감지:`, status);
 
             if (status === "SUCCEEDED" || status === "FAILED") {
-              void loadMockApplies();
+              void refreshHomeLists();
               controller.abort();
             }
           } catch {}
@@ -277,7 +328,7 @@ export default function Home() {
     return () => {
       abortControllers.forEach((controller) => controller.abort());
     };
-  }, [drafts, loadMockApplies]);
+  }, [drafts, refreshHomeLists]);
 
   const confirmDraftDelete = async () => {
     if (!draftToDelete || isDeletingDraft) return;
@@ -317,27 +368,18 @@ export default function Home() {
         await deleteJobPosting(targetDraft.jobPostingId);
       }
 
-      setDrafts((current) =>
-        current.filter(
-          (draft) =>
-            draft.id !== targetDraft.id &&
-            (!shouldDeleteJobPosting ||
-              draft.jobPostingId !== targetDraft.jobPostingId),
-        ),
-      );
-      if (shouldDeleteJobPosting) {
-        setResults((current) =>
-          current.filter(
-            (result) => result.jobPostingId !== targetDraft.jobPostingId,
-          ),
-        );
-      }
+      removeFromHomeCache({
+        mockApplyId: targetDraft.mockApplyId,
+        jobPostingId: shouldDeleteJobPosting
+          ? targetDraft.jobPostingId
+          : undefined,
+      });
       setDraftToDelete(null);
       showToast("작성 중인 모의지원이 삭제되었어요.", "check");
     } catch (error) {
       console.warn("작성 중인 모의지원을 삭제하지 못했습니다.", error);
       setDraftToDelete(null);
-      await loadMockApplies();
+      await refreshHomeLists();
       showToast("삭제에 실패했어요. 잠시 후 다시 시도해주세요.", "warning");
     } finally {
       setIsDeletingDraft(false);
@@ -375,17 +417,18 @@ export default function Home() {
         await deleteJobPosting(targetApplication.jobPostingId);
       }
 
-      setResults((current) =>
-        current.filter(
-          (result) => result.mockApplyId !== targetApplication.mockApplyId,
-        ),
-      );
+      removeFromHomeCache({
+        mockApplyId: targetApplication.mockApplyId,
+        jobPostingId: hasOtherLinkedApplication
+          ? undefined
+          : targetApplication.jobPostingId,
+      });
       setApplicationToDelete(null);
       showToast("모의지원 결과가 삭제되었어요.", "check");
     } catch (error) {
       console.warn("모의지원 결과를 삭제하지 못했습니다.", error);
       setApplicationToDelete(null);
-      await loadMockApplies();
+      await refreshHomeLists();
       showToast("삭제에 실패했어요. 잠시 후 다시 시도해주세요.", "warning");
     } finally {
       setIsDeletingApplication(false);
