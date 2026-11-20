@@ -37,6 +37,9 @@ export default function QueryProvider({
       void queryClient.invalidateQueries({
         queryKey: queryKeys.creditBalance,
       });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.creditTransactions,
+      });
     };
 
     window.addEventListener(

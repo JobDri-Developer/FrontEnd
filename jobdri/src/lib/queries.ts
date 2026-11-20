@@ -1,5 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
-import { fetchCreditBalance } from "@/lib/api/credit";
+import {
+  fetchCreditBalance,
+  fetchCreditPlans,
+  fetchCreditTransactions,
+} from "@/lib/api/credit";
 import { fetchMyJobPostings } from "@/lib/api/jobPostings";
 import { fetchMyMockApplies } from "@/lib/api/mockApplies";
 import { fetchNotifications } from "@/lib/api/notification";
@@ -16,6 +20,8 @@ export const queryKeys = {
   myJobPostings: ["jobPostings", "me"] as const,
   notifications: ["notifications"] as const,
   creditBalance: ["credit", "balance"] as const,
+  creditTransactions: ["credit", "transactions"] as const,
+  creditPlans: ["credit", "plans"] as const,
 };
 
 export type MyMockApplies = Awaited<ReturnType<typeof fetchMyMockApplies>>;
@@ -63,4 +69,20 @@ export const creditBalanceQueryOptions = () =>
     queryKey: queryKeys.creditBalance,
     queryFn: () => fetchCreditBalance({ redirectOnUnauthorized: false }),
     staleTime: 0,
+  });
+
+// 크레딧 사용·충전·쿠폰 등록으로 바뀌므로 잔액처럼 다시 마운트될 때마다 갱신한다.
+export const creditTransactionsQueryOptions = () =>
+  queryOptions({
+    queryKey: queryKeys.creditTransactions,
+    queryFn: () => fetchCreditTransactions(),
+    staleTime: 0,
+  });
+
+// 요금제는 거의 바뀌지 않아 한 번 받으면 오래 재사용한다.
+export const creditPlansQueryOptions = () =>
+  queryOptions({
+    queryKey: queryKeys.creditPlans,
+    queryFn: fetchCreditPlans,
+    staleTime: 30 * 60 * 1000,
   });

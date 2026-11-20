@@ -381,7 +381,6 @@ export default function Lnb({
           document.body,
         )}
 
-      {/* 🌟 렌더링에서 빠져있던 토스트 컴포넌트 부활! */}
       {toastState && (
         <Toast
           message={toastState.message}

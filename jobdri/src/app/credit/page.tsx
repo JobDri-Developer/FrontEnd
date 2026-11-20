@@ -1,23 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CreditCard from "@/components/common/cards/CreditCard";
 import Useage from "@/components/credit/Useage";
 import CouponRegistrationModal from "@/components/credit/CouponRegistrationModal";
 import TossEventBanner from "@/components/credit/TossEventBanner";
-import {
-  fetchCreditPlans,
-  checkPaymentStatus,
-  type CreditPlan,
-  fetchCreditBalance,
-} from "@/lib/api/credit";
+import { checkPaymentStatus, type CreditPlan } from "@/lib/api/credit";
 import Lnb from "@/components/common/lnb/Lnb";
 import PageHeader from "@/components/common/PageHeader";
 import { BusinessFooter } from "@/components/common/footer";
 import Toast from "@/components/common/toast/Toast";
-import { queryKeys } from "@/lib/queries";
+import {
+  creditBalanceQueryOptions,
+  creditPlansQueryOptions,
+  queryKeys,
+} from "@/lib/queries";
 import { Button } from "@/components/common/buttons";
 import { consumePendingPurchase, track } from "@/lib/analytics";
 
@@ -28,9 +27,11 @@ function calcDiscountRate(plan: CreditPlan, basePricePerUnit: number): string {
   return `${rate}%`;
 }
 
+const EMPTY_PLANS: CreditPlan[] = [];
+
 function CreditContent() {
   const queryClient = useQueryClient();
-  const [plans, setPlans] = useState<CreditPlan[]>([]);
+  const { data: plans = EMPTY_PLANS } = useQuery(creditPlansQueryOptions());
   const [isConfirming, setIsConfirming] = useState(false);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [couponToastCreditAmount, setCouponToastCreditAmount] = useState<
@@ -38,21 +39,21 @@ function CreditContent() {
   >(null);
   const searchParams = useSearchParams();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const router = useRouter();
   const hasTrackedPageView = useRef(false);
 
+  // 캐시 설정(staleTime)과 상관없이 항상 최신 잔액으로 기록한다.
+  // LNB의 잔액 요청이 진행 중이면 그 요청을 같이 기다려서, 요청이 추가로 나가지 않는다.
   useEffect(() => {
     if (hasTrackedPageView.current) return;
     hasTrackedPageView.current = true;
 
-    fetchCreditBalance()
+    queryClient
+      .fetchQuery({ ...creditBalanceQueryOptions(), staleTime: 0 })
       .then((balance) => {
-        track("credit_page_viewed", {
-          remaining_credit: balance,
-        });
+        track("credit_page_viewed", { remaining_credit: balance });
       })
       .catch(() => {});
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     if (toastMessage) {
@@ -62,12 +63,6 @@ function CreditContent() {
       return () => clearTimeout(timer);
     }
   }, [toastMessage]);
-
-  useEffect(() => {
-    fetchCreditPlans()
-      .then(setPlans)
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     const paymentId = searchParams.get("paymentId");
@@ -95,13 +90,15 @@ function CreditContent() {
               track("credit_purchase_completed", purchase);
             }
 
-            // 서버에서 최신 잔액 조회
-            fetchCreditBalance()
-              .then((latestBalance) => {
-                queryClient.setQueryData(
-                  queryKeys.creditBalance,
-                  latestBalance,
-                );
+            // 충전 내역이 바로 보이도록 이용 내역도 다시 받는다.
+            void queryClient.invalidateQueries({
+              queryKey: queryKeys.creditTransactions,
+            });
+
+            // 서버에서 최신 잔액을 받아 LNB까지 함께 갱신한다.
+            queryClient
+              .fetchQuery({ ...creditBalanceQueryOptions(), staleTime: 0 })
+              .then(() => {
                 setToastMessage("크레딧 충전이 완료되었습니다.");
               })
               .catch((err) => {
@@ -166,6 +163,11 @@ function CreditContent() {
   const handleCouponRegistrationSuccess = (creditAmount: number) => {
     setIsCouponModalOpen(false);
     setCouponToastCreditAmount(creditAmount);
+    // 쿠폰으로 충전된 크레딧을 LNB 잔액과 이용 내역에 바로 반영한다.
+    void queryClient.invalidateQueries({ queryKey: queryKeys.creditBalance });
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.creditTransactions,
+    });
   };
 
   const basePricePerUnit =
