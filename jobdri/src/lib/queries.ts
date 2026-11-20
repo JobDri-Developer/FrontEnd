@@ -4,7 +4,7 @@ import {
   fetchCreditPlans,
   fetchCreditTransactions,
 } from "@/lib/api/credit";
-import { fetchMyJobPostings } from "@/lib/api/jobPostings";
+import { fetchMyJobPosting, fetchMyJobPostings } from "@/lib/api/jobPostings";
 import {
   fetchMockApplyJobPosting,
   fetchMyMockApplies,
@@ -28,6 +28,8 @@ export const queryKeys = {
   mockApplyJobPosting: (mockApplyId: number) =>
     ["mockApplies", mockApplyId, "jobPosting"] as const,
   myJobPostings: ["jobPostings", "me"] as const,
+  jobPostingDetail: (jobPostingId: number) =>
+    ["jobPostings", jobPostingId] as const,
   notifications: ["notifications"] as const,
   creditBalance: ["credit", "balance"] as const,
   creditTransactions: ["credit", "transactions"] as const,
@@ -56,6 +58,14 @@ export const myJobPostingsQueryOptions = () =>
     queryFn: () => fetchMyJobPostings({ redirectOnUnauthorized: false }),
     staleTime: 0,
     refetchOnWindowFocus: true,
+  });
+
+// 공고 상세. 홈에서 카드를 누를 때 받은 값을 검토 페이지가 그대로 쓴다.
+// 검토 페이지에서 저장하면 저장 결과로 캐시를 갱신한다.
+export const jobPostingDetailQueryOptions = (jobPostingId: number) =>
+  queryOptions({
+    queryKey: queryKeys.jobPostingDetail(jobPostingId),
+    queryFn: () => fetchMyJobPosting(jobPostingId),
   });
 
 // 몇 번째 지원인지. 템플릿 헤더와 결과 페이지가 함께 쓴다.

@@ -13,8 +13,9 @@ import {
   saveSelectedApplyType,
   type MockApplyHomeItem,
 } from "@/lib/api/mockApplies";
-import { deleteJobPosting, fetchMyJobPosting } from "@/lib/api/jobPostings";
+import { deleteJobPosting } from "@/lib/api/jobPostings";
 import {
+  jobPostingDetailQueryOptions,
   myJobPostingsQueryOptions,
   myMockAppliesQueryOptions,
   queryKeys,
@@ -485,7 +486,11 @@ export default function Home() {
                 });
 
                 if (!targetDraft.mockApplyId) {
-                  void fetchMyJobPosting(targetDraft.jobPostingId)
+                  // 검토 페이지와 같은 쿼리로 받아, 이동한 뒤 다시 요청하지 않게 한다.
+                  void queryClient
+                    .fetchQuery(
+                      jobPostingDetailQueryOptions(targetDraft.jobPostingId),
+                    )
                     .then((saved) => {
                       saveJobPostingAnalysis({
                         savedToDatabase: true,
