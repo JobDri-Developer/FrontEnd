@@ -5,8 +5,12 @@ import {
   fetchCreditTransactions,
 } from "@/lib/api/credit";
 import { fetchMyJobPostings } from "@/lib/api/jobPostings";
-import { fetchMyMockApplies } from "@/lib/api/mockApplies";
+import {
+  fetchMockApplyJobPosting,
+  fetchMyMockApplies,
+} from "@/lib/api/mockApplies";
 import { fetchNotifications } from "@/lib/api/notification";
+import { fetchSequence } from "@/lib/api/result";
 
 // 알림 폴링 주기 (15초)
 export const NOTIFICATION_POLL_INTERVAL_MS = 15_000;
@@ -16,7 +20,13 @@ export const NOTIFICATION_POLL_INTERVAL_MS = 15_000;
  * 예: 홈과 LNB가 모두 내 모의지원 목록을 쓰지만, 같은 키라서 요청은 한 번만 나간다.
  */
 export const queryKeys = {
+  // 모의지원 관련 쿼리 전체. 생성·재시도·삭제 시 이 키로 한 번에 무효화한다.
+  allMockApplies: ["mockApplies"] as const,
   myMockApplies: ["mockApplies", "me"] as const,
+  mockApplySequence: (mockApplyId: number) =>
+    ["mockApplies", mockApplyId, "sequence"] as const,
+  mockApplyJobPosting: (mockApplyId: number) =>
+    ["mockApplies", mockApplyId, "jobPosting"] as const,
   myJobPostings: ["jobPostings", "me"] as const,
   notifications: ["notifications"] as const,
   creditBalance: ["credit", "balance"] as const,
@@ -46,6 +56,23 @@ export const myJobPostingsQueryOptions = () =>
     queryFn: () => fetchMyJobPostings({ redirectOnUnauthorized: false }),
     staleTime: 0,
     refetchOnWindowFocus: true,
+  });
+
+// 몇 번째 지원인지. 템플릿 헤더와 결과 페이지가 함께 쓴다.
+export const mockApplySequenceQueryOptions = (mockApplyId: number) =>
+  queryOptions({
+    queryKey: queryKeys.mockApplySequence(mockApplyId),
+    queryFn: () => fetchSequence(mockApplyId),
+    enabled: mockApplyId > 0,
+  });
+
+// 모의지원에 연결된 공고. 지원 중에는 바뀌지 않아 오래 재사용한다.
+export const mockApplyJobPostingQueryOptions = (mockApplyId: number) =>
+  queryOptions({
+    queryKey: queryKeys.mockApplyJobPosting(mockApplyId),
+    queryFn: () => fetchMockApplyJobPosting(mockApplyId),
+    enabled: mockApplyId > 0,
+    staleTime: 5 * 60 * 1000,
   });
 
 export const notificationsQueryOptions = () =>

@@ -28,8 +28,9 @@ export default function QueryProvider({
   // 모의지원 생성·재시도·삭제 시 발생하는 이벤트로 관련 캐시를 갱신한다.
   useEffect(() => {
     const invalidateMockApplyQueries = () => {
+      // 목록뿐 아니라 회차 정보(재도전 시 전체 회차 수가 바뀜)도 함께 갱신한다.
       void queryClient.invalidateQueries({
-        queryKey: queryKeys.myMockApplies,
+        queryKey: queryKeys.allMockApplies,
       });
       void queryClient.invalidateQueries({
         queryKey: queryKeys.myJobPostings,
