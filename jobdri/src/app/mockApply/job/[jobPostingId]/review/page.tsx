@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useMemo,
   useState,
   useEffect,
@@ -9,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import Header from "@/components/common/header/Header";
 import SideHeaderContainer from "@/components/common/header/SideHeaderContainer";
 import {
@@ -27,12 +29,13 @@ import {
   getJobPostingAnalysis,
 } from "@/app/mockApply/job/jobPostingDraftStore";
 import {
-  fetchMyJobPosting,
   saveJobPosting,
   updateJobPosting,
   type JobPostingSavePayload,
   type JobPostingProfileColor,
+  type SavedJobPosting,
 } from "@/lib/api/jobPostings";
+import { jobPostingDetailQueryOptions, queryKeys } from "@/lib/queries";
 import {
   createApplyFromJobPosting,
   getSelectedApplyType,
@@ -136,8 +139,25 @@ function JobProfileRow({
 
 export default function JobPostingReviewPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const params = useParams();
   const urlJobPostingId = params.jobPostingId as string;
+
+  // 저장한 공고로 캐시를 맞추고, 이 공고를 보여주는 다른 화면의 캐시는 다시 받게 한다.
+  // (모의지원 작성 페이지의 공고 패널, 홈의 공고 목록)
+  const syncSavedJobPosting = useCallback(
+    (savedJobPosting: SavedJobPosting) => {
+      queryClient.setQueryData(
+        queryKeys.jobPostingDetail(savedJobPosting.jobPostingId),
+        savedJobPosting,
+      );
+      void queryClient.invalidateQueries({ queryKey: queryKeys.myJobPostings });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.allMockApplies,
+      });
+    },
+    [queryClient],
+  );
 
   const [isLoading, setIsLoading] = useState(true);
   const [profileColor, setProfileColor] =
@@ -217,6 +237,7 @@ export default function JobPostingReviewPage() {
           savedResult = await saveJobPosting(debouncedPayload);
           setJobPostingId(savedResult.jobPostingId);
         }
+        syncSavedJobPosting(savedResult);
 
         const now = new Date();
         setLastSavedTime(
@@ -228,7 +249,7 @@ export default function JobPostingReviewPage() {
     };
 
     autoSave();
-  }, [debouncedPayload, jobPostingId, isLoading]);
+  }, [debouncedPayload, jobPostingId, isLoading, syncSavedJobPosting]);
 
   const { scrollAreaRef, scrollbarMetrics, updateScrollbarMetrics } =
     useLnbScrollMetrics(true, "job-posting-review", { trackPadding: 28 });
@@ -251,12 +272,9 @@ export default function JobPostingReviewPage() {
     const sectionId = JD_SECTION_ID_BY_FIELD[fieldId];
 
     if (sectionId) {
-      track(
-        isEditing
-          ? "jd_section_edit_clicked"
-          : "jd_section_edited",
-        { section_id: sectionId },
-      );
+      track(isEditing ? "jd_section_edit_clicked" : "jd_section_edited", {
+        section_id: sectionId,
+      });
     }
 
     setEditingFieldIds((current) => {
@@ -277,7 +295,10 @@ export default function JobPostingReviewPage() {
     const loadData = async () => {
       try {
         if (urlJobPostingId) {
-          const saved = await fetchMyJobPosting(Number(urlJobPostingId));
+          // 홈에서 막 받아 온 공고가 캐시에 있으면 다시 요청하지 않는다.
+          const saved = await queryClient.fetchQuery(
+            jobPostingDetailQueryOptions(Number(urlJobPostingId)),
+          );
           setProfileColor(saved.profileColor ?? "DEFAULT");
           setJobPostingName(
             firstNonEmpty(
@@ -376,7 +397,7 @@ export default function JobPostingReviewPage() {
     };
 
     loadData();
-  }, [urlJobPostingId, router]);
+  }, [urlJobPostingId, router, queryClient]);
 
   const handleHomeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -397,6 +418,7 @@ export default function JobPostingReviewPage() {
       const savedJobPosting = jobPostingId
         ? await updateJobPosting(jobPostingId, currentPayload)
         : await saveJobPosting(currentPayload);
+      syncSavedJobPosting(savedJobPosting);
 
       const createdApply = await createApplyFromJobPosting({
         jobPostingId: savedJobPosting.jobPostingId,

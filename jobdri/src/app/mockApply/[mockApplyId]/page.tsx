@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect, use, useCallback, useRef } from "react";
+import { useState, useEffect, use, useCallback, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { QuestionList } from "@/components/mockApply/questions/QuestionList";
 import JDSidePanel from "@/components/mockApply/questions/SidePanel";
 import WritingForm from "@/components/mockApply/questions/WritingForm";
@@ -20,12 +21,15 @@ import Toast from "@/components/common/toast/Toast";
 import {
   CreditInsufficientError,
   fetchAnalysisResult,
-  fetchSequence,
   isCachedAnalysisResultAvailable,
   requestAnalysis,
 } from "@/lib/api/result";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
-import { fetchMockApplyJobPosting } from "@/lib/api/mockApplies";
+import type { SavedJobPosting } from "@/lib/api/jobPostings";
+import {
+  mockApplyJobPostingQueryOptions,
+  mockApplySequenceQueryOptions,
+} from "@/lib/queries";
 import type { JDData } from "@/components/mockApply/questions/SidePanel";
 import { saveJobPostingAnalysis } from "@/app/mockApply/job/jobPostingDraftStore";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -49,6 +53,22 @@ const getSubmitPayload = (questionsData: QuestionItem[]) =>
 
     return payload;
   });
+
+const toJdData = (jobPosting: SavedJobPosting): JDData => ({
+  companyName: jobPosting.companyName,
+  profileColor: jobPosting.profileColor,
+  title:
+    jobPosting.jobTitle || jobPosting.detailClassificationName || "채용 공고",
+  sections: [
+    {
+      subtitle: "직무",
+      content: jobPosting.jobTitle || jobPosting.detailClassificationName,
+    },
+    { subtitle: "주요 업무", content: jobPosting.task },
+    { subtitle: "자격요건", content: jobPosting.requirement },
+    { subtitle: "우대사항", content: jobPosting.preferred },
+  ].filter((section) => section.content.trim().length > 0),
+});
 
 const countCompletedAnswers = (questionsData: QuestionItem[]) =>
   questionsData.filter((question) => (question.answer || "").trim()).length;
@@ -98,7 +118,13 @@ export default function MockApplyPage({
   params: Promise<{ mockApplyId: string }>;
 }) {
   const { mockApplyId } = use(params);
+  const parsedMockApplyId = Number(mockApplyId);
+  const validMockApplyId =
+    Number.isInteger(parsedMockApplyId) && parsedMockApplyId > 0
+      ? parsedMockApplyId
+      : 0;
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const requestedJobPostingId = Number(searchParams.get("jobPostingId"));
   const hasRequestedJobPostingId =
@@ -109,10 +135,15 @@ export default function MockApplyPage({
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
   const [isQuestionsLoading, setIsQuestionsLoading] = useState(true);
   const [questionsErrorMessage, setQuestionsErrorMessage] = useState("");
-  const [jdData, setJdData] = useState<JDData | null>(null);
-  const [linkedJobPostingId, setLinkedJobPostingId] = useState<number | null>(
-    null,
+  // 2. 연결된 채용 공고 불러오기 (헤더 훅과 같은 쿼리)
+  const { data: linkedJobPosting, error: linkedJobPostingError } = useQuery(
+    mockApplyJobPostingQueryOptions(validMockApplyId),
   );
+  const jdData = useMemo(
+    () => (linkedJobPosting ? toJdData(linkedJobPosting) : null),
+    [linkedJobPosting],
+  );
+  const linkedJobPostingId = linkedJobPosting?.jobPostingId ?? null;
   const jobPostingId =
     linkedJobPostingId ??
     (hasRequestedJobPostingId ? requestedJobPostingId : null);
@@ -373,58 +404,28 @@ export default function MockApplyPage({
     };
   }, [mockApplyId, replaceQuestions]);
 
-  // 2. 연결된 채용 공고 불러오기
+  // 2-1. 불러온 공고를 '이전' 단계(공고 검토)에서 쓸 수 있게 저장해 둔다.
   useEffect(() => {
-    const parsedMockApplyId = Number(mockApplyId);
-
-    if (!Number.isInteger(parsedMockApplyId) || parsedMockApplyId <= 0) {
+    if (!linkedJobPosting) {
       return;
     }
 
-    let ignore = false;
+    saveJobPostingAnalysis({
+      savedToDatabase: true,
+      message: "저장된 채용 공고를 불러왔습니다.",
+      extracted: null,
+      candidates: [],
+      classification: null,
+      generated: null,
+      saved: linkedJobPosting,
+    });
+  }, [linkedJobPosting]);
 
-    fetchMockApplyJobPosting(parsedMockApplyId)
-      .then((jobPosting) => {
-        if (ignore) {
-          return;
-        }
-
-        setLinkedJobPostingId(jobPosting.jobPostingId);
-        setJdData({
-          companyName: jobPosting.companyName,
-          profileColor: jobPosting.profileColor,
-          title:
-            jobPosting.jobTitle ||
-            jobPosting.detailClassificationName ||
-            "채용 공고",
-          sections: [
-            {
-              subtitle: "직무",
-              content:
-                jobPosting.jobTitle || jobPosting.detailClassificationName,
-            },
-            { subtitle: "주요 업무", content: jobPosting.task },
-            { subtitle: "자격요건", content: jobPosting.requirement },
-            { subtitle: "우대사항", content: jobPosting.preferred },
-          ].filter((section) => section.content.trim().length > 0),
-        });
-        saveJobPostingAnalysis({
-          savedToDatabase: true,
-          message: "저장된 채용 공고를 불러왔습니다.",
-          extracted: null,
-          candidates: [],
-          classification: null,
-          generated: null,
-          saved: jobPosting,
-        });
-      })
-      .catch((error) => {
-        if (!ignore) console.error("채용 공고를 불러오지 못했습니다.", error);
-      });
-    return () => {
-      ignore = true;
-    };
-  }, [mockApplyId]);
+  useEffect(() => {
+    if (linkedJobPostingError) {
+      console.error("채용 공고를 불러오지 못했습니다.", linkedJobPostingError);
+    }
+  }, [linkedJobPostingError]);
 
   // 4. 토스트 자동 닫힘
   useEffect(() => {
@@ -514,7 +515,10 @@ export default function MockApplyPage({
       let resolvedJobPostingId = jobPostingId;
       if (!resolvedJobPostingId || resolvedJobPostingId <= 0) {
         try {
-          const sequenceResult = await fetchSequence(Number(mockApplyId));
+          // 헤더가 이미 받아 둔 회차 정보가 있으면 다시 요청하지 않는다.
+          const sequenceResult = await queryClient.fetchQuery(
+            mockApplySequenceQueryOptions(validMockApplyId),
+          );
           resolvedJobPostingId = sequenceResult.jobPostingId;
         } catch (error) {
           console.warn(

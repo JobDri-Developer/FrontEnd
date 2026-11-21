@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import CreditTable from "./CreditTable";
 import { Pagination } from "@/components/common/Pagination";
-import {
-  fetchCreditTransactions,
-  type CreditTransaction,
-  type TransactionType,
-} from "@/lib/api/credit";
+import type { CreditTransaction, TransactionType } from "@/lib/api/credit";
+import { creditTransactionsQueryOptions } from "@/lib/queries";
 
 const typeLabel: Record<TransactionType, string> = {
   CHARGE: "충전",
@@ -45,8 +43,19 @@ function toRowData(tx: CreditTransaction) {
   };
 }
 
+type TransactionRow = ReturnType<typeof toRowData>;
+
+const EMPTY_ROWS: TransactionRow[] = [];
+
+function selectRows(transactions: CreditTransaction[]): TransactionRow[] {
+  return transactions.map(toRowData);
+}
+
 export default function Useage() {
-  const [rows, setRows] = useState<ReturnType<typeof toRowData>[]>([]);
+  const { data: rows = EMPTY_ROWS } = useQuery({
+    ...creditTransactionsQueryOptions(),
+    select: selectRows,
+  });
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.max(
@@ -57,12 +66,6 @@ export default function Useage() {
     (currentPage - 1) * TRANSACTIONS_PER_PAGE,
     currentPage * TRANSACTIONS_PER_PAGE,
   );
-
-  useEffect(() => {
-    fetchCreditTransactions()
-      .then((txs) => setRows(txs.map(toRowData)))
-      .catch(() => {});
-  }, []);
 
   return (
     <div className="flex flex-col gap-y-4">

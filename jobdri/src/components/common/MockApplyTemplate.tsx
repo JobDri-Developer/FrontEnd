@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/common/header/Header";
 import CtaFooter from "@/components/common/cta/CtaFooter";
-import { fetchSequence } from "@/lib/api/result";
+import { mockApplySequenceQueryOptions } from "@/lib/queries";
 import { LEAVE_MODAL_CONFIG } from "@/constants/modalConfig";
 import ModalNotice from "@/components/common/modal/ModalNotice";
 import { ModalOverlay } from "@/components/common/modal/ModalOverlay";
@@ -58,22 +59,13 @@ export default function MockApplyTemplate({
     else router.push("/");
   };
 
-  const [applicationLabel, setApplicationLabel] =
-    useState<string>("첫 번째 지원");
-
-  useEffect(() => {
-    const loadSequence = async () => {
-      if (!mockApplyId) return;
-      try {
-        const data = await fetchSequence(mockApplyId);
-        setApplicationLabel(`${data.sequence}번째 지원`);
-      } catch (error) {
-        console.error("순번을 불러오지 못했습니다.", error);
-      }
-    };
-
-    loadSequence();
-  }, [mockApplyId]);
+  // 결과 페이지도 같은 쿼리를 써서 회차 요청은 한 번만 나간다.
+  const { data: sequenceInfo } = useQuery(
+    mockApplySequenceQueryOptions(mockApplyId || 0),
+  );
+  const applicationLabel = sequenceInfo
+    ? `${sequenceInfo.sequence}번째 지원`
+    : "첫 번째 지원";
 
   return (
     <div className="flex flex-col h-dvh bg-bg-default overflow-hidden">

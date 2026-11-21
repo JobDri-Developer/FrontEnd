@@ -2,6 +2,7 @@
 
 import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import ResumeAnalysisFeedback from "@/components/mockApply/result/ResumeAnalysisFeedback";
 import ResumeAnalysisDetail from "@/components/mockApply/result/ResumeAnalysisDetail";
 import AnalysisHeader from "@/components/mockApply/result/AnalysisHeader";
@@ -13,7 +14,8 @@ import { getMockApplyResumeRecords } from "@/lib/api/mockApplies";
 import { useAnalysisResult } from "@/hooks/useAnalysisResult";
 import { useJobPostingHeader } from "@/hooks/useJobPostingHeader";
 import MockApplyTemplate from "@/components/common/MockApplyTemplate";
-import { fetchSequence, type SequenceResult } from "@/lib/api/result";
+import type { SequenceResult } from "@/lib/api/result";
+import { mockApplySequenceQueryOptions } from "@/lib/queries";
 import { track } from "@/lib/analytics";
 
 interface ResultPageProps {
@@ -55,10 +57,17 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
     isError,
   } = useAnalysisResult(parsedMockApplyId, parsedJobPostingId, parsedSequence);
 
+  // 템플릿 헤더와 같은 쿼리라 회차 요청은 한 번만 나간다.
+  const sequenceQuery = useQuery(
+    mockApplySequenceQueryOptions(parsedMockApplyId ?? 0),
+  );
   /** undefined: 조회 중, null: 조회 실패 */
-  const [sequenceInfo, setSequenceInfo] = useState<
-    SequenceResult | null | undefined
-  >(undefined);
+  const sequenceInfo: SequenceResult | null | undefined =
+    sequenceQuery.isPending
+      ? undefined
+      : sequenceQuery.isError
+        ? null
+        : sequenceQuery.data;
   const pageViewTrackedForRef = useRef<string | null>(null);
 
   const resolvedJobPostingId =
@@ -80,26 +89,6 @@ export default function ResultPage({ params, searchParams }: ResultPageProps) {
       }
     />
   );
-
-  useEffect(() => {
-    if (!parsedMockApplyId) {
-      return;
-    }
-
-    let ignore = false;
-
-    fetchSequence(parsedMockApplyId)
-      .then((result) => {
-        if (!ignore) setSequenceInfo(result);
-      })
-      .catch(() => {
-        if (!ignore) setSequenceInfo(null);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [parsedMockApplyId]);
 
   // 분석 결과와 회차 정보가 모두 준비된 뒤 회차별로 한 번만 보낸다.
   useEffect(() => {
