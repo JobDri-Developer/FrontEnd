@@ -1,10 +1,6 @@
-"use client";
-
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import Lnb from "@/components/common/lnb/Lnb";
-import { TextButton } from "@/components/common/buttons";
-import { ROUTES } from "@/constants/routes";
+import TossEventBackButton from "@/components/credit/TossEventBackButton";
 import tossEventImage from "@/assets/img_toss_eventpage.png";
 
 const NOTICE_SECTIONS = [
@@ -44,22 +40,15 @@ const NOTICE_SECTIONS = [
   },
 ];
 
+// 서버 컴포넌트: 안내 문구와 이미지는 HTML로 전달하고, 뒤로가기 버튼만 클라이언트로 둔다.
 export default function TossEventPage() {
-  const router = useRouter();
-
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-[#F5F6F9]">
       <Lnb initialActiveItem={null} className="z-50 shrink-0" />
       <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
         <main className="relative">
           <header className="absolute inset-x-0 top-0 z-10 flex items-center gap-8 px-6 py-3">
-            <TextButton
-              label="뒤로가기"
-              size="large"
-              styleType="secondary"
-              iconPosition="left"
-              onClick={() => router.push(ROUTES.CREDIT)}
-            />
+            <TossEventBackButton />
           </header>
 
           {/* 이미지 높이 기준으로 크기를 고정하고, 화면이 좁아지면 좌우가 잘린다.
