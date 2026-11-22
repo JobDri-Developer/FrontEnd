@@ -1,5 +1,3 @@
-"use client";
-
 import type { HTMLAttributes } from "react";
 import Icon from "@/components/common/icons/Icon";
 import clsx from "clsx";
