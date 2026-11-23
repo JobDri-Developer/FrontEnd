@@ -1,5 +1,3 @@
-"use client";
-
 import {
   InputTextAreaFixedBase,
   type InputTextAreaFixedSharedProps,
